@@ -1,0 +1,161 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Change to your own main package name. -->
+    <groupId>xyz.jakubk15</groupId>
+
+    <!-- Change to your plugin name, must be lower cased and match your end package name. -->
+    <artifactId>parcellockers</artifactId>
+
+    <!-- Change to your plugin's name. Can contain capital letters, but do NOT use spaces. -->
+    <name>ParcelLockers</name>
+
+    <!-- Change to the appropriate plugin's version you have. -->
+    <version>1.0.0</version>
+
+    <!-- DO NOT EDIT. -->
+    <packaging>jar</packaging>
+
+    <properties>
+
+        <!-- Change to your name or the main collaborator. -->
+        <author>Jakubk15</author>
+
+        <!-- Change to the full path where your main class extending SimplePlugin is. -->
+        <main.class>xyz.jakubk15.parcellockers.ParcelLockers</main.class>
+
+        <!-- Change to the Java version used when compiling.
+
+             IMPORTANT: For Java 8, version is "1.8", for Java 11+ it is only "11" or "16".
+
+             If you use 1.8 then your plugin will work on newer versions,
+             but if you use "11" or "16" then it will not load on servers
+             with previous Java version. We recommend you stick with 1.8.
+
+             IF YOU WANT TO CODE WITH JAVA 16 THERE ARE CHANGES YOU MUST MAKE TO THIS
+             FILE, SEE <pluginRepositories> AND VERSION IN THE maven-shade-plugin BELOW.
+             -->
+        <java.version>1.8</java.version>
+
+        <!-- Change to the latest one from https://github.com/kangarko/Foundation/releases
+             or change to "LATEST" if you downloaded Foundation to your disk. -->
+        <foundation.version>5.12.8</foundation.version>
+
+        <!-- Leave on "com.github.kangarko" if you use Foundation from GitHub like most people,
+             or change to "org.mineacademy" if you downloaded our library to your disk. -->
+        <foundation.path>com.github.kangarko</foundation.path>
+
+        <!-- DO NOT EDIT. -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <repositories>
+        <!-- DO NOT EDIT, used to pull Foundation from the JitPack site. -->
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
+
+    <!-- UNCOMMENT ONLY IF YOUR java.version IS SET TO JAVA 16 OR HIGHER. -->
+    <!--<pluginRepositories>
+        <pluginRepository>
+            <id>maven-snapshots</id>
+            <url>https://repository.apache.org/content/repositories/snapshots/</url>
+        </pluginRepository>
+    </pluginRepositories>-->
+
+    <dependencies>
+        <!-- Use our Foundation library -->
+        <dependency>
+            <groupId>${foundation.path}</groupId>
+            <artifactId>Foundation</artifactId>
+            <version>${foundation.version}</version>
+        </dependency>
+
+        <!-- (Optional) Access the server jar for NMS (groupId, artifactId and version do not matter and you
+             can only use it for your own organization purposes, but keep version in artifactId not in version
+             if using multiple NMS imports otherwise Maven will fail to import them correctly).
+
+             Foundation by default uses the latest Spigot API version. If you want to develop for another
+             version, move this dependency above Foundation here in this file so that your IDE.
+
+             NB: Edit the <systemPath> to point out to your patched server file on your disk. -->
+        <!--<dependency>
+            <groupId>paper-server</groupId>
+            <artifactId>Paper-1.8.8</artifactId>
+            <version>1</version>
+            <scope>system</scope>
+            <systemPath>/Users/kangarko/Test Servers/1.8.8/cache/patched.jar</systemPath>
+        </dependency>-->
+    </dependencies>
+
+    <!-- DO NOT EDIT unless instructed to do so or you know what you're doing. -->
+    <build>
+        <finalName>${project.name}-${project.version}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+
+                <!-- Change version to the latest one from
+                     https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-jar-plugin -->
+                <version>3.2.2</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+
+                <!-- Change version to the latest one from
+                     https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-compiler-plugin -->
+                <version>3.10.1</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+
+                <!-- Change version to the latest one from
+                     https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-shade-plugin
+
+                     IF YOU USE JAVA 16 THEN PLACE 3.3.0-SNAPSHOT TO THE VERSION AND MAKE SURE TO
+                     UNCOMMENT <pluginRepositories> above.
+                     -->
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <createDependencyReducedPom>false</createDependencyReducedPom>
+                    <artifactSet>
+                        <includes>
+                            <include>${foundation.path}:Foundation*</include>
+                        </includes>
+                    </artifactSet>
+                    <relocations>
+                        <relocation>
+                            <pattern>org.mineacademy.fo</pattern>
+                            <shadedPattern>${project.groupId}.${project.artifactId}.lib</shadedPattern>
+                        </relocation>
+                    </relocations>
+                </configuration>
+            </plugin>
+        </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
+</project>
