@@ -13,7 +13,7 @@ import java.util.UUID;
 @Setter
 public class PlayerCache {
 
-	public static Map<UUID, PlayerCache> cacheMap = new HashMap<>();
+	public static volatile Map<UUID, PlayerCache> cacheMap = new HashMap<>();
 	public int packagesReceivedAmountTotal;
 	public int awaitingPackages;
 	public int sentPackagesTotal;

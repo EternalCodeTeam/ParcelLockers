@@ -5,6 +5,7 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.menu.button.Button;
+import org.mineacademy.fo.menu.button.ButtonMenu;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.remain.CompMaterial;
 
@@ -14,6 +15,7 @@ public class ParcelMenu extends Menu {
 	private final Button mediumPackageButton;
 	private final Button bigPackageButton;
 	private final Button priorityButton;
+	private final Button parcelLockerButton;
 
 
 	public ParcelMenu() {
@@ -33,10 +35,10 @@ public class ParcelMenu extends Menu {
 				if (isChosen()) {
 					return ItemCreator.of(CompMaterial.CHEST, "&aSmall package", "&bClick to choose a small package.", "", "&aCost: &2$13.99")
 							.glow(true)
-							.build().make();
+							.make();
 				}
 				return ItemCreator.of(CompMaterial.CHEST, "&aSmall package", "&bClick to choose a small package.", "", "&aCost: &2$13.99")
-						.build().make();
+						.make();
 			}
 
 			boolean isChosen() {
@@ -55,10 +57,10 @@ public class ParcelMenu extends Menu {
 				if (isChosen()) {
 					return ItemCreator.of(CompMaterial.CHEST, "&aMedium package &b[Most recommended]", "&bClick to choose a medium package.", "", "&aCost: &2$14.99")
 							.glow(true)
-							.build().make();
+							.make();
 				}
 				return ItemCreator.of(CompMaterial.CHEST, "&aMedium package &b[Most recommended]", "&bClick to choose a medium package.", "", "&aCost: &2$14.99")
-						.build().make();
+						.make();
 			}
 
 			boolean isChosen() {
@@ -77,10 +79,10 @@ public class ParcelMenu extends Menu {
 				if (isChosen()) {
 					return ItemCreator.of(CompMaterial.CHEST, "&aBig package &6[Most valuable]", "&bClick to choose a big package.", "", "&aCost: &2$16.49")
 							.glow(true)
-							.build().make();
+							.make();
 				}
 				return ItemCreator.of(CompMaterial.CHEST, "&aBig package &6[Most valuable]", "&bClick to choose a big package.", "", "&aCost: &2$16.49")
-						.build().make();
+						.make();
 			}
 
 			boolean isChosen() {
@@ -96,11 +98,12 @@ public class ParcelMenu extends Menu {
 
 			@Override
 			public ItemStack getItem() {
-				return priority ? ItemCreator.of(CompMaterial.NETHER_STAR, "&2Click to add a priority status to package.", "&aCost: $2.99").glow(true).build().make() : ItemCreator.of(CompMaterial.NETHER_STAR, "&cClick to remove the priority status from the package.").build().make();
+				return priority ? ItemCreator.of(CompMaterial.NETHER_STAR, "&2Click to add a priority status to package.", "&aCost: $2.99").glow(true).make() : ItemCreator.of(CompMaterial.NETHER_STAR, "&cClick to remove the priority status from the package.").make();
 			}
 
 			private boolean priority = false;
 		};
+		parcelLockerButton = new ButtonMenu(new ParcelSelectionMenu(), CompMaterial.ENDER_CHEST, "&aClick to choose destination parcel locker.");
 
 
 	}
@@ -111,11 +114,31 @@ public class ParcelMenu extends Menu {
 		if (slot == 1) return mediumPackageButton.getItem();
 		if (slot == 2) return bigPackageButton.getItem();
 		if (slot == 3) return priorityButton.getItem();
-		return ItemCreator.of(CompMaterial.GRAY_STAINED_GLASS_PANE).build().make();
+		if (slot == 4) return parcelLockerButton.getItem();
+		return ItemCreator.of(CompMaterial.GRAY_STAINED_GLASS_PANE).make();
 	}
 
 	@Override
 	protected String[] getInfo() {
-		return new String[]{"&bMain parcel menu to easily and efficiently manage your parcels.", "No matter if you want to send something or receive a parcel."};
+		return new String[]{"&bMain parcel menu to easily and efficiently send parcels."};
 	}
+
+	private final class ParcelSelectionMenu extends Menu {
+
+		protected ParcelSelectionMenu() {
+			setSize(9 * 3);
+			setTitle("&aParcel selection menu.");
+		}
+
+		@Override
+		public ItemStack getItemAt(final int slot) {
+			return super.getItemAt(slot);
+		}
+
+		@Override
+		protected String[] getInfo() {
+			return super.getInfo();
+		}
+	}
+
 }
