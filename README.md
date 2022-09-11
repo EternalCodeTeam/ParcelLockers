@@ -32,6 +32,7 @@ See [CONTRIBUTING.md](https://github.com/Jakubk15/ParcelLockers/blob/master/.git
 ParcelLockers is a advanced parcel plugin, dedicated for Spigot-based servers.
 
 🚫 Found an issue? Report it [here](https://github.com/Jakubk15/ParcelLockers/issues)
+
 🧩 Are you a developer and want to add something? Feel free to [create a pull request](https://github.com/Jakubk15/ParcelLockers/pulls)
 
 ![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=java&logoColor=white)![IntelliJ IDEA](https://img.shields.io/badge/IntelliJIDEA-000000.svg?style=for-the-badge&logo=intellij-idea&logoColor=white)![Apache Ant](https://img.shields.io/badge/Apache%20Ant-A81C7D?style=for-the-badge&logo=Apache%20Ant&logoColor=white)![Apache Maven](https://img.shields.io/badge/Apache%20Maven-C71A36?style=for-the-badge&logo=Apache%20Maven&logoColor=white)![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)![GitHub Actions](https://img.shields.io/badge/github%20actions-%232671E5.svg?style=for-the-badge&logo=githubactions&logoColor=white)
