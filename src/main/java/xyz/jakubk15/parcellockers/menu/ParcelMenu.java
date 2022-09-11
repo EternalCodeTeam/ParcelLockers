@@ -4,10 +4,14 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.menu.Menu;
+import org.mineacademy.fo.menu.MenuPagged;
 import org.mineacademy.fo.menu.button.Button;
 import org.mineacademy.fo.menu.button.ButtonMenu;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.remain.CompMaterial;
+import xyz.jakubk15.parcellockers.model.ParcelLocker;
+
+import java.util.Arrays;
 
 public class ParcelMenu extends Menu {
 	private int chosenPackage;
@@ -90,6 +94,8 @@ public class ParcelMenu extends Menu {
 			}
 		};
 		this.priorityButton = new Button() {
+			private boolean priority = false;
+
 			@Override
 			public void onClickedInMenu(final Player player, final Menu menu, final ClickType clickType) {
 				restartMenu("&aChanged package priority.");
@@ -101,9 +107,8 @@ public class ParcelMenu extends Menu {
 				return priority ? ItemCreator.of(CompMaterial.NETHER_STAR, "&2Click to add a priority status to package.", "&aCost: $2.99").glow(true).make() : ItemCreator.of(CompMaterial.NETHER_STAR, "&cClick to remove the priority status from the package.").make();
 			}
 
-			private boolean priority = false;
 		};
-		parcelLockerButton = new ButtonMenu(new ParcelSelectionMenu(), CompMaterial.ENDER_CHEST, "&aClick to choose destination parcel locker.");
+		parcelLockerButton = new ButtonMenu(new ParcelLockerSelectionMenu(), CompMaterial.ENDER_CHEST, "&aClick to choose destination parcel locker.");
 
 
 	}
@@ -123,16 +128,26 @@ public class ParcelMenu extends Menu {
 		return new String[]{"&bMain parcel menu to easily and efficiently send parcels."};
 	}
 
-	private final class ParcelSelectionMenu extends Menu {
+	private final class ParcelLockerSelectionMenu extends MenuPagged<ParcelLocker> {
 
-		protected ParcelSelectionMenu() {
+		protected ParcelLockerSelectionMenu() {
 			setSize(9 * 3);
-			setTitle("&aParcel selection menu.");
+			setTitle("&aParcel locker selection menu.");
+		}
+
+		@Override
+		protected ItemStack convertToItemStack(final ParcelLocker item) {
+			return null;
+		}
+
+		@Override
+		protected void onPageClick(final Player player, final ParcelLocker item, final ClickType click) {
+
 		}
 
 		@Override
 		public ItemStack getItemAt(final int slot) {
-			return super.getItemAt(slot);
+			return Arrays.stream();
 		}
 
 		@Override

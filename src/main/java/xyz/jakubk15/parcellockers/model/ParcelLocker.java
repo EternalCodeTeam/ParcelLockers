@@ -7,7 +7,6 @@ import org.bukkit.Location;
 
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.UUID;
 
 @Getter
@@ -16,7 +15,7 @@ import java.util.UUID;
 public class ParcelLocker {
 
 	public Location loc;
-	public Map<UUID, List<Parcel>> parcelMap = new TreeMap<>();
+	public Map<UUID, List<Parcel>> parcelMap;
 	public String name;
 	public int id;
 
