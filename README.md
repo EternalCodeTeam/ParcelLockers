@@ -1,6 +1,6 @@
 # ParcelLockers
 
-### ParcelLockers is a advanced parcel plugin, dedicated for Spigot-based servers.
+### ParcelLockers is a parcel plugin, dedicated for Spigot-based servers.
 
 # Warning ❗
 
