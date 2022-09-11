@@ -3,21 +3,22 @@
 #################
 
 # User-specific stuff
-.idea/
+.idea/*
 .idea_modules/
 *.iml
 
-# IntelliJ
+# IntelliJ and build files
 out/
-
+*.class
 target/
+/jars/
 
 #################
 ## Eclipse
 #################
 
 *.pydevproject
-.project
+*.project
 .metadata
 bin/
 tmp/
@@ -48,7 +49,7 @@ local.properties
 .buildpath
 
 #############
-## Windows detritus
+## Windows 
 #############
 
 # Windows image file caches
@@ -56,14 +57,15 @@ Thumbs.db
 ehthumbs.db
 
 # Folder config file
-Desktop.ini
+[Dd]esktop.ini
 
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
 
-# Mac crap
+# MacOS specific
 .DS_Store
 REBASE.bat
 
-# Place your proprietary software here, this won't get synced to remote
+# Other
 library/
+/run/

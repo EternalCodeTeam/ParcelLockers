@@ -24,7 +24,7 @@
         <author>Jakubk15</author>
 
         <!-- Change to the full path where your main class extending SimplePlugin is. -->
-        <main.class>xyz.jakubk15.parcellockers.ParcelLockers</main.class>
+        <main.class>xyz.jakubk15.parcellockers.ParcelLockersPlugin</main.class>
 
         <!-- Change to the Java version used when compiling.
 

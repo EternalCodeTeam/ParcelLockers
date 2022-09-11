@@ -4,7 +4,7 @@ import org.mineacademy.fo.Common;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import xyz.jakubk15.parcellockers.command.ParcelCommand;
 
-public class ParcelLockers extends SimplePlugin {
+public class ParcelLockersPlugin extends SimplePlugin {
 
 	@Override
 	protected void onPluginStart() {
@@ -22,7 +22,7 @@ public class ParcelLockers extends SimplePlugin {
 		return 2022;
 	}
 
-	public static ParcelLockers getInstance() {
-		return (ParcelLockers) SimplePlugin.getInstance();
+	public static ParcelLockersPlugin getInstance() {
+		return (ParcelLockersPlugin) SimplePlugin.getInstance();
 	}
 }
