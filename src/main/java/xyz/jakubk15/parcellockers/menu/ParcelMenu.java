@@ -23,7 +23,7 @@ public class ParcelMenu extends Menu {
 		setTitle("Parcel lockers menu.");
 		setSize(9 * 4);
 
-		smallPackageButton = new Button() {
+		this.smallPackageButton = new Button() {
 			@Override
 			public void onClickedInMenu(final Player player, final Menu menu, final ClickType clickType) {
 				restartMenu("&aChanged the package size to small.");
@@ -45,7 +45,7 @@ public class ParcelMenu extends Menu {
 				return chosenPackage == 1;
 			}
 		};
-		mediumPackageButton = new Button() {
+		this.mediumPackageButton = new Button() {
 			@Override
 			public void onClickedInMenu(final Player player, final Menu menu, final ClickType clickType) {
 				restartMenu("&aChanged the package size to medium.");
@@ -67,7 +67,7 @@ public class ParcelMenu extends Menu {
 				return chosenPackage == 2;
 			}
 		};
-		bigPackageButton = new Button() {
+		this.bigPackageButton = new Button() {
 			@Override
 			public void onClickedInMenu(final Player player, final Menu menu, final ClickType clickType) {
 				restartMenu("&aChanged the package size to big.");
@@ -89,7 +89,7 @@ public class ParcelMenu extends Menu {
 				return chosenPackage == 3;
 			}
 		};
-		priorityButton = new Button() {
+		this.priorityButton = new Button() {
 			@Override
 			public void onClickedInMenu(final Player player, final Menu menu, final ClickType clickType) {
 				restartMenu("&aChanged package priority.");
