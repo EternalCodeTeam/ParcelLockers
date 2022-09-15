@@ -14,10 +14,10 @@ import java.util.UUID;
 public class PlayerCache {
 
 	public static volatile Map<UUID, PlayerCache> cacheMap = new HashMap<>();
-	public int packagesReceivedAmountTotal;
+	public int packagesReceived;
 	public int awaitingPackages;
-	public int sentPackagesTotal;
-	public int returnedPackagesTotal;
+	public int sentPackages;
+	public int returnedPackages;
 
 
 	public static PlayerCache getCache(final Player player) {
