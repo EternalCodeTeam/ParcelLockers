@@ -3,15 +3,21 @@ package xyz.jakubk15.parcellockers;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import xyz.jakubk15.parcellockers.command.ParcelCommand;
-import xyz.jakubk15.parcellockers.event.ParcelLockerDropEvent;
+import xyz.jakubk15.parcellockers.listener.ParcelLockerDropListener;
+import xyz.jakubk15.parcellockers.model.Parcel;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class ParcelLockersPlugin extends SimplePlugin {
+
+	public Set<Parcel> parcelSet = new HashSet<>();
 
 	@Override
 	protected void onPluginStart() {
 		Common.setLogPrefix("ParcelLockers");
 		registerCommand(new ParcelCommand());
-		registerEvents(new ParcelLockerDropEvent());
+		registerEvents(new ParcelLockerDropListener());
 	}
 
 	@Override

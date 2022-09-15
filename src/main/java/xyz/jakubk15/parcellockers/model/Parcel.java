@@ -7,6 +7,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -18,4 +19,11 @@ public class Parcel {
 	public List<ItemStack> items;
 	public ParcelSize size;
 	public boolean isPriority;
+	public UUID uniqueId;
+
+	/* TODO
+	public static Parcel fromUUID(UUID uniqueId) {
+
+	}
+	*/
 }
