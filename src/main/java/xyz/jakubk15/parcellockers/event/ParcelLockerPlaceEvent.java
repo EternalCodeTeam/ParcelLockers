@@ -4,37 +4,46 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.*;
-import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.remain.CompMaterial;
 
-public class ParcelLockerDropEvent extends Event implements Cancellable, Listener {
+
+public class ParcelLockerPlaceEvent extends Event implements Cancellable, Listener {
+
+
+	public ParcelLockerPlaceEvent(final Location loc, final ItemStack item, final Player player) {
+		this.item = item;
+		this.loc = loc;
+		this.player = player;
+	}
 
 	private static final HandlerList HANDLERS = new HandlerList();
 	private static final ItemStack PARCEL_LOCKER_ITEM_STACK = ItemCreator.of(CompMaterial.CHEST, "&aParcel locker").glow(true)
 			.make();
-	private boolean isCancelled;
-	private Location loc;
-	private ItemStack item;
-	private Player player;
+	private boolean cancelled;
+	private final Location loc;
+	private final ItemStack item;
+	private final Player player;
+
 
 	@Override
 	public boolean isCancelled() {
-		return isCancelled;
+		return cancelled;
 	}
 
 	@Override
-	public void setCancelled(final boolean cancelled) {
-		isCancelled = cancelled;
+	public void setCancelled(final boolean cancel) {
+		cancelled = cancel;
 	}
 
 	public Location getLocation() {
 		return loc;
 	}
 
-	public ItemStack getItemStack() {
+	public ItemStack getItem() {
 		return item;
 	}
 
@@ -42,22 +51,15 @@ public class ParcelLockerDropEvent extends Event implements Cancellable, Listene
 		return player;
 	}
 
-
 	@NotNull
 	@Override
 	public HandlerList getHandlers() {
 		return HANDLERS;
 	}
 
-	public ParcelLockerDropEvent(final Location loc, final ItemStack item, final Player player) {
-		this.item = item;
-		this.loc = loc;
-		this.player = player;
-	}
-
 	@EventHandler(priority = EventPriority.LOWEST)
-	public void onItemDrop(final PlayerDropItemEvent event) {
-		if (event.getItemDrop().getItemStack() == this.PARCEL_LOCKER_ITEM_STACK) {
+	public void onParcelLockerPlace(final BlockPlaceEvent event) {
+		if (event.getItemInHand() == PARCEL_LOCKER_ITEM_STACK) {
 			Bukkit.getServer().getPluginManager().callEvent(this);
 		}
 	}

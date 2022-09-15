@@ -11,6 +11,9 @@ import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.remain.CompMaterial;
 import xyz.jakubk15.parcellockers.model.ParcelLocker;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 public class ParcelMenu extends Menu {
 	private int chosenPackage;
 	private final Button smallPackageButton;
@@ -129,7 +132,8 @@ public class ParcelMenu extends Menu {
 	private final class ParcelLockerSelectionMenu extends MenuPagged<ParcelLocker> {
 
 		protected ParcelLockerSelectionMenu() {
-			setSize(9 * 3);
+			super(9 * 4, ParcelMenu.this, Arrays.stream(ParcelLocker)
+					.collect(Collectors.toList()));
 			setTitle("&aParcel locker selection menu.");
 		}
 
