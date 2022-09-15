@@ -11,8 +11,6 @@ import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.remain.CompMaterial;
 import xyz.jakubk15.parcellockers.model.ParcelLocker;
 
-import java.util.Arrays;
-
 public class ParcelMenu extends Menu {
 	private int chosenPackage;
 	private final Button smallPackageButton;
@@ -147,7 +145,7 @@ public class ParcelMenu extends Menu {
 
 		@Override
 		public ItemStack getItemAt(final int slot) {
-			return Arrays.stream();
+			return ItemCreator.of(CompMaterial.LIGHT_GRAY_STAINED_GLASS_PANE, "&cEmpty", "&c-|--|-", "&cEmpty option", "&cPick another slot", "&c-|--|-").make();
 		}
 
 		@Override
