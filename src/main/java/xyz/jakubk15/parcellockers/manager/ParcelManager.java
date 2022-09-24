@@ -9,7 +9,7 @@ import xyz.jakubk15.parcellockers.model.ParcelLocker;
 @UtilityClass
 public class ParcelManager {
 
-	private ParcelLockersPlugin instance = ParcelLockersPlugin.getInstance();
+	private final ParcelLockersPlugin instance = ParcelLockersPlugin.getInstance();
 
 	public void sendParcel(final OfflinePlayer player, final Parcel parcel, final ParcelLocker locker) {
 
