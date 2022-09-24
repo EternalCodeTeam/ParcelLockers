@@ -126,7 +126,7 @@
                      IF YOU USE JAVA 16 THEN PLACE 3.3.0-SNAPSHOT TO THE VERSION AND MAKE SURE TO
                      UNCOMMENT <pluginRepositories> above.
                      -->
-                <version>3.3.0</version>
+                <version>3.4.0</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
