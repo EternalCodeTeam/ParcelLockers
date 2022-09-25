@@ -12,13 +12,13 @@ import org.mineacademy.fo.remain.CompMaterial;
 
 public class ParcelLockerDropEvent extends Event implements Cancellable, Listener {
 
-	private static final HandlerList HANDLERS = new HandlerList();
-	private static final ItemStack PARCEL_LOCKER_ITEM_STACK = ItemCreator.of(CompMaterial.CHEST, "&aParcel locker").glow(true)
+	private final HandlerList handlerList = new HandlerList();
+	private final ItemStack parcelLockerItemStack = ItemCreator.of(CompMaterial.CHEST, "&aParcel locker").glow(true)
 			.make();
 	private boolean isCancelled;
-	private Location loc;
-	private ItemStack item;
-	private Player player;
+	private final Location loc;
+	private final ItemStack item;
+	private final Player player;
 
 	@Override
 	public boolean isCancelled() {
@@ -46,7 +46,7 @@ public class ParcelLockerDropEvent extends Event implements Cancellable, Listene
 	@NotNull
 	@Override
 	public HandlerList getHandlers() {
-		return HANDLERS;
+		return handlerList;
 	}
 
 	public ParcelLockerDropEvent(final Location loc, final ItemStack item, final Player player) {
@@ -57,7 +57,7 @@ public class ParcelLockerDropEvent extends Event implements Cancellable, Listene
 
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onItemDrop(final PlayerDropItemEvent event) {
-		if (event.getItemDrop().getItemStack() == this.PARCEL_LOCKER_ITEM_STACK) {
+		if (event.getItemDrop().getItemStack() == this.parcelLockerItemStack) {
 			Bukkit.getServer().getPluginManager().callEvent(this);
 		}
 	}

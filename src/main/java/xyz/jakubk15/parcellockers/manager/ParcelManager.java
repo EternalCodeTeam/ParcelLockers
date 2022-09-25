@@ -12,7 +12,8 @@ public class ParcelManager {
 	private final ParcelLockersPlugin instance = ParcelLockersPlugin.getInstance();
 
 	public void sendParcel(final OfflinePlayer player, final Parcel parcel, final ParcelLocker locker) {
-
+		instance.parcelSet.add(parcel);
+		
 	}
 
 	public void cancelParcel(final Parcel parcel) {
