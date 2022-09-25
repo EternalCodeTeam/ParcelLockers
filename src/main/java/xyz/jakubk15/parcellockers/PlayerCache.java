@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 @Getter
@@ -29,5 +30,26 @@ public class PlayerCache {
 		return cacheMap.get(player);
 	}
 
+	@Override
+	public boolean equals(final Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		final PlayerCache that = (PlayerCache) o;
+		return packagesReceived == that.packagesReceived && awaitingPackages == that.awaitingPackages && sentPackages == that.sentPackages && returnedPackages == that.returnedPackages;
+	}
 
+	@Override
+	public int hashCode() {
+		return Objects.hash(packagesReceived, awaitingPackages, sentPackages, returnedPackages);
+	}
+
+	@Override
+	public String toString() {
+		return "PlayerCache{" +
+				"packagesReceived=" + packagesReceived +
+				", awaitingPackages=" + awaitingPackages +
+				", sentPackages=" + sentPackages +
+				", returnedPackages=" + returnedPackages +
+				'}';
+	}
 }

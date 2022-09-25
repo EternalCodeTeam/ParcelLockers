@@ -9,8 +9,6 @@ import xyz.jakubk15.parcellockers.menu.ParcelMenu;
 import java.util.concurrent.TimeUnit;
 
 public class ParcelCommand extends SimpleCommand {
-
-
 	public ParcelCommand() {
 		super("parcel|post");
 		setMinArguments(0);
