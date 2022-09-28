@@ -14,12 +14,12 @@ import java.util.UUID;
 @AllArgsConstructor
 public class Parcel {
 
-	public String parcelName;
-	public Set<String> playerNames;
-	public List<ItemStack> items;
-	public ParcelSize size;
-	public boolean isPriority;
-	public UUID uniqueId;
+	private String parcelName;
+	private Set<String> playerNames;
+	private List<ItemStack> items;
+	private ParcelSize size;
+	private boolean isPriority;
+	private UUID uniqueId;
 
 	/* TODO
 	public static Parcel fromUUID(UUID uniqueId) {

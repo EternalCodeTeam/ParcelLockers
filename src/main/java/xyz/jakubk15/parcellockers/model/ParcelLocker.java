@@ -14,9 +14,9 @@ import java.util.UUID;
 @AllArgsConstructor
 public class ParcelLocker {
 
-	public Location loc;
-	public Map<UUID, List<Parcel>> parcelMap;
-	public String name;
-	public int id;
+	private Location loc;
+	private Map<UUID, List<Parcel>> parcelMap;
+	private String name;
+	private int id;
 
 }
