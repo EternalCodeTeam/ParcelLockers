@@ -20,8 +20,9 @@ public class ParcelLockerPlaceEvent extends Event implements Cancellable, Listen
 		this.player = player;
 	}
 
+
 	private final HandlerList handlers = new HandlerList();
-	private final ItemStack parcelLockerItemStackK = ItemCreator.of(CompMaterial.CHEST, "&aParcel locker").glow(true)
+	private final ItemStack parcelLockerItemStack = ItemCreator.of(CompMaterial.CHEST, "&aParcel locker").glow(true)
 			.make();
 	private boolean cancelled;
 	private final Location loc;
@@ -59,7 +60,7 @@ public class ParcelLockerPlaceEvent extends Event implements Cancellable, Listen
 
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onParcelLockerPlace(final BlockPlaceEvent event) {
-		if (event.getItemInHand() == parcelLockerItemStackK) {
+		if (event.getItemInHand() == parcelLockerItemStack) {
 			Bukkit.getServer().getPluginManager().callEvent(this);
 		}
 	}

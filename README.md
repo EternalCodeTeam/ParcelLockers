@@ -8,7 +8,7 @@ ParcelLockers is at an early stage of development, and you use it at your own ri
 
 # Building
 
-To build ParcelLockers type this command using Maven (Make sure you are using JDK 8 for maximum compatibility)
+To build ParcelLockers execute this command using Maven (Make sure you are using JDK 8 for maximum compatibility)
 
 `clean install`
 
