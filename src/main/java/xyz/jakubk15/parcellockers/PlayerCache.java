@@ -31,10 +31,10 @@ public class PlayerCache {
 	}
 
 	@Override
-	public boolean equals(final Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-		final PlayerCache that = (PlayerCache) o;
+	public boolean equals(final Object obj) {
+		if (this == obj) return true;
+		if (obj == null || getClass() != obj.getClass()) return false;
+		final PlayerCache that = (PlayerCache) obj;
 		return packagesReceived == that.packagesReceived && awaitingPackages == that.awaitingPackages && sentPackages == that.sentPackages && returnedPackages == that.returnedPackages;
 	}
 
@@ -46,10 +46,10 @@ public class PlayerCache {
 	@Override
 	public String toString() {
 		return "PlayerCache{" +
-				"packagesReceived=" + packagesReceived +
-				", awaitingPackages=" + awaitingPackages +
-				", sentPackages=" + sentPackages +
-				", returnedPackages=" + returnedPackages +
-				'}';
+			"packagesReceived=" + packagesReceived +
+			", awaitingPackages=" + awaitingPackages +
+			", sentPackages=" + sentPackages +
+			", returnedPackages=" + returnedPackages +
+			'}';
 	}
 }

@@ -13,8 +13,7 @@ import org.mineacademy.fo.remain.CompMaterial;
 public class ParcelLockerDropEvent extends Event implements Cancellable, Listener {
 
 	private final HandlerList handlerList = new HandlerList();
-	private final ItemStack parcelLockerItemStack = ItemCreator.of(CompMaterial.CHEST, "&aParcel locker").glow(true)
-			.make();
+	private final ItemStack parcelLockerItemStack = ItemCreator.of(CompMaterial.CHEST, "&aParcel locker").glow(true).make();
 	private boolean isCancelled;
 	private final Location loc;
 	private final ItemStack item;
@@ -27,7 +26,7 @@ public class ParcelLockerDropEvent extends Event implements Cancellable, Listene
 
 	@Override
 	public void setCancelled(final boolean cancelled) {
-		isCancelled = cancelled;
+		this.isCancelled = cancelled;
 	}
 
 	public Location getLocation() {

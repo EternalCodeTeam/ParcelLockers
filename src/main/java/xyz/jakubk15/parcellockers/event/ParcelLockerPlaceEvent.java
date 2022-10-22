@@ -22,8 +22,7 @@ public class ParcelLockerPlaceEvent extends Event implements Cancellable, Listen
 
 
 	private final HandlerList handlers = new HandlerList();
-	private final ItemStack parcelLockerItemStack = ItemCreator.of(CompMaterial.CHEST, "&aParcel locker").glow(true)
-			.make();
+	private final ItemStack parcelLockerItemStack = ItemCreator.of(CompMaterial.CHEST, "&aParcel locker").glow(true).make();
 	private boolean cancelled;
 	private final Location loc;
 	private final ItemStack item;
@@ -36,8 +35,8 @@ public class ParcelLockerPlaceEvent extends Event implements Cancellable, Listen
 	}
 
 	@Override
-	public void setCancelled(final boolean cancel) {
-		cancelled = cancel;
+	public void setCancelled(final boolean cancelled) {
+		this.cancelled = cancelled;
 	}
 
 	public Location getLocation() {
