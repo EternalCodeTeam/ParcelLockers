@@ -1,5 +1,10 @@
 package xyz.jakubk15.parcellockers.exception;
 
+
+/*
+ * Exception throwed when the parcel is not found.
+ */
+
 public class ParcelNotFoundException extends Exception {
 
 	public ParcelNotFoundException() {

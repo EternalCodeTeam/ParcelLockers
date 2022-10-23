@@ -10,6 +10,12 @@ import org.jetbrains.annotations.NotNull;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.remain.CompMaterial;
 
+/*
+ * A class representing an event when a player
+ * drops a parcel locker as an item.
+ */
+
+
 public class ParcelLockerDropEvent extends Event implements Cancellable, Listener {
 
 	private final HandlerList handlerList = new HandlerList();

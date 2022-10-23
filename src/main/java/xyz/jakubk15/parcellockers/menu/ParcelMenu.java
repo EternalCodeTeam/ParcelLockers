@@ -12,7 +12,19 @@ import org.mineacademy.fo.remain.CompMaterial;
 import xyz.jakubk15.parcellockers.model.ParcelLocker;
 
 public class ParcelMenu extends Menu {
+
+	/*
+	 * An integer representing chosen package.
+	 * 1 = small
+	 * 2 = medium
+	 * 3 = large
+	 */
 	private int chosenPackage;
+
+	/*
+	 * Buttons representing size of each parcel.
+	 */
+	
 	private final Button smallPackageButton;
 	private final Button mediumPackageButton;
 	private final Button bigPackageButton;
@@ -36,11 +48,11 @@ public class ParcelMenu extends Menu {
 			public ItemStack getItem() {
 				if (isChosen()) {
 					return ItemCreator.of(CompMaterial.CHEST, "&aSmall package", "&bClick to choose a small package.", "", "&aCost: &2$13.99")
-							.glow(true)
-							.make();
+						.glow(true)
+						.make();
 				}
 				return ItemCreator.of(CompMaterial.CHEST, "&aSmall package", "&bClick to choose a small package.", "", "&aCost: &2$13.99")
-						.make();
+					.make();
 			}
 
 			boolean isChosen() {
@@ -58,11 +70,11 @@ public class ParcelMenu extends Menu {
 			public ItemStack getItem() {
 				if (isChosen()) {
 					return ItemCreator.of(CompMaterial.CHEST, "&aMedium package &b[Most recommended]", "&bClick to choose a medium package.", "", "&aCost: &2$14.99")
-							.glow(true)
-							.make();
+						.glow(true)
+						.make();
 				}
 				return ItemCreator.of(CompMaterial.CHEST, "&aMedium package &b[Most recommended]", "&bClick to choose a medium package.", "", "&aCost: &2$14.99")
-						.make();
+					.make();
 			}
 
 			boolean isChosen() {
@@ -80,11 +92,11 @@ public class ParcelMenu extends Menu {
 			public ItemStack getItem() {
 				if (isChosen()) {
 					return ItemCreator.of(CompMaterial.CHEST, "&aBig package &6[Most valuable]", "&bClick to choose a big package.", "", "&aCost: &2$16.49")
-							.glow(true)
-							.make();
+						.glow(true)
+						.make();
 				}
 				return ItemCreator.of(CompMaterial.CHEST, "&aBig package &6[Most valuable]", "&bClick to choose a big package.", "", "&aCost: &2$16.49")
-						.make();
+					.make();
 			}
 
 			boolean isChosen() {

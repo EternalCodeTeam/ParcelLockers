@@ -12,11 +12,28 @@ import java.util.UUID;
 @EqualsAndHashCode
 @ToString
 @AllArgsConstructor
+
+/*
+ * A class representing parcel locker, objects spreaded in the world used to send parcels.
+ */
+
 public class ParcelLocker {
 
+	//* Parcel locker location.
 	private Location loc;
+
+	/*
+	 * A parcel map
+	 * @key Parcel UUID
+	 * @value List of parcel on given UUID
+	 */
+
 	private Map<UUID, List<Parcel>> parcelMap;
+
+	//* Parcel locker name
 	private String name;
+
+	//* Parcel locker ID
 	private int id;
 
 }
