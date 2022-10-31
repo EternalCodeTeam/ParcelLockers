@@ -14,7 +14,7 @@
         <author>Jakubk15</author>
         <main.class>xyz.jakubk15.parcellockers.ParcelLockersPlugin</main.class>
         <java.version>1.8</java.version>
-        <foundation.version>6.2.2</foundation.version>
+        <foundation.version>6.2.3</foundation.version>
         <foundation.path>com.github.kangarko</foundation.path>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
