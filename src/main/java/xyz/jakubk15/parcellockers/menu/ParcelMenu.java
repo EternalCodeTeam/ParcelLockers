@@ -24,7 +24,7 @@ public class ParcelMenu extends Menu {
 	/*
 	 * Buttons representing size of each parcel.
 	 */
-	
+
 	private final Button smallPackageButton;
 	private final Button mediumPackageButton;
 	private final Button bigPackageButton;
@@ -138,16 +138,7 @@ public class ParcelMenu extends Menu {
 		return new String[]{"&bMain parcel menu to easily and efficiently send parcels."};
 	}
 
-	private final class ParcelLockerSelectionMenu extends MenuPagged<ParcelLocker> {
-
-		/*
-		protected ParcelLockerSelectionMenu() {
-			super(9 * 4, ParcelMenu.this, Arrays.stream(ParcelLocker)
-					.collect(Collectors.toList()));
-			setTitle("&aParcel locker selection menu.");
-		}
-
-		 */
+	private static final class ParcelLockerSelectionMenu extends MenuPagged<ParcelLocker> {
 
 		@Override
 		protected ItemStack convertToItemStack(final ParcelLocker item) {
