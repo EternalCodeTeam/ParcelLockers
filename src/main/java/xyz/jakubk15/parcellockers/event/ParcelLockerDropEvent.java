@@ -25,6 +25,12 @@ public class ParcelLockerDropEvent extends Event implements Cancellable, Listene
 	private final ItemStack item;
 	private final Player player;
 
+	public ParcelLockerDropEvent(final Location loc, final ItemStack item, final Player player) {
+		this.item = item;
+		this.loc = loc;
+		this.player = player;
+	}
+
 	@Override
 	public boolean isCancelled() {
 		return isCancelled;
@@ -46,19 +52,13 @@ public class ParcelLockerDropEvent extends Event implements Cancellable, Listene
 	public Player getPlayer() {
 		return player;
 	}
-
-
+	
 	@NotNull
 	@Override
 	public HandlerList getHandlers() {
 		return handlerList;
 	}
 
-	public ParcelLockerDropEvent(final Location loc, final ItemStack item, final Player player) {
-		this.item = item;
-		this.loc = loc;
-		this.player = player;
-	}
 
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onItemDrop(final PlayerDropItemEvent event) {

@@ -1,21 +1,23 @@
 package xyz.jakubk15.parcellockers.manager;
 
-import lombok.experimental.UtilityClass;
-import org.bukkit.OfflinePlayer;
 import xyz.jakubk15.parcellockers.ParcelLockersPlugin;
 import xyz.jakubk15.parcellockers.model.Parcel;
 import xyz.jakubk15.parcellockers.model.ParcelLocker;
 
-@UtilityClass
+import java.util.UUID;
+
 public class ParcelManager {
 
 	// The main plugin class instance.
-	private final ParcelLockersPlugin instance = ParcelLockersPlugin.getInstance();
+	private final ParcelLockersPlugin plugin;
+
+	public ParcelManager(final ParcelLockersPlugin plugin) {
+		this.plugin = plugin;
+	}
 
 	// Method for sending parcels.
-	public void sendParcel(final OfflinePlayer player, final Parcel parcel, final ParcelLocker locker) {
-		instance.parcelSet.add(parcel);
-
+	public void sendParcel(final UUID uniqueId, final Parcel parcel, final ParcelLocker locker) {
+		plugin.parcelSet.add(parcel);
 	}
 
 	// Method for cancelling sent parcels.
@@ -25,7 +27,7 @@ public class ParcelManager {
 
 	// Method for deleting sent parcels.
 	public void deleteParcel(final Parcel parcel) {
-		instance.parcelSet.remove(parcel);
+		plugin.parcelSet.remove(parcel);
 	}
 
 }
