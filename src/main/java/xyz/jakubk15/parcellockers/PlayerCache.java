@@ -13,44 +13,42 @@ import java.util.UUID;
 @Getter
 @Setter
 
-/*
+/**
  * A class representing the plugin's player cache.
- *
  */
 
 public class PlayerCache {
 
-	/*
+	/**
 	 * A cache map.
 	 */
 
 	public static volatile Map<UUID, PlayerCache> cacheMap = new HashMap<>();
 
-	/*
+	/**
 	 * A number of packages received by player.
 	 */
 
 	public int packagesReceived;
 
-	/*
+	/**
 	 * A number of packages delivered to player, waiting for pickup.
 	 */
 
 	public int awaitingPackages;
 
-	/*
+	/**
 	 * A number of packages given player has sent.
 	 */
 
 	public int sentPackages;
 
-	/*
+	/**
 	 * A number of packages given player has returned.
 	 */
 	public int returnedPackages;
 
-
-	/*
+	/**
 	 * The cache getter.
 	 */
 

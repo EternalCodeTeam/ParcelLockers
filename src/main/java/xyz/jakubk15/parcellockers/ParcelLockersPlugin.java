@@ -9,20 +9,14 @@ import xyz.jakubk15.parcellockers.model.Parcel;
 import java.util.HashSet;
 import java.util.Set;
 
-
-/*
- * A main plugin class
- */
-
-
 public class ParcelLockersPlugin extends SimplePlugin {
 
-	// Temporary database, will be removed in next releases.
-	public Set<Parcel> parcelSet = new HashSet<>();
+	public ParcelLockersPlugin() {
+	}
+	
 
-	/*
-	 * Plugin start method
-	 */
+	private Set<Parcel> parcelSet = new HashSet<>();
+	private Set<Parcel> cancelledParcels = new HashSet<>();
 
 	@Override
 	protected void onPluginStart() {
@@ -31,13 +25,9 @@ public class ParcelLockersPlugin extends SimplePlugin {
 		registerEvents(new ParcelLockerDropListener());
 	}
 
-	/*
-	 * Plugin start/reload method
-	 */
-
 	@Override
 	protected void onReloadablesStart() {
-
+		this.onPluginStart();
 	}
 
 	@Override
@@ -45,9 +35,15 @@ public class ParcelLockersPlugin extends SimplePlugin {
 		return 2022;
 	}
 
-
-	//* Instance getter
 	public static ParcelLockersPlugin getInstance() {
 		return (ParcelLockersPlugin) SimplePlugin.getInstance();
+	}
+
+	public Set<Parcel> getParcels() {
+		return parcelSet;
+	}
+
+	public Set<Parcel> getCancelledParcels() {
+		return cancelledParcels;
 	}
 }

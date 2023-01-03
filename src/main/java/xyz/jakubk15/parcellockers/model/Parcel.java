@@ -2,6 +2,7 @@ package xyz.jakubk15.parcellockers.model;
 
 import lombok.*;
 import org.bukkit.inventory.ItemStack;
+import xyz.jakubk15.parcellockers.ParcelLockersPlugin;
 
 import java.util.List;
 import java.util.Set;
@@ -32,9 +33,10 @@ public class Parcel {
 	//* A parcel unique ID.
 	private UUID uniqueId;
 
-	/* TODO
-	public static Parcel fromUUID(UUID uniqueId) {
-
+	public static Parcel fromUUID(final UUID uniqueId) {
+		return ParcelLockersPlugin.getInstance().getParcels().stream()
+			.filter(parcel -> parcel.getUniqueId().equals(uniqueId))
+			.findFirst()
+			.orElse(null);
 	}
-	*/
 }

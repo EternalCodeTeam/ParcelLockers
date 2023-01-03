@@ -17,17 +17,17 @@ public class ParcelManager {
 
 	// Method for sending parcels.
 	public void sendParcel(final UUID uniqueId, final Parcel parcel, final ParcelLocker locker) {
-		plugin.parcelSet.add(parcel);
+		plugin.getParcels().add(parcel);
 	}
 
 	// Method for cancelling sent parcels.
 	public void cancelParcel(final Parcel parcel) {
-
+		
 	}
 
 	// Method for deleting sent parcels.
 	public void deleteParcel(final Parcel parcel) {
-		plugin.parcelSet.remove(parcel);
+		plugin.getParcels().remove(parcel);
 	}
 
 }

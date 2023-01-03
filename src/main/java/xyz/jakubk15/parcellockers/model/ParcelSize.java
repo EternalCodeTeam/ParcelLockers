@@ -5,7 +5,6 @@ package xyz.jakubk15.parcellockers.model;
  * used in model class Parcel
  */
 
-
 public enum ParcelSize {
 	SMALL,
 	MEDIUM,
