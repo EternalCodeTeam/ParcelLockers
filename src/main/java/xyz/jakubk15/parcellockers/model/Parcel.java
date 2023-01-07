@@ -7,6 +7,7 @@ import xyz.jakubk15.parcellockers.ParcelLockersPlugin;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -34,9 +35,23 @@ public class Parcel {
 	private UUID uniqueId;
 
 	public static Parcel fromUUID(final UUID uniqueId) {
-		return ParcelLockersPlugin.getInstance().getParcels().stream()
+		return ParcelLockersPlugin.getInstance().getParcelDatabase()
+			.values()
+			.stream()
+			.flatMap(List::stream)
 			.filter(parcel -> parcel.getUniqueId().equals(uniqueId))
 			.findFirst()
 			.orElse(null);
 	}
+
+	public static List<Parcel> fromPlayerName(final String playerName) {
+		return ParcelLockersPlugin.getInstance().getParcelDatabase()
+			.values()
+			.stream()
+			.flatMap(List::stream)
+			.filter(parcel -> parcel.getPlayerNames().contains(playerName))
+			.collect(Collectors.toList());
+	}
+
+
 }

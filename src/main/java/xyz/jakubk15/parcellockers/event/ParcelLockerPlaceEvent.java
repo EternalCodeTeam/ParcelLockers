@@ -15,7 +15,6 @@ import org.mineacademy.fo.remain.CompMaterial;
  * parcel locker is placed by a player.
  */
 
-
 public class ParcelLockerPlaceEvent extends Event implements Cancellable, Listener {
 
 	public ParcelLockerPlaceEvent(final Location loc, final ItemStack item, final Player player) {
@@ -33,7 +32,7 @@ public class ParcelLockerPlaceEvent extends Event implements Cancellable, Listen
 
 	@Override
 	public boolean isCancelled() {
-		return cancelled;
+		return this.cancelled;
 	}
 
 	@Override
@@ -42,28 +41,28 @@ public class ParcelLockerPlaceEvent extends Event implements Cancellable, Listen
 	}
 
 	public Location getLocation() {
-		return loc;
+		return this.loc;
 	}
 
 	public ItemStack getItem() {
-		return item;
+		return this.item;
 	}
 
 	public Player getPlayer() {
-		return player;
+		return this.player;
 	}
 
 	@NotNull
 	@Override
 	public HandlerList getHandlers() {
-		return handlers;
+		return this.handlers;
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onParcelLockerPlace(final BlockPlaceEvent event) {
-		if (event.getItemInHand() == parcelLockerItemStack) {
-			Bukkit.getServer().getPluginManager().callEvent(this);
+		if (event.getItemInHand() == this.parcelLockerItemStack) {
+			Bukkit.getPluginManager().callEvent(this);
 		}
 	}
-	
+
 }

@@ -15,7 +15,6 @@ import org.mineacademy.fo.remain.CompMaterial;
  * drops a parcel locker as an item.
  */
 
-
 public class ParcelLockerDropEvent extends Event implements Cancellable, Listener {
 
 	private final HandlerList handlerList = new HandlerList();
@@ -33,7 +32,7 @@ public class ParcelLockerDropEvent extends Event implements Cancellable, Listene
 
 	@Override
 	public boolean isCancelled() {
-		return isCancelled;
+		return this.isCancelled;
 	}
 
 	@Override
@@ -42,21 +41,21 @@ public class ParcelLockerDropEvent extends Event implements Cancellable, Listene
 	}
 
 	public Location getLocation() {
-		return loc;
+		return this.loc;
 	}
 
 	public ItemStack getItemStack() {
-		return item;
+		return this.item;
 	}
 
 	public Player getPlayer() {
-		return player;
+		return this.player;
 	}
-	
+
 	@NotNull
 	@Override
 	public HandlerList getHandlers() {
-		return handlerList;
+		return this.handlerList;
 	}
 
 

@@ -1,17 +1,20 @@
 package xyz.jakubk15.parcellockers;
 
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 
 @Getter
 @Setter
+@EqualsAndHashCode
+@ToString(includeFieldNames = true, callSuper = true)
 
 /**
  * A class representing the plugin's player cache.
@@ -59,28 +62,5 @@ public class PlayerCache {
 			cacheMap.put(player.getUniqueId(), cache);
 		}
 		return cacheMap.get(player);
-	}
-
-	@Override
-	public boolean equals(final Object obj) {
-		if (this == obj) return true;
-		if (obj == null || getClass() != obj.getClass()) return false;
-		final PlayerCache that = (PlayerCache) obj;
-		return packagesReceived == that.packagesReceived && awaitingPackages == that.awaitingPackages && sentPackages == that.sentPackages && returnedPackages == that.returnedPackages;
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(packagesReceived, awaitingPackages, sentPackages, returnedPackages);
-	}
-
-	@Override
-	public String toString() {
-		return "PlayerCache{" +
-			"packagesReceived=" + packagesReceived +
-			", awaitingPackages=" + awaitingPackages +
-			", sentPackages=" + sentPackages +
-			", returnedPackages=" + returnedPackages +
-			'}';
 	}
 }

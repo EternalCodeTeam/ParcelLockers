@@ -17,20 +17,26 @@ public class ParcelManager {
 
 	// Method for sending parcels.
 	public void sendParcel(final UUID uniqueId, final Parcel parcel, final ParcelLocker locker) {
-		this.plugin.getParcels().add(parcel);
+		this.plugin.getParcelDatabase().get(locker).add(parcel);
 	}
 
 	// Method for cancelling sent parcels.
 	public void cancelParcel(final Parcel parcel) {
 		if (Parcel.fromUUID(parcel.getUniqueId()) != null) {
 			this.plugin.getCancelledParcels().add(parcel);
-			this.plugin.getParcels().remove(parcel);
+			this.plugin.getParcelDatabase()
+				.values()
+				.forEach(parcels -> this.plugin.getParcelDatabase()
+					.values()
+					.remove(parcels));
 		}
 	}
 
 	// Method for deleting sent parcels.
 	public void deleteParcel(final Parcel parcel) {
-		this.plugin.getParcels().remove(parcel);
+		this.plugin.getParcelDatabase()
+			.values()
+			.forEach(parcels -> parcels.remove(parcel));
 	}
 
 }

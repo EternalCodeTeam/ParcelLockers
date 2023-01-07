@@ -35,10 +35,10 @@ public class ParcelMenu extends Menu {
 
 
 	public ParcelMenu() {
-		super();
+		super(null);
 		setTitle("Parcel lockers menu.");
 		setSize(9 * 4);
-
+		
 		this.smallPackageButton = new Button() {
 			@Override
 			public void onClickedInMenu(final Player player, final Menu menu, final ClickType clickType) {
@@ -163,7 +163,7 @@ public class ParcelMenu extends Menu {
 
 		@Override
 		protected String[] getInfo() {
-			return super.getInfo();
+			return new String[] {"&aParcel locker selection menu.", "&aClick on a parcel locker to choose it."};
 		}
 	}
 
