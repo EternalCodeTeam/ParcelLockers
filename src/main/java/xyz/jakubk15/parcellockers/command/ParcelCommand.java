@@ -9,6 +9,7 @@ import xyz.jakubk15.parcellockers.menu.ParcelMenu;
 import java.util.concurrent.TimeUnit;
 
 public class ParcelCommand extends SimpleCommand {
+
 	public ParcelCommand() {
 		super("parcel|post");
 		setMinArguments(0);
@@ -23,12 +24,17 @@ public class ParcelCommand extends SimpleCommand {
 	protected void onCommand() {
 		checkConsole();
 		final String param = args[0];
+
 		if ("send".equals(param)) {
-			new ParcelMenu().displayTo(getPlayer());
+			new ParcelMenu().displayTo(this.getPlayer());
+
 		} else if ("give".equals(param)) {
-			final ItemStack parcelLocker = ItemCreator.of(CompMaterial.CHEST, "&aParcel locker").glow(true)
-					.make();
-			getPlayer().getInventory().addItem(parcelLocker);
+			checkArgs(2, "Please specify a player and an amount of parcel lockers to give.");
+			final ItemStack parcelLocker = ItemCreator.of(CompMaterial.CHEST, "&aParcel locker")
+				.glow(true)
+				.amount(Integer.parseInt(args[1]))
+				.make();
+			this.getPlayer().getInventory().addItem(parcelLocker);
 			tellNoPrefix("&aParcel locker has been successfully added to your inventory.");
 		}
 	}

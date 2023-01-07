@@ -14,7 +14,6 @@ public class ParcelLockersPlugin extends SimplePlugin {
 	public ParcelLockersPlugin() {
 	}
 	
-
 	private Set<Parcel> parcelSet = new HashSet<>();
 	private Set<Parcel> cancelledParcels = new HashSet<>();
 

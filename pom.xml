@@ -23,6 +23,10 @@
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
+        <repository>
+            <id>panda-repo</id>
+            <url>https://repo.panda-lang.org/releases</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -30,6 +34,11 @@
             <groupId>${foundation.path}</groupId>
             <artifactId>Foundation</artifactId>
             <version>${foundation.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.panda-lang</groupId>
+            <artifactId>expressible</artifactId>
+            <version>1.2.2</version>
         </dependency>
     </dependencies>
 

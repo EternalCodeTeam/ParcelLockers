@@ -3,6 +3,7 @@ package xyz.jakubk15.parcellockers.menu;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.menu.MenuPagged;
 import org.mineacademy.fo.menu.button.Button;
@@ -10,6 +11,7 @@ import org.mineacademy.fo.menu.button.ButtonMenu;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.remain.CompMaterial;
 import xyz.jakubk15.parcellockers.model.ParcelLocker;
+import xyz.jakubk15.parcellockers.model.ParcelSize;
 
 public class ParcelMenu extends Menu {
 
@@ -19,7 +21,7 @@ public class ParcelMenu extends Menu {
 	 * 2 = medium
 	 * 3 = large
 	 */
-	private int chosenPackage;
+	private ParcelSize chosenPackage;
 
 	/*
 	 * Buttons representing size of each parcel.
@@ -41,7 +43,7 @@ public class ParcelMenu extends Menu {
 			@Override
 			public void onClickedInMenu(final Player player, final Menu menu, final ClickType clickType) {
 				restartMenu("&aChanged the package size to small.");
-				chosenPackage = 1;
+				chosenPackage = ParcelSize.SMALL;
 			}
 
 			@Override
@@ -56,14 +58,14 @@ public class ParcelMenu extends Menu {
 			}
 
 			boolean isChosen() {
-				return chosenPackage == 1;
+				return chosenPackage == ParcelSize.SMALL;
 			}
 		};
 		this.mediumPackageButton = new Button() {
 			@Override
 			public void onClickedInMenu(final Player player, final Menu menu, final ClickType clickType) {
 				restartMenu("&aChanged the package size to medium.");
-				chosenPackage = 2;
+				chosenPackage = ParcelSize.MEDIUM;
 			}
 
 			@Override
@@ -78,14 +80,14 @@ public class ParcelMenu extends Menu {
 			}
 
 			boolean isChosen() {
-				return chosenPackage == 2;
+				return chosenPackage == ParcelSize.MEDIUM;
 			}
 		};
 		this.bigPackageButton = new Button() {
 			@Override
 			public void onClickedInMenu(final Player player, final Menu menu, final ClickType clickType) {
 				restartMenu("&aChanged the package size to big.");
-				chosenPackage = 3;
+				chosenPackage = ParcelSize.LARGE;
 			}
 
 			@Override
@@ -100,7 +102,7 @@ public class ParcelMenu extends Menu {
 			}
 
 			boolean isChosen() {
-				return chosenPackage == 3;
+				return chosenPackage == ParcelSize.LARGE;
 			}
 		};
 		this.priorityButton = new Button() {
@@ -120,7 +122,6 @@ public class ParcelMenu extends Menu {
 		};
 		parcelLockerButton = new ButtonMenu(new ParcelLockerSelectionMenu(), CompMaterial.ENDER_CHEST, "&aClick to choose destination parcel locker.");
 
-
 	}
 
 	@Override
@@ -135,14 +136,19 @@ public class ParcelMenu extends Menu {
 
 	@Override
 	protected String[] getInfo() {
-		return new String[]{"&bMain parcel menu to easily and efficiently send parcels."};
+		return new String[] {"&bMain parcel menu to easily and efficiently send parcels."};
 	}
 
 	private static final class ParcelLockerSelectionMenu extends MenuPagged<ParcelLocker> {
 
 		@Override
 		protected ItemStack convertToItemStack(final ParcelLocker item) {
-			return null;
+			return ItemCreator.of(CompMaterial.CHEST, "&aParcel locker", "&bClick to choose this parcel locker.",
+				"", "&bName: " + item.getName(), "",
+				"&bID: #" + item.getId(), "",
+				"&bParcels stored: " + item.getParcelMap().size(), "",
+				"&bLocation: " + Common.shortLocation(item.getLoc()).toUpperCase()).make();
+
 		}
 
 		@Override
