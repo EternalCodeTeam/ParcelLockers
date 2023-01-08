@@ -1,10 +1,12 @@
 package xyz.jakubk15.parcellockers;
 
 import lombok.Getter;
+import org.bukkit.Bukkit;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import xyz.jakubk15.parcellockers.command.ParcelCommand;
+import xyz.jakubk15.parcellockers.listener.ParcelLockerBreakListener;
 import xyz.jakubk15.parcellockers.listener.ParcelLockerDropListener;
 import xyz.jakubk15.parcellockers.listener.ParcelLockerPlaceListener;
 import xyz.jakubk15.parcellockers.model.Parcel;
@@ -13,7 +15,7 @@ import xyz.jakubk15.parcellockers.task.CancelledParcelClearTask;
 
 import java.util.*;
 
-public class ParcelLockersPlugin extends SimplePlugin {
+public final class ParcelLockersPlugin extends SimplePlugin {
 
 	@Getter
 	private Map<ParcelLocker, List<Parcel>> parcelDatabase = new HashMap<>();
@@ -25,13 +27,18 @@ public class ParcelLockersPlugin extends SimplePlugin {
 		Common.setLogPrefix("ParcelLockers");
 		this.registerCommand(new ParcelCommand());
 		this.registerEvents(new ParcelLockerDropListener());
+		this.registerEvents(new ParcelLockerBreakListener(this));
 		this.registerEvents(new ParcelLockerPlaceListener(this));
 		new CancelledParcelClearTask().runTaskTimer(this, 0, 20 * 60 * 360);
 	}
 
 	@Override
-	protected void onReloadablesStart() {
-		this.onPluginStart();
+	protected void onPluginPreReload() {
+		Bukkit.getLogger().severe(Common.chatLineSmooth());
+		Bukkit.getLogger().severe("ParcelLockers has been reloaded >:(");
+		Bukkit.getLogger().severe("Please avoid reloading the plugin, it may cause unexpected behaviour, and you will not receive any support from us");
+		Bukkit.getLogger().severe("If you need to reload the plugin, please restart the server, or use the built-in reload command.");
+		Bukkit.getLogger().severe(Common.chatLineSmooth());
 	}
 
 	@Override

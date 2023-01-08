@@ -20,13 +20,13 @@ public class ParcelLockerDropEvent extends Event implements Cancellable, Listene
 	private final HandlerList handlerList = new HandlerList();
 	private final ItemStack parcelLockerItemStack = ItemCreator.of(CompMaterial.CHEST, "&aParcel locker").glow(true).make();
 	private boolean isCancelled;
-	private final Location loc;
+	private final Location location;
 	private final ItemStack item;
 	private final Player player;
 
-	public ParcelLockerDropEvent(final Location loc, final ItemStack item, final Player player) {
+	public ParcelLockerDropEvent(final Location location, final ItemStack item, final Player player) {
 		this.item = item;
-		this.loc = loc;
+		this.location = location;
 		this.player = player;
 	}
 
@@ -41,7 +41,7 @@ public class ParcelLockerDropEvent extends Event implements Cancellable, Listene
 	}
 
 	public Location getLocation() {
-		return this.loc;
+		return this.location;
 	}
 
 	public ItemStack getItemStack() {

@@ -17,16 +17,16 @@ import org.mineacademy.fo.remain.CompMaterial;
 
 public class ParcelLockerPlaceEvent extends Event implements Cancellable, Listener {
 
-	public ParcelLockerPlaceEvent(final Location loc, final ItemStack item, final Player player) {
+	public ParcelLockerPlaceEvent(final Location location, final ItemStack item, final Player player) {
 		this.item = item;
-		this.loc = loc;
+		this.location = location;
 		this.player = player;
 	}
 
 	private final HandlerList handlers = new HandlerList();
 	private final ItemStack parcelLockerItemStack = ItemCreator.of(CompMaterial.CHEST, "&aParcel locker").glow(true).make();
 	private boolean cancelled;
-	private final Location loc;
+	private final Location location;
 	private final ItemStack item;
 	private final Player player;
 
@@ -41,7 +41,7 @@ public class ParcelLockerPlaceEvent extends Event implements Cancellable, Listen
 	}
 
 	public Location getLocation() {
-		return this.loc;
+		return this.location;
 	}
 
 	public ItemStack getItem() {

@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.ApiStatus;
 import xyz.jakubk15.parcellockers.ParcelLockersPlugin;
 
 import java.util.List;
@@ -35,12 +36,23 @@ public class Parcel {
 	private boolean isPriority;
 	//* A parcel unique ID.
 	private UUID uniqueId;
+	//* A parcel locker that this parcel is stored in.
+	private ParcelLocker parcelLocker;
 
 	public static Parcel fromUUID(final UUID uniqueId) {
 		return ParcelLockersPlugin.getInstance().getParcelDatabase()
 			.values()
 			.stream()
 			.flatMap(List::stream)
+			.filter(parcel -> parcel.getUniqueId().equals(uniqueId))
+			.findFirst()
+			.orElse(null);
+	}
+
+	@ApiStatus.Internal
+	public static Parcel fromUUIDCancelled(final UUID uniqueId) {
+		return ParcelLockersPlugin.getInstance().getCancelledParcels()
+			.stream()
 			.filter(parcel -> parcel.getUniqueId().equals(uniqueId))
 			.findFirst()
 			.orElse(null);

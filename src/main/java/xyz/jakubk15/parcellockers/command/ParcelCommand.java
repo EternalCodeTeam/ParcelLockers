@@ -4,6 +4,7 @@ import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.command.SimpleCommand;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.remain.CompMaterial;
+import xyz.jakubk15.parcellockers.ParcelLockersPlugin;
 import xyz.jakubk15.parcellockers.menu.ParcelMenu;
 
 import java.util.concurrent.TimeUnit;
@@ -12,30 +13,35 @@ public class ParcelCommand extends SimpleCommand {
 
 	public ParcelCommand() {
 		super("parcel|post");
-		setMinArguments(0);
-		setUsage("");
-		setPermission("parcellockers.command.parcel");
-		setCooldown(3, TimeUnit.SECONDS);
-		setPermissionMessage("&cYou don't have permission to use this command. If you believe this is an error, contact the server administration.");
-		setDescription("Basic parcel command.");
+		this.setMinArguments(0);
+		this.setUsage("");
+		this.setPermission("parcellockers.command.parcel");
+		this.setCooldown(3, TimeUnit.SECONDS);
+		this.setPermissionMessage("&cYou don't have permission to use this command. If you believe this is an error, contact the server administration.");
+		this.setDescription("Basic parcel command.");
 	}
 
 	@Override
 	protected void onCommand() {
-		checkConsole();
-		final String param = args[0];
+		this.checkConsole();
+		final String param = this.args[0];
 
 		if ("send".equals(param)) {
 			new ParcelMenu().displayTo(this.getPlayer());
 
 		} else if ("give".equals(param)) {
-			checkArgs(2, "Please specify a player and an amount of parcel lockers to give.");
+			this.checkArgs(2, "Please specify a player and an amount of parcel lockers to give.");
 			final ItemStack parcelLocker = ItemCreator.of(CompMaterial.CHEST, "&aParcel locker")
 				.glow(true)
-				.amount(Integer.parseInt(args[1]))
+				.amount(Integer.parseInt(this.args[1]))
 				.make();
 			this.getPlayer().getInventory().addItem(parcelLocker);
-			tellNoPrefix("&aParcel locker has been successfully added to your inventory.");
+			this.tellNoPrefix("&aParcel locker has been successfully added to your inventory.");
+		} else if ("reload".equals(param)) {
+			ParcelLockersPlugin.getInstance().reload();
+			this.tellNoPrefix("&aParcel lockers have been successfully reloaded.");
+		} else {
+			this.tellNoPrefix("&cUnknown parameter. Please use /parcel send or /parcel give.");
 		}
 	}
 }

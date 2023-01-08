@@ -18,9 +18,9 @@ import java.util.UUID;
  */
 
 public class ParcelLocker {
-	
+
 	//* Parcel locker location.
-	private Location loc;
+	private Location location;
 
 	/*
 	 * A parcel map

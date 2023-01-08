@@ -36,19 +36,19 @@ public class ParcelMenu extends Menu {
 
 	public ParcelMenu() {
 		super(null);
-		setTitle("Parcel lockers menu.");
-		setSize(9 * 4);
-		
+		this.setTitle("Parcel lockers menu.");
+		this.setSize(9 * 4);
+
 		this.smallPackageButton = new Button() {
 			@Override
 			public void onClickedInMenu(final Player player, final Menu menu, final ClickType clickType) {
-				restartMenu("&aChanged the package size to small.");
-				chosenPackage = ParcelSize.SMALL;
+				ParcelMenu.this.restartMenu("&aChanged the package size to small.");
+				ParcelMenu.this.chosenPackage = ParcelSize.SMALL;
 			}
 
 			@Override
 			public ItemStack getItem() {
-				if (isChosen()) {
+				if (this.isChosen()) {
 					return ItemCreator.of(CompMaterial.CHEST, "&aSmall package", "&bClick to choose a small package.", "", "&aCost: &2$13.99")
 						.glow(true)
 						.make();
@@ -58,19 +58,19 @@ public class ParcelMenu extends Menu {
 			}
 
 			boolean isChosen() {
-				return chosenPackage == ParcelSize.SMALL;
+				return ParcelMenu.this.chosenPackage == ParcelSize.SMALL;
 			}
 		};
 		this.mediumPackageButton = new Button() {
 			@Override
 			public void onClickedInMenu(final Player player, final Menu menu, final ClickType clickType) {
-				restartMenu("&aChanged the package size to medium.");
-				chosenPackage = ParcelSize.MEDIUM;
+				ParcelMenu.this.restartMenu("&aChanged the package size to medium.");
+				ParcelMenu.this.chosenPackage = ParcelSize.MEDIUM;
 			}
 
 			@Override
 			public ItemStack getItem() {
-				if (isChosen()) {
+				if (this.isChosen()) {
 					return ItemCreator.of(CompMaterial.CHEST, "&aMedium package &b[Most recommended]", "&bClick to choose a medium package.", "", "&aCost: &2$14.99")
 						.glow(true)
 						.make();
@@ -80,19 +80,19 @@ public class ParcelMenu extends Menu {
 			}
 
 			boolean isChosen() {
-				return chosenPackage == ParcelSize.MEDIUM;
+				return ParcelMenu.this.chosenPackage == ParcelSize.MEDIUM;
 			}
 		};
 		this.bigPackageButton = new Button() {
 			@Override
 			public void onClickedInMenu(final Player player, final Menu menu, final ClickType clickType) {
-				restartMenu("&aChanged the package size to big.");
-				chosenPackage = ParcelSize.LARGE;
+				ParcelMenu.this.restartMenu("&aChanged the package size to big.");
+				ParcelMenu.this.chosenPackage = ParcelSize.LARGE;
 			}
 
 			@Override
 			public ItemStack getItem() {
-				if (isChosen()) {
+				if (this.isChosen()) {
 					return ItemCreator.of(CompMaterial.CHEST, "&aBig package &6[Most valuable]", "&bClick to choose a big package.", "", "&aCost: &2$16.49")
 						.glow(true)
 						.make();
@@ -102,7 +102,7 @@ public class ParcelMenu extends Menu {
 			}
 
 			boolean isChosen() {
-				return chosenPackage == ParcelSize.LARGE;
+				return ParcelMenu.this.chosenPackage == ParcelSize.LARGE;
 			}
 		};
 		this.priorityButton = new Button() {
@@ -110,27 +110,27 @@ public class ParcelMenu extends Menu {
 
 			@Override
 			public void onClickedInMenu(final Player player, final Menu menu, final ClickType clickType) {
-				restartMenu("&aChanged package priority.");
-				priority = !priority;
+				ParcelMenu.this.restartMenu("&aChanged package priority.");
+				this.priority = !this.priority;
 			}
 
 			@Override
 			public ItemStack getItem() {
-				return priority ? ItemCreator.of(CompMaterial.NETHER_STAR, "&2Click to add a priority status to package.", "&aCost: $2.99").glow(true).make() : ItemCreator.of(CompMaterial.NETHER_STAR, "&cClick to remove the priority status from the package.").make();
+				return this.priority ? ItemCreator.of(CompMaterial.NETHER_STAR, "&2Click to add a priority status to package.", "&aCost: $2.99").glow(true).make() : ItemCreator.of(CompMaterial.NETHER_STAR, "&cClick to remove the priority status from the package.").make();
 			}
 
 		};
-		parcelLockerButton = new ButtonMenu(new ParcelLockerSelectionMenu(), CompMaterial.ENDER_CHEST, "&aClick to choose destination parcel locker.");
+		this.parcelLockerButton = new ButtonMenu(new ParcelLockerSelectionMenu(), CompMaterial.ENDER_CHEST, "&aClick to choose destination parcel locker.");
 
 	}
 
 	@Override
 	public ItemStack getItemAt(final int slot) {
-		if (slot == 0) return smallPackageButton.getItem();
-		if (slot == 1) return mediumPackageButton.getItem();
-		if (slot == 2) return bigPackageButton.getItem();
-		if (slot == 3) return priorityButton.getItem();
-		if (slot == 4) return parcelLockerButton.getItem();
+		if (slot == 0) return this.smallPackageButton.getItem();
+		if (slot == 1) return this.mediumPackageButton.getItem();
+		if (slot == 2) return this.bigPackageButton.getItem();
+		if (slot == 3) return this.priorityButton.getItem();
+		if (slot == 4) return this.parcelLockerButton.getItem();
 		return ItemCreator.of(CompMaterial.GRAY_STAINED_GLASS_PANE).make();
 	}
 
@@ -147,7 +147,7 @@ public class ParcelMenu extends Menu {
 				"", "&bName: " + item.getName(), "",
 				"&bID: #" + item.getId(), "",
 				"&bParcels stored: " + item.getParcelMap().size(), "",
-				"&bLocation: " + Common.shortLocation(item.getLoc()).toUpperCase()).make();
+				"&bLocation: " + Common.shortLocation(item.getLocation()).toUpperCase()).make();
 
 		}
 
