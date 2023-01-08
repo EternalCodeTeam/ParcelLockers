@@ -1,5 +1,7 @@
 package xyz.jakubk15.parcellockers.listener;
 
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import xyz.jakubk15.parcellockers.ParcelLockersPlugin;
 import xyz.jakubk15.parcellockers.event.ParcelLockerPlaceEvent;
@@ -13,9 +15,9 @@ public class ParcelLockerPlaceListener implements Listener {
 		this.plugin = plugin;
 	}
 
+	@EventHandler(priority = EventPriority.MONITOR)
 	public void onParcelLockerPlace(ParcelLockerPlaceEvent event) {
 		this.plugin.getParcelDatabase().put(new ParcelLocker(event.getLocation(), null, null, this.plugin.getParcelDatabase().size() + 1), null);
-		// TODO finish method.
 	}
 
 }
