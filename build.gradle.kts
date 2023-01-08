@@ -94,8 +94,8 @@ tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
         "javax/**"
     )
 
-    //mergeServiceFiles()
-    //minimize()
+    mergeServiceFiles()
+    minimize()
 
     val prefix = "xyz.jakubk15.parcellockers.lib"
     listOf(
