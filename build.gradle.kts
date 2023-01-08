@@ -16,12 +16,16 @@ repositories {
     mavenCentral()
     gradlePluginPortal()
 
-    maven { url = uri("https://jitpack.io") }
-    maven { url = uri("https://repo.panda-lang.org/releases") }
+    maven("https://jitpack.io")
+    maven("https://repo.panda-lang.org/releases")
+    maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
 }
 
 dependencies {
-    implementation("com.github.kangarko:Foundation:6.2.5")
+    implementation("com.github.kangarko:Foundation:6.2.5") {
+        exclude(group = "org.mineacademy.plugin", module = "*")
+    }
+    compileOnly("org.spigotmc.spigot-api:1.19.3-R0.1-SNAPSHOT")
     implementation("org.panda-lang:expressible:1.2.2")
     compileOnly("org.projectlombok:lombok:1.18.24")
     annotationProcessor("org.projectlombok:lombok:1.18.24")
@@ -91,15 +95,18 @@ tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
         "org/jetbrains/annotations/**",
         "org/checkerframework/**",
         "META-INF/**",
-        "javax/**"
+        "javax/**",
+        "lombok/**"
     )
 
     mergeServiceFiles()
     minimize()
 
+
     val prefix = "xyz.jakubk15.parcellockers.lib"
     listOf(
         "panda",
+        "org.panda_lang",
         "org.panda_lang",
         "net.dzikoysk",
         "com.github.kangarko",
