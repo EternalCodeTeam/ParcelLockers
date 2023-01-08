@@ -1,13 +1,13 @@
 <?xml version="1.0" ?>
-<project name="PluginTemplate" default="Build">
-    <target name="Build">
+<project name="ParcelLockers v1.0.0 (MC 1.8.8-1.19.x).jar" default="antDev">
+    <target name="antDev">
         <loadproperties srcfile="build.gradle.kts" prefix="gradle"/>
-        <property name="foundation.version" value="${gradle.foundationVersion}"/>
-        <jar jarfile="C:/Users/jkedz/Test Servers/1.18/plugins/${ant.project.name}.jar" basedir="./target/classes/"
+        <property name="foundationVersion" value="6.2.5"/>
+        <jar jarfile="C:/Users/jkedz/Test Servers/1.19/plugins/${ant.project.name}.jar" basedir="./build/libs/"
              includes="**/*">
             <zipgroupfileset
-                dir="${user.home}/.m2/repository/com/github/kangarko/Foundation/${gradle.foundationVersion}}/"
-                includes="**/*${gradle.foundationVersion}.jar"/>
+                dir="${user.home}/.m2/repository/com/github/kangarko/Foundation/${foundationVersion}/"
+                includes="**/Foundation-${foundationVersion}"/>
         </jar>
     </target>
 </project>
