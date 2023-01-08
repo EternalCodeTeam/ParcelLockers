@@ -1,71 +1,14 @@
-#################
-## IDEA
-#################
-
-# User-specific stuff
 .idea/*
 .idea_modules/
-*.iml
-
-# IntelliJ and build files
 out/
-*.class
 target/
-/jars/
-
-#################
-## Eclipse
-#################
-
-*.pydevproject
-*.project
-.metadata
-bin/
 tmp/
-*.tmp
-*.bak
-*.swp
-*~.nib
-local.properties
-.classpath
-.settings/
-.loadpath
-.apt_generated/
-.apt_generated_tests/
-
-# Avoid ignoring Maven wrapper jar file (.jar files are usually ignored)
-!/.mvn/wrapper/maven-wrapper.jar
-
-# External tool builders
+run/
 .externalToolBuilders/
-
-# Locally stored "Eclipse launch configurations"
-*.launch
-
-# CDT-specific
-.cproject
-
-# PDT-specific
-.buildpath
-
-#############
-## Windows
-#############
-
-# Windows image file caches
-Thumbs.db
-ehthumbs.db
-
-# Folder config file
-[Dd]esktop.ini
-
-# Recycle Bin used on file shares
-$RECYCLE.BIN/
-
-# MacOS specific
-.DS_Store
-REBASE.bat
-
-# Other
-library/
-/run/
+.classpath
+*.iml
+*.ipr
+*.iws
+*.class
+.gradle/
+build/

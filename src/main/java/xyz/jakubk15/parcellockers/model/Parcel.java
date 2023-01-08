@@ -1,6 +1,9 @@
 package xyz.jakubk15.parcellockers.model;
 
-import lombok.*;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import org.bukkit.inventory.ItemStack;
 import xyz.jakubk15.parcellockers.ParcelLockersPlugin;
 
@@ -13,14 +16,13 @@ import java.util.stream.Collectors;
 @Setter
 @EqualsAndHashCode
 @ToString
-@AllArgsConstructor
 
 /*
  * Model class for a Parcel, delivered by a parcel locker.
  */
 
 public class Parcel {
-
+	
 	//* A parcel name
 	private String parcelName;
 	//* A set of player names bound to this parcel

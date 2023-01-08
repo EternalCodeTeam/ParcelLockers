@@ -6,6 +6,7 @@ import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import xyz.jakubk15.parcellockers.command.ParcelCommand;
 import xyz.jakubk15.parcellockers.listener.ParcelLockerDropListener;
+import xyz.jakubk15.parcellockers.listener.ParcelLockerPlaceListener;
 import xyz.jakubk15.parcellockers.model.Parcel;
 import xyz.jakubk15.parcellockers.model.ParcelLocker;
 import xyz.jakubk15.parcellockers.task.CancelledParcelClearTask;
@@ -13,9 +14,6 @@ import xyz.jakubk15.parcellockers.task.CancelledParcelClearTask;
 import java.util.*;
 
 public class ParcelLockersPlugin extends SimplePlugin {
-
-	public ParcelLockersPlugin() {
-	}
 
 	@Getter
 	private Map<ParcelLocker, List<Parcel>> parcelDatabase = new HashMap<>();
@@ -25,8 +23,9 @@ public class ParcelLockersPlugin extends SimplePlugin {
 	@Override
 	protected void onPluginStart() {
 		Common.setLogPrefix("ParcelLockers");
-		registerCommand(new ParcelCommand());
-		registerEvents(new ParcelLockerDropListener());
+		this.registerCommand(new ParcelCommand());
+		this.registerEvents(new ParcelLockerDropListener());
+		this.registerEvents(new ParcelLockerPlaceListener(this));
 		new CancelledParcelClearTask().runTaskTimer(this, 0, 20 * 60 * 360);
 	}
 
