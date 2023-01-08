@@ -4,6 +4,9 @@
  * This project uses @Incubating APIs which are subject to change.
  */
 
+ext {
+    var foundationVersion = "6.2.5"
+}
 plugins {
     id("java-library")
     id("net.minecrell.plugin-yml.bukkit") version "0.5.2"
@@ -19,13 +22,18 @@ repositories {
     maven("https://jitpack.io")
     maven("https://repo.panda-lang.org/releases")
     maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
+    maven("https://oss.sonatype.org/content/repositories/snapshots")
+    maven("https://oss.sonatype.org/content/repositories/central")
 }
 
 dependencies {
+    compileOnly("org.spigotmc:spigot-api:1.19.3-R0.1-SNAPSHOT")
     implementation("com.github.kangarko:Foundation:6.2.5") {
         exclude(group = "org.mineacademy.plugin", module = "*")
+        exclude(group = "org.spigotmc", module = "spigot-api")
+        exclude(group = "org.bukkit")
+        exclude(group = "org.projectlombok")
     }
-    compileOnly("org.spigotmc.spigot-api:1.19.3-R0.1-SNAPSHOT")
     implementation("org.panda-lang:expressible:1.2.2")
     compileOnly("org.projectlombok:lombok:1.18.24")
     annotationProcessor("org.projectlombok:lombok:1.18.24")
@@ -34,9 +42,11 @@ dependencies {
 apply(plugin = "com.github.johnrengelman.shadow")
 apply(plugin = "net.minecrell.plugin-yml.bukkit")
 apply(plugin = "xyz.jpenilla.run-paper")
+
 group = "xyz.jakubk15"
 version = "1.0.0"
 description = "ParcelLockers"
+
 ant.importBuild("build.xml")
 
 bukkit {
@@ -96,20 +106,17 @@ tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
         "org/checkerframework/**",
         "META-INF/**",
         "javax/**",
-        "lombok/**"
     )
 
     mergeServiceFiles()
     minimize()
 
-
     val prefix = "xyz.jakubk15.parcellockers.lib"
     listOf(
         "panda",
         "org.panda_lang",
-        "org.panda_lang",
         "net.dzikoysk",
-        "com.github.kangarko",
+        "org.mineacademy"
     ).forEach { pack ->
         relocate(pack, "$prefix.$pack")
     }
