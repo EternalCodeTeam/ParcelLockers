@@ -1,6 +1,10 @@
 package xyz.jakubk15.parcellockers.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import org.bukkit.Location;
 
 import java.util.List;

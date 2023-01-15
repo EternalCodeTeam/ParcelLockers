@@ -5,6 +5,7 @@ import org.bukkit.Bukkit;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.plugin.SimplePlugin;
+import panda.std.stream.PandaStream;
 import xyz.jakubk15.parcellockers.command.ParcelCommand;
 import xyz.jakubk15.parcellockers.listener.ParcelLockerBreakListener;
 import xyz.jakubk15.parcellockers.listener.ParcelLockerDropListener;
@@ -13,23 +14,37 @@ import xyz.jakubk15.parcellockers.model.Parcel;
 import xyz.jakubk15.parcellockers.model.ParcelLocker;
 import xyz.jakubk15.parcellockers.task.CancelledParcelClearTask;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 
 public final class ParcelLockersPlugin extends SimplePlugin {
 
 	@Getter
-	private Map<ParcelLocker, List<Parcel>> parcelDatabase = new HashMap<>();
+	private final Map<ParcelLocker, List<Parcel>> parcelDatabase = new HashMap<>();
 	@Getter
-	private Set<Parcel> cancelledParcels = new HashSet<>();
+	private final Set<Parcel> cancelledParcels = new HashSet<>();
 
 	@Override
 	protected void onPluginStart() {
 		Common.setLogPrefix("ParcelLockers");
-		this.registerCommand(new ParcelCommand());
-		this.registerEvents(new ParcelLockerDropListener());
-		this.registerEvents(new ParcelLockerBreakListener(this));
-		this.registerEvents(new ParcelLockerPlaceListener(this));
-		new CancelledParcelClearTask().runTaskTimer(this, 0, 20 * 60 * 360);
+		long started = System.currentTimeMillis();
+
+		PandaStream.of(
+			new ParcelCommand()
+		).forEach(this::registerCommand);
+
+		PandaStream.of(
+			new ParcelLockerPlaceListener(this),
+			new ParcelLockerBreakListener(this),
+			new ParcelLockerDropListener()
+		).forEach(this::registerEvents);
+
+		new CancelledParcelClearTask().run();
+		Common.log("Plugin enabled in " + (System.currentTimeMillis() - started) + "ms");
 	}
 
 	@Override

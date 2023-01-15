@@ -24,6 +24,7 @@ repositories {
     maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
     maven("https://oss.sonatype.org/content/repositories/snapshots")
     maven("https://oss.sonatype.org/content/repositories/central")
+    maven("https://papermc.io/repo/repository/maven-public/")
 }
 
 dependencies {
@@ -37,6 +38,7 @@ dependencies {
     implementation("org.panda-lang:expressible:1.2.2")
     compileOnly("org.projectlombok:lombok:1.18.24")
     annotationProcessor("org.projectlombok:lombok:1.18.24")
+    implementation("io.papermc:paperlib:1.0.7")
 }
 
 apply(plugin = "com.github.johnrengelman.shadow")
@@ -116,6 +118,7 @@ tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
         "panda",
         "org.panda_lang",
         "net.dzikoysk",
+        "io.papermc.lib",
         "org.mineacademy"
     ).forEach { pack ->
         relocate(pack, "$prefix.$pack")
