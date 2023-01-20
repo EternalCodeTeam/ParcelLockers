@@ -8,9 +8,9 @@ ParcelLockers is at an early stage of development, and you use it at your own ri
 
 # Building
 
-To build ParcelLockers execute this command using Maven (Make sure you are using JDK 8 for maximum compatibility)
+To build ParcelLockers execute this command using Gradle (Make sure you are using JDK 8 for maximum compatibility)
 
-`clean install`
+`./gradlew clean shadowJar`
 
 When you build it for the first time, it may take a little longer.
 
