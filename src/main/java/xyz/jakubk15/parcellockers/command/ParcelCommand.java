@@ -11,7 +11,9 @@ import java.util.concurrent.TimeUnit;
 
 public class ParcelCommand extends SimpleCommand {
 
-	public ParcelCommand() {
+	private final ParcelLockersPlugin plugin;
+
+	public ParcelCommand(ParcelLockersPlugin plugin) {
 		super("parcel|post");
 		this.setMinArguments(0);
 		this.setUsage("");
@@ -19,6 +21,7 @@ public class ParcelCommand extends SimpleCommand {
 		this.setCooldown(3, TimeUnit.SECONDS);
 		this.setPermissionMessage("&cYou don't have permission to use this command. If you believe this is an error, contact the server administration.");
 		this.setDescription("Basic parcel command.");
+		this.plugin = plugin;
 	}
 
 	@Override
@@ -38,7 +41,7 @@ public class ParcelCommand extends SimpleCommand {
 			this.getPlayer().getInventory().addItem(parcelLocker);
 			this.tellNoPrefix("&aParcel locker has been successfully added to your inventory.");
 		} else if ("reload".equals(param)) {
-			ParcelLockersPlugin.getInstance().reload();
+			this.plugin.reload();
 			this.tellNoPrefix("&aParcel lockers have been successfully reloaded.");
 		} else {
 			this.tellNoPrefix("&cUnknown parameter. Please use /parcel send or /parcel give.");

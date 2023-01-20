@@ -34,7 +34,7 @@ public final class ParcelLockersPlugin extends SimplePlugin {
 		long started = System.currentTimeMillis();
 
 		PandaStream.of(
-			new ParcelCommand()
+			new ParcelCommand(this)
 		).forEach(this::registerCommand);
 
 		PandaStream.of(

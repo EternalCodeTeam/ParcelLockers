@@ -39,6 +39,7 @@ dependencies {
     compileOnly("org.projectlombok:lombok:1.18.24")
     annotationProcessor("org.projectlombok:lombok:1.18.24")
     implementation("io.papermc:paperlib:1.0.7")
+    implementation("org.panda-lang:panda-utilities:0.5.2-alpha")
 }
 
 apply(plugin = "com.github.johnrengelman.shadow")
