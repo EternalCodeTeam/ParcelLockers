@@ -61,6 +61,6 @@ public class PlayerCache {
 		if (cache != null) {
 			cacheMap.put(player.getUniqueId(), cache);
 		}
-		return cacheMap.get(player);
+		return cacheMap.get(player.getUniqueId());
 	}
 }

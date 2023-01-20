@@ -65,7 +65,7 @@ public class ParcelLockerPlaceEvent extends Event implements Cancellable, Listen
 
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onParcelLockerPlace(final BlockPlaceEvent event) {
-		if (event.getItemInHand() == this.parcelLockerItemStack) {
+		if (event.getItemInHand().equals(this.parcelLockerItemStack)) {
 			Bukkit.getPluginManager().callEvent(this);
 		}
 	}

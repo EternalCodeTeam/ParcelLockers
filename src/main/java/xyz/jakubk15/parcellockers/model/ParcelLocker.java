@@ -26,18 +26,18 @@ public class ParcelLocker {
 	//* Parcel locker location.
 	private Location location;
 
-	/*
+	/**
 	 * A parcel map
-	 * @key Parcel UUID
-	 * @value List of parcel on given UUID
+	 * {@link UUID} Parcel UUID
+	 * {@link List} of parcel on given UUID
 	 */
 
 	private Map<UUID, List<Parcel>> parcelMap;
 
-	//* Parcel locker name
+	// Parcel locker name
 	private String name;
 
-	//* Parcel locker ID
+	// Parcel locker ID
 	private int id;
 
 }

@@ -66,7 +66,7 @@ public class ParcelLockerDropEvent extends Event implements Cancellable, Listene
 
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onItemDrop(final PlayerDropItemEvent event) {
-		if (event.getItemDrop().getItemStack() == this.parcelLockerItemStack) {
+		if (event.getItemDrop().getItemStack().equals(this.parcelLockerItemStack)) {
 			Bukkit.getPluginManager().callEvent(this);
 		}
 	}
