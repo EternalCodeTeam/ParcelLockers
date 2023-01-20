@@ -34,6 +34,8 @@ See [CONTRIBUTING.md](https://github.com/Jakubk15/ParcelLockers/blob/master/.git
   with [its libraries](https://bitbucket.org/kangarko/libraries/src/master/)
 - [Lombok](https://projectlombok.org)
 - [Spigot API](https://www.spigotmc.org/wiki/spigot-maven/)
+- [Expressible](https://github.com/dzikoysk/expressible) by [dzikoysk](https://github.com/dzikoysk)
+- [panda-utilities](https://github.com/panda-lang/panda)
 
 ParcelLockers is a advanced parcel plugin, dedicated for Spigot-based servers.
 
