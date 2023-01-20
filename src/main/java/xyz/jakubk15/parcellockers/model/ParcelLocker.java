@@ -29,7 +29,7 @@ public class ParcelLocker {
 	/**
 	 * A parcel map
 	 * {@link UUID} Parcel UUID
-	 * {@link List} of parcel on given UUID
+	 * {@link List<Parcel>} of parcel on given UUID
 	 */
 
 	private Map<UUID, List<Parcel>> parcelMap;
