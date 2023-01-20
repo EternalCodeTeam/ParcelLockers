@@ -26,7 +26,7 @@ repositories {
 
 dependencies {
     compileOnly("org.spigotmc:spigot-api:1.19.3-R0.1-SNAPSHOT")
-    implementation("com.github.kangarko:Foundation:6.2.5") {
+    implementation("com.github.kangarko:Foundation:6.2.6") {
         exclude(group = "org.mineacademy.plugin", module = "*")
         exclude(group = "org.spigotmc", module = "spigot-api")
         exclude(group = "org.bukkit")
