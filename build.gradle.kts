@@ -35,7 +35,7 @@ dependencies {
     implementation("org.panda-lang:expressible:1.2.2")
     compileOnly("org.projectlombok:lombok:1.18.24")
     annotationProcessor("org.projectlombok:lombok:1.18.24")
-    implementation("io.papermc:paperlib:1.0.7")
+    implementation("io.papermc:paperlib:1.0.8")
     implementation("org.panda-lang:panda-utilities:0.5.2-alpha")
     errorprone("com.google.errorprone:error_prone_core:2.18.0")
 }
