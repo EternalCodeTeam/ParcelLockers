@@ -38,6 +38,7 @@ public class ParcelCommand extends SimpleCommand {
 				.glow(true)
 				.amount(Integer.parseInt(this.args[1]))
 				.make();
+
 			this.getPlayer().getInventory().addItem(parcelLocker);
 			this.tellNoPrefix("&aParcel locker has been successfully added to your inventory.");
 		} else if ("reload".equals(param)) {
