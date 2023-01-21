@@ -10,6 +10,7 @@ import org.mineacademy.fo.menu.button.Button;
 import org.mineacademy.fo.menu.button.ButtonMenu;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.remain.CompMaterial;
+import xyz.jakubk15.parcellockers.ParcelLockersPlugin;
 import xyz.jakubk15.parcellockers.model.ParcelLocker;
 import xyz.jakubk15.parcellockers.model.ParcelSize;
 
@@ -126,10 +127,10 @@ public class ParcelMenu extends Menu {
 
 	@Override
 	public ItemStack getItemAt(int slot) {
-		if (slot == 0) return this.smallPackageButton.getItem();
-		if (slot == 1) return this.mediumPackageButton.getItem();
-		if (slot == 2) return this.bigPackageButton.getItem();
-		if (slot == 3) return this.priorityButton.getItem();
+		if (slot == 10) return this.smallPackageButton.getItem();
+		if (slot == 12) return this.mediumPackageButton.getItem();
+		if (slot == 14) return this.bigPackageButton.getItem();
+		if (slot == 16) return this.priorityButton.getItem();
 		if (slot == 4) return this.parcelLockerButton.getItem();
 		return ItemCreator.of(CompMaterial.GRAY_STAINED_GLASS_PANE).make();
 	}
@@ -142,13 +143,12 @@ public class ParcelMenu extends Menu {
 	private static final class ParcelLockerSelectionMenu extends MenuPagged<ParcelLocker> {
 
 		@Override
-		protected ItemStack convertToItemStack(ParcelLocker item) {
-			return ItemCreator.of(CompMaterial.CHEST, "&aParcel locker", "&bClick to choose this parcel locker.",
-				"", "&bName: " + item.getName(), "",
-				"&bID: #" + item.getId(), "",
-				"&bParcels stored: " + item.getParcelMap().size(), "",
-				"&bLocation: " + Common.shortLocation(item.getLocation()).toUpperCase()).make();
-
+		protected ItemStack convertToItemStack(ParcelLocker locker) {
+			return ItemCreator.of(CompMaterial.CHEST, "&aParcel locker #" + locker.getUniqueId(), "&bClick to choose this parcel locker.",
+				"", "&bName: " + locker.getName(), "",
+				"&bID: #" + locker.getUniqueId(), "",
+				"&bParcels stored: " + locker.getParcelMap().size(), "",
+				"&bLocation: " + Common.shortLocation(locker.getLocation()).toUpperCase()).make();
 		}
 
 		@Override
@@ -158,7 +158,11 @@ public class ParcelMenu extends Menu {
 
 		@Override
 		public ItemStack getItemAt(int slot) {
-			return ItemCreator.of(CompMaterial.LIGHT_GRAY_STAINED_GLASS_PANE, "&cEmpty", "&c-|--|-", "&cEmpty option", "&cPick another slot", "&c-|--|-").make();
+			for (ParcelLocker parcelLocker : ParcelLockersPlugin.getInstance().getParcelDatabase().keySet()) {
+				return this.convertToItemStack(parcelLocker);
+			}
+
+			return ItemCreator.of(CompMaterial.GRAY_STAINED_GLASS_PANE, "", "&c&m-|--|-", "&cEmpty option", "&cPick another slot", "&c&m-|--|-").make();
 		}
 
 		@Override

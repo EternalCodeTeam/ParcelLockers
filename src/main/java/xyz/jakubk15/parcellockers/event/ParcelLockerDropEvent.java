@@ -22,7 +22,7 @@ import org.mineacademy.fo.remain.CompMaterial;
 
 public class ParcelLockerDropEvent extends Event implements Cancellable, Listener {
 
-	private final HandlerList handlerList = new HandlerList();
+	private static final HandlerList handlerList = new HandlerList();
 	private final ItemStack parcelLockerItemStack = ItemCreator.of(CompMaterial.CHEST, "&aParcel locker").glow(true).make();
 	private boolean isCancelled;
 	private final Location location;
@@ -60,7 +60,12 @@ public class ParcelLockerDropEvent extends Event implements Cancellable, Listene
 	@NotNull
 	@Override
 	public HandlerList getHandlers() {
-		return this.handlerList;
+		return handlerList;
+	}
+
+	@NotNull
+	public static HandlerList getHandlerList() {
+		return handlerList;
 	}
 
 

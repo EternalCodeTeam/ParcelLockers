@@ -7,6 +7,8 @@ import xyz.jakubk15.parcellockers.ParcelLockersPlugin;
 import xyz.jakubk15.parcellockers.event.ParcelLockerPlaceEvent;
 import xyz.jakubk15.parcellockers.model.ParcelLocker;
 
+import java.util.UUID;
+
 public class ParcelLockerPlaceListener implements Listener {
 
 	private final ParcelLockersPlugin plugin;
@@ -17,7 +19,7 @@ public class ParcelLockerPlaceListener implements Listener {
 
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onParcelLockerPlace(ParcelLockerPlaceEvent event) {
-		this.plugin.getParcelDatabase().put(new ParcelLocker(event.getLocation(), null, null, this.plugin.getParcelDatabase().size() + 1), null);
+		this.plugin.getParcelDatabase().put(new ParcelLocker(event.getLocation(), null, null, UUID.randomUUID()), null);
 	}
 
 }

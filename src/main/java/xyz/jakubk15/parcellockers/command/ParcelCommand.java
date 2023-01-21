@@ -16,7 +16,7 @@ public class ParcelCommand extends SimpleCommand {
 	public ParcelCommand(ParcelLockersPlugin plugin) {
 		super("parcel|post");
 		this.setMinArguments(0);
-		this.setUsage("");
+		this.setUsage("/parcel <send|give|reload> [amount]");
 		this.setPermission("parcellockers.command.parcel");
 		this.setCooldown(3, TimeUnit.SECONDS);
 		this.setPermissionMessage("&cYou don't have permission to use this command. If you believe this is an error, contact the server administration.");
@@ -48,4 +48,6 @@ public class ParcelCommand extends SimpleCommand {
 			this.tellNoPrefix("&cUnknown parameter. Please use /parcel send or /parcel give.");
 		}
 	}
+
+
 }

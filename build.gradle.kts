@@ -48,8 +48,6 @@ group = "xyz.jakubk15"
 version = "1.0.0"
 description = "ParcelLockers"
 
-ant.importBuild("build.xml")
-
 bukkit {
     main = "xyz.jakubk15.parcellockers.ParcelLockersPlugin"
     apiVersion = "1.13"

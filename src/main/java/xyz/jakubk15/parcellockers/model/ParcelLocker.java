@@ -38,6 +38,6 @@ public class ParcelLocker {
 	private String name;
 
 	// Parcel locker ID
-	private int id;
+	private UUID uniqueId;
 
 }
