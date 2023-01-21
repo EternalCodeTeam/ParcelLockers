@@ -55,8 +55,8 @@ public class PlayerCache {
 	 * The cache getter.
 	 */
 
-	public static PlayerCache getCache(final Player player) {
-		final PlayerCache cache = cacheMap.get(player.getUniqueId());
+	public static PlayerCache getCache(Player player) {
+		PlayerCache cache = cacheMap.get(player.getUniqueId());
 
 		if (cache != null) {
 			cacheMap.put(player.getUniqueId(), cache);

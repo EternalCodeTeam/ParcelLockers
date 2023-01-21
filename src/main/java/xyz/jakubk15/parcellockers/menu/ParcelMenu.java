@@ -41,7 +41,7 @@ public class ParcelMenu extends Menu {
 
 		this.smallPackageButton = new Button() {
 			@Override
-			public void onClickedInMenu(final Player player, final Menu menu, final ClickType clickType) {
+			public void onClickedInMenu(Player player, Menu menu, ClickType clickType) {
 				ParcelMenu.this.restartMenu("&aChanged the package size to small.");
 				ParcelMenu.this.chosenPackage = ParcelSize.SMALL;
 			}
@@ -63,7 +63,7 @@ public class ParcelMenu extends Menu {
 		};
 		this.mediumPackageButton = new Button() {
 			@Override
-			public void onClickedInMenu(final Player player, final Menu menu, final ClickType clickType) {
+			public void onClickedInMenu(Player player, Menu menu, ClickType clickType) {
 				ParcelMenu.this.restartMenu("&aChanged the package size to medium.");
 				ParcelMenu.this.chosenPackage = ParcelSize.MEDIUM;
 			}
@@ -85,7 +85,7 @@ public class ParcelMenu extends Menu {
 		};
 		this.bigPackageButton = new Button() {
 			@Override
-			public void onClickedInMenu(final Player player, final Menu menu, final ClickType clickType) {
+			public void onClickedInMenu(Player player, Menu menu, ClickType clickType) {
 				ParcelMenu.this.restartMenu("&aChanged the package size to big.");
 				ParcelMenu.this.chosenPackage = ParcelSize.LARGE;
 			}
@@ -109,7 +109,7 @@ public class ParcelMenu extends Menu {
 			private boolean priority = false;
 
 			@Override
-			public void onClickedInMenu(final Player player, final Menu menu, final ClickType clickType) {
+			public void onClickedInMenu(Player player, Menu menu, ClickType clickType) {
 				ParcelMenu.this.restartMenu("&aChanged package priority.");
 				this.priority = !this.priority;
 			}
@@ -125,7 +125,7 @@ public class ParcelMenu extends Menu {
 	}
 
 	@Override
-	public ItemStack getItemAt(final int slot) {
+	public ItemStack getItemAt(int slot) {
 		if (slot == 0) return this.smallPackageButton.getItem();
 		if (slot == 1) return this.mediumPackageButton.getItem();
 		if (slot == 2) return this.bigPackageButton.getItem();
@@ -142,7 +142,7 @@ public class ParcelMenu extends Menu {
 	private static final class ParcelLockerSelectionMenu extends MenuPagged<ParcelLocker> {
 
 		@Override
-		protected ItemStack convertToItemStack(final ParcelLocker item) {
+		protected ItemStack convertToItemStack(ParcelLocker item) {
 			return ItemCreator.of(CompMaterial.CHEST, "&aParcel locker", "&bClick to choose this parcel locker.",
 				"", "&bName: " + item.getName(), "",
 				"&bID: #" + item.getId(), "",
@@ -152,12 +152,12 @@ public class ParcelMenu extends Menu {
 		}
 
 		@Override
-		protected void onPageClick(final Player player, final ParcelLocker item, final ClickType click) {
+		protected void onPageClick(Player player, ParcelLocker item, ClickType click) {
 
 		}
 
 		@Override
-		public ItemStack getItemAt(final int slot) {
+		public ItemStack getItemAt(int slot) {
 			return ItemCreator.of(CompMaterial.LIGHT_GRAY_STAINED_GLASS_PANE, "&cEmpty", "&c-|--|-", "&cEmpty option", "&cPick another slot", "&c-|--|-").make();
 		}
 

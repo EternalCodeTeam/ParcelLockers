@@ -27,14 +27,14 @@ public class ParcelCommand extends SimpleCommand {
 	@Override
 	protected void onCommand() {
 		this.checkConsole();
-		final String param = this.args[0];
+		String param = this.args[0];
 
 		if ("send".equals(param)) {
 			new ParcelMenu().displayTo(this.getPlayer());
 
 		} else if ("give".equals(param)) {
 			this.checkArgs(2, "Please specify a player and an amount of parcel lockers to give.");
-			final ItemStack parcelLocker = ItemCreator.of(CompMaterial.CHEST, "&aParcel locker")
+			ItemStack parcelLocker = ItemCreator.of(CompMaterial.CHEST, "&aParcel locker")
 				.glow(true)
 				.amount(Integer.parseInt(this.args[1]))
 				.make();

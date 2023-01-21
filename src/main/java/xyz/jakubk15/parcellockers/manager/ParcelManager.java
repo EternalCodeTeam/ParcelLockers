@@ -10,17 +10,17 @@ public class ParcelManager {
 	// The main plugin class instance.
 	private final ParcelLockersPlugin plugin;
 
-	public ParcelManager(final ParcelLockersPlugin plugin) {
+	public ParcelManager(ParcelLockersPlugin plugin) {
 		this.plugin = plugin;
 	}
 
 	// Method for sending parcels.
-	public void sendParcel(final Parcel parcel, final ParcelLocker locker) {
+	public void sendParcel(Parcel parcel, ParcelLocker locker) {
 		this.plugin.getParcelDatabase().get(locker).add(parcel);
 	}
 
 	// Method for cancelling sent parcels.
-	public void cancelParcel(final Parcel parcel) throws ParcelNotFoundException {
+	public void cancelParcel(Parcel parcel) throws ParcelNotFoundException {
 		try {
 			if (Parcel.fromUUID(parcel.getUniqueId()) != null) {
 				this.plugin.getCancelledParcels().add(parcel);
@@ -36,7 +36,7 @@ public class ParcelManager {
 		}
 	}
 
-	public void undoCancel(final Parcel parcel) throws ParcelNotFoundException {
+	public void undoCancel(Parcel parcel) throws ParcelNotFoundException {
 		try {
 			if (Parcel.fromUUIDCancelled(parcel.getUniqueId()) != null) {
 				this.plugin.getCancelledParcels().remove(parcel);
@@ -54,7 +54,7 @@ public class ParcelManager {
 
 
 	// Method for deleting sent parcels.
-	public void deleteParcel(final Parcel parcel) throws ParcelNotFoundException {
+	public void deleteParcel(Parcel parcel) throws ParcelNotFoundException {
 		try {
 			this.plugin.getParcelDatabase()
 				.values()

@@ -11,15 +11,15 @@ public class ParcelNotFoundException extends Exception {
 		super();
 	}
 
-	public ParcelNotFoundException(final String message) {
+	public ParcelNotFoundException(String message) {
 		super(message);
 	}
 
-	public ParcelNotFoundException(final String message, final Throwable cause) {
+	public ParcelNotFoundException(String message, Throwable cause) {
 		super(message, cause);
 	}
 
-	public ParcelNotFoundException(final Throwable cause) {
+	public ParcelNotFoundException(Throwable cause) {
 		super(cause);
 	}
 }

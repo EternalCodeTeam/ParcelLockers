@@ -29,7 +29,7 @@ public class ParcelLockerDropEvent extends Event implements Cancellable, Listene
 	private final ItemStack item;
 	private final Player player;
 
-	public ParcelLockerDropEvent(final Location location, final ItemStack item, final Player player) {
+	public ParcelLockerDropEvent(Location location, ItemStack item, Player player) {
 		this.item = item;
 		this.location = location;
 		this.player = player;
@@ -41,7 +41,7 @@ public class ParcelLockerDropEvent extends Event implements Cancellable, Listene
 	}
 
 	@Override
-	public void setCancelled(final boolean cancelled) {
+	public void setCancelled(boolean cancelled) {
 		this.isCancelled = cancelled;
 	}
 
@@ -65,7 +65,7 @@ public class ParcelLockerDropEvent extends Event implements Cancellable, Listene
 
 
 	@EventHandler(priority = EventPriority.LOWEST)
-	public void onItemDrop(final PlayerDropItemEvent event) {
+	public void onItemDrop(PlayerDropItemEvent event) {
 		if (event.getItemDrop().getItemStack().equals(this.parcelLockerItemStack)) {
 			Bukkit.getPluginManager().callEvent(this);
 		}

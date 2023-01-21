@@ -45,7 +45,7 @@ public class Parcel {
 	// A parcel sender
 	private Player sender;
 
-	public static Parcel fromUUID(final UUID uniqueId) {
+	public static Parcel fromUUID(UUID uniqueId) {
 		return ParcelLockersPlugin.getInstance().getParcelDatabase()
 			.values()
 			.stream()
@@ -56,7 +56,7 @@ public class Parcel {
 	}
 
 	@ApiStatus.Internal
-	public static Parcel fromUUIDCancelled(final UUID uniqueId) {
+	public static Parcel fromUUIDCancelled(UUID uniqueId) {
 		return ParcelLockersPlugin.getInstance().getCancelledParcels()
 			.stream()
 			.filter(parcel -> parcel.getUniqueId().equals(uniqueId))
@@ -64,7 +64,7 @@ public class Parcel {
 			.orElse(null);
 	}
 
-	public static List<Parcel> fromPlayerName(final String playerName) {
+	public static List<Parcel> fromPlayerName(String playerName) {
 		return ParcelLockersPlugin.getInstance().getParcelDatabase()
 			.values()
 			.stream()
@@ -73,7 +73,7 @@ public class Parcel {
 			.collect(Collectors.toList());
 	}
 
-	public static List<Parcel> fromParcelLocker(final ParcelLocker parcelLocker) {
+	public static List<Parcel> fromParcelLocker(ParcelLocker parcelLocker) {
 		return new ArrayList<>(ParcelLockersPlugin.getInstance().getParcelDatabase()
 			.get(parcelLocker));
 	}

@@ -23,7 +23,7 @@ public class ParcelLockerBreakEvent extends Event implements Cancellable, Listen
 	private final ParcelLockersPlugin plugin;
 	private final Player player;
 
-	public ParcelLockerBreakEvent(final ParcelLockersPlugin plugin, final Location loc, final ItemStack item, final Player player) {
+	public ParcelLockerBreakEvent(ParcelLockersPlugin plugin, Location loc, ItemStack item, Player player) {
 		this.plugin = plugin;
 		this.item = item;
 		this.loc = loc;
