@@ -14,6 +14,7 @@ import xyz.jakubk15.parcellockers.model.Parcel;
 import xyz.jakubk15.parcellockers.model.ParcelLocker;
 import xyz.jakubk15.parcellockers.task.CancelledParcelClearTask;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -31,7 +32,7 @@ public final class ParcelLockersPlugin extends SimplePlugin {
 	@Override
 	protected void onPluginStart() {
 		Common.setLogPrefix("ParcelLockers");
-		long started = System.currentTimeMillis();
+		long started = Instant.now().toEpochMilli();
 
 		PandaStream.of(
 			new ParcelCommand(this)
@@ -44,7 +45,7 @@ public final class ParcelLockersPlugin extends SimplePlugin {
 		).forEach(this::registerEvents);
 
 		new CancelledParcelClearTask().run();
-		Common.log("Plugin enabled in " + (System.currentTimeMillis() - started) + "ms");
+		Common.log("Plugin enabled in " + (Instant.now().toEpochMilli() - started) + "ms");
 	}
 
 	@Override
