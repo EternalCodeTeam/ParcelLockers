@@ -20,6 +20,7 @@ public class ParcelLockerPlaceListener implements Listener {
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onParcelLockerPlace(ParcelLockerPlaceEvent event) {
 		this.plugin.getParcelDatabase().put(new ParcelLocker(event.getLocation(), null, null, UUID.randomUUID()), null);
+		// TODO: Implement parcel locker builder logic.
 	}
 
 }

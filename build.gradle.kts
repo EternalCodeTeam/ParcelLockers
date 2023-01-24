@@ -1,8 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
-ext {
-    var foundationVersion = "6.2.5"
-}
 plugins {
     `java-library`
     id("net.minecrell.plugin-yml.bukkit") version "0.5.2"
@@ -43,6 +40,7 @@ dependencies {
 apply(plugin = "com.github.johnrengelman.shadow")
 apply(plugin = "net.minecrell.plugin-yml.bukkit")
 apply(plugin = "xyz.jpenilla.run-paper")
+apply(plugin = "net.ltgt.errorprone")
 
 group = "xyz.jakubk15"
 version = "1.0.0"
@@ -103,7 +101,6 @@ tasks.withType<ShadowJar> {
     exclude(
         "org/intellij/lang/annotations/**",
         "org/jetbrains/annotations/**",
-        "org/checkerframework/**",
         "META-INF/**",
         "javax/**",
     )
