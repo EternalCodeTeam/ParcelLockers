@@ -82,7 +82,7 @@ bukkit {
         "Vault",
         "WorldEdit")
     libraries = listOf(
-        "org.openjdk.nashorn:nashorn-core:15.3"
+        "org.openjdk.nashorn:nashorn-core:15.4"
     )
 }
 
