@@ -29,7 +29,7 @@ dependencies {
         exclude(group = "org.bukkit")
         exclude(group = "org.projectlombok")
     }
-    implementation("org.panda-lang:expressible:1.2.2")
+    implementation("org.panda-lang:expressible:1.3.0")
     compileOnly("org.projectlombok:lombok:1.18.24")
     annotationProcessor("org.projectlombok:lombok:1.18.24")
     implementation("io.papermc:paperlib:1.0.8")
