@@ -7,6 +7,14 @@ import org.mineacademy.fo.settings.SimpleSettings;
  */
 
 public class Settings extends SimpleSettings {
-	
 
+	private static void init() {
+		setPathPrefix(null);
+
+	}
+
+	@Override
+	protected int getConfigVersion() {
+		return 1;
+	}
 }

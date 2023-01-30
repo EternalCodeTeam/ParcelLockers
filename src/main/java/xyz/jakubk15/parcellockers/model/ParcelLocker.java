@@ -17,27 +17,11 @@ import java.util.UUID;
 @ToString(includeFieldNames = true, callSuper = true)
 @AllArgsConstructor
 
-/*
- * A class representing parcel locker, objects spreaded in the world used to send parcels.
- */
-
 public class ParcelLocker {
 
-	//* Parcel locker location.
 	private Location location;
-
-	/**
-	 * A parcel map
-	 * {@link UUID} Parcel UUID
-	 * {@link List<Parcel>} of parcel on given UUID
-	 */
-
 	private Map<UUID, List<Parcel>> parcelMap;
-
-	// Parcel locker name
 	private String name;
-
-	// Parcel locker ID
 	private UUID uniqueId;
 
 }

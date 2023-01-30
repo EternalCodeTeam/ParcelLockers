@@ -1,6 +1,5 @@
 package xyz.jakubk15.parcellockers;
 
-
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,46 +13,15 @@ import java.util.UUID;
 @Getter
 @Setter
 @EqualsAndHashCode
-@ToString(includeFieldNames = true, callSuper = true)
-
-/**
- * A class representing the plugin's player cache.
- */
+@ToString
 
 public class PlayerCache {
 
-	/**
-	 * A cache map.
-	 */
-
-	public static volatile Map<UUID, PlayerCache> cacheMap = new HashMap<>();
-
-	/**
-	 * A number of packages received by player.
-	 */
-
+	protected static volatile Map<UUID, PlayerCache> cacheMap = new HashMap<>();
 	public int packagesReceived;
-
-	/**
-	 * A number of packages delivered to player, waiting for pickup.
-	 */
-
 	public int awaitingPackages;
-
-	/**
-	 * A number of packages given player has sent.
-	 */
-
 	public int sentPackages;
-
-	/**
-	 * A number of packages given player has returned.
-	 */
 	public int returnedPackages;
-
-	/**
-	 * The cache getter.
-	 */
 
 	public static PlayerCache getCache(Player player) {
 		PlayerCache cache = cacheMap.get(player.getUniqueId());

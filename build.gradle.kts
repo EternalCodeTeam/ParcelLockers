@@ -35,6 +35,9 @@ dependencies {
     implementation("io.papermc:paperlib:1.0.8")
     implementation("org.panda-lang:panda-utilities:0.5.2-alpha")
     errorprone("com.google.errorprone:error_prone_core:2.18.0")
+    implementation("net.dv8tion:JDA:5.0.0-beta.3") {
+        exclude(module = "opus-java")
+    }
 }
 
 group = "xyz.jakubk15"
