@@ -31,16 +31,15 @@ dependencies {
     }
     implementation("org.panda-lang:expressible:1.3.0")
     compileOnly("org.projectlombok:lombok:1.18.24")
+    compileOnly("org.jetbrains:annotations:24.0.0")
     annotationProcessor("org.projectlombok:lombok:1.18.24")
     implementation("io.papermc:paperlib:1.0.8")
     implementation("org.panda-lang:panda-utilities:0.5.2-alpha")
     errorprone("com.google.errorprone:error_prone_core:2.18.0")
+    implementation("net.dv8tion:JDA:5.0.0-beta.3") {
+        exclude(module = "opus-java")
+    }
 }
-
-apply(plugin = "com.github.johnrengelman.shadow")
-apply(plugin = "net.minecrell.plugin-yml.bukkit")
-apply(plugin = "xyz.jpenilla.run-paper")
-apply(plugin = "net.ltgt.errorprone")
 
 group = "xyz.jakubk15"
 version = "1.0.0"
@@ -49,7 +48,7 @@ description = "ParcelLockers"
 bukkit {
     main = "xyz.jakubk15.parcellockers.ParcelLockersPlugin"
     apiVersion = "1.13"
-    prefix = "ParcelLockersPlugin"
+    prefix = "ParcelLockers"
     author = "Jakubk15"
     name = "ParcelLockers"
     description = "Plugin that provides functionality of parcel lockers in Minecraft, allowing players to send and receive parcels safely."

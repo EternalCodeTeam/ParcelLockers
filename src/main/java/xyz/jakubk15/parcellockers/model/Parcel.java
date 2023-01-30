@@ -25,24 +25,15 @@ import java.util.stream.Collectors;
  */
 
 public class Parcel {
-	
-	// A parcel name
+
 	private String parcelName;
-	// A set of player names bound to this parcel
 	private Set<String> playerNames;
-	// A list of items in given parcel.
 	private List<ItemStack> items;
-	// The size of the parcel.
 	private ParcelSize size;
-	// The parcel priority boolean.
 	private boolean isPriority;
-	// A parcel unique ID.
 	private UUID uniqueId;
-	// A parcel locker that this parcel was sent in.
 	private ParcelLocker entryParcelLocker;
-	// A parcel locker that this parcel is stored in.
 	private ParcelLocker destinationParcelLocker;
-	// A parcel sender
 	private Player sender;
 
 	public static Parcel fromUUID(UUID uniqueId) {
