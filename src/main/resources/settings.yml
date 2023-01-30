@@ -1,1 +1,10 @@
+Locale: en
+Prefix: "&8[&c${project.name}&8]&7 "
+UpdateChecker: true
+Timestamp_Format: "dd.MM.yyyy HH:mm:ss" # https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html
+Location_Format: "[{x}, {y}, {z}] {world}"
+Discord:
+    Enabled: false
+    Token:
+
 Version: 1

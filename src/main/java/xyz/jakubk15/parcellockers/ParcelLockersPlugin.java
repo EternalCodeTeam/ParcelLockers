@@ -7,6 +7,7 @@ import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import panda.std.stream.PandaStream;
 import xyz.jakubk15.parcellockers.command.ParcelCommand;
+import xyz.jakubk15.parcellockers.discord.DiscordExtensionBootstrapper;
 import xyz.jakubk15.parcellockers.listener.ParcelLockerBreakListener;
 import xyz.jakubk15.parcellockers.listener.ParcelLockerDropListener;
 import xyz.jakubk15.parcellockers.listener.ParcelLockerPlaceListener;
@@ -31,8 +32,15 @@ public final class ParcelLockersPlugin extends SimplePlugin {
 
 	@Override
 	protected void onPluginStart() {
-		Common.setLogPrefix("ParcelLockers");
 		long started = Instant.now().toEpochMilli();
+
+		if (this.getConfig().getBoolean("Discord.Enabled") && this.getConfig().getString("discord.token") != null && !this.getConfig().getString("discord.token").isEmpty()) {
+			try {
+				DiscordExtensionBootstrapper.init(this.getConfig().getString("Discord.Token").split(" "));
+			} catch (Exception e) {
+				Common.error(e, "Failed to initialize Discord extension, please check your token");
+			}
+		}
 
 		PandaStream.of(
 			new ParcelCommand(this)
@@ -46,6 +54,12 @@ public final class ParcelLockersPlugin extends SimplePlugin {
 
 		new CancelledParcelClearTask().run();
 		Common.log("Plugin enabled in " + (Instant.now().toEpochMilli() - started) + "ms");
+	}
+
+	@Override
+	protected void onPluginStop() {
+		DiscordExtensionBootstrapper.shutdown();
+		Bukkit.getScheduler().cancelTasks(this);
 	}
 
 	@Override
