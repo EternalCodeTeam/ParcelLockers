@@ -23,7 +23,7 @@ repositories {
 
 dependencies {
     compileOnly("org.spigotmc:spigot-api:1.19.3-R0.1-SNAPSHOT")
-    implementation("com.github.kangarko:Foundation:6.2.7") {
+    implementation("com.github.kangarko:Foundation:6.2.8") {
         exclude(group = "org.mineacademy.plugin", module = "*")
         exclude(group = "org.spigotmc", module = "spigot-api")
         exclude(group = "org.bukkit")
@@ -37,11 +37,6 @@ dependencies {
     errorprone("com.google.errorprone:error_prone_core:2.18.0")
 }
 
-apply(plugin = "com.github.johnrengelman.shadow")
-apply(plugin = "net.minecrell.plugin-yml.bukkit")
-apply(plugin = "xyz.jpenilla.run-paper")
-apply(plugin = "net.ltgt.errorprone")
-
 group = "xyz.jakubk15"
 version = "1.0.0"
 description = "ParcelLockers"
@@ -49,7 +44,7 @@ description = "ParcelLockers"
 bukkit {
     main = "xyz.jakubk15.parcellockers.ParcelLockersPlugin"
     apiVersion = "1.13"
-    prefix = "ParcelLockersPlugin"
+    prefix = "ParcelLockers"
     author = "Jakubk15"
     name = "ParcelLockers"
     description = "Plugin that provides functionality of parcel lockers in Minecraft, allowing players to send and receive parcels safely."
