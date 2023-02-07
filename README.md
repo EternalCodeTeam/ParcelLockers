@@ -1,7 +1,6 @@
 # ParcelLockers
 
 [![Supports Paper](https://raw.githubusercontent.com/intergrav/devins-badges/v3/assets/cozy/supported/paper_vector.svg)](https://papermc.io)
-[![Supports Spigot](https://raw.githubusercontent.com/intergrav/devins-badges/v3/assets/cozy/supported/spigot_vector.svg)](https://spigotmc.org)
 [![Discord](https://raw.githubusercontent.com/intergrav/devins-badges/v3/assets/cozy/social/discord-plural_vector.svg)](https://discord.gg/FQ7jmGBd6c)
 [![Gradle](https://raw.githubusercontent.com/intergrav/devins-badges/v3/assets/cozy/built-with/gradle_vector.svg)](https://gradle.org/)
 [![Java](https://raw.githubusercontent.com/intergrav/devins-badges/v3/assets/cozy/built-with/java17_vector.svg)](https://www.java.com/)
@@ -22,17 +21,31 @@ When you build it for the first time, it may take a little longer.
 
 # Development builds
 
-You can gather the development builds from [GitHub Actions](https://github.com/Jakubk15/ParcelLockers/actions)
+You can gather the development builds from [GitHub Actions](https://github.com/EternalCodeTeam/ParcelLockers/actions)
 
 # Contributing
 
-Create a [public fork of the repository](https://github.com/Jakubk15/ParcelLockers/fork), modify it with appropriate
+Create a [public fork of the repository](https://github.com/EternalCodeTeam/ParcelLockers/fork), modify it with
+appropriate
 changes and then create a Pull Request.
-See [CONTRIBUTING.md](https://github.com/Jakubk15/ParcelLockers/blob/master/.github/CONTRIBUTING.md) to find out more.
+See [CONTRIBUTING.md](https://github.com/EternalCodeTeam/ParcelLockers/blob/master/.github/CONTRIBUTING.md) to find out
+more.
 
 # License
 
-#### ParcelLockers is published under the [MIT License](https://github.com/Jakubk15/ParcelLockers/blob/master/LICENSE). Learn more about it [here](https://choosealicense.com/licenses/mit/).
+#### ParcelLockers is published under the GNU GPL-v3 license. In particular, the developer:
+
+- Is freely allowed to modify and improve the code
+- Can distribute production versions
+- He must publish any changes made, ie. the public fork of this repository
+- Cannot change the license or copyright
+
+#### Additionally:
+
+- It is forbidden to modify or remove the code responsible for the compliance of production versions with the license.
+- The authors of this project are not responsible for using the application, modifying and distributing it.
+- Trademarks appearing in this project and this document belong to their rightful owners and are used for informational
+  purposes only.
 
 # Other dependencies usages
 
