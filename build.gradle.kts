@@ -27,11 +27,26 @@ repositories {
 }
 
 dependencies {
-    // paper api
+    // minecraft development api
     compileOnly("io.papermc.paper:paper-api:1.19.3-R0.1-SNAPSHOT")
+    implementation("net.kyori:adventure-platform-bukkit:4.2.0")
+    implementation("net.kyori:adventure-text-minimessage:4.12.0")
+    implementation("dev.rollczi.litecommands:bukkit-adventure:2.8.3")
+
+    // skull api
+    implementation("dev.rollczi:liteskullapi:1.3.0")
+
+    // gui library
+    implementation("dev.triumphteam:triumph-gui:3.1.4")
+
+    // CDN
+    implementation("net.dzikoysk:cdn:1.14.3")
 
     // expressible
     implementation("org.panda-lang:expressible:1.3.1")
+
+    // metrics
+    implementation("org.bstats:bstats-bukkit:3.0.0")
 
     // lombok
     compileOnly("org.projectlombok:lombok:1.18.26")
