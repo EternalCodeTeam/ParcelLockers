@@ -38,7 +38,7 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.26")
 
     // jetbrains annotations
-    compileOnly("org.jetbrains:annotations:24.0.0")
+    compileOnly("org.jetbrains:annotations:26.0.0")
 
     // paperlib
     implementation("io.papermc:paperlib:1.0.8")
