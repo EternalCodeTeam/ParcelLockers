@@ -26,6 +26,7 @@ repositories {
     maven { url = uri("https://papermc.io/repo/repository/maven-public/") }
     maven { url = uri("https://repo.eternalcode.pl/releases") }
     maven { url = uri("https://repository.minecodes.pl/releases") }
+    maven { url = uri("https://storehouse.okaeri.eu/repository/maven-public/") }
 }
 
 dependencies {
@@ -34,6 +35,10 @@ dependencies {
     implementation("net.kyori:adventure-platform-bukkit:4.2.0")
     implementation("net.kyori:adventure-text-minimessage:4.12.0")
     implementation("dev.rollczi.litecommands:bukkit-adventure:2.8.4")
+
+    // database
+    implementation("eu.okaeri:okaeri-persistence-jdbc:2.0.0-beta.1")
+    implementation("eu.okaeri:okaeri-persistence-flat:2.0.0-beta.1")
 
     // skull api
     implementation("dev.rollczi:liteskullapi:1.3.0")
@@ -123,7 +128,8 @@ tasks.withType<ShadowJar> {
         "org.panda_lang",
         "net.dzikoysk",
         "io.papermc.lib",
-        "org.mineacademy"
+        "org.mineacademy",
+        "eu.okaeri"
     ).forEach { pack ->
         relocate(pack, "$prefix.$pack")
     }
