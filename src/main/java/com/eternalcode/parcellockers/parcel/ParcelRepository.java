@@ -7,6 +7,6 @@ public interface ParcelRepository {
 
     CompletableFuture<Void> update(Parcel parcel);
 
-    CompletableFuture<Parcel> findParcel(UUID parcelUUID);
-    
+    CompletableFuture<Parcel> find(UUID parcelUUID);
+
 }
