@@ -2,17 +2,21 @@ package com.eternalcode.parcellockers;
 
 import com.eternalcode.parcellockers.command.ParcelCommand;
 import com.eternalcode.parcellockers.command.handler.InvalidUsage;
+import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
+import com.eternalcode.parcellockers.updater.Updater;
+import com.eternalcode.parcellockers.util.legacy.LegacyColorProcessor;
 import com.google.common.base.Stopwatch;
 import dev.rollczi.litecommands.LiteCommands;
 import dev.rollczi.litecommands.bukkit.adventure.platform.LiteBukkitAdventurePlatformFactory;
 import io.papermc.lib.PaperLib;
 import io.papermc.lib.environments.Environment;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bstats.bukkit.Metrics;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 public final class ParcelLockers extends JavaPlugin {
@@ -21,6 +25,8 @@ public final class ParcelLockers extends JavaPlugin {
 
     private BukkitAudiences audiences;
     private LiteCommands<CommandSender> liteCommands;
+    private MiniMessage miniMessage;
+    private NotificationAnnouncer announcer;
 
     @Override
     public void onEnable() {
@@ -29,16 +35,21 @@ public final class ParcelLockers extends JavaPlugin {
 
         this.softwareCheck();
         this.audiences = BukkitAudiences.create(this);
-        this.liteCommands = LiteBukkitAdventurePlatformFactory.builder(this.getServer(), "example-plugin", this.audiences)
-                .commandInstance(new ParcelCommand())
-                .invalidUsageHandler(new InvalidUsage())
+        this.miniMessage = MiniMessage.builder()
+                .postProcessor(new LegacyColorProcessor())
+                .build();
+        this.announcer = new NotificationAnnouncer(this.audiences, this.miniMessage);
+
+        this.liteCommands = LiteBukkitAdventurePlatformFactory.builder(this.getServer(), "parcellockers", false, this.audiences, true)
+                .commandInstance(new ParcelCommand(), new ParcelLockerCommand())
+                .invalidUsageHandler(new InvalidUsage(this.announcer))
                 .register();
 
+        new Metrics(this, 17677);
+        new Updater(this.getLogger()).start();
 
-        Metrics metrics = new Metrics(this, 17677);
-
-        long millis = started.elapsed().toMillis();
-        this.getLogger().info(ChatColor.GREEN + String.valueOf(millis) + "ms");
+        long millis = started.elapsed(TimeUnit.MILLISECONDS);
+        this.getLogger().info("Successfully enabled ParcelLockers in " + millis + "ms");
     }
 
     @Override
@@ -47,6 +58,10 @@ public final class ParcelLockers extends JavaPlugin {
 
         if (this.liteCommands != null) {
             this.liteCommands.getPlatform().unregisterAll();
+        }
+
+        if (this.audiences != null) {
+            this.audiences.close();
         }
     }
 
@@ -62,11 +77,31 @@ public final class ParcelLockers extends JavaPlugin {
         }
 
         if (!environment.isVersion(17)) {
-            logger.warning("EternalCore no longer supports your version, be aware that there may be bugs!");
+            logger.warning("ParcelLockers no longer supports your version, be aware that there may be bugs!");
             return;
         }
 
         logger.info("Your server running on supported software, congratulations!");
         logger.info("Server version: " + this.getServer().getVersion());
+    }
+
+    public static ParcelLockers getInstance() {
+        return instance;
+    }
+
+    public BukkitAudiences getAudiences() {
+        return this.audiences;
+    }
+
+    public LiteCommands<CommandSender> getLiteCommands() {
+        return this.liteCommands;
+    }
+
+    public MiniMessage getMiniMessage() {
+        return this.miniMessage;
+    }
+
+    public NotificationAnnouncer getAnnouncer() {
+        return this.announcer;
     }
 }

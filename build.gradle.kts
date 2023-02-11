@@ -24,11 +24,13 @@ repositories {
     maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots") }
     maven { url = uri("https://oss.sonatype.org/content/repositories/central") }
     maven { url = uri("https://papermc.io/repo/repository/maven-public/") }
+    maven { url = uri("https://repo.eternalcode.pl/releases") }
+    maven { url = uri("https://repository.minecodes.pl/releases") }
 }
 
 dependencies {
     // minecraft development api
-    compileOnly("io.papermc.paper:paper-api:1.19.3-R0.1-SNAPSHOT")
+    compileOnly("org.spigotmc:spigot-api:1.19.3-R0.1-SNAPSHOT")
     implementation("net.kyori:adventure-platform-bukkit:4.2.0")
     implementation("net.kyori:adventure-text-minimessage:4.12.0")
     implementation("dev.rollczi.litecommands:bukkit-adventure:2.8.3")
@@ -45,6 +47,9 @@ dependencies {
     // expressible
     implementation("org.panda-lang:expressible:1.3.1")
 
+    // gitcheck
+    implementation("com.eternalcode:gitcheck:1.0.0")
+
     // metrics
     implementation("org.bstats:bstats-bukkit:3.0.0")
 
@@ -53,7 +58,7 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.26")
 
     // jetbrains annotations
-    compileOnly("org.jetbrains:annotations:26.0.0")
+    compileOnly("org.jetbrains:annotations:24.0.0")
 
     // paperlib
     implementation("io.papermc:paperlib:1.0.8")
