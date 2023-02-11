@@ -2,6 +2,9 @@ package com.eternalcode.parcellockers;
 
 import com.eternalcode.parcellockers.command.ParcelCommand;
 import com.eternalcode.parcellockers.command.handler.InvalidUsage;
+import com.eternalcode.parcellockers.command.handler.PermissionMessage;
+import com.eternalcode.parcellockers.configuration.ConfigurationManager;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.updater.Updater;
 import com.eternalcode.parcellockers.util.legacy.LegacyColorProcessor;
@@ -23,27 +26,36 @@ public final class ParcelLockers extends JavaPlugin {
 
     private static ParcelLockers instance;
 
-    private BukkitAudiences audiences;
     private LiteCommands<CommandSender> liteCommands;
+
+    private BukkitAudiences audiences;
     private MiniMessage miniMessage;
     private NotificationAnnouncer announcer;
+
+    private ConfigurationManager configManager;
+    private PluginConfiguration config;
 
     @Override
     public void onEnable() {
         Stopwatch started = Stopwatch.createStarted();
         instance = this;
-
         this.softwareCheck();
+
         this.audiences = BukkitAudiences.create(this);
         this.miniMessage = MiniMessage.builder()
                 .postProcessor(new LegacyColorProcessor())
                 .build();
         this.announcer = new NotificationAnnouncer(this.audiences, this.miniMessage);
 
+        this.configManager = new ConfigurationManager(this.getDataFolder());
+        this.config = this.configManager.load(new PluginConfiguration());
+
         this.liteCommands = LiteBukkitAdventurePlatformFactory.builder(this.getServer(), "parcellockers", false, this.audiences, true)
-                .commandInstance(new ParcelCommand(), new ParcelLockerCommand())
-                .invalidUsageHandler(new InvalidUsage(this.announcer))
+                .commandInstance(new ParcelCommand(), new ParcelLockerCommand(this.configManager, this.config, this.announcer))
+                .invalidUsageHandler(new InvalidUsage(this.announcer, this.config))
+                .permissionHandler(new PermissionMessage(this.announcer, this.config))
                 .register();
+
 
         new Metrics(this, 17677);
         new Updater(this.getLogger()).start();
