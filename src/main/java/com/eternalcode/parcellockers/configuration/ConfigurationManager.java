@@ -9,7 +9,7 @@ import java.util.Set;
 
 public class ConfigurationManager {
 
-    private final Cdn cdn = CdnFactory
+    private static final Cdn CDN = CdnFactory
             .createYamlLike()
             .getSettings()
             .build();
@@ -22,10 +22,10 @@ public class ConfigurationManager {
     }
 
     public <T extends ReloadableConfig> T load(T config) {
-        this.cdn.load(config.resource(this.dataFolder), config)
+        CDN.load(config.resource(this.dataFolder), config)
                 .orThrow(RuntimeException::new);
 
-        this.cdn.render(config, config.resource(this.dataFolder))
+        CDN.render(config, config.resource(this.dataFolder))
                 .orThrow(RuntimeException::new);
 
         this.configs.add(config);

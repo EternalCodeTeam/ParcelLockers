@@ -20,7 +20,7 @@ public class InvalidUsage implements InvalidUsageHandler<CommandSender> {
     public void handle(CommandSender sender, LiteInvocation invocation, Schematic schematic) {
         List<String> schematics = schematic.getSchematics();
 
-        if (schematics.size() == 1) {
+        if (schematic.isOnlyFirst()) {
             this.announcer.sendMessage(sender, "&cInvalid usage! Correct usage: " + schematics.get(0));
             return;
         }
