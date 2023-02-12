@@ -51,7 +51,7 @@ dependencies {
     implementation("com.eternalcode:gitcheck:1.0.0")
 
     // metrics
-    implementation("org.bstats:bstats-bukkit:3.0.0")
+    implementation("org.bstats:bstats-bukkit:3.0.1")
 
     // lombok
     compileOnly("org.projectlombok:lombok:1.18.26")
