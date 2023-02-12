@@ -1,11 +1,20 @@
 # ParcelLockers
 
+### ParcelLockers is a parcel plugin, dedicated for Spigot-based servers.
+
+<div align="center">
+
 [![Supports Paper](https://raw.githubusercontent.com/intergrav/devins-badges/v3/assets/cozy/supported/paper_vector.svg)](https://papermc.io)
+[![Supports Spigot](https://raw.githubusercontent.com/intergrav/devins-badges/v3/assets/cozy/supported/spigot_vector.svg)](https://spigotmc.org)
+
+[![Patreon](https://raw.githubusercontent.com/intergrav/devins-badges/v3/assets/cozy/donate/patreon-plural_vector.svg)](https://www.patreon.com/eternalcode)
+[![Website](https://raw.githubusercontent.com/intergrav/devins-badges/v3/assets/cozy/documentation/website_vector.svg)](https://eternalcode.pl/)
 [![Discord](https://raw.githubusercontent.com/intergrav/devins-badges/v3/assets/cozy/social/discord-plural_vector.svg)](https://discord.gg/FQ7jmGBd6c)
+
 [![Gradle](https://raw.githubusercontent.com/intergrav/devins-badges/v3/assets/cozy/built-with/gradle_vector.svg)](https://gradle.org/)
 [![Java](https://raw.githubusercontent.com/intergrav/devins-badges/v3/assets/cozy/built-with/java17_vector.svg)](https://www.java.com/)
 
-### ParcelLockers is a parcel plugin, dedicated for Spigot-based servers.
+</div>
 
 # Warning ❗
 
@@ -50,12 +59,12 @@ more.
 # Other dependencies usages
 
 - [LiteCommands (by Rollczi ❤️)](https://github.com/Rollczi/LiteCommands)
-- [Kyori Adventure](https://docs.adventure.kyori.net/)
+- [Adventure API & MiniMessage](https://docs.adventure.kyori.net/)
 - [CDN Configs](https://github.com/dzikoysk/cdn)
 - [PaperLib](https://github.com/PaperMC/PaperLib)
 - [Lombok](https://projectlombok.org)
-- [Paper API](https://papermc.io/using-the-api#gradle)
-- [Expressible](https://github.com/dzikoysk/expressible) by [dzikoysk](https://github.com/dzikoysk)
+- [Spigot API](https://www.spigotmc.org/wiki/spigot-maven/#build-gradle)
+- [expressible](https://github.com/dzikoysk/expressible)
 - [panda-utilities](https://github.com/panda-lang/panda)
 - [Errorprone](https://github.com/google/error-prone)
 - [TriumphGUI](https://github.com/TriumphTeam/triumph-gui)
@@ -63,7 +72,7 @@ more.
 
 ParcelLockers is a advanced parcel delivery plugin, dedicated for Spigot-based servers.
 
-🚫 Found an issue? Report it [here](https://github.com/Jakubk15/ParcelLockers/issues).
+🚫 Found an issue? Report it [here](https://github.com/EternalCodeTeam/ParcelLockers/issues).
 
 🧩 Are you a developer and want to add something? Feel free
-to [create a pull request](https://github.com/Jakubk15/ParcelLockers/pulls).
+to [create a pull request](https://github.com/EternalCodeTeam/ParcelLockers/pulls).
