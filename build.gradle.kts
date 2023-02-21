@@ -58,7 +58,7 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.26")
 
     // jetbrains annotations
-    compileOnly("org.jetbrains:annotations:24.0.0")
+    api("org.jetbrains:annotations:24.0.0")
 
     // paperlib
     implementation("io.papermc:paperlib:1.0.8")
@@ -77,6 +77,15 @@ dependencies {
 
 java {
     toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+}
+
+checkstyle {
+    toolVersion = "10.7.0"
+
+    configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
+
+    maxErrors = 0
+    maxWarnings = 0
 }
 
 bukkit {
@@ -125,3 +134,4 @@ tasks {
         minecraftVersion("1.19.3")
     }
 }
+
