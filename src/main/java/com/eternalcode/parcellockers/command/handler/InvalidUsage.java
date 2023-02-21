@@ -24,9 +24,14 @@ public class InvalidUsage implements InvalidUsageHandler<CommandSender> {
     public void handle(CommandSender sender, LiteInvocation invocation, Schematic schematic) {
         List<String> schematics = schematic.getSchematics();
 
+        if (schematic.isOnlyFirst()) {
+            this.announcer.sendMessage(sender, this.config.messages.invalidUsage);
+            return;
+        }
+
         for (String scheme : schematics) {
             Formatter formatter = new Formatter()
-                    .register("{USAGE}", scheme);
+                    .register("&7› &3{USAGE}", scheme);
 
             this.announcer.sendMessage(sender, formatter.format(this.config.messages.invalidUsage));
         }
