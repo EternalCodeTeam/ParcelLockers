@@ -70,7 +70,7 @@ dependencies {
     errorprone("com.google.errorprone:error_prone_core:2.18.0")
 
     // java discord api
-    implementation("net.dv8tion:JDA:5.0.0-beta.3") {
+    implementation("net.dv8tion:JDA:5.0.0-beta.4") {
         exclude(module = "opus-java")
     }
 }
