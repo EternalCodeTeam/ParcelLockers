@@ -3,9 +3,9 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 plugins {
     `java-library`
     checkstyle
-    id("net.minecrell.plugin-yml.bukkit") version "0.5.2"
+    id("net.minecrell.plugin-yml.bukkit") version "0.5.3"
     id("xyz.jpenilla.run-paper") version "2.0.1"
-    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("com.github.johnrengelman.shadow") version "8.0.0"
     id("net.ltgt.errorprone") version "3.0.1"
 }
 
@@ -33,7 +33,7 @@ dependencies {
     compileOnly("org.spigotmc:spigot-api:1.19.3-R0.1-SNAPSHOT")
     implementation("net.kyori:adventure-platform-bukkit:4.2.0")
     implementation("net.kyori:adventure-text-minimessage:4.12.0")
-    implementation("dev.rollczi.litecommands:bukkit-adventure:2.8.3")
+    implementation("dev.rollczi.litecommands:bukkit-adventure:2.8.4")
 
     // skull api
     implementation("dev.rollczi:liteskullapi:1.3.0")
@@ -80,7 +80,7 @@ java {
 }
 
 checkstyle {
-    toolVersion = "10.7.0"
+    toolVersion = "10.8.0"
 
     configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
 
