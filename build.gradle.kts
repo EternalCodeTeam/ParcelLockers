@@ -5,7 +5,7 @@ plugins {
     checkstyle
     id("net.minecrell.plugin-yml.bukkit") version "0.5.3"
     id("xyz.jpenilla.run-paper") version "2.0.1"
-    id("com.github.johnrengelman.shadow") version "8.0.0"
+    id("com.github.johnrengelman.shadow") version "8.1.0"
     id("net.ltgt.errorprone") version "3.0.1"
 }
 
@@ -42,7 +42,7 @@ dependencies {
     implementation("dev.triumphteam:triumph-gui:3.1.4")
 
     // CDN
-    implementation("net.dzikoysk:cdn:1.14.3")
+    implementation("net.dzikoysk:cdn:1.14.4")
 
     // expressible
     implementation("org.panda-lang:expressible:1.3.1")
@@ -58,7 +58,7 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.26")
 
     // jetbrains annotations
-    api("org.jetbrains:annotations:24.0.0")
+    api("org.jetbrains:annotations:24.0.1")
 
     // paperlib
     implementation("io.papermc:paperlib:1.0.8")
@@ -70,7 +70,7 @@ dependencies {
     errorprone("com.google.errorprone:error_prone_core:2.18.0")
 
     // java discord api
-    implementation("net.dv8tion:JDA:5.0.0-beta.4") {
+    implementation("net.dv8tion:JDA:5.0.0-beta.5") {
         exclude(module = "opus-java")
     }
 }
