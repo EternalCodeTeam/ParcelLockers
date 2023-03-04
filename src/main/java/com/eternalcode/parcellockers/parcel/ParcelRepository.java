@@ -1,11 +1,14 @@
 package com.eternalcode.parcellockers.parcel;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 public interface ParcelRepository {
 
-    CompletableFuture<Void> update(Parcel parcel);
+    void save(Parcel parcel);
 
-    CompletableFuture<Parcel> find(UUID parcelUUID);
+    Optional<Parcel> findByUuid(UUID uuid);
+
+    List<Parcel> findAll();
 }

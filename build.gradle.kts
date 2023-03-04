@@ -37,8 +37,7 @@ dependencies {
     implementation("dev.rollczi.litecommands:bukkit-adventure:2.8.4")
 
     // database
-    implementation("eu.okaeri:okaeri-persistence-jdbc:2.0.0-beta.1")
-    implementation("eu.okaeri:okaeri-persistence-flat:2.0.0-beta.1")
+    implementation("mysql:mysql-connector-java:8.0.32")
 
     // skull api
     implementation("dev.rollczi:liteskullapi:1.3.0")

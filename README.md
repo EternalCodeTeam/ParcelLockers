@@ -1,6 +1,6 @@
 # ParcelLockers
 
-### ParcelLockers is a parcel plugin, dedicated for Spigot-based servers.
+### ParcelLockers is a user plugin, dedicated for Spigot-based servers.
 
 <div align="center">
 
@@ -70,7 +70,7 @@ more.
 - [TriumphGUI](https://github.com/TriumphTeam/triumph-gui)
 - [bStats](https://bstats.org/)
 
-ParcelLockers is a advanced parcel delivery plugin, dedicated for Spigot-based servers.
+ParcelLockers is a advanced user delivery plugin, dedicated for Spigot-based servers.
 
 🚫 Found an issue? Report it [here](https://github.com/EternalCodeTeam/ParcelLockers/issues).
 

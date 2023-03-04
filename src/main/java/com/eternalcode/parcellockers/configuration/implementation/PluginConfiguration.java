@@ -21,6 +21,15 @@ public class PluginConfiguration implements ReloadableConfig {
 
         @Description({" ", "# Whether the player after entering the server should receive information about the new version of the plugin?"})
         public boolean receiveUpdates = true;
+
+        @Description({" ", "# The URL to the database."})
+        public String databaseUrl = "jdbc:mysql://localhost:3306/parcellockers?useSSL=false";
+
+        @Description({" ", "# The database user."})
+        public String user = "root";
+
+        @Description({" ", "# The database password."})
+        public String password = "password";
     }
 
     @Contextual
