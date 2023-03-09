@@ -33,7 +33,7 @@ dependencies {
     compileOnly("org.spigotmc:spigot-api:1.19.3-R0.1-SNAPSHOT")
     implementation("net.kyori:adventure-platform-bukkit:4.2.0")
     implementation("net.kyori:adventure-text-minimessage:4.12.0")
-    implementation("dev.rollczi.litecommands:bukkit-adventure:2.8.5")
+    implementation("dev.rollczi.litecommands:bukkit-adventure:2.8.6")
 
     // skull api
     implementation("dev.rollczi:liteskullapi:1.3.0")
@@ -80,7 +80,7 @@ java {
 }
 
 checkstyle {
-    toolVersion = "10.8.0"
+    toolVersion = "10.8.1"
 
     configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
 
