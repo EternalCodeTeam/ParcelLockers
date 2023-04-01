@@ -3,10 +3,12 @@ package com.eternalcode.parcellockers.user;
 import com.eternalcode.parcellockers.ParcelLockers;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.database.JdbcConnectionProvider;
-import com.eternalcode.parcellockers.database.LastLoginStorage;
 import lombok.SneakyThrows;
 import org.bukkit.entity.Player;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -23,23 +25,31 @@ public class UserRepositoryJdbcImpl implements UserRepository {
 
     @Override
     public void save(Player user) {
-        this.jdbcConnectionProvider.executeUpdate("INSERT INTO `users` (`uuid`, `name`, `lastLogin`) VALUES (" + user.getUniqueId() + "," + user.getName() + "," + LastLoginStorage.lastLoginMap.get(user.getUniqueId()).toEpochMilli() + " ) ON DUPLICATE KEY UPDATE `name` = ?, `lastLogin` = ?");
+        this.jdbcConnectionProvider.executeUpdate("INSERT INTO `users` (`uuid`, `name`) VALUES (" + user.getUniqueId() + "," + user.getName() + ") ON DUPLICATE KEY UPDATE `name` = ?");
     }
 
+    @SneakyThrows
     @Override
     public Optional<User> findByName(String name) {
-        return Optional.empty();
+        Connection connection = this.jdbcConnectionProvider.createConnection();
+        PreparedStatement statement = connection.prepareStatement("SELECT * FROM `users` WHERE `name` = ? LIMIT 1".replace("?", name));
+        ResultSet resultSet = statement.getResultSet();
+        return Optional.of(new User(UUID.fromString(resultSet.getString("uuid")), resultSet.getString("name"), null));
     }
 
+    @SneakyThrows
     @Override
     public Optional<User> findByUuid(UUID uuid) {
-
+        Connection connection = this.jdbcConnectionProvider.createConnection();
+        PreparedStatement statement = connection.prepareStatement("SELECT * FROM `users` WHERE `uuid` = ? LIMIT 1".replace("?", uuid.toString()));
+        ResultSet resultSet = statement.getResultSet();
+        return Optional.of(new User(UUID.fromString(resultSet.getString("uuid")), resultSet.getString("name"), null));
     }
 
     @SneakyThrows
     @Override
     public List<User> findAll() {
-
+        
     }
 
     @SneakyThrows

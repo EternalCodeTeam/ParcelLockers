@@ -36,5 +36,4 @@ public class JdbcConnectionProvider {
             throw new RuntimeException(e);
         }
     }
-
 }
