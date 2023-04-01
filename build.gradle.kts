@@ -5,7 +5,7 @@ plugins {
     checkstyle
     id("net.minecrell.plugin-yml.bukkit") version "0.5.3"
     id("xyz.jpenilla.run-paper") version "2.0.1"
-    id("com.github.johnrengelman.shadow") version "8.1.0"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
     id("net.ltgt.errorprone") version "3.0.1"
 }
 
@@ -51,7 +51,7 @@ dependencies {
     implementation("com.eternalcode:gitcheck:1.0.0")
 
     // metrics
-    implementation("org.bstats:bstats-bukkit:3.0.1")
+    implementation("org.bstats:bstats-bukkit:3.0.2")
 
     // lombok
     compileOnly("org.projectlombok:lombok:1.18.26")
@@ -70,7 +70,7 @@ dependencies {
     errorprone("com.google.errorprone:error_prone_core:2.18.0")
 
     // java discord api
-    implementation("net.dv8tion:JDA:5.0.0-beta.5") {
+    implementation("net.dv8tion:JDA:5.0.0-beta.6") {
         exclude(module = "opus-java")
     }
 }
@@ -80,7 +80,7 @@ java {
 }
 
 checkstyle {
-    toolVersion = "10.8.1"
+    toolVersion = "10.9.3"
 
     configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
 
