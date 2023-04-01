@@ -4,6 +4,8 @@ package com.eternalcode.parcellockers.parcel;
 import com.eternalcode.parcellockers.database.JdbcConnectionProvider;
 import lombok.SneakyThrows;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -37,7 +39,25 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
 
     @Override
     public List<Parcel> findAll() {
-        return null;
+        ResultSet resultSet = this.jdbcConnectionProvider.executeQuery("SELECT * FROM `parcels`");
+        try {
+            Parcel parcel = new Parcel(
+                    UUID.fromString(resultSet.getString("uuid")),
+                    UUID.fromString(resultSet.getString("sender")),
+                    new ParcelMeta(
+                            resultSet.getString("name"),
+                            resultSet.getString("description"),
+                            resultSet.getBoolean("priority"),
+                            UUID.fromString(resultSet.getString("receiver")),
+                            ParcelSize.valueOf(resultSet.getString("size")),
+                            UUID.fromString(resultSet.getString("entryLocker")),
+                            UUID.fromString(resultSet.getString("destinationLocker"))
+                    )
+            );
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     @SneakyThrows
@@ -52,6 +72,7 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
                 " `destinationLocker` VARCHAR(36) NOT NULL," +
                 " `sender` VARCHAR(36) NOT NULL," +
                 "  PRIMARY KEY (`uuid`))");
+        return new ParcelRepositoryJdbcImpl(jdbcConnectionProvider);
     }
 
 }

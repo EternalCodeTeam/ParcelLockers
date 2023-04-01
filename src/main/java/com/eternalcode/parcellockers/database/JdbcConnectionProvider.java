@@ -3,6 +3,7 @@ package com.eternalcode.parcellockers.database;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class JdbcConnectionProvider {
@@ -32,6 +33,16 @@ public class JdbcConnectionProvider {
              PreparedStatement statement = connection.prepareStatement(sql)
         ) {
             return statement.execute();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public ResultSet executeQuery(String sql) {
+        try (Connection connection = this.createConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
+            return statement.executeQuery();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
