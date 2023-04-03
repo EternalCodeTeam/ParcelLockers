@@ -20,10 +20,10 @@ public class LocationUtil {
         double z = Double.parseDouble(parts[3].substring(parts[3].indexOf("=") + 1));
         float pitch = 0;
         float yaw = 0;
-        if (!parts[4].isEmpty() || !parts[4].isBlank()) {
+        if (!parts[4].isEmpty() && !parts[4].isBlank()) {
             pitch = Float.parseFloat(parts[4].substring(parts[4].indexOf("=") + 1));
         }
-        if (!parts[5].isEmpty() || !parts[5].isBlank()) {
+        if (!parts[5].isEmpty() && !parts[5].isBlank()) {
             yaw = Float.parseFloat(parts[5].substring(parts[5].indexOf("=") + 1));
         }
 
