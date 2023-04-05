@@ -106,6 +106,7 @@ bukkit {
 
 tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
+    options.isIncremental = true
 }
 
 tasks.withType<ShadowJar> {

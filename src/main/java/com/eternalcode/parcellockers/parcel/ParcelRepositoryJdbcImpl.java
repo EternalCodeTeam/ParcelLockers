@@ -5,7 +5,6 @@ import com.eternalcode.parcellockers.database.JdbcConnectionProvider;
 import lombok.SneakyThrows;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -37,27 +36,23 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
         return Optional.empty();
     }
 
+    @SneakyThrows
     @Override
     public List<Parcel> findAll() {
         ResultSet resultSet = this.jdbcConnectionProvider.executeQuery("SELECT * FROM `parcels`");
-        try {
-            Parcel parcel = new Parcel(
-                    UUID.fromString(resultSet.getString("uuid")),
-                    UUID.fromString(resultSet.getString("sender")),
-                    new ParcelMeta(
-                            resultSet.getString("name"),
-                            resultSet.getString("description"),
-                            resultSet.getBoolean("priority"),
-                            UUID.fromString(resultSet.getString("receiver")),
-                            ParcelSize.valueOf(resultSet.getString("size")),
-                            UUID.fromString(resultSet.getString("entryLocker")),
-                            UUID.fromString(resultSet.getString("destinationLocker"))
-                    )
-            );
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-
+        return new Parcel(
+                UUID.fromString(resultSet.getString("uuid")),
+                UUID.fromString(resultSet.getString("sender")),
+                new ParcelMeta(
+                        resultSet.getString("name"),
+                        resultSet.getString("description"),
+                        resultSet.getBoolean("priority"),
+                        UUID.fromString(resultSet.getString("receiver")),
+                        ParcelSize.valueOf(resultSet.getString("size")),
+                        new ParcelRepositoryJdbcImpl(this.jdbcConnectionProvider).findByUuid(UUID.fromString(resultSet.getString("entryLocker"))).get().getMeta().getEntryLocker(),
+                        new ParcelRepositoryJdbcImpl(this.jdbcConnectionProvider).findByUuid(UUID.fromString(resultSet.getString("destinationLocker"))).get().getMeta().getDestinationLocker(
+                        )
+                ));
     }
 
     @SneakyThrows
