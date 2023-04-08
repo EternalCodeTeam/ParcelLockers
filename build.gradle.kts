@@ -34,8 +34,8 @@ dependencies {
     compileOnly("org.spigotmc:spigot-api:1.19.3-R0.1-SNAPSHOT")
     implementation("net.kyori:adventure-platform-bukkit:4.3.0")
     implementation("net.kyori:adventure-text-minimessage:4.13.0")
-    implementation("dev.rollczi.litecommands:bukkit-adventure:2.8.6")
-
+    implementation("dev.rollczi.litecommands:bukkit-adventure:2.8.7")
+    
     // database
     implementation("mysql:mysql-connector-java:8.0.32")
 
