@@ -1,7 +1,6 @@
 package com.eternalcode.parcellockers.parcel;
 
 import com.eternalcode.parcellockers.database.JdbcConnectionProvider;
-import lombok.SneakyThrows;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -89,8 +88,7 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
         }
         return parcels;
     }
-
-    @SneakyThrows
+    
     public static ParcelRepositoryJdbcImpl create(JdbcConnectionProvider jdbcConnectionProvider) {
         jdbcConnectionProvider.executeUpdate("CREATE TABLE IF NOT EXISTS `parcels` (`uuid` VARCHAR(36) NOT NULL," +
                 " `name` VARCHAR(24) NOT NULL," +
