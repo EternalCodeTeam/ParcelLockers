@@ -37,7 +37,6 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
 
     @Override
     public Optional<Parcel> findByUuid(UUID uuid) {
-
         try (ResultSet resultSet = this.jdbcConnectionProvider.executeQuery("SELECT * FROM `parcels` WHERE `uuid` = " + uuid)) {
             if (resultSet.next()) {
                 ParcelMeta meta = new ParcelMeta(
@@ -88,7 +87,7 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
         }
         return parcels;
     }
-    
+
     public static ParcelRepositoryJdbcImpl create(JdbcConnectionProvider jdbcConnectionProvider) {
         jdbcConnectionProvider.executeUpdate("CREATE TABLE IF NOT EXISTS `parcels` (`uuid` VARCHAR(36) NOT NULL," +
                 " `name` VARCHAR(24) NOT NULL," +

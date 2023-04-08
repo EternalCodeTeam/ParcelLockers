@@ -45,6 +45,7 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
 
         try (ResultSet resultSet = this.provider.executeQuery("SELECT * FROM `parcelLockers`")) {
             while (resultSet.next()) {
+
                 ParcelLocker parcelLocker = new ParcelLocker(
                         UUID.fromString(resultSet.getString("uuid")),
                         resultSet.getString("description"),
