@@ -33,8 +33,8 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
                     LocationUtil.parseLocation(resultSet.getString("location"))
             ));
 
-        } catch (SQLException ex) {
-            throw new RuntimeException(ex);
+        } catch (SQLException exception) {
+            throw new RuntimeException(exception);
         }
     }
 
@@ -51,8 +51,8 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
                 ));
             }
             return results;
-        } catch (SQLException ex) {
-            throw new RuntimeException(ex);
+        } catch (SQLException exception) {
+            throw new RuntimeException(exception);
         }
     }
 

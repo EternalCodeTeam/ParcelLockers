@@ -66,7 +66,8 @@ public final class ParcelLockers extends JavaPlugin {
         this.liteCommands = LiteBukkitAdventurePlatformFactory.builder(this.getServer(), "parcellockers", false, this.audiences, true)
                 .argument(Parcel.class, new ParcelArgument(this.parcelRepository))
                 .contextualBind(Player.class, new BukkitOnlyPlayerContextual<>(this.config.messages.onlyForPlayers))
-                .commandInstance(new ParcelCommand(this.announcer, this.config), new ParcelLockerCommand(this.configManager, this.config, this.announcer))
+                .commandInstance(new ParcelCommand(this.announcer, this.config),
+                        new ParcelLockerCommand(this.configManager, this.config, this.announcer))
                 .invalidUsageHandler(new InvalidUsage(this.announcer, this.config))
                 .permissionHandler(new PermissionMessage(this.announcer, this.config))
                 .register();
@@ -79,7 +80,7 @@ public final class ParcelLockers extends JavaPlugin {
         new Metrics(this, 17677);
         this.updater = new UpdaterService(this.getDescription());
 
-        long millis = started.elapsed(TimeUnit.MILLISECONDS);
+        long millis = started.stop().elapsed(TimeUnit.MILLISECONDS);
         this.getLogger().info("Successfully enabled ParcelLockers in " + millis + "ms");
     }
 
