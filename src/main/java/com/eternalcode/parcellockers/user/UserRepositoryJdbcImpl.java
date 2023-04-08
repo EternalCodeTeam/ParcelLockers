@@ -33,10 +33,13 @@ public class UserRepositoryJdbcImpl implements UserRepository {
     @Override
     public Optional<User> findByName(String name) {
         try (ResultSet resultSet = this.jdbcConnectionProvider.executeQuery("SELECT * FROM `users` WHERE `name` = ? LIMIT 1".replace("?", name))) {
+
             Set<Parcel> parcelSet = this.parcelRepository.findAll();
             Set<UUID> userParcels = new HashSet<>();
+
             while (resultSet.next()) {
                 for (Parcel parcel : parcelSet) {
+
                     UUID target = UUID.fromString(resultSet.getString("uuid"));
                     if (parcel.getSender().equals(target)) {
                         userParcels.add(parcel.getUuid());
@@ -53,12 +56,16 @@ public class UserRepositoryJdbcImpl implements UserRepository {
 
     @Override
     public Optional<User> findByUuid(UUID uuid) {
+
         try (ResultSet resultSet = this.jdbcConnectionProvider.executeQuery("SELECT * FROM `users` WHERE `uuid` = ? LIMIT 1".replace("?", uuid.toString()))) {
+
             Set<Parcel> parcelSet = this.parcelRepository.findAll();
             Set<UUID> userParcels = new HashSet<>();
+
             while (resultSet.next()) {
                 for (Parcel parcel : parcelSet) {
                     UUID target = UUID.fromString(resultSet.getString("uuid"));
+
                     if (parcel.getSender().equals(target)) {
                         userParcels.add(parcel.getUuid());
                     }
@@ -78,10 +85,13 @@ public class UserRepositoryJdbcImpl implements UserRepository {
         List<User> users = new ArrayList<>();
 
         try (ResultSet resultSet = this.jdbcConnectionProvider.executeQuery("SELECT * FROM `users`")) {
+
             while (resultSet.next()) {
                 Set<UUID> userParcels = new HashSet<>();
+
                 for (Parcel parcel : parcelSet) {
                     UUID target = UUID.fromString(resultSet.getString("uuid"));
+
                     if (parcel.getSender().equals(target)) {
                         userParcels.add(parcel.getUuid());
                     }
