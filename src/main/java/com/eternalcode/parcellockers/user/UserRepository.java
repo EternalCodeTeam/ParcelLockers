@@ -1,14 +1,13 @@
 package com.eternalcode.parcellockers.user;
 
-import org.bukkit.entity.Player;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public interface UserRepository {
 
-    void save(Player user);
+    CompletableFuture<Void> save(User user);
 
     Optional<User> findByName(String name);
 

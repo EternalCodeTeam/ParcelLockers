@@ -6,7 +6,6 @@ import com.eternalcode.parcellockers.database.JdbcConnectionProvider;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelRepositoryJdbcImpl;
 import lombok.SneakyThrows;
-import org.bukkit.entity.Player;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -17,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public class UserRepositoryJdbcImpl implements UserRepository {
 
@@ -29,8 +29,9 @@ public class UserRepositoryJdbcImpl implements UserRepository {
     }
 
     @Override
-    public void save(Player user) {
-        this.jdbcConnectionProvider.executeUpdate("INSERT INTO `users` (`uuid`, `name`) VALUES (" + user.getUniqueId() + "," + user.getName() + ") ON DUPLICATE KEY UPDATE `name` = ?");
+    public CompletableFuture<Void> save(User user) {
+        return CompletableFuture.runAsync(() ->
+                this.jdbcConnectionProvider.executeUpdate("INSERT INTO `users` (`uuid`, `name`) VALUES (" + user.getUuid() + "," + user.getName() + ") ON DUPLICATE KEY UPDATE `name` = ?"));
     }
 
     @SneakyThrows

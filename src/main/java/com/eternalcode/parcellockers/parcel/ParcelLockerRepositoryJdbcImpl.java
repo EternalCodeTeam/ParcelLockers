@@ -5,9 +5,11 @@ import com.eternalcode.parcellockers.util.LocationUtil;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
 
@@ -18,14 +20,13 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
     }
 
     @Override
-    public void save(ParcelLocker parcelLocker) {
-        this.provider.executeUpdate("INSERT INTO `parcelLockers` (`uuid`, `description`, `location`, `size`) VALUES (" + parcelLocker.getUuid().toString() + ", " + parcelLocker.getDescription() + ", " + parcelLocker.getLocation().toString() + ")");
+    public CompletableFuture<Void> save(ParcelLocker parcelLocker) {
+        return CompletableFuture.runAsync(() -> this.provider.executeUpdate("INSERT INTO `parcelLockers` (`uuid`, `description`, `location`, `size`) VALUES (" + parcelLocker.getUuid().toString() + ", " + parcelLocker.getDescription() + ", " + parcelLocker.getLocation().toString() + ")"));
     }
 
     @Override
     public Optional<ParcelLocker> findByUuid(UUID uuid) {
-        ResultSet resultSet = this.provider.executeQuery("SELECT * FROM `parcelLockers` WHERE `uuid` = " + uuid.toString());
-        try {
+        try (ResultSet resultSet = this.provider.executeQuery("SELECT * FROM `parcelLockers` WHERE `uuid` = " + uuid.toString())) {
             return Optional.of(new ParcelLocker(
                     UUID.fromString(resultSet.getString("uuid")),
                     resultSet.getString("description"),
@@ -39,7 +40,20 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
 
     @Override
     public List<ParcelLocker> findAll() {
-        return null;
+        List<ParcelLocker> results = new ArrayList<>();
+
+        try (ResultSet resultSet = this.provider.executeQuery("SELECT * FROM `parcelLockers`")) {
+            while (resultSet.next()) {
+                results.add(new ParcelLocker(
+                        UUID.fromString(resultSet.getString("uuid")),
+                        resultSet.getString("description"),
+                        LocationUtil.parseLocation(resultSet.getString("location"))
+                ));
+            }
+            return results;
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     public static ParcelLockerRepositoryJdbcImpl create(JdbcConnectionProvider provider) {

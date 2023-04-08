@@ -9,17 +9,22 @@ import com.eternalcode.parcellockers.configuration.implementation.PluginConfigur
 import com.eternalcode.parcellockers.database.JdbcConnectionProvider;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.Parcel;
+import com.eternalcode.parcellockers.parcel.ParcelLockerRepositoryJdbcImpl;
+import com.eternalcode.parcellockers.parcel.ParcelRepositoryJdbcImpl;
 import com.eternalcode.parcellockers.updater.UpdaterService;
+import com.eternalcode.parcellockers.user.UserRepositoryJdbcImpl;
 import com.eternalcode.parcellockers.util.legacy.LegacyColorProcessor;
 import com.google.common.base.Stopwatch;
 import dev.rollczi.litecommands.LiteCommands;
 import dev.rollczi.litecommands.bukkit.adventure.platform.LiteBukkitAdventurePlatformFactory;
+import dev.rollczi.litecommands.bukkit.tools.BukkitOnlyPlayerContextual;
 import io.papermc.lib.PaperLib;
 import io.papermc.lib.environments.Environment;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.concurrent.TimeUnit;
@@ -36,6 +41,9 @@ public final class ParcelLockers extends JavaPlugin {
     private NotificationAnnouncer announcer;
     private UpdaterService updater;
     private JdbcConnectionProvider jdbcConnectionProvider;
+    private ParcelRepositoryJdbcImpl parcelRepository;
+    private ParcelLockerRepositoryJdbcImpl parcelLockerRepository;
+    private UserRepositoryJdbcImpl userRepository;
 
     private ConfigurationManager configManager;
     private PluginConfiguration config;
@@ -56,13 +64,17 @@ public final class ParcelLockers extends JavaPlugin {
         this.config = this.configManager.load(new PluginConfiguration());
 
         this.liteCommands = LiteBukkitAdventurePlatformFactory.builder(this.getServer(), "parcellockers", false, this.audiences, true)
-                .argument(Parcel.class, new ParcelArgument())
+                .argument(Parcel.class, new ParcelArgument(this.parcelRepository))
+                .contextualBind(Player.class, new BukkitOnlyPlayerContextual<>(this.config.messages.onlyForPlayers))
                 .commandInstance(new ParcelCommand(this.announcer, this.config), new ParcelLockerCommand(this.configManager, this.config, this.announcer))
                 .invalidUsageHandler(new InvalidUsage(this.announcer, this.config))
                 .permissionHandler(new PermissionMessage(this.announcer, this.config))
                 .register();
 
         this.jdbcConnectionProvider = new JdbcConnectionProvider(this.config.settings.databaseUrl, this.config.settings.user, this.config.settings.password);
+        this.parcelLockerRepository = ParcelLockerRepositoryJdbcImpl.create(this.jdbcConnectionProvider);
+        this.parcelRepository = ParcelRepositoryJdbcImpl.create(this.jdbcConnectionProvider);
+        this.userRepository = UserRepositoryJdbcImpl.create(this.jdbcConnectionProvider);
 
         new Metrics(this, 17677);
         this.updater = new UpdaterService(this.getDescription());
@@ -140,6 +152,17 @@ public final class ParcelLockers extends JavaPlugin {
         return this.config;
     }
 
+    public ParcelRepositoryJdbcImpl getParcelRepository() {
+        return this.parcelRepository;
+    }
+
+    public ParcelLockerRepositoryJdbcImpl getParcelLockerRepository() {
+        return this.parcelLockerRepository;
+    }
+
+    public UserRepositoryJdbcImpl getUserRepository() {
+        return this.userRepository;
+    }
 }
 
 

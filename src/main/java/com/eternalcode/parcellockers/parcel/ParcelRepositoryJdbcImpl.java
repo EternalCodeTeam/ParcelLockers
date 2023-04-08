@@ -1,6 +1,5 @@
 package com.eternalcode.parcellockers.parcel;
 
-
 import com.eternalcode.parcellockers.database.JdbcConnectionProvider;
 import lombok.SneakyThrows;
 
@@ -10,6 +9,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public class ParcelRepositoryJdbcImpl implements ParcelRepository {
 
@@ -20,24 +20,25 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
     }
 
     @Override
-    public void save(Parcel parcel) {
-        this.jdbcConnectionProvider.executeUpdate("INSERT INTO `parcels` (`uuid`, `name`, `description`, `priority`, `receiver`, `size`, `entryLocker`, `destinationLocker`, `sender`) VALUES ("
-                + parcel.getUuid()
-                + "," + parcel.getMeta().getName()
-                + "," + parcel.getMeta().getDescription()
-                + "," + parcel.getMeta().isPriority()
-                + "," + parcel.getMeta().getReceiver()
-                + "," + parcel.getMeta().getSize().name()
-                + "," + parcel.getMeta().getEntryLocker()
-                + "," + parcel.getMeta().getDestinationLocker()
-                + "," + parcel.getSender() + " )");
+    public CompletableFuture<Void> save(Parcel parcel) {
+        return CompletableFuture.runAsync(() -> {
+            this.jdbcConnectionProvider.executeUpdate("INSERT INTO `parcels` (`uuid`, `name`, `description`, `priority`, `receiver`, `size`, `entryLocker`, `destinationLocker`, `sender`) VALUES ("
+                    + parcel.getUuid()
+                    + "," + parcel.getMeta().getName()
+                    + "," + parcel.getMeta().getDescription()
+                    + "," + parcel.getMeta().isPriority()
+                    + "," + parcel.getMeta().getReceiver()
+                    + "," + parcel.getMeta().getSize().name()
+                    + "," + parcel.getMeta().getEntryLocker()
+                    + "," + parcel.getMeta().getDestinationLocker()
+                    + "," + parcel.getSender() + " )");
+        });
     }
 
     @Override
     public Optional<Parcel> findByUuid(UUID uuid) {
-        ResultSet resultSet = this.jdbcConnectionProvider.executeQuery("SELECT * FROM `parcels` WHERE `uuid` = " + uuid);
 
-        try {
+        try (ResultSet resultSet = this.jdbcConnectionProvider.executeQuery("SELECT * FROM `parcels` WHERE `uuid` = " + uuid)) {
             if (resultSet.next()) {
                 return Optional.of(new Parcel(
                         UUID.fromString(resultSet.getString("uuid")),
@@ -48,8 +49,8 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
                                 resultSet.getBoolean("priority"),
                                 UUID.fromString(resultSet.getString("receiver")),
                                 ParcelSize.valueOf(resultSet.getString("size")),
-                                new ParcelRepositoryJdbcImpl(this.jdbcConnectionProvider).findByUuid(UUID.fromString(resultSet.getString("entryLocker"))).get().getMeta().getEntryLocker(),
-                                new ParcelRepositoryJdbcImpl(this.jdbcConnectionProvider).findByUuid(UUID.fromString(resultSet.getString("destinationLocker"))).get().getMeta().getDestinationLocker(
+                                this.findByUuid(UUID.fromString(resultSet.getString("entryLocker"))).get().getMeta().getEntryLocker(),
+                                this.findByUuid(UUID.fromString(resultSet.getString("destinationLocker"))).get().getMeta().getDestinationLocker(
                                 )
                         )));
             }
@@ -61,10 +62,9 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
 
     @Override
     public Set<Parcel> findAll() {
-        ResultSet resultSet = this.jdbcConnectionProvider.executeQuery("SELECT * FROM `parcels`");
         Set<Parcel> parcels = new HashSet<>();
 
-        try {
+        try (ResultSet resultSet = this.jdbcConnectionProvider.executeQuery("SELECT * FROM `parcels`")) {
             while (resultSet.next()) {
                 parcels.add(new Parcel(
                         UUID.fromString(resultSet.getString("uuid")),
