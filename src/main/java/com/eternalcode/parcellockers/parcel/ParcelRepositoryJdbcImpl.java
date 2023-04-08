@@ -5,8 +5,10 @@ import com.eternalcode.parcellockers.database.JdbcConnectionProvider;
 import lombok.SneakyThrows;
 
 import java.sql.ResultSet;
-import java.util.List;
+import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 public class ParcelRepositoryJdbcImpl implements ParcelRepository {
@@ -33,26 +35,55 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
 
     @Override
     public Optional<Parcel> findByUuid(UUID uuid) {
+        ResultSet resultSet = this.jdbcConnectionProvider.executeQuery("SELECT * FROM `parcels` WHERE `uuid` = " + uuid);
+
+        try {
+            if (resultSet.next()) {
+                return Optional.of(new Parcel(
+                        UUID.fromString(resultSet.getString("uuid")),
+                        UUID.fromString(resultSet.getString("sender")),
+                        new ParcelMeta(
+                                resultSet.getString("name"),
+                                resultSet.getString("description"),
+                                resultSet.getBoolean("priority"),
+                                UUID.fromString(resultSet.getString("receiver")),
+                                ParcelSize.valueOf(resultSet.getString("size")),
+                                new ParcelRepositoryJdbcImpl(this.jdbcConnectionProvider).findByUuid(UUID.fromString(resultSet.getString("entryLocker"))).get().getMeta().getEntryLocker(),
+                                new ParcelRepositoryJdbcImpl(this.jdbcConnectionProvider).findByUuid(UUID.fromString(resultSet.getString("destinationLocker"))).get().getMeta().getDestinationLocker(
+                                )
+                        )));
+            }
+        } catch (SQLException exception) {
+            throw new RuntimeException(exception);
+        }
         return Optional.empty();
     }
 
-    @SneakyThrows
     @Override
-    public List<Parcel> findAll() {
+    public Set<Parcel> findAll() {
         ResultSet resultSet = this.jdbcConnectionProvider.executeQuery("SELECT * FROM `parcels`");
-        return new Parcel(
-                UUID.fromString(resultSet.getString("uuid")),
-                UUID.fromString(resultSet.getString("sender")),
-                new ParcelMeta(
-                        resultSet.getString("name"),
-                        resultSet.getString("description"),
-                        resultSet.getBoolean("priority"),
-                        UUID.fromString(resultSet.getString("receiver")),
-                        ParcelSize.valueOf(resultSet.getString("size")),
-                        new ParcelRepositoryJdbcImpl(this.jdbcConnectionProvider).findByUuid(UUID.fromString(resultSet.getString("entryLocker"))).get().getMeta().getEntryLocker(),
-                        new ParcelRepositoryJdbcImpl(this.jdbcConnectionProvider).findByUuid(UUID.fromString(resultSet.getString("destinationLocker"))).get().getMeta().getDestinationLocker(
-                        )
-                ));
+        Set<Parcel> parcels = new HashSet<>();
+
+        try {
+            while (resultSet.next()) {
+                parcels.add(new Parcel(
+                        UUID.fromString(resultSet.getString("uuid")),
+                        UUID.fromString(resultSet.getString("sender")),
+                        new ParcelMeta(
+                                resultSet.getString("name"),
+                                resultSet.getString("description"),
+                                resultSet.getBoolean("priority"),
+                                UUID.fromString(resultSet.getString("receiver")),
+                                ParcelSize.valueOf(resultSet.getString("size")),
+                                new ParcelRepositoryJdbcImpl(this.jdbcConnectionProvider).findByUuid(UUID.fromString(resultSet.getString("entryLocker"))).get().getMeta().getEntryLocker(),
+                                new ParcelRepositoryJdbcImpl(this.jdbcConnectionProvider).findByUuid(UUID.fromString(resultSet.getString("destinationLocker"))).get().getMeta().getDestinationLocker(
+                                )
+                        )));
+            }
+        } catch (SQLException exception) {
+            throw new RuntimeException(exception);
+        }
+        return parcels;
     }
 
     @SneakyThrows

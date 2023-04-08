@@ -64,9 +64,8 @@ public final class ParcelLockers extends JavaPlugin {
 
         this.jdbcConnectionProvider = new JdbcConnectionProvider(this.config.settings.databaseUrl, this.config.settings.user, this.config.settings.password);
 
-
         new Metrics(this, 17677);
-        new UpdaterService(this.getDescription());
+        this.updater = new UpdaterService(this.getDescription());
 
         long millis = started.elapsed(TimeUnit.MILLISECONDS);
         this.getLogger().info("Successfully enabled ParcelLockers in " + millis + "ms");
@@ -136,8 +135,11 @@ public final class ParcelLockers extends JavaPlugin {
     public ConfigurationManager getConfigManager() {
         return this.configManager;
     }
-    
+
     public PluginConfiguration getPluginConfig() {
         return this.config;
     }
+
 }
+
+

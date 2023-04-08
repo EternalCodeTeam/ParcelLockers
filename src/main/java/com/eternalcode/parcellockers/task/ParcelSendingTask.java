@@ -1,4 +1,11 @@
 package com.eternalcode.parcellockers.task;
 
-public class ParcelSendingTask {
+import org.bukkit.scheduler.BukkitRunnable;
+
+public class ParcelSendingTask extends BukkitRunnable {
+
+    @Override
+    public void run() {
+        
+    }
 }

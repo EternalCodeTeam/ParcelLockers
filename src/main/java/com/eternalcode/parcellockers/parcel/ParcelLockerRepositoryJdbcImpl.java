@@ -32,8 +32,8 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
                     LocationUtil.parseLocation(resultSet.getString("location"))
             ));
 
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
         }
     }
 
