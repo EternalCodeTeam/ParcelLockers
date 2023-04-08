@@ -42,7 +42,9 @@ public class UserRepositoryJdbcImpl implements UserRepository {
                     }
                 }
             }
-            return Optional.of(new User(UUID.fromString(resultSet.getString("uuid")), resultSet.getString("name"), userParcels));
+            User user = new User(UUID.fromString(resultSet.getString("uuid")), resultSet.getString("name"), userParcels);
+            
+            return Optional.of(user);
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
@@ -60,7 +62,9 @@ public class UserRepositoryJdbcImpl implements UserRepository {
                     }
                 }
             }
-            return Optional.of(new User(UUID.fromString(resultSet.getString("uuid")), resultSet.getString("name"), userParcels));
+            User user = new User(UUID.fromString(resultSet.getString("uuid")), resultSet.getString("name"), userParcels);
+
+            return Optional.of(user);
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
@@ -79,7 +83,9 @@ public class UserRepositoryJdbcImpl implements UserRepository {
                         userParcels.add(parcel.getUuid());
                     }
                 }
-                users.add(new User(UUID.fromString(resultSet.getString("uuid")), resultSet.getString("name"), userParcels));
+                User user = new User(UUID.fromString(resultSet.getString("uuid")), resultSet.getString("name"), userParcels);
+
+                users.add(user);
             }
         } catch (SQLException exception) {
             throw new RuntimeException(exception);

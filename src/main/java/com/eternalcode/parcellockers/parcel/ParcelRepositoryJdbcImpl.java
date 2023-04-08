@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 public class ParcelRepositoryJdbcImpl implements ParcelRepository {
 
@@ -22,17 +23,17 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
     @Override
     public CompletableFuture<Void> save(Parcel parcel) {
         return CompletableFuture.runAsync(() -> {
-            this.jdbcConnectionProvider.executeUpdate("INSERT INTO `parcels` (`uuid`, `name`, `description`, `priority`, `receiver`, `size`, `entryLocker`, `destinationLocker`, `sender`) VALUES ("
-                    + parcel.getUuid()
-                    + "," + parcel.getMeta().getName()
-                    + "," + parcel.getMeta().getDescription()
-                    + "," + parcel.getMeta().isPriority()
-                    + "," + parcel.getMeta().getReceiver()
-                    + "," + parcel.getMeta().getSize().name()
-                    + "," + parcel.getMeta().getEntryLocker().getUuid()
-                    + "," + parcel.getMeta().getDestinationLocker().getUuid()
-                    + "," + parcel.getSender() + " )");
-        });
+            this.jdbcConnectionProvider.executeUpdate("INSERT INTO `parcels` (`uuid`, `name`, `description`, `priority`, `receiver`, `size`, `entryLocker`, `destinationLocker`, `sender`) VALUES (%u, %n, %d, %p, %r, %s, %e, %dst, %sn)"
+                    .replace("%u", parcel.getUuid().toString())
+                    .replace("%n", parcel.getMeta().getName())
+                    .replace("%d", parcel.getMeta().getDescription())
+                    .replace("%p", String.valueOf(parcel.getMeta().isPriority()))
+                    .replace("%r", parcel.getMeta().getReceiver().toString())
+                    .replace("%s", parcel.getMeta().getSize().name())
+                    .replace("%e", parcel.getMeta().getEntryLocker().getUuid().toString())
+                    .replace("%dst", parcel.getMeta().getDestinationLocker().getUuid().toString())
+                    .replace("%sn", parcel.getSender().toString()));
+        }).orTimeout(5, TimeUnit.SECONDS);
     }
 
     @Override
@@ -40,18 +41,21 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
 
         try (ResultSet resultSet = this.jdbcConnectionProvider.executeQuery("SELECT * FROM `parcels` WHERE `uuid` = " + uuid)) {
             if (resultSet.next()) {
-                return Optional.of(new Parcel(
+                ParcelMeta meta = new ParcelMeta(
+                        resultSet.getString("name"),
+                        resultSet.getString("description"),
+                        resultSet.getBoolean("priority"),
+                        UUID.fromString(resultSet.getString("receiver")),
+                        ParcelSize.valueOf(resultSet.getString("size")),
+                        this.findByUuid(UUID.fromString(resultSet.getString("entryLocker"))).get().getMeta().getEntryLocker(),
+                        this.findByUuid(UUID.fromString(resultSet.getString("destinationLocker"))).get().getMeta().getDestinationLocker());
+
+                Parcel parcel = new Parcel(
                         UUID.fromString(resultSet.getString("uuid")),
                         UUID.fromString(resultSet.getString("sender")),
-                        new ParcelMeta(
-                                resultSet.getString("name"),
-                                resultSet.getString("description"),
-                                resultSet.getBoolean("priority"),
-                                UUID.fromString(resultSet.getString("receiver")),
-                                ParcelSize.valueOf(resultSet.getString("size")),
-                                this.findByUuid(UUID.fromString(resultSet.getString("entryLocker"))).get().getMeta().getEntryLocker(),
-                                this.findByUuid(UUID.fromString(resultSet.getString("destinationLocker"))).get().getMeta().getDestinationLocker()
-                        )));
+                        meta);
+
+                return Optional.of(parcel);
             }
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
@@ -65,18 +69,20 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
 
         try (ResultSet resultSet = this.jdbcConnectionProvider.executeQuery("SELECT * FROM `parcels`")) {
             while (resultSet.next()) {
-                parcels.add(new Parcel(
+                ParcelMeta meta = new ParcelMeta(
+                        resultSet.getString("name"),
+                        resultSet.getString("description"),
+                        resultSet.getBoolean("priority"),
+                        UUID.fromString(resultSet.getString("receiver")),
+                        ParcelSize.valueOf(resultSet.getString("size")),
+                        this.findByUuid(UUID.fromString(resultSet.getString("entryLocker"))).get().getMeta().getEntryLocker(),
+                        this.findByUuid(UUID.fromString(resultSet.getString("destinationLocker"))).get().getMeta().getDestinationLocker());
+
+                Parcel parcel = new Parcel(
                         UUID.fromString(resultSet.getString("uuid")),
                         UUID.fromString(resultSet.getString("sender")),
-                        new ParcelMeta(
-                                resultSet.getString("name"),
-                                resultSet.getString("description"),
-                                resultSet.getBoolean("priority"),
-                                UUID.fromString(resultSet.getString("receiver")),
-                                ParcelSize.valueOf(resultSet.getString("size")),
-                                new ParcelRepositoryJdbcImpl(this.jdbcConnectionProvider).findByUuid(UUID.fromString(resultSet.getString("entryLocker"))).get().getMeta().getEntryLocker(),
-                                new ParcelRepositoryJdbcImpl(this.jdbcConnectionProvider).findByUuid(UUID.fromString(resultSet.getString("destinationLocker"))).get().getMeta().getDestinationLocker()
-                        )));
+                        meta);
+                parcels.add(parcel);
             }
         } catch (SQLException exception) {
             throw new RuntimeException(exception);

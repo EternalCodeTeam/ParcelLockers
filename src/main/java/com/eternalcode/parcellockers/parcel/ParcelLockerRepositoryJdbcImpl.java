@@ -27,11 +27,12 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
     @Override
     public Optional<ParcelLocker> findByUuid(UUID uuid) {
         try (ResultSet resultSet = this.provider.executeQuery("SELECT * FROM `parcelLockers` WHERE `uuid` = " + uuid.toString())) {
-            return Optional.of(new ParcelLocker(
+            ParcelLocker parcelLocker = new ParcelLocker(
                     UUID.fromString(resultSet.getString("uuid")),
                     resultSet.getString("description"),
                     LocationUtil.parseLocation(resultSet.getString("location"))
-            ));
+            );
+            return Optional.of(parcelLocker);
 
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
@@ -44,11 +45,12 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
 
         try (ResultSet resultSet = this.provider.executeQuery("SELECT * FROM `parcelLockers`")) {
             while (resultSet.next()) {
-                results.add(new ParcelLocker(
+                ParcelLocker parcelLocker = new ParcelLocker(
                         UUID.fromString(resultSet.getString("uuid")),
                         resultSet.getString("description"),
                         LocationUtil.parseLocation(resultSet.getString("location"))
-                ));
+                );
+                results.add(parcelLocker);
             }
             return results;
         } catch (SQLException exception) {
