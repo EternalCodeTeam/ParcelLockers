@@ -37,6 +37,7 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
 
     @Override
     public Optional<Parcel> findByUuid(UUID uuid) {
+        ParcelLockerRepositoryJdbcImpl parcelLockerRepository = ParcelLockerRepositoryJdbcImpl.create(this.jdbcConnectionProvider);
         try (ResultSet resultSet = this.jdbcConnectionProvider.executeQuery("SELECT * FROM `parcels` WHERE `uuid` = " + uuid)) {
             if (resultSet.next()) {
                 ParcelMeta meta = new ParcelMeta(
@@ -45,8 +46,8 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
                         resultSet.getBoolean("priority"),
                         UUID.fromString(resultSet.getString("receiver")),
                         ParcelSize.valueOf(resultSet.getString("size")),
-                        this.findByUuid(UUID.fromString(resultSet.getString("entryLocker"))).get().getMeta().getEntryLocker(),
-                        this.findByUuid(UUID.fromString(resultSet.getString("destinationLocker"))).get().getMeta().getDestinationLocker());
+                        parcelLockerRepository.findByUuid(UUID.fromString(resultSet.getString("entryLocker"))).get(),
+                        parcelLockerRepository.findByUuid(UUID.fromString(resultSet.getString("destinationLocker"))).get());
 
                 Parcel parcel = new Parcel(
                         UUID.fromString(resultSet.getString("uuid")),
