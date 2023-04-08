@@ -4,9 +4,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 
-public class LocationUtil {
+public final class LocationUtil {
 
     private LocationUtil() {
+        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
     }
 
     public static Location parseLocation(String locationString) {
