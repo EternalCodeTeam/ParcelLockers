@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.concurrent.CompletableFuture;
 
 public class JdbcConnectionProvider {
 
@@ -28,13 +29,45 @@ public class JdbcConnectionProvider {
         }
     }
 
+    /*
     public boolean executeUpdate(String sql) {
         try (Connection connection = this.createConnection();
              PreparedStatement statement = connection.prepareStatement(sql)
         ) {
             return statement.execute();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (Exception exception) {
+            throw new RuntimeException(exception);
+        }
+    }
+    */
+
+    /*
+    public ResultSet executeQuery(String sql) {
+        try (Connection connection = this.createConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
+            return statement.executeQuery();
+        } catch (Exception exception) {
+            throw new RuntimeException(exception);
+        }
+    }
+
+     */
+
+    public boolean executeUpdate(String sql) {
+        try (Connection connection = this.createConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
+            return CompletableFuture.supplyAsync(() -> {
+                        try {
+                            return statement.execute();
+                        } catch (SQLException exception) {
+                            throw new RuntimeException(exception);
+                        }
+                    }
+            ).join();
+        } catch (SQLException exception) {
+            throw new RuntimeException(exception);
         }
     }
 
@@ -42,9 +75,16 @@ public class JdbcConnectionProvider {
         try (Connection connection = this.createConnection();
              PreparedStatement statement = connection.prepareStatement(sql)
         ) {
-            return statement.executeQuery();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+            return CompletableFuture.supplyAsync(() -> {
+                        try {
+                            return statement.executeQuery();
+                        } catch (SQLException exception) {
+                            throw new RuntimeException(exception);
+                        }
+                    }
+            ).join();
+        } catch (SQLException exception) {
+            throw new RuntimeException(exception);
         }
     }
 }
