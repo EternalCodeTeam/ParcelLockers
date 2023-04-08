@@ -37,13 +37,14 @@ public class UserRepositoryJdbcImpl implements UserRepository {
             Set<UUID> userParcels = new HashSet<>();
             while (resultSet.next()) {
                 for (Parcel parcel : parcelSet) {
-                    if (parcel.getSender().equals(UUID.fromString(resultSet.getString("uuid")))) {
+                    UUID target = UUID.fromString(resultSet.getString("uuid"));
+                    if (parcel.getSender().equals(target)) {
                         userParcels.add(parcel.getUuid());
                     }
                 }
             }
             User user = new User(UUID.fromString(resultSet.getString("uuid")), resultSet.getString("name"), userParcels);
-            
+
             return Optional.of(user);
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
@@ -57,7 +58,8 @@ public class UserRepositoryJdbcImpl implements UserRepository {
             Set<UUID> userParcels = new HashSet<>();
             while (resultSet.next()) {
                 for (Parcel parcel : parcelSet) {
-                    if (parcel.getSender().equals(UUID.fromString(resultSet.getString("uuid")))) {
+                    UUID target = UUID.fromString(resultSet.getString("uuid"));
+                    if (parcel.getSender().equals(target)) {
                         userParcels.add(parcel.getUuid());
                     }
                 }
@@ -79,7 +81,8 @@ public class UserRepositoryJdbcImpl implements UserRepository {
             while (resultSet.next()) {
                 Set<UUID> userParcels = new HashSet<>();
                 for (Parcel parcel : parcelSet) {
-                    if (parcel.getSender().equals(UUID.fromString(resultSet.getString("uuid")))) {
+                    UUID target = UUID.fromString(resultSet.getString("uuid"));
+                    if (parcel.getSender().equals(target)) {
                         userParcels.add(parcel.getUuid());
                     }
                 }
