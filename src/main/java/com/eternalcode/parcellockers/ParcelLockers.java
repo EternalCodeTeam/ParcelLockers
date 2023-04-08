@@ -32,14 +32,14 @@ import java.util.logging.Logger;
 
 public final class ParcelLockers extends JavaPlugin {
 
-    private static ParcelLockers instance;
-
     private LiteCommands<CommandSender> liteCommands;
 
     private BukkitAudiences audiences;
     private MiniMessage miniMessage;
     private NotificationAnnouncer announcer;
+
     private UpdaterService updater;
+
     private JdbcConnectionProvider jdbcConnectionProvider;
     private ParcelRepositoryJdbcImpl parcelRepository;
     private ParcelLockerRepositoryJdbcImpl parcelLockerRepository;
@@ -51,7 +51,7 @@ public final class ParcelLockers extends JavaPlugin {
     @Override
     public void onEnable() {
         Stopwatch started = Stopwatch.createStarted();
-        instance = this;
+
         this.softwareCheck();
 
         this.audiences = BukkitAudiences.create(this);
@@ -86,7 +86,6 @@ public final class ParcelLockers extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        instance = null;
 
         if (this.liteCommands != null) {
             this.liteCommands.getPlatform().unregisterAll();
@@ -115,10 +114,6 @@ public final class ParcelLockers extends JavaPlugin {
 
         logger.info("Your server running on supported software, congratulations!");
         logger.info("Server version: " + this.getServer().getVersion());
-    }
-
-    public static ParcelLockers getInstance() {
-        return instance;
     }
 
     public BukkitAudiences getAudiences() {

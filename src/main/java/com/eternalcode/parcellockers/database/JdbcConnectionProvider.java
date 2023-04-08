@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 public class JdbcConnectionProvider {
 
@@ -29,31 +30,6 @@ public class JdbcConnectionProvider {
         }
     }
 
-    /*
-    public boolean executeUpdate(String sql) {
-        try (Connection connection = this.createConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)
-        ) {
-            return statement.execute();
-        } catch (Exception exception) {
-            throw new RuntimeException(exception);
-        }
-    }
-    */
-
-    /*
-    public ResultSet executeQuery(String sql) {
-        try (Connection connection = this.createConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)
-        ) {
-            return statement.executeQuery();
-        } catch (Exception exception) {
-            throw new RuntimeException(exception);
-        }
-    }
-
-     */
-
     public boolean executeUpdate(String sql) {
         try (Connection connection = this.createConnection();
              PreparedStatement statement = connection.prepareStatement(sql)
@@ -65,7 +41,7 @@ public class JdbcConnectionProvider {
                             throw new RuntimeException(exception);
                         }
                     }
-            ).join();
+            ).orTimeout(15, TimeUnit.SECONDS).join();
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
@@ -82,7 +58,7 @@ public class JdbcConnectionProvider {
                             throw new RuntimeException(exception);
                         }
                     }
-            ).join();
+            ).orTimeout(15, TimeUnit.SECONDS).join();
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
