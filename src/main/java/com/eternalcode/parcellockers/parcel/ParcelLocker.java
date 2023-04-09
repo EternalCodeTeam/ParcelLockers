@@ -1,6 +1,6 @@
 package com.eternalcode.parcellockers.parcel;
 
-import org.bukkit.Location;
+import com.eternalcode.parcellockers.shared.Position;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -11,13 +11,13 @@ public class ParcelLocker {
     private final UUID uuid;
     private final String description;
     private final Set<Parcel> parcels;
-    private final Location location;
+    private final Position position;
 
-    public ParcelLocker(UUID uuid, String description, Location location) {
+    public ParcelLocker(UUID uuid, String description, Position position) {
         this.uuid = uuid;
         this.description = description;
         this.parcels = new HashSet<>();
-        this.location = location;
+        this.position = position;
     }
 
     public UUID getUuid() {
@@ -32,7 +32,7 @@ public class ParcelLocker {
         return this.parcels;
     }
 
-    public Location getLocation() {
-        return this.location;
+    public Position getPosition() {
+        return this.position;
     }
 }

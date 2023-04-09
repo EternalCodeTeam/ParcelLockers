@@ -1,7 +1,7 @@
 package com.eternalcode.parcellockers.parcel;
 
 import com.eternalcode.parcellockers.database.JdbcConnectionProvider;
-import com.eternalcode.parcellockers.util.LocationUtil;
+import com.eternalcode.parcellockers.shared.Position;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,7 +21,7 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
 
     @Override
     public CompletableFuture<Void> save(ParcelLocker parcelLocker) {
-        return CompletableFuture.runAsync(() -> this.provider.executeUpdate("INSERT INTO `parcelLockers` (`uuid`, `description`, `location`, `size`) VALUES (" + parcelLocker.getUuid().toString() + ", " + parcelLocker.getDescription() + ", " + parcelLocker.getLocation().toString() + ")"));
+        return CompletableFuture.runAsync(() -> this.provider.executeUpdate("INSERT INTO `parcelLockers` (`uuid`, `description`, `position`, `size`) VALUES (" + parcelLocker.getUuid().toString() + ", " + parcelLocker.getDescription() + ", " + parcelLocker.getPosition().toString() + ")"));
     }
 
     @Override
@@ -30,7 +30,7 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
             ParcelLocker parcelLocker = new ParcelLocker(
                     UUID.fromString(resultSet.getString("uuid")),
                     resultSet.getString("description"),
-                    LocationUtil.parseLocation(resultSet.getString("location"))
+                    Position.parse(resultSet.getString("position"))
             );
             return Optional.of(parcelLocker);
 
@@ -49,7 +49,7 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
                 ParcelLocker parcelLocker = new ParcelLocker(
                         UUID.fromString(resultSet.getString("uuid")),
                         resultSet.getString("description"),
-                        LocationUtil.parseLocation(resultSet.getString("location"))
+                        Position.parse(resultSet.getString("position"))
                 );
                 results.add(parcelLocker);
             }
@@ -60,7 +60,7 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
     }
 
     public static ParcelLockerRepositoryJdbcImpl create(JdbcConnectionProvider provider) {
-        provider.executeUpdate("CREATE TABLE IF NOT EXISTS `parcelLockers` (`uuid` VARCHAR(36) NOT NULL, `description` VARCHAR(255) NOT NULL, `location` VARCHAR(255) NOT NULL, PRIMARY KEY (`uuid`))");
+        provider.executeUpdate("CREATE TABLE IF NOT EXISTS `parcelLockers` (`uuid` VARCHAR(36) NOT NULL, `description` VARCHAR(255) NOT NULL, `position` VARCHAR(255) NOT NULL, PRIMARY KEY (`uuid`))");
         return new ParcelLockerRepositoryJdbcImpl(provider);
     }
 }
