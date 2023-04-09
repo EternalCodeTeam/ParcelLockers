@@ -32,16 +32,16 @@ public class JdbcConnectionProvider {
 
     public boolean executeUpdate(String sql) {
         try (Connection connection = this.createConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)
-        ) {
+            PreparedStatement statement = connection.prepareStatement(sql))
+        {
             return CompletableFuture.supplyAsync(() -> {
-                        try {
-                            return statement.execute();
-                        } catch (SQLException exception) {
-                            throw new RuntimeException(exception);
-                        }
-                    }
-            ).orTimeout(15, TimeUnit.SECONDS).join();
+                try {
+                    return statement.execute();
+                } catch (SQLException exception) {
+                    throw new RuntimeException(exception);
+                }
+            }).orTimeout(15, TimeUnit.SECONDS).join();
+
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
@@ -49,16 +49,16 @@ public class JdbcConnectionProvider {
 
     public ResultSet executeQuery(String sql) {
         try (Connection connection = this.createConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)
-        ) {
+             PreparedStatement statement = connection.prepareStatement(sql))
+        {
             return CompletableFuture.supplyAsync(() -> {
-                        try {
-                            return statement.executeQuery();
-                        } catch (SQLException exception) {
-                            throw new RuntimeException(exception);
-                        }
-                    }
-            ).orTimeout(15, TimeUnit.SECONDS).join();
+                try {
+                    return statement.executeQuery();
+                } catch (SQLException exception) {
+                    throw new RuntimeException(exception);
+                }
+            }).orTimeout(15, TimeUnit.SECONDS).join();
+
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
