@@ -14,4 +14,8 @@ public interface UserRepository {
     CompletableFuture<Optional<User>> findByUuid(UUID uuid);
 
     CompletableFuture<List<User>> findAll();
+
+    CompletableFuture<Void> remove(User user);
+
+    CompletableFuture<Void> remove(UUID uuid);
 }

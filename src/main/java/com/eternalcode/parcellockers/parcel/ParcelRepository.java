@@ -7,9 +7,14 @@ import java.util.concurrent.CompletableFuture;
 
 public interface ParcelRepository {
 
+
     CompletableFuture<Void> save(Parcel parcel);
 
     CompletableFuture<Optional<Parcel>> findByUuid(UUID uuid);
 
     CompletableFuture<Set<Parcel>> findAll();
+
+    CompletableFuture<Void> remove(Parcel parcel);
+
+    CompletableFuture<Void> remove(UUID uuid);
 }

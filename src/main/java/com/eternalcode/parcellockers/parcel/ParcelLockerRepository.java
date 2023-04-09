@@ -13,4 +13,8 @@ public interface ParcelLockerRepository {
 
     CompletableFuture<List<ParcelLocker>> findAll();
 
+    CompletableFuture<Void> remove(ParcelLocker parcelLocker);
+
+    CompletableFuture<Void> remove(UUID uuid);
+
 }
