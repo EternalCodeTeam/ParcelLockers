@@ -70,6 +70,20 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
         });
     }
 
+    @Override
+    public CompletableFuture<Void> remove(Parcel parcel) {
+        return CompletableFuture.runAsync(() -> {
+            this.jdbcConnectionProvider.executeUpdate("DELETE FROM `parcels` WHERE `uuid` = " + parcel.getUuid().toString());
+        }).orTimeout(5, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public CompletableFuture<Void> remove(UUID uuid) {
+        return CompletableFuture.runAsync(() -> {
+            this.jdbcConnectionProvider.executeUpdate("DELETE FROM `parcels` WHERE `uuid` = " + uuid.toString());
+        }).orTimeout(5, TimeUnit.SECONDS);
+    }
+
     public static ParcelRepositoryJdbcImpl create(JdbcConnectionProvider jdbcConnectionProvider) {
         jdbcConnectionProvider.executeUpdate("CREATE TABLE IF NOT EXISTS `parcels` (`uuid` VARCHAR(36) NOT NULL," +
                 " `name` VARCHAR(24) NOT NULL," +

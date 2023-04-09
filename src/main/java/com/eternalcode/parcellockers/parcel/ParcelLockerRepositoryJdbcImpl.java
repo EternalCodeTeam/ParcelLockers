@@ -66,6 +66,21 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
         });
     }
 
+    @Override
+    public CompletableFuture<Void> remove(ParcelLocker parcelLocker) {
+        return CompletableFuture.runAsync(() -> {
+            this.provider.executeUpdate("DELETE FROM `parcelLockers` WHERE `uuid` = " + parcelLocker.getUuid().toString());
+        });
+    }
+
+
+    @Override
+    public CompletableFuture<Void> remove(UUID uuid) {
+        return CompletableFuture.runAsync(() -> {
+            this.provider.executeUpdate("DELETE FROM `parcelLockers` WHERE `uuid` = " + uuid.toString());
+        });
+    }
+
     public static ParcelLockerRepositoryJdbcImpl create(JdbcConnectionProvider provider) {
         provider.executeUpdate("CREATE TABLE IF NOT EXISTS `parcelLockers` (`uuid` VARCHAR(36) NOT NULL, `description` VARCHAR(255) NOT NULL, `position` VARCHAR(255) NOT NULL, PRIMARY KEY (`uuid`))");
         return new ParcelLockerRepositoryJdbcImpl(provider);

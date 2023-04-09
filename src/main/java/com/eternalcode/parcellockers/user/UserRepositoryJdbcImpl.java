@@ -116,6 +116,17 @@ public class UserRepositoryJdbcImpl implements UserRepository {
         });
     }
 
+    @Override
+    public CompletableFuture<Void> remove(User user) {
+        return CompletableFuture.runAsync(() ->
+                this.jdbcConnectionProvider.executeUpdate("DELETE FROM `users` WHERE `uuid` = ?".replace("?", user.getUuid().toString())));
+    }
+
+    @Override
+    public CompletableFuture<Void> remove(UUID uuid) {
+        return CompletableFuture.runAsync(() ->
+                this.jdbcConnectionProvider.executeUpdate("DELETE FROM `users` WHERE `uuid` = ?".replace("?", uuid.toString())));
+    }
 
     public static UserRepositoryJdbcImpl create(JdbcConnectionProvider jdbcConnectionProvider) {
         jdbcConnectionProvider.executeUpdate("CREATE TABLE IF NOT EXISTS `users` (`uuid` VARCHAR(36) NOT NULL, `name` VARCHAR(24) NOT NULL, PRIMARY KEY (`uuid`))");
