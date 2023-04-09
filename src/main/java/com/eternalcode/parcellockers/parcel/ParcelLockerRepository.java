@@ -9,8 +9,8 @@ public interface ParcelLockerRepository {
 
     CompletableFuture<Void> save(ParcelLocker parcelLocker);
 
-    Optional<ParcelLocker> findByUuid(UUID uuid);
+    CompletableFuture<Optional<ParcelLocker>> findByUuid(UUID uuid);
 
-    List<ParcelLocker> findAll();
+    CompletableFuture<List<ParcelLocker>> findAll();
 
 }

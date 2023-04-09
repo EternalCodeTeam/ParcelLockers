@@ -25,38 +25,45 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
     }
 
     @Override
-    public Optional<ParcelLocker> findByUuid(UUID uuid) {
-        try (ResultSet resultSet = this.provider.executeQuery("SELECT * FROM `parcelLockers` WHERE `uuid` = " + uuid.toString())) {
-            ParcelLocker parcelLocker = new ParcelLocker(
-                    UUID.fromString(resultSet.getString("uuid")),
-                    resultSet.getString("description"),
-                    Position.parse(resultSet.getString("position"))
-            );
-            return Optional.of(parcelLocker);
-
-        } catch (SQLException exception) {
-            throw new RuntimeException(exception);
-        }
+    public CompletableFuture<Optional<ParcelLocker>> findByUuid(UUID uuid) {
+        return CompletableFuture.supplyAsync(() -> {
+            try (ResultSet resultSet = this.provider.executeQuery("SELECT * FROM `parcelLockers` WHERE `uuid` = " + uuid.toString())) {
+                if (resultSet.next()) {
+                    ParcelLocker parcelLocker = new ParcelLocker(
+                            UUID.fromString(resultSet.getString("uuid")),
+                            resultSet.getString("description"),
+                            Position.parse(resultSet.getString("position"))
+                    );
+                    return Optional.of(parcelLocker);
+                } else {
+                    return Optional.empty();
+                }
+            } catch (SQLException exception) {
+                throw new RuntimeException(exception);
+            }
+        });
     }
 
     @Override
-    public List<ParcelLocker> findAll() {
-        List<ParcelLocker> results = new ArrayList<>();
+    public CompletableFuture<List<ParcelLocker>> findAll() {
+        return CompletableFuture.supplyAsync(() -> {
+            List<ParcelLocker> results = new ArrayList<>();
 
-        try (ResultSet resultSet = this.provider.executeQuery("SELECT * FROM `parcelLockers`")) {
-            while (resultSet.next()) {
+            try (ResultSet resultSet = this.provider.executeQuery("SELECT * FROM `parcelLockers`")) {
+                while (resultSet.next()) {
 
-                ParcelLocker parcelLocker = new ParcelLocker(
-                        UUID.fromString(resultSet.getString("uuid")),
-                        resultSet.getString("description"),
-                        Position.parse(resultSet.getString("position"))
-                );
-                results.add(parcelLocker);
+                    ParcelLocker parcelLocker = new ParcelLocker(
+                            UUID.fromString(resultSet.getString("uuid")),
+                            resultSet.getString("description"),
+                            Position.parse(resultSet.getString("position"))
+                    );
+                    results.add(parcelLocker);
+                }
+                return results;
+            } catch (SQLException exception) {
+                throw new RuntimeException(exception);
             }
-            return results;
-        } catch (SQLException exception) {
-            throw new RuntimeException(exception);
-        }
+        });
     }
 
     public static ParcelLockerRepositoryJdbcImpl create(JdbcConnectionProvider provider) {

@@ -9,7 +9,7 @@ public interface ParcelRepository {
 
     CompletableFuture<Void> save(Parcel parcel);
 
-    Optional<Parcel> findByUuid(UUID uuid);
+    CompletableFuture<Optional<Parcel>> findByUuid(UUID uuid);
 
-    Set<Parcel> findAll();
+    CompletableFuture<Set<Parcel>> findAll();
 }

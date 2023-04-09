@@ -9,9 +9,9 @@ public interface UserRepository {
 
     CompletableFuture<Void> save(User user);
 
-    Optional<User> findByName(String name);
+    CompletableFuture<Optional<User>> findByName(String name);
 
-    Optional<User> findByUuid(UUID uuid);
+    CompletableFuture<Optional<User>> findByUuid(UUID uuid);
 
-    List<User> findAll();
+    CompletableFuture<List<User>> findAll();
 }

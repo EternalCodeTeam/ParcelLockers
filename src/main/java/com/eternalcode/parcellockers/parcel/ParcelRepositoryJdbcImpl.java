@@ -36,57 +36,38 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
     }
 
     @Override
-    public Optional<Parcel> findByUuid(UUID uuid) {
-        ParcelLockerRepositoryJdbcImpl parcelLockerRepository = ParcelLockerRepositoryJdbcImpl.create(this.jdbcConnectionProvider);
-        try (ResultSet resultSet = this.jdbcConnectionProvider.executeQuery("SELECT * FROM `parcels` WHERE `uuid` = " + uuid)) {
-            if (resultSet.next()) {
-                ParcelMeta meta = new ParcelMeta(
-                        resultSet.getString("name"),
-                        resultSet.getString("description"),
-                        resultSet.getBoolean("priority"),
-                        UUID.fromString(resultSet.getString("receiver")),
-                        ParcelSize.valueOf(resultSet.getString("size")),
-                        parcelLockerRepository.findByUuid(UUID.fromString(resultSet.getString("entryLocker"))).get(),
-                        parcelLockerRepository.findByUuid(UUID.fromString(resultSet.getString("destinationLocker"))).get());
+    public CompletableFuture<Optional<Parcel>> findByUuid(UUID uuid) {
+        return CompletableFuture.supplyAsync(() -> {
+            ParcelLockerRepositoryJdbcImpl parcelLockerRepository = ParcelLockerRepositoryJdbcImpl.create(this.jdbcConnectionProvider);
+            try (ResultSet resultSet = this.jdbcConnectionProvider.executeQuery("SELECT * FROM `parcels` WHERE `uuid` = " + uuid)) {
+                if (resultSet.next()) {
+                    Parcel parcel = extractParcel(parcelLockerRepository, resultSet);
 
-                Parcel parcel = new Parcel(
-                        UUID.fromString(resultSet.getString("uuid")),
-                        UUID.fromString(resultSet.getString("sender")),
-                        meta);
-
-                return Optional.of(parcel);
+                    return Optional.of(parcel);
+                }
+            } catch (SQLException exception) {
+                throw new RuntimeException(exception);
             }
-        } catch (SQLException exception) {
-            throw new RuntimeException(exception);
-        }
-        return Optional.empty();
+            return Optional.empty();
+        });
     }
 
     @Override
-    public Set<Parcel> findAll() {
-        Set<Parcel> parcels = new HashSet<>();
+    public CompletableFuture<Set<Parcel>> findAll() {
+        return CompletableFuture.supplyAsync(() -> {
+            ParcelLockerRepositoryJdbcImpl parcelLockerRepository = ParcelLockerRepositoryJdbcImpl.create(this.jdbcConnectionProvider);
+            Set<Parcel> parcels = new HashSet<>();
 
-        try (ResultSet resultSet = this.jdbcConnectionProvider.executeQuery("SELECT * FROM `parcels`")) {
-            while (resultSet.next()) {
-                ParcelMeta meta = new ParcelMeta(
-                        resultSet.getString("name"),
-                        resultSet.getString("description"),
-                        resultSet.getBoolean("priority"),
-                        UUID.fromString(resultSet.getString("receiver")),
-                        ParcelSize.valueOf(resultSet.getString("size")),
-                        this.findByUuid(UUID.fromString(resultSet.getString("entryLocker"))).get().getMeta().getEntryLocker(),
-                        this.findByUuid(UUID.fromString(resultSet.getString("destinationLocker"))).get().getMeta().getDestinationLocker());
-
-                Parcel parcel = new Parcel(
-                        UUID.fromString(resultSet.getString("uuid")),
-                        UUID.fromString(resultSet.getString("sender")),
-                        meta);
-                parcels.add(parcel);
+            try (ResultSet resultSet = this.jdbcConnectionProvider.executeQuery("SELECT * FROM `parcels`")) {
+                while (resultSet.next()) {
+                    Parcel parcel = extractParcel(parcelLockerRepository, resultSet);
+                    parcels.add(parcel);
+                }
+            } catch (SQLException exception) {
+                throw new RuntimeException(exception);
             }
-        } catch (SQLException exception) {
-            throw new RuntimeException(exception);
-        }
-        return parcels;
+            return parcels;
+        });
     }
 
     public static ParcelRepositoryJdbcImpl create(JdbcConnectionProvider jdbcConnectionProvider) {
@@ -101,6 +82,22 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
                 " `sender` VARCHAR(36) NOT NULL," +
                 "  PRIMARY KEY (`uuid`))");
         return new ParcelRepositoryJdbcImpl(jdbcConnectionProvider);
+    }
+
+    private Parcel extractParcel(ParcelLockerRepositoryJdbcImpl parcelLockerRepository, ResultSet resultSet) throws SQLException {
+        ParcelMeta meta = new ParcelMeta(
+                resultSet.getString("name"),
+                resultSet.getString("description"),
+                resultSet.getBoolean("priority"),
+                UUID.fromString(resultSet.getString("receiver")),
+                ParcelSize.valueOf(resultSet.getString("size")),
+                parcelLockerRepository.findByUuid(UUID.fromString(resultSet.getString("entryLocker"))).join().get(),
+                parcelLockerRepository.findByUuid(UUID.fromString(resultSet.getString("destinationLocker"))).join().get());
+
+        return new Parcel(
+                UUID.fromString(resultSet.getString("uuid")),
+                UUID.fromString(resultSet.getString("sender")),
+                meta);
     }
 
 }

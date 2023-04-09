@@ -23,6 +23,7 @@ public class ParcelArgument implements OneArgument<Parcel> {
     @Override
     public Result<Parcel, ?> parse(LiteInvocation invocation, String argument) {
         return this.parcelRepository.findByUuid(UUID.fromString(argument))
+                .join()
                 .map(Result::ok)
                 .orElseGet(() -> Result.error("Parcel not found"));
     }
@@ -30,7 +31,8 @@ public class ParcelArgument implements OneArgument<Parcel> {
 
     @Override
     public List<Suggestion> suggest(LiteInvocation invocation) {
-        return this.parcelRepository.findAll().stream()
+        return this.parcelRepository.findAll().join()
+                .stream()
                 .map(Parcel::getUuid)
                 .map(UUID::toString)
                 .map(Suggestion::of)
