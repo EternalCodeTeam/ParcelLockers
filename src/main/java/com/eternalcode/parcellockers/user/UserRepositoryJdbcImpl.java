@@ -118,7 +118,7 @@ public class UserRepositoryJdbcImpl implements UserRepository {
 
 
     public static UserRepositoryJdbcImpl create(JdbcConnectionProvider jdbcConnectionProvider) {
-        jdbcConnectionProvider.executeUpdate("CREATE TABLE IF NOT EXISTS `users` (`uuid` VARCHAR(36) NOT NULL, `name` VARCHAR(24) NOT NULL, `lastLogin` VARCHAR(64), PRIMARY KEY (`uuid`))");
+        jdbcConnectionProvider.executeUpdate("CREATE TABLE IF NOT EXISTS `users` (`uuid` VARCHAR(36) NOT NULL, `name` VARCHAR(24) NOT NULL, PRIMARY KEY (`uuid`))");
 
         return new UserRepositoryJdbcImpl(jdbcConnectionProvider);
     }

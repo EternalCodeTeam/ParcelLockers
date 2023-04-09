@@ -57,4 +57,54 @@ public class ParcelMeta {
     public ParcelLocker getDestinationLocker() {
         return this.destinationLocker;
     }
+
+    public static class Builder {
+
+        private String name;
+        private String description;
+        private boolean priority;
+        private UUID receiver;
+        private ParcelSize size;
+        private ParcelLocker entryLocker;
+        private ParcelLocker destinationLocker;
+
+        public Builder setName(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder setDescription(String description) {
+            this.description = description;
+            return this;
+        }
+
+        public Builder setPriority(boolean priority) {
+            this.priority = priority;
+            return this;
+        }
+
+        public Builder setReceiver(UUID receiver) {
+            this.receiver = receiver;
+            return this;
+        }
+
+        public Builder setSize(ParcelSize size) {
+            this.size = size;
+            return this;
+        }
+
+        public Builder setEntryLocker(ParcelLocker entryLocker) {
+            this.entryLocker = entryLocker;
+            return this;
+        }
+
+        public Builder setDestinationLocker(ParcelLocker destinationLocker) {
+            this.destinationLocker = destinationLocker;
+            return this;
+        }
+
+        public ParcelMeta build() {
+            return new ParcelMeta(name, description, priority, receiver, size, entryLocker, destinationLocker);
+        }
+    }
 }

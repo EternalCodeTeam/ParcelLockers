@@ -32,6 +32,14 @@ public class User {
         return Collections.unmodifiableSet(this.parcels);
     }
 
+    public void addParcel(UUID parcel) {
+        this.parcels.add(parcel);
+    }
+
+    public void removeParcel(UUID parcel) {
+        this.parcels.remove(parcel);
+    }
+
     public UUID getUuid() {
         return this.uuid;
     }
