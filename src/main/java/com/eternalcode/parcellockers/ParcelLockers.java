@@ -7,6 +7,9 @@ import com.eternalcode.parcellockers.command.handler.PermissionMessage;
 import com.eternalcode.parcellockers.configuration.ConfigurationManager;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.database.JdbcConnectionProvider;
+import com.eternalcode.parcellockers.manager.ParcelLockerManager;
+import com.eternalcode.parcellockers.manager.ParcelManager;
+import com.eternalcode.parcellockers.manager.UserManager;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelLockerRepositoryJdbcImpl;
@@ -35,18 +38,7 @@ public final class ParcelLockers extends JavaPlugin {
     private LiteCommands<CommandSender> liteCommands;
 
     private BukkitAudiences audiences;
-    private MiniMessage miniMessage;
-    private NotificationAnnouncer announcer;
 
-    private UpdaterService updater;
-
-    private JdbcConnectionProvider jdbcConnectionProvider;
-    private ParcelRepositoryJdbcImpl parcelRepository;
-    private ParcelLockerRepositoryJdbcImpl parcelLockerRepository;
-    private UserRepositoryJdbcImpl userRepository;
-
-    private ConfigurationManager configManager;
-    private PluginConfiguration config;
 
     @Override
     public void onEnable() {
@@ -55,30 +47,34 @@ public final class ParcelLockers extends JavaPlugin {
         this.softwareCheck();
 
         this.audiences = BukkitAudiences.create(this);
-        this.miniMessage = MiniMessage.builder()
+        MiniMessage miniMessage = MiniMessage.builder()
                 .postProcessor(new LegacyColorProcessor())
                 .build();
-        this.announcer = new NotificationAnnouncer(this.audiences, this.miniMessage);
+        NotificationAnnouncer announcer = new NotificationAnnouncer(this.audiences, miniMessage);
 
-        this.configManager = new ConfigurationManager(this.getDataFolder());
-        this.config = this.configManager.load(new PluginConfiguration());
+        ConfigurationManager configManager = new ConfigurationManager(this.getDataFolder());
+        PluginConfiguration config = configManager.load(new PluginConfiguration());
+
+        JdbcConnectionProvider jdbcConnectionProvider = new JdbcConnectionProvider(config.settings.databaseUrl, config.settings.user, config.settings.password);
+        ParcelLockerRepositoryJdbcImpl parcelLockerRepository = ParcelLockerRepositoryJdbcImpl.create(jdbcConnectionProvider);
+        ParcelRepositoryJdbcImpl parcelRepository = ParcelRepositoryJdbcImpl.create(jdbcConnectionProvider);
+        UserRepositoryJdbcImpl userRepository = UserRepositoryJdbcImpl.create(jdbcConnectionProvider);
 
         this.liteCommands = LiteBukkitAdventurePlatformFactory.builder(this.getServer(), "parcellockers", false, this.audiences, true)
-                .argument(Parcel.class, new ParcelArgument(this.parcelRepository))
-                .contextualBind(Player.class, new BukkitOnlyPlayerContextual<>(this.config.messages.onlyForPlayers))
-                .commandInstance(new ParcelCommand(this.announcer, this.config),
-                        new ParcelLockerCommand(this.configManager, this.config, this.announcer))
-                .invalidUsageHandler(new InvalidUsage(this.announcer, this.config))
-                .permissionHandler(new PermissionMessage(this.announcer, this.config))
+                .argument(Parcel.class, new ParcelArgument(parcelRepository))
+                .contextualBind(Player.class, new BukkitOnlyPlayerContextual<>(config.messages.onlyForPlayers))
+                .commandInstance(new ParcelCommand(announcer, config),
+                        new ParcelLockerCommand(configManager, config, announcer))
+                .invalidUsageHandler(new InvalidUsage(announcer, config))
+                .permissionHandler(new PermissionMessage(announcer, config))
                 .register();
 
-        this.jdbcConnectionProvider = new JdbcConnectionProvider(this.config.settings.databaseUrl, this.config.settings.user, this.config.settings.password);
-        this.parcelLockerRepository = ParcelLockerRepositoryJdbcImpl.create(this.jdbcConnectionProvider);
-        this.parcelRepository = ParcelRepositoryJdbcImpl.create(this.jdbcConnectionProvider);
-        this.userRepository = UserRepositoryJdbcImpl.create(this.jdbcConnectionProvider);
+        ParcelManager parcelManager = new ParcelManager(parcelRepository);
+        ParcelLockerManager parcelLockerManager = new ParcelLockerManager(parcelLockerRepository);
+        UserManager userManager = new UserManager(userRepository);
 
         new Metrics(this, 17677);
-        this.updater = new UpdaterService(this.getDescription());
+        UpdaterService updater = new UpdaterService(this.getDescription());
 
         long millis = started.stop().elapsed(TimeUnit.MILLISECONDS);
         this.getLogger().info("Successfully enabled ParcelLockers in " + millis + "ms");
@@ -114,50 +110,6 @@ public final class ParcelLockers extends JavaPlugin {
 
         logger.info("Your server running on supported software, congratulations!");
         logger.info("Server version: " + this.getServer().getVersion());
-    }
-
-    public BukkitAudiences getAudiences() {
-        return this.audiences;
-    }
-
-    public LiteCommands<CommandSender> getLiteCommands() {
-        return this.liteCommands;
-    }
-
-    public MiniMessage getMiniMessage() {
-        return this.miniMessage;
-    }
-
-    public NotificationAnnouncer getAnnouncer() {
-        return this.announcer;
-    }
-
-    public UpdaterService getUpdater() {
-        return this.updater;
-    }
-
-    public JdbcConnectionProvider getJdbcConnectionProvider() {
-        return this.jdbcConnectionProvider;
-    }
-
-    public ConfigurationManager getConfigManager() {
-        return this.configManager;
-    }
-
-    public PluginConfiguration getPluginConfig() {
-        return this.config;
-    }
-
-    public ParcelRepositoryJdbcImpl getParcelRepository() {
-        return this.parcelRepository;
-    }
-
-    public ParcelLockerRepositoryJdbcImpl getParcelLockerRepository() {
-        return this.parcelLockerRepository;
-    }
-
-    public UserRepositoryJdbcImpl getUserRepository() {
-        return this.userRepository;
     }
 }
 

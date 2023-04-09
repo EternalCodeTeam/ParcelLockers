@@ -1,4 +1,7 @@
-package com.eternalcode.parcellockers.parcel;
+package com.eternalcode.parcellockers.manager;
+
+import com.eternalcode.parcellockers.parcel.Parcel;
+import com.eternalcode.parcellockers.parcel.ParcelRepository;
 
 import java.util.Optional;
 import java.util.Set;
@@ -19,6 +22,10 @@ public class ParcelManager {
 
     public CompletableFuture<Void> remove(Parcel parcel) {
         return this.repository.remove(parcel);
+    }
+
+    public CompletableFuture<Void> remove(UUID uuid) {
+        return this.repository.remove(uuid);
     }
 
     public Parcel findByUuid(UUID uuid) {

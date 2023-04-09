@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
 
@@ -21,7 +22,8 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
 
     @Override
     public CompletableFuture<Void> save(ParcelLocker parcelLocker) {
-        return CompletableFuture.runAsync(() -> this.provider.executeUpdate("INSERT INTO `parcelLockers` (`uuid`, `description`, `position`, `size`) VALUES (" + parcelLocker.getUuid().toString() + ", " + parcelLocker.getDescription() + ", " + parcelLocker.getPosition().toString() + ")"));
+        return CompletableFuture.runAsync(() -> this.provider.executeUpdate("INSERT INTO `parcelLockers` (`uuid`, `description`, `position`, `size`) VALUES (" + parcelLocker.getUuid().toString() + ", " + parcelLocker.getDescription() + ", " + parcelLocker.getPosition().toString() + ")"))
+                .orTimeout(5, TimeUnit.SECONDS);
     }
 
     @Override
@@ -63,14 +65,14 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
             } catch (SQLException exception) {
                 throw new RuntimeException(exception);
             }
-        });
+        }).orTimeout(5, TimeUnit.SECONDS);
     }
 
     @Override
     public CompletableFuture<Void> remove(ParcelLocker parcelLocker) {
         return CompletableFuture.runAsync(() -> {
             this.provider.executeUpdate("DELETE FROM `parcelLockers` WHERE `uuid` = " + parcelLocker.getUuid().toString());
-        });
+        }).orTimeout(5, TimeUnit.SECONDS);
     }
 
 
@@ -78,7 +80,8 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
     public CompletableFuture<Void> remove(UUID uuid) {
         return CompletableFuture.runAsync(() -> {
             this.provider.executeUpdate("DELETE FROM `parcelLockers` WHERE `uuid` = " + uuid.toString());
-        });
+
+        }).orTimeout(5, TimeUnit.SECONDS);
     }
 
     public static ParcelLockerRepositoryJdbcImpl create(JdbcConnectionProvider provider) {

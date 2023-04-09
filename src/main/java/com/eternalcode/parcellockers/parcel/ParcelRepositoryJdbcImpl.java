@@ -67,7 +67,7 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
                 throw new RuntimeException(exception);
             }
             return parcels;
-        });
+        }).orTimeout(5, TimeUnit.SECONDS);
     }
 
     @Override
