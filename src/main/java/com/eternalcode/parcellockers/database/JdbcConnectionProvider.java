@@ -5,8 +5,6 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 public class JdbcConnectionProvider {
 
@@ -34,14 +32,7 @@ public class JdbcConnectionProvider {
         try (Connection connection = this.createConnection();
             PreparedStatement statement = connection.prepareStatement(sql))
         {
-            return CompletableFuture.supplyAsync(() -> {
-                try {
-                    return statement.execute();
-                } catch (SQLException exception) {
-                    throw new RuntimeException(exception);
-                }
-            }).orTimeout(15, TimeUnit.SECONDS).join();
-
+            return statement.execute();
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
@@ -51,14 +42,7 @@ public class JdbcConnectionProvider {
         try (Connection connection = this.createConnection();
              PreparedStatement statement = connection.prepareStatement(sql))
         {
-            return CompletableFuture.supplyAsync(() -> {
-                try {
-                    return statement.executeQuery();
-                } catch (SQLException exception) {
-                    throw new RuntimeException(exception);
-                }
-            }).orTimeout(15, TimeUnit.SECONDS).join();
-
+            return statement.executeQuery();
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
