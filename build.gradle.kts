@@ -37,7 +37,7 @@ dependencies {
     implementation("dev.rollczi.litecommands:bukkit-adventure:2.8.7")
     
     // database
-    implementation("mysql:mysql-connector-java:8.0.32")
+    compileOnly("mysql:mysql-connector-java:8.0.32")
 
     // skull api
     implementation("dev.rollczi:liteskullapi:1.3.0")
