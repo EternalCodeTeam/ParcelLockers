@@ -2,6 +2,7 @@ package com.eternalcode.parcellockers.user;
 
 import org.bukkit.entity.Player;
 
+import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
 
@@ -28,7 +29,7 @@ public class User {
     }
 
     public Set<UUID> getParcels() {
-        return this.parcels;
+        return Collections.unmodifiableSet(this.parcels);
     }
 
     public UUID getUuid() {
