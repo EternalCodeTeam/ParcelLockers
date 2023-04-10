@@ -23,7 +23,6 @@ public class PluginConfiguration implements ReloadableConfig {
         public boolean receiveUpdates = true;
 
         @Description({" ", "# The URL to the database."})
-        public String OdatabaseUrl = "jdbc:mysql://localhost:3306/parcellockers?useSSL=false";
         public String databaseUrl = "localhost";
 
         @Description({" ", "# The database name."})
