@@ -85,7 +85,6 @@ public final class ParcelLockers extends JavaPlugin {
 
     @Override
     public void onDisable() {
-
         if (this.liteCommands != null) {
             this.liteCommands.getPlatform().unregisterAll();
         }

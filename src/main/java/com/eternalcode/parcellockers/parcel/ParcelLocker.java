@@ -43,30 +43,4 @@ public class ParcelLocker {
     public void removeParcel(Parcel parcel) {
         this.parcels.remove(parcel);
     }
-
-    public static class Builder {
-        private UUID uuid;
-        private String description;
-        private Set<Parcel> parcels;
-        private Position position;
-
-        public Builder setUuid(UUID uuid) {
-            this.uuid = uuid;
-            return this;
-        }
-
-        public Builder setDescription(String description) {
-            this.description = description;
-            return this;
-        }
-
-        public Builder setPosition(Position position) {
-            this.position = position;
-            return this;
-        }
-
-        public ParcelLocker build() {
-            return new ParcelLocker(this.uuid, this.description, this.position);
-        }
-    }
 }

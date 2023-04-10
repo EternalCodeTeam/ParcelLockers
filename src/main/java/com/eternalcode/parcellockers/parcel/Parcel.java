@@ -32,7 +32,6 @@ public class Parcel {
     }
 
     public static class Builder {
-
         private UUID uuid;
         private UUID sender;
         private ParcelMeta meta;
