@@ -31,11 +31,10 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
         return CompletableFuture.supplyAsync(() -> {
             try (ResultSet resultSet = this.provider.executeQuery("SELECT * FROM `parcelLockers` WHERE `uuid` = " + uuid.toString())) {
                 if (resultSet.next()) {
-                    ParcelLocker parcelLocker = new ParcelLocker(
-                            UUID.fromString(resultSet.getString("uuid")),
-                            resultSet.getString("description"),
-                            Position.parse(resultSet.getString("position"))
-                    );
+                    UUID parcelLockerUUID = UUID.fromString(resultSet.getString("uuid"));
+                    String description = resultSet.getString("description");
+                    Position position = Position.parse(resultSet.getString("position"));
+                    ParcelLocker parcelLocker = new ParcelLocker(parcelLockerUUID, description, position);
                     return Optional.of(parcelLocker);
                 }
                 else {
@@ -57,11 +56,10 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
 
             try (ResultSet resultSet = this.provider.executeQuery("SELECT * FROM `parcelLockers`")) {
                 while (resultSet.next()) {
-                    ParcelLocker parcelLocker = new ParcelLocker(
-                            UUID.fromString(resultSet.getString("uuid")),
-                            resultSet.getString("description"),
-                            Position.parse(resultSet.getString("position"))
-                    );
+                    UUID uuid = UUID.fromString(resultSet.getString("uuid"));
+                    String description = resultSet.getString("description");
+                    Position position = Position.parse(resultSet.getString("position"));
+                    ParcelLocker parcelLocker = new ParcelLocker(uuid, description, position);
                     results.add(parcelLocker);
                 }
                 return results;
