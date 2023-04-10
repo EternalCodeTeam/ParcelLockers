@@ -2,6 +2,7 @@ package com.eternalcode.parcellockers;
 
 import com.eternalcode.parcellockers.command.ParcelCommand;
 import com.eternalcode.parcellockers.command.argument.ParcelArgument;
+import com.eternalcode.parcellockers.command.argument.PlayerArgument;
 import com.eternalcode.parcellockers.command.handler.InvalidUsage;
 import com.eternalcode.parcellockers.command.handler.PermissionMessage;
 import com.eternalcode.parcellockers.configuration.ConfigurationManager;
@@ -61,6 +62,7 @@ public final class ParcelLockers extends JavaPlugin {
 
         this.liteCommands = LiteBukkitAdventurePlatformFactory.builder(this.getServer(), "parcellockers", false, this.audiences, true)
                 .argument(Parcel.class, new ParcelArgument(parcelRepository))
+                .argument(Player.class, new PlayerArgument(this.getServer(), config))
                 .contextualBind(Player.class, new BukkitOnlyPlayerContextual<>(config.messages.onlyForPlayers))
                 .commandInstance(new ParcelCommand(announcer, config),
                         new ParcelLockerCommand(configManager, config, announcer))
