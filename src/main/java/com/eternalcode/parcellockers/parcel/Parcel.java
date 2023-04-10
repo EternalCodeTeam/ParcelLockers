@@ -55,7 +55,7 @@ public class Parcel {
         }
 
         public Parcel build() {
-            return new Parcel(uuid, sender, meta);
+            return new Parcel(this.uuid, this.sender, this.meta);
         }
     }
 }

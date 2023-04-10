@@ -37,10 +37,13 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
                             Position.parse(resultSet.getString("position"))
                     );
                     return Optional.of(parcelLocker);
-                } else {
+                }
+                else {
                     return Optional.empty();
                 }
-            } catch (SQLException exception) {
+
+            }
+            catch (SQLException exception) {
                 throw new RuntimeException(exception);
             }
         });
@@ -62,7 +65,8 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
                     results.add(parcelLocker);
                 }
                 return results;
-            } catch (SQLException exception) {
+            }
+            catch (SQLException exception) {
                 throw new RuntimeException(exception);
             }
         }).orTimeout(5, TimeUnit.SECONDS);

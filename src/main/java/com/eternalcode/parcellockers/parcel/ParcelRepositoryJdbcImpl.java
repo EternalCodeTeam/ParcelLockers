@@ -41,11 +41,12 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
             ParcelLockerRepositoryJdbcImpl parcelLockerRepository = ParcelLockerRepositoryJdbcImpl.create(this.jdbcConnectionProvider);
             try (ResultSet resultSet = this.jdbcConnectionProvider.executeQuery("SELECT * FROM `parcels` WHERE `uuid` = " + uuid)) {
                 if (resultSet.next()) {
-                    Parcel parcel = extractParcel(parcelLockerRepository, resultSet);
+                    Parcel parcel = this.extractParcel(parcelLockerRepository, resultSet);
 
                     return Optional.of(parcel);
                 }
-            } catch (SQLException exception) {
+            }
+            catch (SQLException exception) {
                 throw new RuntimeException(exception);
             }
             return Optional.empty();
@@ -60,10 +61,11 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
 
             try (ResultSet resultSet = this.jdbcConnectionProvider.executeQuery("SELECT * FROM `parcels`")) {
                 while (resultSet.next()) {
-                    Parcel parcel = extractParcel(parcelLockerRepository, resultSet);
+                    Parcel parcel = this.extractParcel(parcelLockerRepository, resultSet);
                     parcels.add(parcel);
                 }
-            } catch (SQLException exception) {
+            }
+            catch (SQLException exception) {
                 throw new RuntimeException(exception);
             }
             return parcels;

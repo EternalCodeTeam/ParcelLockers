@@ -23,27 +23,28 @@ public class JdbcConnectionProvider {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             return DriverManager.getConnection(this.dbUrl, this.user, this.pass);
-        } catch (SQLException | ClassNotFoundException exception) {
+        }
+        catch (SQLException | ClassNotFoundException exception) {
             throw new RuntimeException(exception);
         }
     }
 
     public boolean executeUpdate(String sql) {
         try (Connection connection = this.createConnection();
-            PreparedStatement statement = connection.prepareStatement(sql))
-        {
+            PreparedStatement statement = connection.prepareStatement(sql)) {
             return statement.execute();
-        } catch (SQLException exception) {
+        }
+        catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
     }
 
     public ResultSet executeQuery(String sql) {
         try (Connection connection = this.createConnection();
-             PreparedStatement statement = connection.prepareStatement(sql))
-        {
+             PreparedStatement statement = connection.prepareStatement(sql)) {
             return statement.executeQuery();
-        } catch (SQLException exception) {
+        }
+        catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
     }

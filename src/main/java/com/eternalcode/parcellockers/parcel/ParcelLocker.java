@@ -66,7 +66,7 @@ public class ParcelLocker {
         }
 
         public ParcelLocker build() {
-            return new ParcelLocker(uuid, description, position);
+            return new ParcelLocker(this.uuid, this.description, this.position);
         }
     }
 }

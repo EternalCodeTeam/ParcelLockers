@@ -104,7 +104,7 @@ public class ParcelMeta {
         }
 
         public ParcelMeta build() {
-            return new ParcelMeta(name, description, priority, receiver, size, entryLocker, destinationLocker);
+            return new ParcelMeta(this.name, this.description, this.priority, this.receiver, this.size, this.entryLocker, this.destinationLocker);
         }
     }
 }
