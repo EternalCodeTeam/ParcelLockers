@@ -22,15 +22,16 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
     @Override
     public CompletableFuture<Void> save(Parcel parcel) {
         return CompletableFuture.runAsync(() -> {
+            ParcelMeta meta = parcel.getMeta();
             this.jdbcConnectionProvider.executeUpdate("INSERT INTO `parcels` (`uuid`, `name`, `description`, `priority`, `receiver`, `size`, `entryLocker`, `destinationLocker`, `sender`) VALUES (%u, %n, %d, %p, %r, %s, %e, %dst, %sn)"
                     .replace("%u", parcel.getUuid().toString())
-                    .replace("%n", parcel.getMeta().getName())
-                    .replace("%d", parcel.getMeta().getDescription())
-                    .replace("%p", String.valueOf(parcel.getMeta().isPriority()))
-                    .replace("%r", parcel.getMeta().getReceiver().toString())
-                    .replace("%s", parcel.getMeta().getSize().name())
-                    .replace("%e", parcel.getMeta().getEntryLocker().getUuid().toString())
-                    .replace("%dst", parcel.getMeta().getDestinationLocker().getUuid().toString())
+                    .replace("%n", meta.getName())
+                    .replace("%d", meta.getDescription())
+                    .replace("%p", String.valueOf(meta.isPriority()))
+                    .replace("%r", meta.getReceiver().toString())
+                    .replace("%s", meta.getSize().name())
+                    .replace("%e", meta.getEntryLocker().getUuid().toString())
+                    .replace("%dst", meta.getDestinationLocker().getUuid().toString())
                     .replace("%sn", parcel.getSender().toString()));
         }).orTimeout(5, TimeUnit.SECONDS);
     }

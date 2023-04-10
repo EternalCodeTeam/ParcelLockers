@@ -29,7 +29,6 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
     @Override
     public CompletableFuture<Optional<ParcelLocker>> findByUuid(UUID uuid) {
         return CompletableFuture.supplyAsync(() -> {
-
             try (ResultSet resultSet = this.provider.executeQuery("SELECT * FROM `parcelLockers` WHERE `uuid` = " + uuid.toString())) {
                 if (resultSet.next()) {
                     ParcelLocker parcelLocker = new ParcelLocker(
@@ -58,7 +57,6 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
 
             try (ResultSet resultSet = this.provider.executeQuery("SELECT * FROM `parcelLockers`")) {
                 while (resultSet.next()) {
-
                     ParcelLocker parcelLocker = new ParcelLocker(
                             UUID.fromString(resultSet.getString("uuid")),
                             resultSet.getString("description"),

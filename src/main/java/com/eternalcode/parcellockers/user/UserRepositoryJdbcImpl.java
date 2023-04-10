@@ -36,7 +36,7 @@ public class UserRepositoryJdbcImpl implements UserRepository {
     public CompletableFuture<Optional<User>> findByName(String name) {
         return CompletableFuture.supplyAsync(() -> {
             try (ResultSet resultSet = this.jdbcConnectionProvider.executeQuery("SELECT * FROM `users` WHERE `name` = ? LIMIT 1".replace("?", name))) {
-                return this.extractUser(resultSet);
+                return this.getUser(resultSet);
             }
             catch (SQLException exception) {
                 throw new RuntimeException(exception);
@@ -48,7 +48,7 @@ public class UserRepositoryJdbcImpl implements UserRepository {
     public CompletableFuture<Optional<User>> findByUuid(UUID uuid) {
         return CompletableFuture.supplyAsync(() -> {
             try (ResultSet resultSet = this.jdbcConnectionProvider.executeQuery("SELECT * FROM `users` WHERE `uuid` = ? LIMIT 1".replace("?", uuid.toString()))) {
-                return this.extractUser(resultSet);
+                return this.getUser(resultSet);
             }
             catch (SQLException exception) {
                 throw new RuntimeException(exception);
@@ -102,7 +102,7 @@ public class UserRepositoryJdbcImpl implements UserRepository {
     }
 
     @NotNull
-    private Optional<User> extractUser(ResultSet resultSet) throws SQLException {
+    private Optional<User> getUser(ResultSet resultSet) throws SQLException {
         Set<Parcel> parcelSet = this.parcelRepository.findAll().join();
         Set<UUID> userParcels = new HashSet<>();
 
