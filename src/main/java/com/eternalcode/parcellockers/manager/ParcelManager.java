@@ -28,12 +28,8 @@ public class ParcelManager {
         return this.repository.remove(uuid);
     }
 
-    public Parcel findByUuid(UUID uuid) {
-        Optional<Parcel> result = this.repository.findByUuid(uuid).join();
-        if (result.isEmpty()) {
-            throw new IllegalArgumentException("Parcel with UUID " + uuid + " does not exist!");
-        }
-        return result.get();
+    public Optional<Parcel> findByUuid(UUID uuid) {
+        return this.repository.findByUuid(uuid).join();
     }
 
     public Set<Parcel> findAll() {

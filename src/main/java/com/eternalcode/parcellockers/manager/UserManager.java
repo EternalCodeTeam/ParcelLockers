@@ -4,6 +4,7 @@ import com.eternalcode.parcellockers.user.User;
 import com.eternalcode.parcellockers.user.UserRepository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class UserManager {
@@ -18,8 +19,8 @@ public class UserManager {
         this.repository.save(user);
     }
 
-    public User findByUuid(UUID uuid) {
-        return this.repository.findByUuid(uuid).join().orElseThrow(() -> new IllegalArgumentException("User with UUID " + uuid + " does not exist!"));
+    public Optional<User> findByUuid(UUID uuid) {
+        return this.repository.findByUuid(uuid).join();
     }
 
     public void remove(User user) {

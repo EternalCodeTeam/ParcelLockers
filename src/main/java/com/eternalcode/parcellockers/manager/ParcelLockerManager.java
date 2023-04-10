@@ -4,6 +4,7 @@ import com.eternalcode.parcellockers.parcel.ParcelLocker;
 import com.eternalcode.parcellockers.parcel.ParcelLockerRepository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class ParcelLockerManager {
@@ -18,8 +19,8 @@ public class ParcelLockerManager {
         this.repository.save(parcelLocker);
     }
 
-    public ParcelLocker findByUuid(UUID uuid) {
-        return this.repository.findByUuid(uuid).join().orElseThrow(() -> new IllegalArgumentException("ParcelLocker with UUID " + uuid + " does not exist!"));
+    public Optional<ParcelLocker> findByUuid(UUID uuid) {
+        return this.repository.findByUuid(uuid).join();
     }
 
     public void remove(ParcelLocker parcelLocker) {

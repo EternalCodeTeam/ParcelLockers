@@ -12,7 +12,6 @@ public class JdbcConnectionProvider {
     private final String user;
     private final String pass;
 
-
     public JdbcConnectionProvider(String dbUrl, String user, String pass) {
         this.dbUrl = dbUrl;
         this.user = user;
@@ -45,7 +44,8 @@ public class JdbcConnectionProvider {
             return statement.executeQuery();
         }
         catch (SQLException exception) {
-            throw new RuntimeException(exception);
+            exception.printStackTrace();
         }
+        return null;
     }
 }

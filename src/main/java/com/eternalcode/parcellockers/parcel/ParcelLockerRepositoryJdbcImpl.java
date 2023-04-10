@@ -29,6 +29,7 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
     @Override
     public CompletableFuture<Optional<ParcelLocker>> findByUuid(UUID uuid) {
         return CompletableFuture.supplyAsync(() -> {
+
             try (ResultSet resultSet = this.provider.executeQuery("SELECT * FROM `parcelLockers` WHERE `uuid` = " + uuid.toString())) {
                 if (resultSet.next()) {
                     ParcelLocker parcelLocker = new ParcelLocker(
@@ -46,6 +47,7 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
             catch (SQLException exception) {
                 throw new RuntimeException(exception);
             }
+
         });
     }
 
@@ -69,6 +71,7 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
             catch (SQLException exception) {
                 throw new RuntimeException(exception);
             }
+
         }).orTimeout(5, TimeUnit.SECONDS);
     }
 
@@ -89,7 +92,12 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
     }
 
     public static ParcelLockerRepositoryJdbcImpl create(JdbcConnectionProvider provider) {
-        provider.executeUpdate("CREATE TABLE IF NOT EXISTS `parcelLockers` (`uuid` VARCHAR(36) NOT NULL, `description` VARCHAR(255) NOT NULL, `position` VARCHAR(255) NOT NULL, PRIMARY KEY (`uuid`))");
+        try {
+            provider.executeUpdate("CREATE TABLE IF NOT EXISTS `parcelLockers` (`uuid` VARCHAR(36) NOT NULL, `description` VARCHAR(255) NOT NULL, `position` VARCHAR(255) NOT NULL, PRIMARY KEY (`uuid`))");
+        }
+        catch (Exception exception) {
+            exception.printStackTrace();
+        }
         return new ParcelLockerRepositoryJdbcImpl(provider);
     }
 }

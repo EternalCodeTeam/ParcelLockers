@@ -29,7 +29,7 @@ public class PluginConfiguration implements ReloadableConfig {
         public String user = "root";
 
         @Description({" ", "# The database password."})
-        public String password = "password";
+        public String password = "";
     }
 
     @Contextual
