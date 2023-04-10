@@ -64,8 +64,10 @@ public final class ParcelLockers extends JavaPlugin {
                 .argument(Parcel.class, new ParcelArgument(parcelRepository))
                 .argument(Player.class, new PlayerArgument(this.getServer(), config))
                 .contextualBind(Player.class, new BukkitOnlyPlayerContextual<>(config.messages.onlyForPlayers))
-                .commandInstance(new ParcelCommand(announcer, config),
-                        new ParcelLockerCommand(configManager, config, announcer))
+                .commandInstance(
+                        new ParcelCommand(announcer, config),
+                        new ParcelLockerCommand(configManager, config, announcer)
+                )
                 .invalidUsageHandler(new InvalidUsage(announcer, config))
                 .permissionHandler(new PermissionMessage(announcer, config))
                 .register();
