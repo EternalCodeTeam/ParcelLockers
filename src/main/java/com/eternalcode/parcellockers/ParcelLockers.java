@@ -39,7 +39,6 @@ public final class ParcelLockers extends JavaPlugin {
 
     private BukkitAudiences audiences;
 
-
     @Override
     public void onEnable() {
         Stopwatch started = Stopwatch.createStarted();
