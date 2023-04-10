@@ -23,10 +23,21 @@ public class PluginConfiguration implements ReloadableConfig {
         public boolean receiveUpdates = true;
 
         @Description({" ", "# The URL to the database."})
-        public String databaseUrl = "jdbc:mysql://localhost:3306/parcellockers?useSSL=false";
+        public String OdatabaseUrl = "jdbc:mysql://localhost:3306/parcellockers?useSSL=false";
+        public String databaseUrl = "localhost";
+
+        @Description({" ", "# The database name."})
+        public String databaseName = "parcellockers";
 
         @Description({" ", "# The database user."})
         public String user = "root";
+
+        @Description({" ", "# The database port."})
+        public String port = "3306";
+
+        @Description({" ", "# The database useSSL."})
+        @Description({" ", "# Turn this on to enable SSL (Secure Sockets Layer)"})
+        public boolean useSSL = false;
 
         @Description({" ", "# The database password."})
         public String password = "";

@@ -11,17 +11,19 @@ public class JdbcConnectionProvider {
     private final String dbUrl;
     private final String user;
     private final String pass;
+    private final String finalUrl;
 
-    public JdbcConnectionProvider(String dbUrl, String user, String pass) {
+    public JdbcConnectionProvider(String dbUrl, String port, String databaseName, boolean useSSL, String user, String pass) {
         this.dbUrl = dbUrl;
         this.user = user;
         this.pass = pass;
+        this.finalUrl = "jdbc:mysql://" + dbUrl + ":" + port + "/" + databaseName + "?useSSL=" + useSSL;
     }
 
     public Connection createConnection() {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            return DriverManager.getConnection(this.dbUrl, this.user, this.pass);
+            return DriverManager.getConnection(this.finalUrl, this.user, this.pass);
         }
         catch (SQLException | ClassNotFoundException exception) {
             throw new RuntimeException(exception);
