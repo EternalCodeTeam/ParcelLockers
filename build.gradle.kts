@@ -34,9 +34,6 @@ dependencies {
     implementation("net.kyori:adventure-platform-bukkit:4.3.0")
     implementation("net.kyori:adventure-text-minimessage:4.13.0")
     implementation("dev.rollczi.litecommands:bukkit-adventure:2.8.7")
-    
-    // database
-    compileOnly("mysql:mysql-connector-java:8.0.32")
 
     // skull api
     implementation("dev.rollczi:liteskullapi:1.3.0")
