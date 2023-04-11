@@ -72,19 +72,15 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
     }
 
     @Override
-    public CompletableFuture<Void> remove(ParcelLocker parcelLocker) {
-        return CompletableFuture.runAsync(() -> {
-            this.provider.executeUpdate("DELETE FROM `parcelLockers` WHERE `uuid` = " + parcelLocker.getUuid().toString());
-        }).orTimeout(5, TimeUnit.SECONDS);
-    }
-
-
-    @Override
     public CompletableFuture<Void> remove(UUID uuid) {
         return CompletableFuture.runAsync(() -> {
             this.provider.executeUpdate("DELETE FROM `parcelLockers` WHERE `uuid` = " + uuid.toString());
 
         }).orTimeout(5, TimeUnit.SECONDS);
+    }
+
+    public CompletableFuture<Void> remove(ParcelLocker parcelLocker) {
+        return this.remove(parcelLocker.getUuid());
     }
 
     public static ParcelLockerRepositoryJdbcImpl create(JdbcConnectionProvider provider) {

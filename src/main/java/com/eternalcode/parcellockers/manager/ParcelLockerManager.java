@@ -15,16 +15,14 @@ public class ParcelLockerManager {
         this.repository = repository;
     }
 
+    // TODO add real methods
+
     public void save(ParcelLocker parcelLocker) {
         this.repository.save(parcelLocker);
     }
 
     public Optional<ParcelLocker> findByUuid(UUID uuid) {
         return this.repository.findByUuid(uuid).join();
-    }
-
-    public void remove(ParcelLocker parcelLocker) {
-        this.repository.remove(parcelLocker);
     }
 
     public void remove(UUID uuid) {

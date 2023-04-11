@@ -75,9 +75,7 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
 
     @Override
     public CompletableFuture<Void> remove(Parcel parcel) {
-        return CompletableFuture.runAsync(() -> {
-            this.jdbcConnectionProvider.executeUpdate("DELETE FROM `parcels` WHERE `uuid` = " + parcel.getUuid().toString());
-        }).orTimeout(5, TimeUnit.SECONDS);
+        return this.remove(parcel.getUuid());
     }
 
     @Override

@@ -88,17 +88,15 @@ public class UserRepositoryJdbcImpl implements UserRepository {
     }
 
     @Override
-    public CompletableFuture<Void> remove(User user) {
-        return CompletableFuture.runAsync(() ->
-                this.jdbcConnectionProvider.executeUpdate("DELETE FROM `users` WHERE `uuid` = ?".replace("?", user.getUuid().toString())))
-                .orTimeout(5, TimeUnit.SECONDS);
-    }
-
-    @Override
     public CompletableFuture<Void> remove(UUID uuid) {
         return CompletableFuture.runAsync(() ->
                 this.jdbcConnectionProvider.executeUpdate("DELETE FROM `users` WHERE `uuid` = ?".replace("?", uuid.toString())))
                 .orTimeout(5, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public CompletableFuture<Void> remove(User user) {
+        return this.remove(user.getUuid());
     }
 
     @NotNull

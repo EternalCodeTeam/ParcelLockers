@@ -15,16 +15,14 @@ public class UserManager {
         this.repository = repository;
     }
 
+    // TODO add real methods
+
     public void save(User user) {
         this.repository.save(user);
     }
 
     public Optional<User> findByUuid(UUID uuid) {
         return this.repository.findByUuid(uuid).join();
-    }
-
-    public void remove(User user) {
-        this.repository.remove(user);
     }
 
     public void remove(UUID uuid) {
