@@ -37,6 +37,23 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
     }
 
     @Override
+    public CompletableFuture<Void> update(Parcel oldParcel, Parcel newParcel) {
+        return CompletableFuture.runAsync(() -> {
+            ParcelMeta meta = newParcel.getMeta();
+            this.jdbcConnectionProvider.executeUpdate("UPDATE `parcels` SET `name` = %n, `description` = %d, `priority` = %p, `receiver` = %r, `size` = %s, `entryLocker` = %e, `destinationLocker` = %dst, `sender` = %sn WHERE `uuid` = %u"
+                    .replace("%u", oldParcel.getUuid().toString())
+                    .replace("%n", meta.getName())
+                    .replace("%d", meta.getDescription())
+                    .replace("%p", String.valueOf(meta.isPriority()))
+                    .replace("%r", meta.getReceiver().toString())
+                    .replace("%s", meta.getSize().name())
+                    .replace("%e", meta.getEntryLocker().getUuid().toString())
+                    .replace("%dst", meta.getDestinationLocker().getUuid().toString())
+                    .replace("%sn", newParcel.getSender().toString()));
+        }).orTimeout(5, TimeUnit.SECONDS);
+    }
+
+    @Override
     public CompletableFuture<Optional<Parcel>> findByUuid(UUID uuid) {
         return CompletableFuture.supplyAsync(() -> {
             ParcelLockerRepositoryJdbcImpl parcelLockerRepository = ParcelLockerRepositoryJdbcImpl.create(this.jdbcConnectionProvider);
@@ -52,6 +69,25 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
             }
             return Optional.empty();
         });
+    }
+
+    @Override
+    public CompletableFuture<Set<Parcel>> findBySender(UUID uuid) {
+        return CompletableFuture.supplyAsync(() -> {
+            ParcelLockerRepositoryJdbcImpl parcelLockerRepository = ParcelLockerRepositoryJdbcImpl.create(this.jdbcConnectionProvider);
+            Set<Parcel> parcels = new HashSet<>();
+
+            try (ResultSet resultSet = this.jdbcConnectionProvider.executeQuery("SELECT * FROM `parcels` WHERE `sender` = " + uuid)) {
+                while (resultSet.next()) {
+                    Parcel parcel = this.extractParcel(parcelLockerRepository, resultSet);
+                    parcels.add(parcel);
+                }
+            }
+            catch (SQLException exception) {
+                throw new RuntimeException(exception);
+            }
+            return parcels;
+        }).orTimeout(5, TimeUnit.SECONDS);
     }
 
     @Override

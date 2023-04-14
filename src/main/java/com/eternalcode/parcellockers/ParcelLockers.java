@@ -76,8 +76,6 @@ public final class ParcelLockers extends JavaPlugin {
                 .permissionHandler(new PermissionMessage(announcer, config))
                 .register();
 
-
-
         new Metrics(this, 17677);
         UpdaterService updater = new UpdaterService(this.getDescription());
 
@@ -103,7 +101,7 @@ public final class ParcelLockers extends JavaPlugin {
         if (!environment.isPaper()) {
             logger.warning("Your server running on unsupported software, please use Paper or its forks");
             logger.warning("You can easily download Paper from https://papermc.io/downloads");
-            logger.warning("WARNING: Supported MC version is 1.17-1.19.3");
+            logger.warning("WARNING: Supported MC versions are 1.17.x-1.19.x");
             return;
         }
 
@@ -112,7 +110,7 @@ public final class ParcelLockers extends JavaPlugin {
             return;
         }
 
-        logger.info("Your server running on supported software, congratulations!");
+        logger.info("Your server is running on supported software, congratulations!");
         logger.info("Server version: " + this.getServer().getVersion());
     }
 }

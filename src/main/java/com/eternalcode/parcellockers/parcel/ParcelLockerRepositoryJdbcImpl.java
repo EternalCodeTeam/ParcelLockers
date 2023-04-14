@@ -16,7 +16,7 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
 
     private final JdbcConnectionProvider provider;
 
-    public ParcelLockerRepositoryJdbcImpl(JdbcConnectionProvider provider) {
+    private ParcelLockerRepositoryJdbcImpl(JdbcConnectionProvider provider) {
         this.provider = provider;
     }
 
@@ -46,6 +46,28 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
                 throw new RuntimeException(exception);
             }
 
+        });
+    }
+
+    @Override
+    public CompletableFuture<Optional<ParcelLocker>> findByPosition(Position position) {
+        return CompletableFuture.supplyAsync(() -> {
+            try (ResultSet resultSet = this.provider.executeQuery("SELECT * FROM `parcelLockers` WHERE `position` = " + position.toString())) {
+                if (resultSet.next()) {
+                    UUID parcelLockerUUID = UUID.fromString(resultSet.getString("uuid"));
+                    String description = resultSet.getString("description");
+                    Position parcelLockerPosition = Position.parse(resultSet.getString("position"));
+                    ParcelLocker parcelLocker = new ParcelLocker(parcelLockerUUID, description, parcelLockerPosition);
+                    return Optional.of(parcelLocker);
+                }
+                else {
+                    return Optional.empty();
+                }
+
+            }
+            catch (SQLException exception) {
+                throw new RuntimeException(exception);
+            }
         });
     }
 
