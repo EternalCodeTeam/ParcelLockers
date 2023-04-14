@@ -5,7 +5,6 @@ import com.eternalcode.parcellockers.manager.ParcelManager;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import dev.rollczi.litecommands.argument.Arg;
-import dev.rollczi.litecommands.argument.By;
 import dev.rollczi.litecommands.command.async.Async;
 import dev.rollczi.litecommands.command.execute.Execute;
 import dev.rollczi.litecommands.command.permission.Permission;
@@ -34,7 +33,7 @@ public class ParcelCommand {
 
     @Async
     @Execute(route = "info", min = 1)
-    void info(Player player, @Arg @By("parcel") Parcel parcel) {
+    void info(Player player, @Arg Parcel parcel) {
         // show target parcel info and delivery options
     }
 }
