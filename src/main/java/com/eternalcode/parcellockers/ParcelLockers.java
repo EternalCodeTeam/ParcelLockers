@@ -24,6 +24,7 @@ import dev.rollczi.litecommands.bukkit.adventure.platform.LiteBukkitAdventurePla
 import dev.rollczi.litecommands.bukkit.tools.BukkitOnlyPlayerContextual;
 import io.papermc.lib.PaperLib;
 import io.papermc.lib.environments.Environment;
+import io.sentry.Sentry;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bstats.bukkit.Metrics;
@@ -43,6 +44,11 @@ public final class ParcelLockers extends JavaPlugin {
     @Override
     public void onEnable() {
         Stopwatch started = Stopwatch.createStarted();
+
+        Sentry.init(options -> {
+            options.setDsn("https://1dffb5bec4484aaaaca5fcb4c3157a99@o4505014505177088.ingest.sentry.io/4505019784888320");
+            options.setTracesSampleRate(1.0);
+        });
 
         this.softwareCheck();
 
