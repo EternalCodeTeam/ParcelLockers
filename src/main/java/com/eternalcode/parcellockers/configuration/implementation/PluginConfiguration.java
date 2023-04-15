@@ -23,7 +23,7 @@ public class PluginConfiguration implements ReloadableConfig {
         public boolean receiveUpdates = true;
 
         @Description({" ", "# The URL to the database."})
-        public String databaseUrl = "localhost";
+        public String host = "localhost";
 
         @Description({" ", "# The database name."})
         public String databaseName = "parcellockers";

@@ -61,7 +61,7 @@ public final class ParcelLockers extends JavaPlugin {
         ConfigurationManager configManager = new ConfigurationManager(this.getDataFolder());
         PluginConfiguration config = configManager.load(new PluginConfiguration());
 
-        JdbcConnectionProvider jdbcConnectionProvider = new JdbcConnectionProvider(config.settings.databaseUrl, config.settings.port, config.settings.databaseName, config.settings.useSSL, config.settings.user, config.settings.password);
+        JdbcConnectionProvider jdbcConnectionProvider = new JdbcConnectionProvider(config.settings.host, config.settings.port, config.settings.databaseName, config.settings.useSSL, config.settings.user, config.settings.password);
         ParcelLockerRepositoryJdbcImpl parcelLockerRepository = ParcelLockerRepositoryJdbcImpl.create(jdbcConnectionProvider);
         ParcelRepositoryJdbcImpl parcelRepository = ParcelRepositoryJdbcImpl.create(jdbcConnectionProvider);
         UserRepositoryJdbcImpl userRepository = UserRepositoryJdbcImpl.create(jdbcConnectionProvider);
