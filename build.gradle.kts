@@ -32,7 +32,7 @@ dependencies {
     // minecraft development api
     compileOnly("org.spigotmc:spigot-api:1.19.3-R0.1-SNAPSHOT")
     implementation("net.kyori:adventure-platform-bukkit:4.3.0")
-    implementation("net.kyori:adventure-text-minimessage:4.13.0")
+    implementation("net.kyori:adventure-text-minimessage:4.13.1")
     implementation("dev.rollczi.litecommands:bukkit-adventure:2.8.7")
 
     // skull api
@@ -45,7 +45,7 @@ dependencies {
     implementation("net.dzikoysk:cdn:1.14.4")
 
     // expressible
-    implementation("org.panda-lang:expressible:1.3.1")
+    implementation("org.panda-lang:expressible:1.3.4")
 
     // gitcheck
     implementation("com.eternalcode:gitcheck:1.0.0")
@@ -70,7 +70,7 @@ dependencies {
     errorprone("com.google.errorprone:error_prone_core:2.18.0")
 
     // java discord api
-    implementation("net.dv8tion:JDA:5.0.0-beta.6") {
+    implementation("net.dv8tion:JDA:5.0.0-beta.8") {
         exclude(module = "opus-java")
     }
 }
