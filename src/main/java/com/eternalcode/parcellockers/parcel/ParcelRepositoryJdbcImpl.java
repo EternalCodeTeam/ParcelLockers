@@ -2,6 +2,7 @@ package com.eternalcode.parcellockers.parcel;
 
 import com.eternalcode.parcellockers.database.JdbcConnectionProvider;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
@@ -23,16 +24,19 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
     public CompletableFuture<Void> save(Parcel parcel) {
         return CompletableFuture.runAsync(() -> {
             ParcelMeta meta = parcel.meta();
-            this.jdbcConnectionProvider.executeUpdate("INSERT INTO `parcels` (`uuid`, `name`, `description`, `priority`, `receiver`, `size`, `entryLocker`, `destinationLocker`, `sender`) VALUES (%u, %n, %d, %p, %r, %s, %e, %dst, %sn)"
-                    .replace("%u", parcel.uuid().toString())
-                    .replace("%n", meta.getName())
-                    .replace("%d", meta.getDescription())
-                    .replace("%p", String.valueOf(meta.isPriority()))
-                    .replace("%r", meta.getReceiver().toString())
-                    .replace("%s", meta.getSize().name())
-                    .replace("%e", meta.getEntryLocker().getUuid().toString())
-                    .replace("%dst", meta.getDestinationLocker().getUuid().toString())
-                    .replace("%sn", parcel.sender().toString()));
+            try (PreparedStatement statement = this.jdbcConnectionProvider.createConnection().prepareStatement("INSERT INTO `parcels` (`uuid`, `name`, `description`, `priority`, `receiver`, `size`, `entryLocker`, `destinationLocker`, `sender`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")){
+                statement.setString(1, parcel.uuid().toString());statement.setString(2, meta.getName());
+                statement.setString(3, meta.getDescription());
+                statement.setBoolean(4, meta.isPriority());
+                statement.setString(5, meta.getReceiver().toString());
+                statement.setString(6, meta.getSize().name());
+                statement.setString(7, meta.getEntryLocker().getUuid().toString());
+                statement.setString(8, meta.getDestinationLocker().getUuid().toString());
+                statement.setString(9, parcel.sender().toString());
+                statement.executeUpdate();
+            } catch (SQLException exception) {
+                throw new RuntimeException(exception);
+            }
         }).orTimeout(5, TimeUnit.SECONDS);
     }
 
@@ -40,16 +44,20 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
     public CompletableFuture<Void> update(Parcel oldParcel, Parcel newParcel) {
         return CompletableFuture.runAsync(() -> {
             ParcelMeta meta = newParcel.meta();
-            this.jdbcConnectionProvider.executeUpdate("UPDATE `parcels` SET `name` = %n, `description` = %d, `priority` = %p, `receiver` = %r, `size` = %s, `entryLocker` = %e, `destinationLocker` = %dst, `sender` = %sn WHERE `uuid` = %u"
-                    .replace("%u", oldParcel.uuid().toString())
-                    .replace("%n", meta.getName())
-                    .replace("%d", meta.getDescription())
-                    .replace("%p", String.valueOf(meta.isPriority()))
-                    .replace("%r", meta.getReceiver().toString())
-                    .replace("%s", meta.getSize().name())
-                    .replace("%e", meta.getEntryLocker().getUuid().toString())
-                    .replace("%dst", meta.getDestinationLocker().getUuid().toString())
-                    .replace("%sn", newParcel.sender().toString()));
+            try (PreparedStatement statement = this.jdbcConnectionProvider.createConnection().prepareStatement("UPDATE `parcels` SET `name` = ?, `description` = ?, `priority` = ?, `receiver` = ?, `size` = ?, `entryLocker` = ?, `destinationLocker` = ?, `sender` = ? WHERE `uuid` = ?")){
+                statement.setString(1, meta.getName());
+                statement.setString(2, meta.getDescription());
+                statement.setBoolean(3, meta.isPriority());
+                statement.setString(4, meta.getReceiver().toString());
+                statement.setString(5, meta.getSize().name());
+                statement.setString(6, meta.getEntryLocker().getUuid().toString());
+                statement.setString(7, meta.getDestinationLocker().getUuid().toString());
+                statement.setString(8, newParcel.sender().toString());
+                statement.setString(9, oldParcel.uuid().toString());
+                statement.executeUpdate();
+            } catch (SQLException exception) {
+                throw new RuntimeException(exception);
+            }
         }).orTimeout(5, TimeUnit.SECONDS);
     }
 
