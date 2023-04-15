@@ -124,7 +124,12 @@ tasks.withType<ShadowJar> {
         "org.panda_lang",
         "net.dzikoysk",
         "io.papermc.lib",
-        "org.bstats"
+        "org.bstats",
+        "dev.rollczi",
+        "net.kyori",
+        "okhttp3",
+        "org.json",
+        "com.fasterxml"
     ).forEach { pack ->
         relocate(pack, "$prefix.$pack")
     }
