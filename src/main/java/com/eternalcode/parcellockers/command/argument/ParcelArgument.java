@@ -1,6 +1,7 @@
 package com.eternalcode.parcellockers.command.argument;
 
 import com.eternalcode.parcellockers.parcel.Parcel;
+import com.eternalcode.parcellockers.parcel.ParcelRepositoryJdbcImpl;
 import dev.rollczi.litecommands.argument.ArgumentName;
 import dev.rollczi.litecommands.argument.simple.OneArgument;
 import dev.rollczi.litecommands.command.LiteInvocation;
@@ -8,19 +9,33 @@ import dev.rollczi.litecommands.suggestion.Suggestion;
 import panda.std.Result;
 
 import java.util.List;
+import java.util.UUID;
 
 @ArgumentName("parcel")
 public class ParcelArgument implements OneArgument<Parcel> {
 
-	// TODO: Parse parcel from argument
-	@Override
-	public Result<Parcel, ?> parse(LiteInvocation invocation, String argument) {
-		return null;
-	}
+    private final ParcelRepositoryJdbcImpl parcelRepository;
 
-	// TODO: Fetch parcels from database
-	@Override
-	public List<Suggestion> suggest(LiteInvocation invocation) {
-		return OneArgument.super.suggest(invocation);
-	}
+    public ParcelArgument(ParcelRepositoryJdbcImpl parcelRepository) {
+        this.parcelRepository = parcelRepository;
+    }
+
+    @Override
+    public Result<Parcel, ?> parse(LiteInvocation invocation, String argument) {
+        return this.parcelRepository.findByUuid(UUID.fromString(argument))
+                .join()
+                .map(Result::ok)
+                .orElseGet(() -> Result.error("Parcel not found"));
+    }
+
+
+    @Override
+    public List<Suggestion> suggest(LiteInvocation invocation) {
+        return this.parcelRepository.findAll().join()
+                .stream()
+                .map(Parcel::uuid)
+                .map(UUID::toString)
+                .map(Suggestion::of)
+                .toList();
+    }
 }

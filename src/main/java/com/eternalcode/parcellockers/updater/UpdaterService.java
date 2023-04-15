@@ -10,25 +10,23 @@ import panda.std.Lazy;
 import java.util.concurrent.CompletableFuture;
 
 public class UpdaterService {
+    private static final GitRepository GIT_REPOSITORY = GitRepository.of("EternalCodeTeam", "ParcelLockers");
+    private final GitCheck gitCheck = new GitCheck();
+    private final Lazy<GitCheckResult> gitCheckResult;
 
-	private static final GitRepository GIT_REPOSITORY = GitRepository.of("EternalCodeTeam", "ParcelLockers");
+    public UpdaterService(PluginDescriptionFile descriptionFile) {
+        this.gitCheckResult = new Lazy<>(() -> {
+            String version = descriptionFile.getVersion();
 
-	private final GitCheck gitCheck = new GitCheck();
-	private final Lazy<GitCheckResult> gitCheckResult;
+            return this.gitCheck.checkRelease(GIT_REPOSITORY, GitTag.of("v" + version));
+        });
+    }
 
-	public UpdaterService(PluginDescriptionFile descriptionFile) {
-		this.gitCheckResult = new Lazy<>(() -> {
-			String version = descriptionFile.getVersion();
+    public CompletableFuture<Boolean> isUpToDate() {
+        return CompletableFuture.supplyAsync(() -> {
+            GitCheckResult result = this.gitCheckResult.get();
 
-			return this.gitCheck.checkRelease(GIT_REPOSITORY, GitTag.of("v" + version));
-		});
-	}
-
-	public CompletableFuture<Boolean> isUpToDate() {
-		return CompletableFuture.supplyAsync(() -> {
-			GitCheckResult result = this.gitCheckResult.get();
-
-			return result.isUpToDate();
-		});
-	}
+            return result.isUpToDate();
+        });
+    }
 }

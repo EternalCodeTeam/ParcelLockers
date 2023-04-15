@@ -50,8 +50,9 @@ dependencies {
     // gitcheck
     implementation("com.eternalcode:gitcheck:1.0.0")
 
-    // metrics
+    // metrics and sentry
     implementation("org.bstats:bstats-bukkit:3.0.2")
+    implementation("io.sentry:sentry:6.17.0")
 
     // lombok
     compileOnly("org.projectlombok:lombok:1.18.26")
@@ -68,11 +69,6 @@ dependencies {
 
     // errorprone
     errorprone("com.google.errorprone:error_prone_core:2.18.0")
-
-    // java discord api
-    implementation("net.dv8tion:JDA:5.0.0-beta.6") {
-        exclude(module = "opus-java")
-    }
 }
 
 java {
@@ -102,6 +98,7 @@ bukkit {
 
 tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
+    options.setIncremental(true)
 }
 
 tasks.withType<ShadowJar> {
@@ -123,7 +120,12 @@ tasks.withType<ShadowJar> {
         "org.panda_lang",
         "net.dzikoysk",
         "io.papermc.lib",
-        "org.mineacademy"
+        "org.bstats",
+        "dev.rollczi",
+        "net.kyori",
+        "okhttp3",
+        "org.json",
+        "com.fasterxml"
     ).forEach { pack ->
         relocate(pack, "$prefix.$pack")
     }
@@ -131,7 +133,7 @@ tasks.withType<ShadowJar> {
 
 tasks {
     runServer {
-        minecraftVersion("1.19.3")
+        minecraftVersion("1.19.4")
     }
 }
 

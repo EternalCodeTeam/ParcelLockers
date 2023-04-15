@@ -2,23 +2,34 @@ package com.eternalcode.parcellockers;
 
 import com.eternalcode.parcellockers.command.ParcelCommand;
 import com.eternalcode.parcellockers.command.argument.ParcelArgument;
+import com.eternalcode.parcellockers.command.argument.PlayerArgument;
 import com.eternalcode.parcellockers.command.handler.InvalidUsage;
 import com.eternalcode.parcellockers.command.handler.PermissionMessage;
 import com.eternalcode.parcellockers.configuration.ConfigurationManager;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.database.JdbcConnectionProvider;
+import com.eternalcode.parcellockers.manager.ParcelLockerManager;
+import com.eternalcode.parcellockers.manager.ParcelManager;
+import com.eternalcode.parcellockers.manager.UserManager;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.Parcel;
+import com.eternalcode.parcellockers.parcel.ParcelLockerRepositoryJdbcImpl;
+import com.eternalcode.parcellockers.parcel.ParcelRepositoryJdbcImpl;
 import com.eternalcode.parcellockers.updater.UpdaterService;
+import com.eternalcode.parcellockers.user.UserRepositoryJdbcImpl;
 import com.eternalcode.parcellockers.util.legacy.LegacyColorProcessor;
 import com.google.common.base.Stopwatch;
 import dev.rollczi.litecommands.LiteCommands;
 import dev.rollczi.litecommands.bukkit.adventure.platform.LiteBukkitAdventurePlatformFactory;
+import dev.rollczi.litecommands.bukkit.tools.BukkitOnlyPlayerContextual;
 import io.papermc.lib.PaperLib;
 import io.papermc.lib.environments.Environment;
+import io.sentry.Sentry;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.concurrent.TimeUnit;
@@ -26,98 +37,88 @@ import java.util.logging.Logger;
 
 public final class ParcelLockers extends JavaPlugin {
 
-	private static ParcelLockers instance;
+    private LiteCommands<CommandSender> liteCommands;
 
-	private LiteCommands<CommandSender> liteCommands;
+    private BukkitAudiences audiences;
 
-	private BukkitAudiences audiences;
-	private MiniMessage miniMessage;
-	private NotificationAnnouncer announcer;
-	private UpdaterService updater;
+    @Override
+    public void onEnable() {
+        Stopwatch started = Stopwatch.createStarted();
 
-	private ConfigurationManager configManager;
-	private PluginConfiguration config;
+        Sentry.init(options -> {
+            options.setDsn("https://1dffb5bec4484aaaaca5fcb4c3157a99@o4505014505177088.ingest.sentry.io/4505019784888320");
+            options.setTracesSampleRate(1.0);
+        });
 
-	@Override
-	public void onEnable() {
-		Stopwatch started = Stopwatch.createStarted();
-		instance = this;
-		this.softwareCheck();
+        this.softwareCheck();
 
-		this.audiences = BukkitAudiences.create(this);
-		this.miniMessage = MiniMessage.builder()
-				.postProcessor(new LegacyColorProcessor())
-				.build();
-		this.announcer = new NotificationAnnouncer(this.audiences, this.miniMessage);
+        this.audiences = BukkitAudiences.create(this);
+        MiniMessage miniMessage = MiniMessage.builder()
+                .postProcessor(new LegacyColorProcessor())
+                .build();
+        NotificationAnnouncer announcer = new NotificationAnnouncer(this.audiences, miniMessage);
 
-		this.configManager = new ConfigurationManager(this.getDataFolder());
-		this.config = this.configManager.load(new PluginConfiguration());
+        ConfigurationManager configManager = new ConfigurationManager(this.getDataFolder());
+        PluginConfiguration config = configManager.load(new PluginConfiguration());
 
-		this.liteCommands = LiteBukkitAdventurePlatformFactory.builder(this.getServer(), "parcellockers", false, this.audiences, true)
-				.argument(Parcel.class, new ParcelArgument())
-				.commandInstance(new ParcelCommand(this.announcer, this.config), new ParcelLockerCommand(this.configManager, this.config, this.announcer))
-				.invalidUsageHandler(new InvalidUsage(this.announcer, this.config))
-				.permissionHandler(new PermissionMessage(this.announcer, this.config))
-				.register();
+        JdbcConnectionProvider jdbcConnectionProvider = new JdbcConnectionProvider(config.settings.host, config.settings.port, config.settings.databaseName, config.settings.useSSL, config.settings.user, config.settings.password);
+        ParcelLockerRepositoryJdbcImpl parcelLockerRepository = ParcelLockerRepositoryJdbcImpl.create(jdbcConnectionProvider);
+        ParcelRepositoryJdbcImpl parcelRepository = ParcelRepositoryJdbcImpl.create(jdbcConnectionProvider);
+        UserRepositoryJdbcImpl userRepository = UserRepositoryJdbcImpl.create(jdbcConnectionProvider);
 
+        ParcelManager parcelManager = new ParcelManager(parcelRepository);
+        ParcelLockerManager parcelLockerManager = new ParcelLockerManager(parcelLockerRepository);
+        UserManager userManager = new UserManager(userRepository);
 
-		new Metrics(this, 17677);
-		new UpdaterService(this.getDescription());
+        this.liteCommands = LiteBukkitAdventurePlatformFactory.builder(this.getServer(), "parcellockers", false, this.audiences, true)
+                .argument(Parcel.class, new ParcelArgument(parcelRepository))
+                .argument(Player.class, new PlayerArgument(this.getServer(), config))
+                .contextualBind(Player.class, new BukkitOnlyPlayerContextual<>(config.messages.onlyForPlayers))
+                .commandInstance(
+                        new ParcelCommand(announcer, config, parcelManager),
+                        new ParcelLockerCommand(configManager, config, announcer)
+                )
+                .invalidUsageHandler(new InvalidUsage(announcer, config))
+                .permissionHandler(new PermissionMessage(announcer, config))
+                .register();
 
-		long millis = started.elapsed(TimeUnit.MILLISECONDS);
-		this.getLogger().info("Successfully enabled ParcelLockers in " + millis + "ms");
-	}
+        new Metrics(this, 17677);
+        UpdaterService updater = new UpdaterService(this.getDescription());
 
-	@Override
-	public void onDisable() {
-		instance = null;
+        long millis = started.stop().elapsed(TimeUnit.MILLISECONDS);
+        this.getLogger().info("Successfully enabled ParcelLockers in " + millis + "ms");
+    }
 
-		if (this.liteCommands != null) {
-			this.liteCommands.getPlatform().unregisterAll();
-		}
+    @Override
+    public void onDisable() {
+        if (this.liteCommands != null) {
+            this.liteCommands.getPlatform().unregisterAll();
+        }
 
-		if (this.audiences != null) {
-			this.audiences.close();
-		}
-	}
+        if (this.audiences != null) {
+            this.audiences.close();
+        }
+    }
 
-	private void softwareCheck() {
-		Logger logger = this.getLogger();
-		Environment environment = PaperLib.getEnvironment();
+    private void softwareCheck() {
+        Logger logger = this.getLogger();
+        Environment environment = PaperLib.getEnvironment();
 
-		if (!environment.isPaper()) {
-			logger.warning("Your server running on unsupported software, please use Paper or its forks");
-			logger.warning("You can easily download Paper from https://papermc.io/downloads");
-			logger.warning("WARNING: Supported MC version is 1.17-1.19.3");
-			return;
-		}
+        if (!environment.isPaper()) {
+            logger.warning("Your server running on unsupported software, please use Paper or its forks");
+            logger.warning("You can easily download Paper from https://papermc.io/downloads");
+            logger.warning("WARNING: Supported MC versions are 1.17.x-1.19.x");
+            return;
+        }
 
-		if (!environment.isVersion(17)) {
-			logger.warning("ParcelLockers no longer supports your version, be aware that there may be bugs!");
-			return;
-		}
+        if (!environment.isVersion(17)) {
+            logger.warning("ParcelLockers no longer supports your version, be aware that there may be bugs!");
+            return;
+        }
 
-		logger.info("Your server running on supported software, congratulations!");
-		logger.info("Server version: " + this.getServer().getVersion());
-	}
-
-	public static ParcelLockers getInstance() {
-		return instance;
-	}
-
-	public BukkitAudiences getAudiences() {
-		return this.audiences;
-	}
-
-	public LiteCommands<CommandSender> getLiteCommands() {
-		return this.liteCommands;
-	}
-
-	public MiniMessage getMiniMessage() {
-		return this.miniMessage;
-	}
-
-	public NotificationAnnouncer getAnnouncer() {
-		return this.announcer;
-	}
+        logger.info("Your server is running on supported software, congratulations!");
+        logger.info("Server version: " + this.getServer().getVersion());
+    }
 }
+
+

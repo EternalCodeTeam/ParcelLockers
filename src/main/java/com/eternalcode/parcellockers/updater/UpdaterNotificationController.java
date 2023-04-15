@@ -13,41 +13,41 @@ import java.util.concurrent.CompletableFuture;
 
 public class UpdaterNotificationController implements Listener {
 
-	private static final String NEW_VERSION_AVAILABLE = "<b><gradient:#8a1212:#fc6b03>ParcelLockers:</gradient></b> <color:#fce303>New version of ParcelLockers is available, please update!";
+    private static final String NEW_VERSION_AVAILABLE = "<b><gradient:#8a1212:#fc6b03>ParcelLockers:</gradient></b> <color:#fce303>New version of ParcelLockers is available, please update!";
 
-	private final UpdaterService updaterService;
-	private final PluginConfiguration pluginConfig;
-	private final AudienceProvider audienceProvider;
-	private final MiniMessage miniMessage;
+    private final UpdaterService updaterService;
+    private final PluginConfiguration pluginConfig;
+    private final AudienceProvider audienceProvider;
+    private final MiniMessage miniMessage;
 
-	public UpdaterNotificationController(UpdaterService updaterService, PluginConfiguration pluginConfig, AudienceProvider audienceProvider, MiniMessage miniMessage) {
-		this.updaterService = updaterService;
-		this.pluginConfig = pluginConfig;
-		this.audienceProvider = audienceProvider;
-		this.miniMessage = miniMessage;
-	}
+    public UpdaterNotificationController(UpdaterService updaterService, PluginConfiguration pluginConfig, AudienceProvider audienceProvider, MiniMessage miniMessage) {
+        this.updaterService = updaterService;
+        this.pluginConfig = pluginConfig;
+        this.audienceProvider = audienceProvider;
+        this.miniMessage = miniMessage;
+    }
 
-	@EventHandler
-	void onJoin(PlayerJoinEvent event) {
-		Player player = event.getPlayer();
-		Audience audience = this.audienceProvider.player(player.getUniqueId());
+    @EventHandler
+    void onJoin(PlayerJoinEvent event) {
+        Player player = event.getPlayer();
+        Audience audience = this.audienceProvider.player(player.getUniqueId());
 
-		if (!player.hasPermission("eternalcombat.receiveupdates") || !this.pluginConfig.settings.receiveUpdates) {
-			return;
-		}
+        if (!player.hasPermission("parcellockers.receiveupdates") || !this.pluginConfig.settings.receiveUpdates) {
+            return;
+        }
 
-		CompletableFuture<Boolean> upToDate = this.updaterService.isUpToDate();
+        CompletableFuture<Boolean> upToDate = this.updaterService.isUpToDate();
 
-		upToDate.whenComplete((isUpToDate, throwable) -> {
-			if (throwable != null) {
-				throwable.printStackTrace();
+        upToDate.whenComplete((isUpToDate, throwable) -> {
+            if (throwable != null) {
+                throwable.printStackTrace();
 
-				return;
-			}
+                return;
+            }
 
-			if (!isUpToDate) {
-				audience.sendMessage(this.miniMessage.deserialize(NEW_VERSION_AVAILABLE));
-			}
-		});
-	}
+            if (!isUpToDate) {
+                audience.sendMessage(this.miniMessage.deserialize(NEW_VERSION_AVAILABLE));
+            }
+        });
+    }
 }

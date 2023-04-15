@@ -2,7 +2,7 @@ package com.eternalcode.parcellockers.util;
 
 import java.time.Duration;
 
-public class DurationUtil {
+public final class DurationUtil {
 
     private DurationUtil() {
         throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
