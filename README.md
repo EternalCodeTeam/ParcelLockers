@@ -23,7 +23,7 @@ ParcelLockers is at an very early stage of development, and you use it at your o
 # Building
 
 To build ParcelLockers execute this command using Gradle (Make sure you are using JDK 8 for maximum compatibility)
-
+[README.md](README.md)
 `./gradlew clean shadowJar`
 
 When you build it for the first time, it may take a little longer.
