@@ -1,6 +1,6 @@
 # ParcelLockers
 
-### ParcelLockers is a parcel plugin, dedicated for Spigot-based servers.
+### ParcelLockers is a user plugin, dedicated for Spigot-based servers.
 
 <div align="center">
 
@@ -23,7 +23,7 @@ ParcelLockers is at an very early stage of development, and you use it at your o
 # Building
 
 To build ParcelLockers execute this command using Gradle (Make sure you are using JDK 8 for maximum compatibility)
-
+[README.md](README.md)
 `./gradlew clean shadowJar`
 
 When you build it for the first time, it may take a little longer.
@@ -70,7 +70,7 @@ more.
 - [TriumphGUI](https://github.com/TriumphTeam/triumph-gui)
 - [bStats](https://bstats.org/)
 
-ParcelLockers is a advanced parcel delivery plugin, dedicated for Spigot-based servers.
+ParcelLockers is a advanced user delivery plugin, dedicated for Spigot-based servers.
 
 🚫 Found an issue? Report it [here](https://github.com/EternalCodeTeam/ParcelLockers/issues).
 
