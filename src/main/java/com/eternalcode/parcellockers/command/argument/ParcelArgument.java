@@ -33,7 +33,7 @@ public class ParcelArgument implements OneArgument<Parcel> {
     public List<Suggestion> suggest(LiteInvocation invocation) {
         return this.parcelRepository.findAll().join()
                 .stream()
-                .map(Parcel::getUuid)
+                .map(Parcel::uuid)
                 .map(UUID::toString)
                 .map(Suggestion::of)
                 .toList();

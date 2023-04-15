@@ -70,8 +70,8 @@ public class UserRepositoryJdbcImpl implements UserRepository {
                     for (Parcel parcel : parcelSet) {
                         UUID target = UUID.fromString(resultSet.getString("uuid"));
 
-                        if (parcel.getSender().equals(target)) {
-                            userParcels.add(parcel.getUuid());
+                        if (parcel.sender().equals(target)) {
+                            userParcels.add(parcel.uuid());
                         }
                     }
                     User user = new User(UUID.fromString(resultSet.getString("uuid")), resultSet.getString("name"), userParcels);
@@ -108,8 +108,8 @@ public class UserRepositoryJdbcImpl implements UserRepository {
             for (Parcel parcel : parcelSet) {
                 UUID target = UUID.fromString(resultSet.getString("uuid"));
 
-                if (parcel.getSender().equals(target)) {
-                    userParcels.add(parcel.getUuid());
+                if (parcel.sender().equals(target)) {
+                    userParcels.add(parcel.uuid());
                 }
             }
         }

@@ -22,9 +22,9 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
     @Override
     public CompletableFuture<Void> save(Parcel parcel) {
         return CompletableFuture.runAsync(() -> {
-            ParcelMeta meta = parcel.getMeta();
+            ParcelMeta meta = parcel.meta();
             this.jdbcConnectionProvider.executeUpdate("INSERT INTO `parcels` (`uuid`, `name`, `description`, `priority`, `receiver`, `size`, `entryLocker`, `destinationLocker`, `sender`) VALUES (%u, %n, %d, %p, %r, %s, %e, %dst, %sn)"
-                    .replace("%u", parcel.getUuid().toString())
+                    .replace("%u", parcel.uuid().toString())
                     .replace("%n", meta.getName())
                     .replace("%d", meta.getDescription())
                     .replace("%p", String.valueOf(meta.isPriority()))
@@ -32,16 +32,16 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
                     .replace("%s", meta.getSize().name())
                     .replace("%e", meta.getEntryLocker().getUuid().toString())
                     .replace("%dst", meta.getDestinationLocker().getUuid().toString())
-                    .replace("%sn", parcel.getSender().toString()));
+                    .replace("%sn", parcel.sender().toString()));
         }).orTimeout(5, TimeUnit.SECONDS);
     }
 
     @Override
     public CompletableFuture<Void> update(Parcel oldParcel, Parcel newParcel) {
         return CompletableFuture.runAsync(() -> {
-            ParcelMeta meta = newParcel.getMeta();
+            ParcelMeta meta = newParcel.meta();
             this.jdbcConnectionProvider.executeUpdate("UPDATE `parcels` SET `name` = %n, `description` = %d, `priority` = %p, `receiver` = %r, `size` = %s, `entryLocker` = %e, `destinationLocker` = %dst, `sender` = %sn WHERE `uuid` = %u"
-                    .replace("%u", oldParcel.getUuid().toString())
+                    .replace("%u", oldParcel.uuid().toString())
                     .replace("%n", meta.getName())
                     .replace("%d", meta.getDescription())
                     .replace("%p", String.valueOf(meta.isPriority()))
@@ -49,7 +49,7 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
                     .replace("%s", meta.getSize().name())
                     .replace("%e", meta.getEntryLocker().getUuid().toString())
                     .replace("%dst", meta.getDestinationLocker().getUuid().toString())
-                    .replace("%sn", newParcel.getSender().toString()));
+                    .replace("%sn", newParcel.sender().toString()));
         }).orTimeout(5, TimeUnit.SECONDS);
     }
 
@@ -111,7 +111,7 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
 
     @Override
     public CompletableFuture<Void> remove(Parcel parcel) {
-        return this.remove(parcel.getUuid());
+        return this.remove(parcel.uuid());
     }
 
     @Override
