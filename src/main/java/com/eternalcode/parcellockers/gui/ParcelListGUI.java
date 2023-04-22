@@ -70,7 +70,7 @@ public class ParcelListGUI {
                             this.miniMessage.deserialize("&3Priority: ").append(Component.text(meta.isPriority() ? "&aYes" : "&cNo")),
                             this.miniMessage.deserialize("&3Description: ").append(Component.text(meta.getDescription())),
                             this.miniMessage.deserialize("&3Position: ").append(Component.text(meta.getDestinationLocker().getPosition().toString())),
-                            this.miniMessage.deserialize("&3Recipients: ").append(Component.text(meta.getRecipients().stream().map(Bukkit::getPlayer).map(HumanEntity::getName).toString())))
+                            this.miniMessage.deserialize("&3Recipients: ").append(Component.text(meta.getRecipients().stream().map(Bukkit::getPlayer).map(HumanEntity::getName).toList().toString())))
                     .flags(ItemFlag.HIDE_ATTRIBUTES)
                     .asGuiItem());
         }

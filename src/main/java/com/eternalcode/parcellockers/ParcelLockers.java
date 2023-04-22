@@ -61,7 +61,7 @@ public final class ParcelLockers extends JavaPlugin {
         if (config.settings.enableSentry) {
             Sentry.init(options -> {
                 this.getLogger().info("Initializing Sentry...");
-                options.setDsn("https://1dffb5bec4484aaaaca5fcb4c3157a99@o4505014505177088.in   gest.sentry.io/4505019784888320");
+                options.setDsn("https://1dffb5bec4484aaaaca5fcb4c3157a99@o4505014505177088.ingest.sentry.io/4505019784888320");
                 options.setTracesSampleRate(1.0);
                 options.setRelease(this.getDescription().getVersion());
                 options.setTag("serverVersion", this.getServer().getVersion());

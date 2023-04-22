@@ -66,7 +66,7 @@ public class SentParcelsGUI {
                             this.miniMessage.deserialize("&3Description: ").append(Component.text(meta.getDescription())),
                             this.miniMessage.deserialize("&3Entry position: ").append(Component.text(meta.getEntryLocker().getPosition().toString())),
                             this.miniMessage.deserialize("&3Target Position: ").append(Component.text(meta.getDestinationLocker().getPosition().toString())),
-                            this.miniMessage.deserialize("&3Recipients: ").append(Component.text(meta.getRecipients().stream().map(Bukkit::getPlayer).map(HumanEntity::getName).toString())))
+                            this.miniMessage.deserialize("&3Recipients: ").append(Component.text(meta.getRecipients().stream().map(Bukkit::getPlayer).map(HumanEntity::getName).toList().toString())))
                     .flags(ItemFlag.HIDE_ATTRIBUTES)
                     .asGuiItem());
         }

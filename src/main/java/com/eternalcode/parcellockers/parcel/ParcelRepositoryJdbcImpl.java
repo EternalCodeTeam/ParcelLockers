@@ -69,6 +69,10 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
         return CompletableFuture.supplyAsync(() -> {
             ParcelLockerRepositoryJdbcImpl parcelLockerRepository = ParcelLockerRepositoryJdbcImpl.create(this.jdbcConnectionProvider);
             try (ResultSet resultSet = this.jdbcConnectionProvider.executeQuery("SELECT * FROM `parcels` WHERE `uuid` = " + uuid)) {
+                if (resultSet.isClosed()) {
+                    return Optional.empty();
+                }
+
                 if (resultSet.next()) {
                     Parcel parcel = this.extractParcel(parcelLockerRepository, resultSet);
 
@@ -90,6 +94,10 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
             Set<Parcel> parcels = new HashSet<>();
 
             try (ResultSet resultSet = this.jdbcConnectionProvider.executeQuery("SELECT * FROM `parcels` WHERE `sender` = " + uuid)) {
+                if (resultSet.isClosed()) {
+                    return parcels;
+                }
+
                 while (resultSet.next()) {
                     Parcel parcel = this.extractParcel(parcelLockerRepository, resultSet);
                     parcels.add(parcel);
@@ -110,6 +118,10 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
             Set<Parcel> parcels = new HashSet<>();
 
             try (ResultSet resultSet = this.jdbcConnectionProvider.executeQuery("SELECT * FROM `parcels`")) {
+                if (resultSet.isClosed()) {
+                    return parcels;
+                }
+
                 while (resultSet.next()) {
                     Parcel parcel = this.extractParcel(parcelLockerRepository, resultSet);
                     parcels.add(parcel);
