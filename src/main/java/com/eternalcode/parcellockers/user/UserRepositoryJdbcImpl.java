@@ -1,6 +1,7 @@
 package com.eternalcode.parcellockers.user;
 
 import com.eternalcode.parcellockers.database.JdbcConnectionProvider;
+import com.eternalcode.parcellockers.exception.ParcelLockersException;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelRepositoryJdbcImpl;
 import io.sentry.Sentry;
@@ -44,7 +45,7 @@ public class UserRepositoryJdbcImpl implements UserRepository {
             }
             catch (SQLException exception) {
                 Sentry.captureException(exception);
-                throw new RuntimeException(exception);
+                throw new ParcelLockersException(exception);
             }
         });
     }
@@ -61,7 +62,7 @@ public class UserRepositoryJdbcImpl implements UserRepository {
             }
             catch (SQLException exception) {
                 Sentry.captureException(exception);
-                throw new RuntimeException(exception);
+                throw new ParcelLockersException(exception);
             }
         });
     }
@@ -93,7 +94,7 @@ public class UserRepositoryJdbcImpl implements UserRepository {
             }
             catch (SQLException exception) {
                 Sentry.captureException(exception);
-                throw new RuntimeException(exception);
+                throw new ParcelLockersException(exception);
             }
 
             return users;

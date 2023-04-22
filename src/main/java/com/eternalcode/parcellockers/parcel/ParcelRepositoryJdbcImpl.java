@@ -74,7 +74,7 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
                 }
 
                 if (resultSet.next()) {
-                    Parcel parcel = this.extractParcel(parcelLockerRepository, resultSet);
+                    Parcel parcel = this.getParcel(parcelLockerRepository, resultSet);
 
                     return Optional.of(parcel);
                 }
@@ -99,7 +99,7 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
                 }
 
                 while (resultSet.next()) {
-                    Parcel parcel = this.extractParcel(parcelLockerRepository, resultSet);
+                    Parcel parcel = this.getParcel(parcelLockerRepository, resultSet);
                     parcels.add(parcel);
                 }
             }
@@ -123,7 +123,7 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
                 }
 
                 while (resultSet.next()) {
-                    Parcel parcel = this.extractParcel(parcelLockerRepository, resultSet);
+                    Parcel parcel = this.getParcel(parcelLockerRepository, resultSet);
                     parcels.add(parcel);
                 }
             }
@@ -161,7 +161,7 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
         return new ParcelRepositoryJdbcImpl(jdbcConnectionProvider);
     }
 
-    private Parcel extractParcel(ParcelLockerRepositoryJdbcImpl parcelLockerRepository, ResultSet resultSet) throws SQLException {
+    private Parcel getParcel(ParcelLockerRepositoryJdbcImpl parcelLockerRepository, ResultSet resultSet) throws SQLException {
         ParcelMeta meta = new ParcelMeta(
                 resultSet.getString("name"),
                 resultSet.getString("description"),
