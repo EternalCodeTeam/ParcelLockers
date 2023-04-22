@@ -2,6 +2,7 @@ package com.eternalcode.parcellockers.parcel;
 
 import com.eternalcode.parcellockers.database.JdbcConnectionProvider;
 import com.eternalcode.parcellockers.shared.Position;
+import io.sentry.Sentry;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -43,6 +44,7 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
 
             }
             catch (SQLException exception) {
+                Sentry.captureException(exception);
                 throw new RuntimeException(exception);
             }
 
@@ -66,6 +68,7 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
 
             }
             catch (SQLException exception) {
+                Sentry.captureException(exception);
                 throw new RuntimeException(exception);
             }
         });
@@ -87,6 +90,7 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
                 return results;
             }
             catch (SQLException exception) {
+                Sentry.captureException(exception);
                 throw new RuntimeException(exception);
             }
 

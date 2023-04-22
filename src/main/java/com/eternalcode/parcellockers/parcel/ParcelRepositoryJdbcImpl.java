@@ -1,6 +1,7 @@
 package com.eternalcode.parcellockers.parcel;
 
 import com.eternalcode.parcellockers.database.JdbcConnectionProvider;
+import io.sentry.Sentry;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -35,7 +36,8 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
                 statement.setString(9, parcel.sender().toString());
                 statement.executeUpdate();
             } catch (SQLException exception) {
-                throw new RuntimeException(exception);
+                exception.printStackTrace();
+                Sentry.captureException(exception);
             }
         }).orTimeout(5, TimeUnit.SECONDS);
     }
@@ -56,7 +58,8 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
                 statement.setString(9, oldParcel.uuid().toString());
                 statement.executeUpdate();
             } catch (SQLException exception) {
-                throw new RuntimeException(exception);
+                exception.printStackTrace();
+                Sentry.captureException(exception);
             }
         }).orTimeout(5, TimeUnit.SECONDS);
     }
@@ -73,7 +76,8 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
                 }
             }
             catch (SQLException exception) {
-                throw new RuntimeException(exception);
+                exception.printStackTrace();
+                Sentry.captureException(exception);
             }
             return Optional.empty();
         });
@@ -92,7 +96,8 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
                 }
             }
             catch (SQLException exception) {
-                throw new RuntimeException(exception);
+                exception.printStackTrace();
+                Sentry.captureException(exception);
             }
             return parcels;
         }).orTimeout(5, TimeUnit.SECONDS);
@@ -111,7 +116,8 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
                 }
             }
             catch (SQLException exception) {
-                throw new RuntimeException(exception);
+                exception.printStackTrace();
+                Sentry.captureException(exception);
             }
             return parcels;
         }).orTimeout(5, TimeUnit.SECONDS);
