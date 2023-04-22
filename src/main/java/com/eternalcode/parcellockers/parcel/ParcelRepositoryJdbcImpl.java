@@ -142,9 +142,9 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
 
     @Override
     public CompletableFuture<Void> remove(UUID uuid) {
-        return CompletableFuture.runAsync(() -> {
-            this.jdbcConnectionProvider.executeUpdate("DELETE FROM `parcels` WHERE `uuid` = " + uuid.toString());
-        }).orTimeout(5, TimeUnit.SECONDS);
+        return CompletableFuture.runAsync(() ->
+            this.jdbcConnectionProvider.executeUpdate("DELETE FROM `parcels` WHERE `uuid` = " + uuid.toString())
+        ).orTimeout(5, TimeUnit.SECONDS);
     }
 
     public static ParcelRepositoryJdbcImpl create(JdbcConnectionProvider jdbcConnectionProvider) {

@@ -114,6 +114,7 @@ public class UserRepositoryJdbcImpl implements UserRepository {
 
     @NotNull
     private Optional<User> getUser(ResultSet resultSet) throws SQLException {
+        // TODO - Optimize this and use whenComplete() to get the parcels
         Set<Parcel> parcelSet = this.parcelRepository.findAll().join();
         Set<UUID> userParcels = new HashSet<>();
 
