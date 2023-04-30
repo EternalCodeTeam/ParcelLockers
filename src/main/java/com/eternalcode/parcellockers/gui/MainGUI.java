@@ -24,6 +24,7 @@ public class MainGUI {
     }
 
     public void showMainGUI(Player player) {
+
         GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
         GuiItem myParcelsItem = this.config.guiSettings.myParcelsItem.toGuiItem(this.miniMessage);
         GuiItem sentParcelsItem = this.config.guiSettings.sentParcelsItem.toGuiItem(this.miniMessage);

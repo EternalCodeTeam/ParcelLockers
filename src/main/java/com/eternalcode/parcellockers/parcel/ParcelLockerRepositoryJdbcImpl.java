@@ -33,7 +33,7 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
     public CompletableFuture<Optional<ParcelLocker>> findByUuid(UUID uuid) {
         return CompletableFuture.supplyAsync(() -> {
             try (ResultSet resultSet = this.provider.executeQuery("SELECT * FROM `parcelLockers` WHERE `uuid` = " + uuid.toString())) {
-                return getParcelLocker(resultSet);
+                return this.getParcelLocker(resultSet);
 
             }
             catch (SQLException exception) {
@@ -48,7 +48,7 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
     public CompletableFuture<Optional<ParcelLocker>> findByPosition(Position position) {
         return CompletableFuture.supplyAsync(() -> {
             try (ResultSet resultSet = this.provider.executeQuery("SELECT * FROM `parcelLockers` WHERE `position` = " + position.toString())) {
-                return getParcelLocker(resultSet);
+                return this.getParcelLocker(resultSet);
 
             }
             catch (SQLException exception) {

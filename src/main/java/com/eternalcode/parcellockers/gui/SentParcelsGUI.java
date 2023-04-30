@@ -19,8 +19,8 @@ import org.bukkit.inventory.ItemFlag;
 
 public class SentParcelsGUI {
 
-    private final int[] cornerSlots = {0, 8, 45, 53};
-    private final int[] borderSlots = {1, 2, 3, 4, 5, 6, 7, 9, 17, 18, 26, 27, 35, 36, 44, 46, 47, 48, 49, 50, 51, 52};
+    private static final int[] CORNER_SLOTS = {0, 8, 45, 53};
+    private static final int[] BORDER_SLOTS = {1, 2, 3, 4, 5, 6, 7, 9, 17, 18, 26, 27, 35, 36, 44, 46, 47, 48, 49, 50, 51, 52};
     private final Server server;
     private final MiniMessage miniMessage;
     private final PluginConfiguration config;
@@ -34,6 +34,7 @@ public class SentParcelsGUI {
     }
 
     public void showSentParcelsGUI(Player player) {
+
         GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem(this.miniMessage);
         GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
         GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage);
@@ -43,11 +44,11 @@ public class SentParcelsGUI {
                 .disableAllInteractions()
                 .create();
 
-        for (int slot : this.cornerSlots) {
+        for (int slot : CORNER_SLOTS) {
             gui.setItem(slot, cornerItem);
         }
 
-        for (int slot : this.borderSlots) {
+        for (int slot : BORDER_SLOTS) {
             gui.setItem(slot, backgroundItem);
         }
 
