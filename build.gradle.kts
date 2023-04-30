@@ -4,9 +4,9 @@ plugins {
     `java-library`
     checkstyle
     id("net.minecrell.plugin-yml.bukkit") version "0.5.3"
-    id("xyz.jpenilla.run-paper") version "2.0.1"
+    id("xyz.jpenilla.run-paper") version "2.1.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("net.ltgt.errorprone") version "3.0.1"
+    id("net.ltgt.errorprone") version "3.1.0"
 }
 
 group = "com.eternalcode"
@@ -39,7 +39,7 @@ dependencies {
     implementation("dev.rollczi:liteskullapi:1.3.0")
 
     // gui library
-    implementation("dev.triumphteam:triumph-gui:3.1.4")
+    implementation("dev.triumphteam:triumph-gui:3.1.5")
 
     // CDN
     implementation("net.dzikoysk:cdn:1.14.4")
@@ -52,7 +52,7 @@ dependencies {
 
     // metrics and sentry
     implementation("org.bstats:bstats-bukkit:3.0.2")
-    implementation("io.sentry:sentry:6.17.0")
+    implementation("io.sentry:sentry:6.18.1")
 
     // lombok
     compileOnly("org.projectlombok:lombok:1.18.26")
@@ -76,7 +76,7 @@ java {
 }
 
 checkstyle {
-    toolVersion = "10.9.3"
+    toolVersion = "10.10.0"
 
     configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
 
