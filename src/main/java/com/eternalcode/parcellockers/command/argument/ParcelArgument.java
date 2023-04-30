@@ -26,8 +26,8 @@ public class ParcelArgument implements OneArgument<Parcel> {
     @Override
     public Result<Parcel, ?> parse(LiteInvocation invocation, String argument) {
         CompletableFuture<Optional<Parcel>> parcel = this.parcelRepository.findByUuid(UUID.fromString(argument));
-        return parcel.whenComplete((parcel1, throwable) -> {
-            if (!parcel1.isPresent()) {
+        return parcel.whenComplete((optionalParcel, throwable) -> {
+            if (!optionalParcel.isPresent()) {
                 invocation.sender().sendMessage(ChatColor.RED + "Parcel not found");
             }
             if (throwable != null) {
