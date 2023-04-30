@@ -105,7 +105,7 @@ public class PluginConfiguration implements ReloadableConfig {
         public ConfigItem sentParcelsItem = new ConfigItem()
                 .setName("&6Sent parcels")
                 .setLore(List.of("&eClick to show parcels, which you sent.", "&eYou can also cancel them here, if you want to."))
-                .setType(Material.BUNDLE)
+                .setType(Material.FILLED_MAP)
                 .setGlow(true);
 
         @Description({" ", "# The parcel archive item button."})

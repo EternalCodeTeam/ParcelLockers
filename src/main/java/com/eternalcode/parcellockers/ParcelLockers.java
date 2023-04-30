@@ -70,12 +70,13 @@ public final class ParcelLockers extends JavaPlugin {
                 this.getLogger().info("Sentry initialized successfully!");
             });
         }
+
         JdbcConnectionProvider jdbcConnectionProvider = new JdbcConnectionProvider(config.settings.host, config.settings.port, config.settings.databaseName, config.settings.useSSL, config.settings.user, config.settings.password);
         ParcelLockerRepositoryJdbcImpl parcelLockerRepository = ParcelLockerRepositoryJdbcImpl.create(jdbcConnectionProvider);
         ParcelRepositoryJdbcImpl parcelRepository = ParcelRepositoryJdbcImpl.create(jdbcConnectionProvider);
         UserRepositoryJdbcImpl userRepository = UserRepositoryJdbcImpl.create(jdbcConnectionProvider);
 
-        ParcelManager parcelManager = new ParcelManager(parcelRepository);
+        ParcelManager parcelManager = new ParcelManager(parcelRepository, parcelLockerRepository);
         ParcelLockerManager parcelLockerManager = new ParcelLockerManager(parcelLockerRepository);
         UserManager userManager = new UserManager(userRepository);
 

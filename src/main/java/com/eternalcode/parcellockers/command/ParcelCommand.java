@@ -44,4 +44,15 @@ public class ParcelCommand {
     void gui(Player player) {
         this.mainGUI.showMainGUI(player);
     }
+
+    @Execute(route = "create-test")
+    void createTestParcel(Player player) {
+        this.parcelManager.saveTestParcel();
+        this.announcer.sendMessage(player, "&aDone.");
+    }
+
+    @Execute(route = "list-all")
+    void listAll(Player player) {
+        this.parcelManager.listAll(player);
+    }
 }

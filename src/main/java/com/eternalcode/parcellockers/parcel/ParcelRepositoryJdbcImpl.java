@@ -93,7 +93,7 @@ public class ParcelRepositoryJdbcImpl implements ParcelRepository {
             ParcelLockerRepositoryJdbcImpl parcelLockerRepository = ParcelLockerRepositoryJdbcImpl.create(this.jdbcConnectionProvider);
             Set<Parcel> parcels = new HashSet<>();
 
-            try (ResultSet resultSet = this.jdbcConnectionProvider.executeQuery("SELECT * FROM `parcels` WHERE `sender` = " + uuid)) {
+            try (ResultSet resultSet = this.jdbcConnectionProvider.executeQuery("SELECT * FROM `parcels` WHERE `sender` = " + uuid.toString())) {
                 if (resultSet.isClosed()) {
                     return parcels;
                 }
