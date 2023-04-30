@@ -10,6 +10,8 @@ import org.bukkit.inventory.ItemFlag;
 
 import java.util.List;
 
+import static com.eternalcode.parcellockers.util.AdventureUtil.RESET_ITEM;
+
 @Contextual
 public class ConfigItem {
 
@@ -20,8 +22,8 @@ public class ConfigItem {
 
     public GuiItem toGuiItem(MiniMessage miniMessage) {
         return ItemBuilder.from(this.type)
-                .name(miniMessage.deserialize(this.name))
-                .lore(this.lore.stream().map(miniMessage::deserialize).toList())
+                .name(RESET_ITEM.append(miniMessage.deserialize(this.name)))
+                .lore(this.lore.stream().map(element -> RESET_ITEM.append(miniMessage.deserialize(element))).toList())
                 .flags(ItemFlag.HIDE_ATTRIBUTES)
                 .flags(ItemFlag.HIDE_ENCHANTS)
                 .asGuiItem();

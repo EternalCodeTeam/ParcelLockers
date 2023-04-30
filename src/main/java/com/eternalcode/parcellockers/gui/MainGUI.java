@@ -9,6 +9,8 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+import static com.eternalcode.parcellockers.util.AdventureUtil.RESET_ITEM;
+
 public class MainGUI {
 
     private final MiniMessage miniMessage;
@@ -31,7 +33,7 @@ public class MainGUI {
 
         Gui gui = Gui.gui()
                 .type(GuiType.CHEST)
-                .title(this.miniMessage.deserialize(this.config.guiSettings.mainGuiTitle))
+                .title(RESET_ITEM.append(this.miniMessage.deserialize(this.config.guiSettings.mainGuiTitle)))
                 .disableAllInteractions()
                 .rows(6)
                 .create();
