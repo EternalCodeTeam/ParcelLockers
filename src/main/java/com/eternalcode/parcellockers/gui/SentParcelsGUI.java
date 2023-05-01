@@ -71,5 +71,6 @@ public class SentParcelsGUI {
                     .flags(ItemFlag.HIDE_ATTRIBUTES)
                     .asGuiItem());
         }
+        gui.open(player);
     }
 }
