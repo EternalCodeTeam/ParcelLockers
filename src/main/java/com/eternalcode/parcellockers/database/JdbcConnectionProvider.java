@@ -1,5 +1,7 @@
 package com.eternalcode.parcellockers.database;
 
+import com.eternalcode.parcellockers.exception.ParcelLockersException;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -26,7 +28,7 @@ public class JdbcConnectionProvider {
             return DriverManager.getConnection(this.finalUrl, this.user, this.pass);
         }
         catch (SQLException | ClassNotFoundException exception) {
-            throw new RuntimeException(exception);
+            throw new ParcelLockersException(exception);
         }
     }
 
@@ -36,7 +38,7 @@ public class JdbcConnectionProvider {
             return statement.execute();
         }
         catch (SQLException exception) {
-            throw new RuntimeException(exception);
+            throw new ParcelLockersException(exception);
         }
     }
 

@@ -1,8 +1,10 @@
 package com.eternalcode.parcellockers.user;
 
 import com.eternalcode.parcellockers.database.JdbcConnectionProvider;
+import com.eternalcode.parcellockers.exception.ParcelLockersException;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelRepositoryJdbcImpl;
+import io.sentry.Sentry;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.ResultSet;
@@ -36,10 +38,14 @@ public class UserRepositoryJdbcImpl implements UserRepository {
     public CompletableFuture<Optional<User>> findByName(String name) {
         return CompletableFuture.supplyAsync(() -> {
             try (ResultSet resultSet = this.jdbcConnectionProvider.executeQuery("SELECT * FROM `users` WHERE `name` = ? LIMIT 1".replace("?", name))) {
+                if (resultSet.isClosed()) {
+                    return Optional.empty();
+                }
                 return this.getUser(resultSet);
             }
             catch (SQLException exception) {
-                throw new RuntimeException(exception);
+                Sentry.captureException(exception);
+                throw new ParcelLockersException(exception);
             }
         });
     }
@@ -48,10 +54,15 @@ public class UserRepositoryJdbcImpl implements UserRepository {
     public CompletableFuture<Optional<User>> findByUuid(UUID uuid) {
         return CompletableFuture.supplyAsync(() -> {
             try (ResultSet resultSet = this.jdbcConnectionProvider.executeQuery("SELECT * FROM `users` WHERE `uuid` = ? LIMIT 1".replace("?", uuid.toString()))) {
+                if (resultSet.isClosed()) {
+                    return Optional.empty();
+                }
+
                 return this.getUser(resultSet);
             }
             catch (SQLException exception) {
-                throw new RuntimeException(exception);
+                Sentry.captureException(exception);
+                throw new ParcelLockersException(exception);
             }
         });
     }
@@ -63,7 +74,9 @@ public class UserRepositoryJdbcImpl implements UserRepository {
             List<User> users = new ArrayList<>();
 
             try (ResultSet resultSet = this.jdbcConnectionProvider.executeQuery("SELECT * FROM `users`")) {
-
+                if (resultSet.isClosed()) {
+                    return users;
+                }
                 while (resultSet.next()) {
                     Set<UUID> userParcels = new HashSet<>();
 
@@ -80,7 +93,8 @@ public class UserRepositoryJdbcImpl implements UserRepository {
                 }
             }
             catch (SQLException exception) {
-                throw new RuntimeException(exception);
+                Sentry.captureException(exception);
+                throw new ParcelLockersException(exception);
             }
 
             return users;
@@ -101,18 +115,19 @@ public class UserRepositoryJdbcImpl implements UserRepository {
 
     @NotNull
     private Optional<User> getUser(ResultSet resultSet) throws SQLException {
+        // TODO - Optimize this and use whenComplete() to get the parcels
         Set<Parcel> parcelSet = this.parcelRepository.findAll().join();
         Set<UUID> userParcels = new HashSet<>();
 
-        while (resultSet.next()) {
-            for (Parcel parcel : parcelSet) {
-                UUID target = UUID.fromString(resultSet.getString("uuid"));
 
-                if (parcel.sender().equals(target)) {
-                    userParcels.add(parcel.uuid());
-                }
+        for (Parcel parcel : parcelSet) {
+            UUID target = UUID.fromString(resultSet.getString("uuid"));
+
+            if (parcel.sender().equals(target)) {
+                userParcels.add(parcel.uuid());
             }
         }
+
 
         if (resultSet.next()) {
             User user = new User(UUID.fromString(resultSet.getString("uuid")), resultSet.getString("name"), userParcels);

@@ -1,7 +1,10 @@
 package com.eternalcode.parcellockers.parcel;
 
 import com.eternalcode.parcellockers.database.JdbcConnectionProvider;
+import com.eternalcode.parcellockers.exception.ParcelLockersException;
 import com.eternalcode.parcellockers.shared.Position;
+import io.sentry.Sentry;
+import org.jetbrains.annotations.NotNull;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -30,20 +33,12 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
     public CompletableFuture<Optional<ParcelLocker>> findByUuid(UUID uuid) {
         return CompletableFuture.supplyAsync(() -> {
             try (ResultSet resultSet = this.provider.executeQuery("SELECT * FROM `parcelLockers` WHERE `uuid` = " + uuid.toString())) {
-                if (resultSet.next()) {
-                    UUID parcelLockerUUID = UUID.fromString(resultSet.getString("uuid"));
-                    String description = resultSet.getString("description");
-                    Position position = Position.parse(resultSet.getString("position"));
-                    ParcelLocker parcelLocker = new ParcelLocker(parcelLockerUUID, description, position);
-                    return Optional.of(parcelLocker);
-                }
-                else {
-                    return Optional.empty();
-                }
+                return this.getParcelLocker(resultSet);
 
             }
             catch (SQLException exception) {
-                throw new RuntimeException(exception);
+                Sentry.captureException(exception);
+                throw new ParcelLockersException(exception);
             }
 
         });
@@ -53,20 +48,12 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
     public CompletableFuture<Optional<ParcelLocker>> findByPosition(Position position) {
         return CompletableFuture.supplyAsync(() -> {
             try (ResultSet resultSet = this.provider.executeQuery("SELECT * FROM `parcelLockers` WHERE `position` = " + position.toString())) {
-                if (resultSet.next()) {
-                    UUID parcelLockerUUID = UUID.fromString(resultSet.getString("uuid"));
-                    String description = resultSet.getString("description");
-                    Position parcelLockerPosition = Position.parse(resultSet.getString("position"));
-                    ParcelLocker parcelLocker = new ParcelLocker(parcelLockerUUID, description, parcelLockerPosition);
-                    return Optional.of(parcelLocker);
-                }
-                else {
-                    return Optional.empty();
-                }
+                return this.getParcelLocker(resultSet);
 
             }
             catch (SQLException exception) {
-                throw new RuntimeException(exception);
+                Sentry.captureException(exception);
+                throw new ParcelLockersException(exception);
             }
         });
     }
@@ -77,6 +64,9 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
             List<ParcelLocker> results = new ArrayList<>();
 
             try (ResultSet resultSet = this.provider.executeQuery("SELECT * FROM `parcelLockers`")) {
+                if (resultSet.isClosed()) {
+                    return results;
+                }
                 while (resultSet.next()) {
                     UUID uuid = UUID.fromString(resultSet.getString("uuid"));
                     String description = resultSet.getString("description");
@@ -87,7 +77,8 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
                 return results;
             }
             catch (SQLException exception) {
-                throw new RuntimeException(exception);
+                Sentry.captureException(exception);
+                throw new ParcelLockersException(exception);
             }
 
         }).orTimeout(5, TimeUnit.SECONDS);
@@ -95,14 +86,32 @@ public class ParcelLockerRepositoryJdbcImpl implements ParcelLockerRepository {
 
     @Override
     public CompletableFuture<Void> remove(UUID uuid) {
-        return CompletableFuture.runAsync(() -> {
-            this.provider.executeUpdate("DELETE FROM `parcelLockers` WHERE `uuid` = " + uuid.toString());
-
-        }).orTimeout(5, TimeUnit.SECONDS);
+        return CompletableFuture.runAsync(() ->
+            this.provider.executeUpdate("DELETE FROM `parcelLockers` WHERE `uuid` = " + uuid.toString())
+        ).orTimeout(5, TimeUnit.SECONDS);
     }
 
+    @Override
     public CompletableFuture<Void> remove(ParcelLocker parcelLocker) {
         return this.remove(parcelLocker.getUuid());
+    }
+
+    @NotNull
+    private Optional<ParcelLocker> getParcelLocker(ResultSet resultSet) throws SQLException {
+        if (resultSet.isClosed()) {
+            return Optional.empty();
+        }
+
+        if (resultSet.next()) {
+            UUID parcelLockerUUID = UUID.fromString(resultSet.getString("uuid"));
+            String description = resultSet.getString("description");
+            Position position = Position.parse(resultSet.getString("position"));
+            ParcelLocker parcelLocker = new ParcelLocker(parcelLockerUUID, description, position);
+            return Optional.of(parcelLocker);
+        }
+        else {
+            return Optional.empty();
+        }
     }
 
     public static ParcelLockerRepositoryJdbcImpl create(JdbcConnectionProvider provider) {

@@ -8,6 +8,8 @@ import com.eternalcode.parcellockers.command.handler.PermissionMessage;
 import com.eternalcode.parcellockers.configuration.ConfigurationManager;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.database.JdbcConnectionProvider;
+import com.eternalcode.parcellockers.gui.MainGUI;
+import com.eternalcode.parcellockers.gui.ParcelListGUI;
 import com.eternalcode.parcellockers.manager.ParcelLockerManager;
 import com.eternalcode.parcellockers.manager.ParcelManager;
 import com.eternalcode.parcellockers.manager.UserManager;
@@ -32,6 +34,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
@@ -45,11 +48,6 @@ public final class ParcelLockers extends JavaPlugin {
     public void onEnable() {
         Stopwatch started = Stopwatch.createStarted();
 
-        Sentry.init(options -> {
-            options.setDsn("https://1dffb5bec4484aaaaca5fcb4c3157a99@o4505014505177088.ingest.sentry.io/4505019784888320");
-            options.setTracesSampleRate(1.0);
-        });
-
         this.softwareCheck();
 
         this.audiences = BukkitAudiences.create(this);
@@ -60,22 +58,37 @@ public final class ParcelLockers extends JavaPlugin {
 
         ConfigurationManager configManager = new ConfigurationManager(this.getDataFolder());
         PluginConfiguration config = configManager.load(new PluginConfiguration());
+        if (config.settings.enableSentry) {
+            Sentry.init(options -> {
+                this.getLogger().info("Initializing Sentry...");
+                options.setDsn("https://1dffb5bec4484aaaaca5fcb4c3157a99@o4505014505177088.ingest.sentry.io/4505019784888320");
+                options.setTracesSampleRate(1.0);
+                options.setRelease(this.getDescription().getVersion());
+                options.setTag("serverVersion", this.getServer().getVersion());
+                options.setTag("serverSoftware", PaperLib.getEnvironment().getName());
+                options.setTag("plugins", Arrays.stream(this.getServer().getPluginManager().getPlugins()).toList().toString());
+                this.getLogger().info("Sentry initialized successfully!");
+            });
+        }
 
         JdbcConnectionProvider jdbcConnectionProvider = new JdbcConnectionProvider(config.settings.host, config.settings.port, config.settings.databaseName, config.settings.useSSL, config.settings.user, config.settings.password);
         ParcelLockerRepositoryJdbcImpl parcelLockerRepository = ParcelLockerRepositoryJdbcImpl.create(jdbcConnectionProvider);
         ParcelRepositoryJdbcImpl parcelRepository = ParcelRepositoryJdbcImpl.create(jdbcConnectionProvider);
         UserRepositoryJdbcImpl userRepository = UserRepositoryJdbcImpl.create(jdbcConnectionProvider);
 
-        ParcelManager parcelManager = new ParcelManager(parcelRepository);
+        ParcelManager parcelManager = new ParcelManager(parcelRepository, parcelLockerRepository);
         ParcelLockerManager parcelLockerManager = new ParcelLockerManager(parcelLockerRepository);
         UserManager userManager = new UserManager(userRepository);
+
+        MainGUI mainGUI = new MainGUI(miniMessage, config, parcelRepository);
+        ParcelListGUI parcelListGUI = new ParcelListGUI(this.getServer(), miniMessage, config, parcelRepository);
 
         this.liteCommands = LiteBukkitAdventurePlatformFactory.builder(this.getServer(), "parcellockers", false, this.audiences, true)
                 .argument(Parcel.class, new ParcelArgument(parcelRepository))
                 .argument(Player.class, new PlayerArgument(this.getServer(), config))
                 .contextualBind(Player.class, new BukkitOnlyPlayerContextual<>(config.messages.onlyForPlayers))
                 .commandInstance(
-                        new ParcelCommand(announcer, config, parcelManager),
+                        new ParcelCommand(announcer, config, parcelManager, mainGUI, parcelListGUI),
                         new ParcelLockerCommand(configManager, config, announcer)
                 )
                 .invalidUsageHandler(new InvalidUsage(announcer, config))
