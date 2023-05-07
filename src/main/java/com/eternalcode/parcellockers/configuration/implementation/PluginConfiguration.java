@@ -1,6 +1,7 @@
 package com.eternalcode.parcellockers.configuration.implementation;
 
 import com.eternalcode.parcellockers.configuration.ReloadableConfig;
+import com.eternalcode.parcellockers.database.DatabaseType;
 import net.dzikoysk.cdn.entity.Contextual;
 import net.dzikoysk.cdn.entity.Description;
 import net.dzikoysk.cdn.source.Resource;
@@ -35,6 +36,9 @@ public class PluginConfiguration implements ReloadableConfig {
 
         @Description({" ", "# Whether the player after entering the server should receive information about the new version of the plugin?"})
         public boolean receiveUpdates = true;
+
+        @Description({" ", "# The database type. (MYSQL, SQLITE)"})
+        public DatabaseType databaseType = DatabaseType.MYSQL;
 
         @Description({" ", "# The URL to the database."})
         public String host = "localhost";

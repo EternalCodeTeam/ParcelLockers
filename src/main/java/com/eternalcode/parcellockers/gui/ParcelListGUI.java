@@ -1,9 +1,9 @@
 package com.eternalcode.parcellockers.gui;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.database.ParcelDatabaseService;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelMeta;
-import com.eternalcode.parcellockers.parcel.ParcelRepository;
 import dev.triumphteam.gui.builder.item.ItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
@@ -17,6 +17,10 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 public class ParcelListGUI {
 
     private static final int[] CORNER_SLOTS = {0, 8, 45, 53};
@@ -24,13 +28,13 @@ public class ParcelListGUI {
     private final Server server;
     private final MiniMessage miniMessage;
     private final PluginConfiguration config;
-    private final ParcelRepository repository;
+    private final ParcelDatabaseService parcelDatabaseService;
 
-    public ParcelListGUI(Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelRepository repository) {
+    public ParcelListGUI(Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelDatabaseService parcelDatabaseService) {
         this.server = server;
         this.miniMessage = miniMessage;
         this.config = config;
-        this.repository = repository;
+        this.parcelDatabaseService = parcelDatabaseService;
     }
 
     public void showParcelListGUI(Player player) {
@@ -53,11 +57,13 @@ public class ParcelListGUI {
             gui.setItem(slot, backgroundItem);
         }
 
-        for (Parcel parcel : this.repository.findAll()
-                .join()
-                .stream()
+        Set<Parcel> emptySet = new HashSet<>();
+        this.parcelDatabaseService.findAll(emptySet);
+        emptySet = emptySet.stream()
                 .filter(parcel -> parcel.meta().getReceiver().equals(player.getUniqueId()))
-                .toList()) {
+                .collect(Collectors.toSet());
+
+        for (Parcel parcel : emptySet) {
             ParcelMeta meta = parcel.meta();
             String sender = Bukkit.getPlayer(parcel.sender()).getName();
             String receiver = Bukkit.getPlayer(meta.getReceiver()).getName();

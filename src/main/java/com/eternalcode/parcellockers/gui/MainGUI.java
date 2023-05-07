@@ -1,7 +1,7 @@
 package com.eternalcode.parcellockers.gui;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
-import com.eternalcode.parcellockers.parcel.ParcelRepository;
+import com.eternalcode.parcellockers.database.ParcelDatabaseService;
 import dev.triumphteam.gui.components.GuiType;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
@@ -15,12 +15,12 @@ public class MainGUI {
 
     private final MiniMessage miniMessage;
     private final PluginConfiguration config;
-    private final ParcelRepository repository;
+    private final ParcelDatabaseService parcelDatabaseService;
 
-    public MainGUI(MiniMessage miniMessage, PluginConfiguration config, ParcelRepository repository) {
+    public MainGUI(MiniMessage miniMessage, PluginConfiguration config, ParcelDatabaseService parcelDatabaseService) {
         this.miniMessage = miniMessage;
         this.config = config;
-        this.repository = repository;
+        this.parcelDatabaseService = parcelDatabaseService;
     }
 
     public void showMainGUI(Player player) {
@@ -56,11 +56,11 @@ public class MainGUI {
         gui.addSlotAction(40, event -> event.getView().close());
         gui.addSlotAction(20, event -> {
             event.getView().close();
-            new ParcelListGUI(Bukkit.getServer(), this.miniMessage, this.config, this.repository).showParcelListGUI(player);
+            new ParcelListGUI(Bukkit.getServer(), this.miniMessage, this.config, this.parcelDatabaseService).showParcelListGUI(player);
         });
         gui.addSlotAction(22, event -> {
             event.getView().close();
-            new SentParcelsGUI(Bukkit.getServer(), this.miniMessage, this.config, this.repository).showSentParcelsGUI(player);
+            new SentParcelsGUI(Bukkit.getServer(), this.miniMessage, this.config, this.parcelDatabaseService).showSentParcelsGUI(player);
         });
         gui.setDefaultClickAction(event -> event.setCancelled(true));
         gui.open(player);

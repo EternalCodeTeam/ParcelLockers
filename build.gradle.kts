@@ -54,6 +54,9 @@ dependencies {
     implementation("org.bstats:bstats-bukkit:3.0.2")
     implementation("io.sentry:sentry:6.18.1")
 
+    // database
+    implementation("com.zaxxer:HikariCP:5.0.1")
+
     // lombok
     compileOnly("org.projectlombok:lombok:1.18.26")
     annotationProcessor("org.projectlombok:lombok:1.18.26")

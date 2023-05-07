@@ -1,21 +1,23 @@
 package com.eternalcode.parcellockers.gui;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.database.ParcelDatabaseService;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelMeta;
-import com.eternalcode.parcellockers.parcel.ParcelRepository;
 import dev.triumphteam.gui.builder.item.ItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Server;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class SentParcelsGUI {
 
@@ -24,13 +26,13 @@ public class SentParcelsGUI {
     private final Server server;
     private final MiniMessage miniMessage;
     private final PluginConfiguration config;
-    private final ParcelRepository repository;
+    private final ParcelDatabaseService parcelDatabaseService;
 
-    public SentParcelsGUI(Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelRepository repository) {
+    public SentParcelsGUI(Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelDatabaseService parcelDatabaseService) {
         this.server = server;
         this.miniMessage = miniMessage;
         this.config = config;
-        this.repository = repository;
+        this.parcelDatabaseService = parcelDatabaseService;
     }
 
     public void showSentParcelsGUI(Player player) {
@@ -52,10 +54,13 @@ public class SentParcelsGUI {
             gui.setItem(slot, backgroundItem);
         }
 
-        for (Parcel parcel : this.repository.findBySender(player.getUniqueId()).join()) {
+        Set<Parcel> emptySet = new HashSet<>();
+        this.parcelDatabaseService.findBySender(player.getUniqueId(), emptySet);
+
+        for (Parcel parcel : emptySet) {
             ParcelMeta meta = parcel.meta();
             String sender = player.getName();
-            String receiver = Bukkit.getPlayer(meta.getReceiver()).getName();
+            String receiver = this.server.getPlayer(meta.getReceiver()).getName();
 
             gui.addItem(ItemBuilder.from(Material.BUNDLE)
                     .name(this.miniMessage.deserialize(meta.getName()))
@@ -67,7 +72,7 @@ public class SentParcelsGUI {
                             this.miniMessage.deserialize("&3Description: ").append(Component.text(meta.getDescription())),
                             this.miniMessage.deserialize("&3Entry position: ").append(Component.text(meta.getEntryLocker().getPosition().toString())),
                             this.miniMessage.deserialize("&3Target Position: ").append(Component.text(meta.getDestinationLocker().getPosition().toString())),
-                            this.miniMessage.deserialize("&3Recipients: ").append(Component.text(meta.getRecipients().stream().map(Bukkit::getPlayer).map(HumanEntity::getName).toList().toString())))
+                            this.miniMessage.deserialize("&3Recipients: ").append(Component.text(meta.getRecipients().stream().map(this.server::getPlayer).map(HumanEntity::getName).toList().toString())))
                     .flags(ItemFlag.HIDE_ATTRIBUTES)
                     .asGuiItem());
         }
