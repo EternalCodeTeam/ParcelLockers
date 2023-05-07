@@ -54,10 +54,12 @@ public class SentParcelsGUI {
             gui.setItem(slot, backgroundItem);
         }
 
-        Set<Parcel> emptySet = new HashSet<>();
-        this.parcelDatabaseService.findBySender(player.getUniqueId(), emptySet);
+        Set<Parcel> parcelSet = new HashSet<>();
+        this.parcelDatabaseService.findBySender(player.getUniqueId()).whenComplete((parcels, throwable) -> {
+            parcelSet.addAll(parcels);
+        });
 
-        for (Parcel parcel : emptySet) {
+        for (Parcel parcel : parcelSet) {
             ParcelMeta meta = parcel.meta();
             String sender = player.getName();
             String receiver = this.server.getPlayer(meta.getReceiver()).getName();

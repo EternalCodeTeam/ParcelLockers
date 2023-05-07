@@ -11,6 +11,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -48,13 +50,12 @@ public class ParcelDatabaseService {
             statement.execute();
         }
         catch (SQLException e) {
-            Sentry.captureException(e);
             throw new ParcelLockersException(e);
         }
     }
 
-    public void save(Parcel parcel) {
-        CompletableFuture.runAsync(() -> {
+    public CompletableFuture<Void> save(Parcel parcel) {
+        return CompletableFuture.runAsync(() -> {
             ParcelMeta meta = parcel.meta();
             try (Connection connection = dataSource.getConnection();
                     PreparedStatement statement = connection.prepareStatement(
@@ -86,8 +87,8 @@ public class ParcelDatabaseService {
         }).orTimeout(5, TimeUnit.SECONDS);
     }
 
-    public void update(Parcel oldParcel, Parcel newParcel) {
-        CompletableFuture.runAsync(() -> {
+    public CompletableFuture<Void> update(Parcel oldParcel, Parcel newParcel) {
+        return CompletableFuture.runAsync(() -> {
             ParcelMeta meta = newParcel.meta();
             try (Connection connection = dataSource.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
@@ -121,8 +122,39 @@ public class ParcelDatabaseService {
         }).orTimeout(5, TimeUnit.SECONDS);
     }
 
-    public void findBySender(UUID sender, Set<Parcel> emptySet) {
-        CompletableFuture.runAsync(() -> {
+    public CompletableFuture<Optional<Parcel>> findByUUID(UUID uuid) {
+        return CompletableFuture.supplyAsync(()-> {
+            try (Connection connection = dataSource.getConnection();
+            PreparedStatement statement = connection.prepareStatement("SELECT * FROM `parcels` WHERE `uuid` = ?")) {
+                statement.setString(1, uuid.toString());
+                ResultSet rs = statement.executeQuery();
+                Parcel parcel = null;
+                if (rs.next()) {
+                    ParcelMeta meta = new ParcelMeta(
+                            rs.getString("name"),
+                            rs.getString("description"),
+                            rs.getBoolean("priority"),
+                            UUID.fromString(rs.getString("receiver")),
+                            ParcelSize.valueOf(rs.getString("size")),
+                            null,
+                            null
+                    );
+                    parcel = new Parcel(
+                            UUID.fromString(rs.getString("uuid")),
+                            UUID.fromString(rs.getString("sender")),
+                            meta
+                    );
+                }
+                return Optional.ofNullable(parcel);
+            } catch (SQLException e) {
+                Sentry.captureException(e);
+                throw new ParcelLockersException(e);
+            }
+        }).orTimeout(5, TimeUnit.SECONDS);
+    }
+
+    public CompletableFuture<Set<Parcel>> findBySender(UUID sender) {
+        return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = dataSource.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
                          "SELECT * FROM `parcels` WHERE `sender` = ?"
@@ -130,6 +162,43 @@ public class ParcelDatabaseService {
             ) {
                 statement.setString(1, sender.toString());
                 ResultSet rs = statement.executeQuery();
+                Set<Parcel> parcels = new HashSet<>();
+                while (rs.next()) {
+                    ParcelMeta meta = new ParcelMeta(
+                            rs.getString("name"),
+                            rs.getString("description"),
+                            rs.getBoolean("priority"),
+                            UUID.fromString(rs.getString("receiver")),
+                            ParcelSize.valueOf(rs.getString("size")),
+                            null,
+                            null
+                    );
+                    Parcel parcel = new Parcel(
+                            UUID.fromString(rs.getString("uuid")),
+                            UUID.fromString(rs.getString("sender")),
+                            meta
+                    );
+                    parcels.add(parcel);
+                }
+                return parcels;
+
+            } catch (SQLException e) {
+                Sentry.captureException(e);
+                throw new ParcelLockersException(e);
+            }
+        }).orTimeout(5, TimeUnit.SECONDS);
+    }
+
+    public CompletableFuture<Set<Parcel>> findByReceiver(UUID receiver) {
+        return CompletableFuture.supplyAsync(() -> {
+            try (Connection connection = dataSource.getConnection();
+                 PreparedStatement statement = connection.prepareStatement(
+                         "SELECT * FROM `parcels` WHERE `receiver` = ?"
+                 )
+            ) {
+                statement.setString(1, receiver.toString());
+                ResultSet rs = statement.executeQuery();
+                Set<Parcel> parcels = new HashSet<>();
 
                 while (rs.next()) {
                     ParcelMeta meta = new ParcelMeta(
@@ -146,8 +215,9 @@ public class ParcelDatabaseService {
                             UUID.fromString(rs.getString("sender")),
                             meta
                     );
-                    emptySet.add(parcel);
+                    parcels.add(parcel);
                 }
+                return parcels;
 
             } catch (SQLException e) {
                 Sentry.captureException(e);
@@ -156,13 +226,14 @@ public class ParcelDatabaseService {
         }).orTimeout(5, TimeUnit.SECONDS);
     }
 
-    public void findAll(Set<Parcel> emptySet) {
-        CompletableFuture.runAsync(() -> {
+    public CompletableFuture<Set<Parcel>> findAll() {
+        return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = dataSource.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
                          "SELECT * FROM `parcels`"
                  )
             ) {
+                Set<Parcel> parcels = new HashSet<>();
                 ResultSet rs = statement.executeQuery();
                 while (rs.next()) {
                     ParcelMeta meta = new ParcelMeta(
@@ -179,8 +250,9 @@ public class ParcelDatabaseService {
                             UUID.fromString(rs.getString("sender")),
                             meta
                     );
-                    emptySet.add(parcel);
+                    parcels.add(parcel);
                 }
+                return parcels;
 
             } catch (SQLException e) {
                 Sentry.captureException(e);
@@ -189,12 +261,12 @@ public class ParcelDatabaseService {
         }).orTimeout(5, TimeUnit.SECONDS);
     }
 
-    public void remove(Parcel parcel) {
-        this.remove(parcel.uuid());
+    public CompletableFuture<Void> remove(Parcel parcel) {
+        return this.remove(parcel.uuid());
     }
 
-    public void remove(UUID uuid) {
-        CompletableFuture.runAsync(() -> {
+    public CompletableFuture<Void> remove(UUID uuid) {
+        return CompletableFuture.runAsync(() -> {
             try (Connection connection = dataSource.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
                          "DELETE FROM `parcels` WHERE `uuid` = ?"
@@ -209,7 +281,4 @@ public class ParcelDatabaseService {
             }
         }).orTimeout(5, TimeUnit.SECONDS);
     }
-
-    // TODO: findByUUID, findByReceiver?
-
 }

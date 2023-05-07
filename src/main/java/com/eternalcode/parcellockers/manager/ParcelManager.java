@@ -9,8 +9,6 @@ import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.shared.Position;
 import org.bukkit.entity.Player;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 public class ParcelManager {
@@ -37,10 +35,8 @@ public class ParcelManager {
     }
 
     public void listAll(Player player) {
-        Set<Parcel> emptySet = new HashSet<>();
-        this.databaseService.findAll(emptySet);
-        System.out.println(emptySet);
-        emptySet.stream()
-                .forEach(parcel -> player.sendMessage(parcel.uuid().toString()));
+        this.databaseService.findAll().whenComplete((parcels, throwable) -> {
+            parcels.forEach(parcel -> player.sendMessage("§7- " + parcel.meta()));
+        });
     }
 }

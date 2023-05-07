@@ -19,7 +19,6 @@ import org.bukkit.inventory.ItemFlag;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class ParcelListGUI {
 
@@ -57,16 +56,15 @@ public class ParcelListGUI {
             gui.setItem(slot, backgroundItem);
         }
 
-        Set<Parcel> emptySet = new HashSet<>();
-        this.parcelDatabaseService.findAll(emptySet);
-        emptySet = emptySet.stream()
-                .filter(parcel -> parcel.meta().getReceiver().equals(player.getUniqueId()))
-                .collect(Collectors.toSet());
+        Set<Parcel> parcelSet = new HashSet<>();
+        this.parcelDatabaseService.findAll().whenComplete((parcels, throwable) ->
+            parcelSet.addAll(parcels)
+        );
 
-        for (Parcel parcel : emptySet) {
+        for (Parcel parcel : parcelSet) {
             ParcelMeta meta = parcel.meta();
-            String sender = Bukkit.getPlayer(parcel.sender()).getName();
-            String receiver = Bukkit.getPlayer(meta.getReceiver()).getName();
+            String sender = this.server.getPlayer(parcel.sender()).getName();
+            String receiver = this.server.getPlayer(meta.getReceiver()).getName();
 
             gui.addItem(ItemBuilder.from(Material.CHEST_MINECART)
                     .name(this.miniMessage.deserialize(meta.getName()))
