@@ -48,9 +48,9 @@ public class ParcelLockerDatabaseService {
         CompletableFuture.runAsync(() -> {
             try (Connection connection = dataSource.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
-                         "INSERT INTO `parcelLockers`(uuid, " +
-                                 "description, " +
-                                 "position" +
+                         "INSERT INTO `parcelLockers`(`uuid`, " +
+                                 "`description`, " +
+                                 "`position`" +
                                  ") VALUES(?, ?, ?);"
                  )
             ) {
@@ -95,7 +95,7 @@ public class ParcelLockerDatabaseService {
         CompletableFuture.runAsync(() -> {
             try (Connection connection = dataSource.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
-                         "DELETE FROM `parcelLockers` WHERE uuid = ?;"
+                         "DELETE FROM `parcelLockers` WHERE `uuid` = ?;"
                  )
             ) {
                 statement.setString(1, uuid.toString());

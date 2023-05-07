@@ -92,15 +92,15 @@ public class ParcelDatabaseService {
             try (Connection connection = dataSource.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
                          "UPDATE `parcels` SET " +
-                                 "name = ?, " +
-                                 "description = ?, " +
-                                 "priority = ?, " +
-                                 "receiver = ?, " +
-                                 "size = ?, " +
-                                 "entryLocker = ?, " +
-                                 "destinationLocker = ?, " +
-                                 "sender = ? " +
-                                 "WHERE uuid = ?"
+                                 "`name` = ?, " +
+                                 "`description` = ?, " +
+                                 "`priority` = ?, " +
+                                 "`receiver` = ?, " +
+                                 "`size` = ?, " +
+                                 "`entryLocker` = ?, " +
+                                 "`destinationLocker` = ?, " +
+                                 "`sender` = ? " +
+                                 "WHERE `uuid` = ?"
                  )
             ) {
                 statement.setString(1, meta.getName());
@@ -125,7 +125,7 @@ public class ParcelDatabaseService {
         CompletableFuture.runAsync(() -> {
             try (Connection connection = dataSource.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
-                         "SELECT * FROM `parcels` WHERE sender = ?"
+                         "SELECT * FROM `parcels` WHERE `sender` = ?"
                  )
             ) {
                 statement.setString(1, sender.toString());
@@ -197,7 +197,7 @@ public class ParcelDatabaseService {
         CompletableFuture.runAsync(() -> {
             try (Connection connection = dataSource.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
-                         "DELETE FROM `parcels` WHERE uuid = ?"
+                         "DELETE FROM `parcels` WHERE `uuid` = ?"
                  )
             ) {
                 statement.setString(1, uuid.toString());
