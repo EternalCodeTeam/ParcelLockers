@@ -19,7 +19,7 @@ public class DataSourceBuilder {
         switch (databaseConfig.settings.databaseType) {
             case MYSQL -> {
                 hikariConfig.setDriverClassName("com.mysql.cj.jdbc.Driver");
-                hikariConfig.setJdbcUrl("jdbc:mysql://" + databaseConfig.settings.host + ":" + databaseConfig.settings.port + "/" + databaseConfig.settings.databaseName);
+                hikariConfig.setJdbcUrl("jdbc:mysql://" + databaseConfig.settings.host + ":" + databaseConfig.settings.port + "/" + databaseConfig.settings.databaseName + "?useSSL=" + databaseConfig.settings.useSSL);
                 hikariConfig.setUsername(databaseConfig.settings.user);
                 hikariConfig.setPassword(databaseConfig.settings.password);
             }

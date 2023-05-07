@@ -21,15 +21,17 @@ public class ParcelLockerDatabaseService {
 
     public ParcelLockerDatabaseService(DataSource dataSource) {
         this.dataSource = dataSource;
+
+        this.initTable();
     }
 
     private void initTable() {
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(
-                     "CREATE TABLE IF NOT EXISTS parcelLockers(" +
+                     "CREATE TABLE IF NOT EXISTS `parcelLockers`(" +
                              "uuid VARCHAR(36) NOT NULL, " +
-                             "description VARCHAR(64) NOT NULL " +
-                             "position VARCHAR(255) NOT NULL" +
+                             "description VARCHAR(64) NOT NULL, " +
+                             "position VARCHAR(255) NOT NULL, " +
                              "PRIMARY KEY (uuid)" +
                              ");"
              )
@@ -46,7 +48,7 @@ public class ParcelLockerDatabaseService {
         CompletableFuture.runAsync(() -> {
             try (Connection connection = dataSource.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
-                         "INSERT INTO parcelLockers(uuid, " +
+                         "INSERT INTO `parcelLockers`(uuid, " +
                                  "description, " +
                                  "position" +
                                  ") VALUES(?, ?, ?);"
@@ -68,7 +70,7 @@ public class ParcelLockerDatabaseService {
         CompletableFuture.runAsync(() -> {
             try (Connection connection = dataSource.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
-                         "SELECT * FROM parcelLockers;"
+                         "SELECT * FROM `parcelLockers`;"
                  )
             ) {
                 ResultSet rs = statement.executeQuery();
@@ -93,7 +95,7 @@ public class ParcelLockerDatabaseService {
         CompletableFuture.runAsync(() -> {
             try (Connection connection = dataSource.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
-                         "DELETE FROM parcelLockers WHERE uuid = ?;"
+                         "DELETE FROM `parcelLockers` WHERE uuid = ?;"
                  )
             ) {
                 statement.setString(1, uuid.toString());

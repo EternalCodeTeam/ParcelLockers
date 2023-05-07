@@ -19,25 +19,29 @@ import java.util.concurrent.TimeUnit;
 public class ParcelDatabaseService {
 
     private final DataSource dataSource;
+    private final ParcelLockerDatabaseService parcelLockerDatabaseService;
 
-    public ParcelDatabaseService(DataSource dataSource) {
+    public ParcelDatabaseService(DataSource dataSource, ParcelLockerDatabaseService parcelLockerDatabaseService) {
         this.dataSource = dataSource;
+        this.parcelLockerDatabaseService = parcelLockerDatabaseService;
+
+        this.initTable();
     }
 
     private void initTable() {
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(
-                     "CREATE TABLE IF NOT EXISTS parcels(" +
+                     "CREATE TABLE IF NOT EXISTS `parcels`(" +
                              "uuid VARCHAR(36) NOT NULL, " +
-                             "name VARCHAR(24) NOT NULL " +
-                             "description VARCHAR(64)" +
-                             "priority BOOLEAN NOT NULL" +
-                             "receiver VARCHAR(36) NOT NULL" +
-                             "size VARCHAR(10) NOT NULL" +
-                             "entryLocker VARCHAR(36) NOT NULL" +
-                             "destinationLocker VARCHAR(36) NOT NULL" +
-                             "sender VARCHAR(36) NOT NULL" +
-                             "PRIMARY KEY (uuid)" +
+                             "name VARCHAR(24) NOT NULL, " +
+                             "description VARCHAR(64), " +
+                             "priority BOOLEAN NOT NULL, " +
+                             "receiver VARCHAR(36) NOT NULL, " +
+                             "size VARCHAR(10) NOT NULL, " +
+                             "entryLocker VARCHAR(36) NOT NULL, " +
+                             "destinationLocker VARCHAR(36) NOT NULL, " +
+                             "sender VARCHAR(36) NOT NULL, " +
+                             "PRIMARY KEY (uuid) " +
                              ");"
              )
         ) {
@@ -54,7 +58,7 @@ public class ParcelDatabaseService {
             ParcelMeta meta = parcel.meta();
             try (Connection connection = dataSource.getConnection();
                     PreparedStatement statement = connection.prepareStatement(
-                            "INSERT INTO parcels(uuid, " +
+                            "INSERT INTO `parcels`(uuid, " +
                                     "name, " +
                                     "description, " +
                                     "priority, " +
@@ -87,7 +91,7 @@ public class ParcelDatabaseService {
             ParcelMeta meta = newParcel.meta();
             try (Connection connection = dataSource.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
-                         "UPDATE parcels SET " +
+                         "UPDATE `parcels` SET " +
                                  "name = ?, " +
                                  "description = ?, " +
                                  "priority = ?, " +
@@ -121,7 +125,7 @@ public class ParcelDatabaseService {
         CompletableFuture.runAsync(() -> {
             try (Connection connection = dataSource.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
-                         "SELECT * FROM parcels WHERE sender = ?"
+                         "SELECT * FROM `parcels` WHERE sender = ?"
                  )
             ) {
                 statement.setString(1, sender.toString());
@@ -156,11 +160,10 @@ public class ParcelDatabaseService {
         CompletableFuture.runAsync(() -> {
             try (Connection connection = dataSource.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
-                         "SELECT * FROM parcels"
+                         "SELECT * FROM `parcels`"
                  )
             ) {
                 ResultSet rs = statement.executeQuery();
-
                 while (rs.next()) {
                     ParcelMeta meta = new ParcelMeta(
                             rs.getString("name"),
@@ -194,7 +197,7 @@ public class ParcelDatabaseService {
         CompletableFuture.runAsync(() -> {
             try (Connection connection = dataSource.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
-                         "DELETE FROM parcels WHERE uuid = ?"
+                         "DELETE FROM `parcels` WHERE uuid = ?"
                  )
             ) {
                 statement.setString(1, uuid.toString());
