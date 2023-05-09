@@ -1,5 +1,6 @@
 package com.eternalcode.parcellockers.database;
 
+import com.eternalcode.parcellockers.ParcelCache;
 import com.eternalcode.parcellockers.exception.ParcelLockersException;
 import com.eternalcode.parcellockers.parcel.ParcelLocker;
 import com.eternalcode.parcellockers.shared.Position;
@@ -20,9 +21,11 @@ import java.util.concurrent.TimeUnit;
 public class ParcelLockerDatabaseService {
 
     private final DataSource dataSource;
+    private final ParcelCache cache;
 
-    public ParcelLockerDatabaseService(DataSource dataSource) {
+    public ParcelLockerDatabaseService(DataSource dataSource, ParcelCache cache) {
         this.dataSource = dataSource;
+        this.cache = cache;
 
         this.initTable();
     }
@@ -60,6 +63,7 @@ public class ParcelLockerDatabaseService {
                 statement.setString(2, parcelLocker.getDescription());
                 statement.setString(3, parcelLocker.getPosition().toString());
                 statement.execute();
+                this.cache.getParcelLockers().add(parcelLocker);
             }
             catch (SQLException e) {
                 Sentry.captureException(e);
@@ -86,6 +90,8 @@ public class ParcelLockerDatabaseService {
                     );
                     list.add(parcelLocker);
                 }
+                this.cache.getParcelLockers().clear();
+                this.cache.getParcelLockers().addAll(list);
                 return list;
             }
             catch (SQLException e) {
@@ -113,6 +119,7 @@ public class ParcelLockerDatabaseService {
                             Position.parse(rs.getString("position"))
                     );
                 }
+                this.cache.getParcelLockers().add(parcelLocker);
                 return Optional.ofNullable(parcelLocker);
             }
             catch (SQLException e) {
@@ -140,6 +147,7 @@ public class ParcelLockerDatabaseService {
                             Position.parse(rs.getString("position"))
                     );
                 }
+                this.cache.getParcelLockers().add(parcelLocker);
                 return Optional.ofNullable(parcelLocker);
             }
             catch (SQLException e) {
@@ -158,6 +166,7 @@ public class ParcelLockerDatabaseService {
             ) {
                 statement.setString(1, uuid.toString());
                 statement.execute();
+                this.cache.getParcelLockers().removeIf(parcelLocker -> parcelLocker.getUuid().equals(uuid));
             }
             catch (SQLException e) {
                 Sentry.captureException(e);

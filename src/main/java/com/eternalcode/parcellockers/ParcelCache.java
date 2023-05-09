@@ -3,19 +3,19 @@ package com.eternalcode.parcellockers;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelLocker;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ParcelCache {
 
-    private final List<Parcel> parcels = new ArrayList<>();
-    private final List<ParcelLocker> parcelLockers = new ArrayList<>();
+    private final Set<Parcel> parcels = new HashSet<>();
+    private final Set<ParcelLocker> parcelLockers = new HashSet<>();
 
-    public List<Parcel> getParcels() {
+    public Set<Parcel> getParcels() {
         return this.parcels;
     }
 
-    public List<ParcelLocker> getParcelLockers() {
+    public Set<ParcelLocker> getParcelLockers() {
         return this.parcelLockers;
     }
 

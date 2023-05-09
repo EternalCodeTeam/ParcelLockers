@@ -1,5 +1,6 @@
 package com.eternalcode.parcellockers.database;
 
+import com.eternalcode.parcellockers.ParcelCache;
 import com.eternalcode.parcellockers.exception.ParcelLockersException;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelMeta;
@@ -22,10 +23,12 @@ public class ParcelDatabaseService {
 
     private final DataSource dataSource;
     private final ParcelLockerDatabaseService parcelLockerDatabaseService;
+    private final ParcelCache cache;
 
-    public ParcelDatabaseService(DataSource dataSource, ParcelLockerDatabaseService parcelLockerDatabaseService) {
+    public ParcelDatabaseService(DataSource dataSource, ParcelLockerDatabaseService parcelLockerDatabaseService, ParcelCache cache) {
         this.dataSource = dataSource;
         this.parcelLockerDatabaseService = parcelLockerDatabaseService;
+        this.cache = cache;
 
         this.initTable();
     }
@@ -79,6 +82,7 @@ public class ParcelDatabaseService {
                 statement.setString(8, meta.getDestinationLocker().getUuid().toString());
                 statement.setString(9, parcel.sender().toString());
                 statement.execute();
+                this.cache.getParcels().add(parcel);
 
             } catch (SQLException e) {
                 Sentry.captureException(e);
@@ -144,6 +148,7 @@ public class ParcelDatabaseService {
                             UUID.fromString(rs.getString("sender")),
                             meta
                     );
+                    this.cache.getParcels().add(parcel);
                 }
                 return Optional.ofNullable(parcel);
             } catch (SQLException e) {
@@ -178,6 +183,7 @@ public class ParcelDatabaseService {
                             UUID.fromString(rs.getString("sender")),
                             meta
                     );
+                    this.cache.getParcels().add(parcel);
                     parcels.add(parcel);
                 }
                 return parcels;
@@ -216,6 +222,7 @@ public class ParcelDatabaseService {
                             meta
                     );
                     parcels.add(parcel);
+                    this.cache.getParcels().add(parcel);
                 }
                 return parcels;
 
@@ -252,6 +259,8 @@ public class ParcelDatabaseService {
                     );
                     parcels.add(parcel);
                 }
+                this.cache.getParcels().clear();
+                this.cache.getParcels().addAll(parcels);
                 return parcels;
 
             } catch (SQLException e) {
@@ -274,6 +283,7 @@ public class ParcelDatabaseService {
             ) {
                 statement.setString(1, uuid.toString());
                 statement.execute();
+                this.cache.getParcels().removeIf(parcel -> parcel.uuid().equals(uuid));
 
             } catch (SQLException e) {
                 Sentry.captureException(e);

@@ -75,8 +75,8 @@ public final class ParcelLockers extends JavaPlugin {
 
         ParcelCache cache = new ParcelCache();
 
-        ParcelLockerDatabaseService parcelLockerDatabaseService = new ParcelLockerDatabaseService(dataSource);
-        ParcelDatabaseService parcelDatabaseService = new ParcelDatabaseService(dataSource, parcelLockerDatabaseService);
+        ParcelLockerDatabaseService parcelLockerDatabaseService = new ParcelLockerDatabaseService(dataSource, cache);
+        ParcelDatabaseService parcelDatabaseService = new ParcelDatabaseService(dataSource, parcelLockerDatabaseService, cache);
 
         ParcelManager parcelManager = new ParcelManager(parcelDatabaseService, parcelLockerDatabaseService);
         ParcelLockerManager parcelLockerManager = new ParcelLockerManager(parcelLockerDatabaseService);
