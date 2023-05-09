@@ -85,7 +85,7 @@ public final class ParcelLockers extends JavaPlugin {
         ParcelListGUI parcelListGUI = new ParcelListGUI(this.getServer(), miniMessage, config, parcelDatabaseService);
 
         this.liteCommands = LiteBukkitAdventurePlatformFactory.builder(this.getServer(), "parcellockers", false, this.audiences, true)
-                .argument(Parcel.class, new ParcelArgument(parcelDatabaseService))
+                .argument(Parcel.class, new ParcelArgument(parcelDatabaseService, cache))
                 .argument(Player.class, new PlayerArgument(this.getServer(), config))
                 .contextualBind(Player.class, new BukkitOnlyPlayerContextual<>(config.messages.onlyForPlayers))
                 .commandInstance(
