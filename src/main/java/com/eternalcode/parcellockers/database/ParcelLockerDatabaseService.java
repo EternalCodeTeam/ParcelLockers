@@ -31,7 +31,7 @@ public class ParcelLockerDatabaseService {
     }
 
     private void initTable() {
-        try (Connection connection = dataSource.getConnection();
+        try (Connection connection = this.dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(
                      "CREATE TABLE IF NOT EXISTS `parcelLockers`(" +
                              "uuid VARCHAR(36) NOT NULL, " +
@@ -51,9 +51,9 @@ public class ParcelLockerDatabaseService {
 
     public CompletableFuture<Void> save(ParcelLocker parcelLocker) {
         return CompletableFuture.runAsync(() -> {
-            try (Connection connection = dataSource.getConnection();
+            try (Connection connection = this.dataSource.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
-                         "INSERT INTO `parcelLockers`(`uuid`, " +
+                         "INSERT INTO `parcellockers`(`uuid`, " +
                                  "`description`, " +
                                  "`position`" +
                                  ") VALUES(?, ?, ?);"
@@ -74,9 +74,9 @@ public class ParcelLockerDatabaseService {
 
     public CompletableFuture<List<ParcelLocker>> findAll() {
         return CompletableFuture.supplyAsync(() -> {
-            try (Connection connection = dataSource.getConnection();
+            try (Connection connection = this.dataSource.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
-                         "SELECT * FROM `parcelLockers`;"
+                         "SELECT * FROM `parcellockers`;"
                  )
             ) {
                 List<ParcelLocker> list = new ArrayList<>();
@@ -103,9 +103,9 @@ public class ParcelLockerDatabaseService {
 
     public CompletableFuture<Optional<ParcelLocker>> findByUUID(UUID uuid) {
         return CompletableFuture.supplyAsync(() -> {
-            try (Connection connection = dataSource.getConnection();
+            try (Connection connection = this.dataSource.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
-                         "SELECT * FROM `parcelLockers` WHERE `uuid` = ?;"
+                         "SELECT * FROM `parcellockers` WHERE `uuid` = ?;"
                  )
             ) {
                 statement.setString(1, uuid.toString());
@@ -131,7 +131,7 @@ public class ParcelLockerDatabaseService {
 
     public CompletableFuture<Optional<ParcelLocker>> findByPosition(Position position) {
         return CompletableFuture.supplyAsync(() -> {
-            try (Connection connection = dataSource.getConnection();
+            try (Connection connection = this.dataSource.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
                          "SELECT * FROM `parcelLockers` WHERE `position` = ?;"
                  )
@@ -159,9 +159,9 @@ public class ParcelLockerDatabaseService {
 
     public CompletableFuture<Void> remove(UUID uuid) {
         return CompletableFuture.runAsync(() -> {
-            try (Connection connection = dataSource.getConnection();
+            try (Connection connection = this.dataSource.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
-                         "DELETE FROM `parcelLockers` WHERE `uuid` = ?;"
+                         "DELETE FROM `parcellockers` WHERE `uuid` = ?;"
                  )
             ) {
                 statement.setString(1, uuid.toString());

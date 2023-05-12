@@ -3,7 +3,7 @@ package com.eternalcode.parcellockers.command;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.gui.MainGUI;
 import com.eternalcode.parcellockers.gui.ParcelListGUI;
-import com.eternalcode.parcellockers.manager.ParcelManager;
+import com.eternalcode.parcellockers.parcel.ParcelManager;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import dev.rollczi.litecommands.argument.Arg;

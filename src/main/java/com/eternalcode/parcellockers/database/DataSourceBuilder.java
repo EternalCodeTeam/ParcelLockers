@@ -28,6 +28,7 @@ public class DataSourceBuilder {
                 hikariConfig.setDriverClassName("org.sqlite.JDBC");
                 hikariConfig.setJdbcUrl("jdbc:sqlite:" + dataFolder + "/database.db");
             }
+            default -> throw new IllegalStateException("Unexpected value: " + databaseConfig.settings.databaseType);
         }
 
         return new HikariDataSource(hikariConfig);

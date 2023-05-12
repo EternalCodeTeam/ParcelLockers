@@ -8,16 +8,19 @@ import dev.triumphteam.gui.guis.GuiItem;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 
 import static com.eternalcode.parcellockers.util.AdventureUtil.RESET_ITEM;
 
 public class MainGUI {
 
+    private final Plugin plugin;
     private final MiniMessage miniMessage;
     private final PluginConfiguration config;
     private final ParcelDatabaseService parcelDatabaseService;
 
-    public MainGUI(MiniMessage miniMessage, PluginConfiguration config, ParcelDatabaseService parcelDatabaseService) {
+    public MainGUI(Plugin plugin, MiniMessage miniMessage, PluginConfiguration config, ParcelDatabaseService parcelDatabaseService) {
+        this.plugin = plugin;
         this.miniMessage = miniMessage;
         this.config = config;
         this.parcelDatabaseService = parcelDatabaseService;
@@ -56,11 +59,11 @@ public class MainGUI {
         gui.addSlotAction(40, event -> event.getView().close());
         gui.addSlotAction(20, event -> {
             event.getView().close();
-            new ParcelListGUI(Bukkit.getServer(), this.miniMessage, this.config, this.parcelDatabaseService).showParcelListGUI(player);
+            new ParcelListGUI(this.plugin, Bukkit.getServer(), this.miniMessage, this.config, this.parcelDatabaseService).showParcelListGUI(player);
         });
         gui.addSlotAction(22, event -> {
             event.getView().close();
-            new SentParcelsGUI(Bukkit.getServer(), this.miniMessage, this.config, this.parcelDatabaseService).showSentParcelsGUI(player);
+            new SentParcelsGUI(this.plugin, Bukkit.getServer(), this.miniMessage, this.config, this.parcelDatabaseService).showSentParcelsGUI(player);
         });
         gui.setDefaultClickAction(event -> event.setCancelled(true));
         gui.open(player);

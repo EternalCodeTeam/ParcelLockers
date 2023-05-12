@@ -1,4 +1,4 @@
-package com.eternalcode.parcellockers.manager;
+package com.eternalcode.parcellockers.parcel;
 
 import com.eternalcode.parcellockers.database.ParcelLockerDatabaseService;
 

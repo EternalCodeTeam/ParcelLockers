@@ -12,8 +12,8 @@ import com.eternalcode.parcellockers.database.ParcelDatabaseService;
 import com.eternalcode.parcellockers.database.ParcelLockerDatabaseService;
 import com.eternalcode.parcellockers.gui.MainGUI;
 import com.eternalcode.parcellockers.gui.ParcelListGUI;
-import com.eternalcode.parcellockers.manager.ParcelLockerManager;
-import com.eternalcode.parcellockers.manager.ParcelManager;
+import com.eternalcode.parcellockers.parcel.ParcelLockerManager;
+import com.eternalcode.parcellockers.parcel.ParcelManager;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.updater.UpdaterService;
@@ -78,11 +78,11 @@ public final class ParcelLockers extends JavaPlugin {
         ParcelLockerDatabaseService parcelLockerDatabaseService = new ParcelLockerDatabaseService(dataSource, cache);
         ParcelDatabaseService parcelDatabaseService = new ParcelDatabaseService(dataSource, parcelLockerDatabaseService, cache);
 
-        ParcelManager parcelManager = new ParcelManager(parcelDatabaseService, parcelLockerDatabaseService);
+        ParcelManager parcelManager = new ParcelManager(this, parcelDatabaseService, parcelLockerDatabaseService);
         ParcelLockerManager parcelLockerManager = new ParcelLockerManager(parcelLockerDatabaseService);
 
-        MainGUI mainGUI = new MainGUI(miniMessage, config, parcelDatabaseService);
-        ParcelListGUI parcelListGUI = new ParcelListGUI(this.getServer(), miniMessage, config, parcelDatabaseService);
+        MainGUI mainGUI = new MainGUI(this, miniMessage, config, parcelDatabaseService);
+        ParcelListGUI parcelListGUI = new ParcelListGUI(this, this.getServer(), miniMessage, config, parcelDatabaseService);
 
         this.liteCommands = LiteBukkitAdventurePlatformFactory.builder(this.getServer(), "parcellockers", false, this.audiences, true)
                 .argument(Parcel.class, new ParcelArgument(parcelDatabaseService, cache))

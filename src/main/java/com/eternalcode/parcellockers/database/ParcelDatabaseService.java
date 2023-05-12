@@ -3,6 +3,7 @@ package com.eternalcode.parcellockers.database;
 import com.eternalcode.parcellockers.ParcelCache;
 import com.eternalcode.parcellockers.exception.ParcelLockersException;
 import com.eternalcode.parcellockers.parcel.Parcel;
+import com.eternalcode.parcellockers.parcel.ParcelLocker;
 import com.eternalcode.parcellockers.parcel.ParcelMeta;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import io.sentry.Sentry;
@@ -34,18 +35,18 @@ public class ParcelDatabaseService {
     }
 
     private void initTable() {
-        try (Connection connection = dataSource.getConnection();
+        try (Connection connection = this.dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(
                      "CREATE TABLE IF NOT EXISTS `parcels`(" +
-                             "uuid VARCHAR(36) NOT NULL, " +
-                             "name VARCHAR(24) NOT NULL, " +
-                             "description VARCHAR(64), " +
-                             "priority BOOLEAN NOT NULL, " +
-                             "receiver VARCHAR(36) NOT NULL, " +
-                             "size VARCHAR(10) NOT NULL, " +
-                             "entryLocker VARCHAR(36) NOT NULL, " +
-                             "destinationLocker VARCHAR(36) NOT NULL, " +
-                             "sender VARCHAR(36) NOT NULL, " +
+                             "`uuid` VARCHAR(36) NOT NULL, " +
+                             "`name` VARCHAR(24) NOT NULL, " +
+                             "`description` VARCHAR(64), " +
+                             "`priority` BOOLEAN NOT NULL, " +
+                             "`receiver` VARCHAR(36) NOT NULL, " +
+                             "`size` VARCHAR(10) NOT NULL, " +
+                             "`entryLocker` VARCHAR(36) NOT NULL, " +
+                             "`destinationLocker` VARCHAR(36) NOT NULL, " +
+                             "`sender` VARCHAR(36) NOT NULL, " +
                              "PRIMARY KEY (uuid) " +
                              ");"
              )
@@ -60,17 +61,17 @@ public class ParcelDatabaseService {
     public CompletableFuture<Void> save(Parcel parcel) {
         return CompletableFuture.runAsync(() -> {
             ParcelMeta meta = parcel.meta();
-            try (Connection connection = dataSource.getConnection();
+            try (Connection connection = this.dataSource.getConnection();
                     PreparedStatement statement = connection.prepareStatement(
                             "INSERT INTO `parcels`(uuid, " +
-                                    "name, " +
-                                    "description, " +
-                                    "priority, " +
-                                    "receiver, " +
-                                    "size, " +
-                                    "entryLocker, " +
-                                    "destinationLocker, " +
-                                    "sender) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
+                                    "`name`, " +
+                                    "`description`, " +
+                                    "`priority`, " +
+                                    "`receiver`, " +
+                                    "`size`, " +
+                                    "`entryLocker`, " +
+                                    "`destinationLocker`, " +
+                                    "`sender`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
             ) {
                 statement.setString(1, parcel.uuid().toString());
                 statement.setString(2, meta.getName());
@@ -84,7 +85,8 @@ public class ParcelDatabaseService {
                 statement.execute();
                 this.cache.getParcels().add(parcel);
 
-            } catch (SQLException e) {
+            }
+            catch (SQLException e) {
                 Sentry.captureException(e);
                 throw new ParcelLockersException(e);
             }
@@ -94,7 +96,7 @@ public class ParcelDatabaseService {
     public CompletableFuture<Void> update(Parcel oldParcel, Parcel newParcel) {
         return CompletableFuture.runAsync(() -> {
             ParcelMeta meta = newParcel.meta();
-            try (Connection connection = dataSource.getConnection();
+            try (Connection connection = this.dataSource.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
                          "UPDATE `parcels` SET " +
                                  "`name` = ?, " +
@@ -119,7 +121,8 @@ public class ParcelDatabaseService {
                 statement.setString(9, oldParcel.uuid().toString());
                 statement.execute();
 
-            } catch (SQLException e) {
+            }
+            catch (SQLException e) {
                 Sentry.captureException(e);
                 throw new ParcelLockersException(e);
             }
@@ -127,8 +130,8 @@ public class ParcelDatabaseService {
     }
 
     public CompletableFuture<Optional<Parcel>> findByUUID(UUID uuid) {
-        return CompletableFuture.supplyAsync(()-> {
-            try (Connection connection = dataSource.getConnection();
+        return CompletableFuture.supplyAsync(() -> {
+            try (Connection connection = this.dataSource.getConnection();
             PreparedStatement statement = connection.prepareStatement("SELECT * FROM `parcels` WHERE `uuid` = ?")) {
                 statement.setString(1, uuid.toString());
                 ResultSet rs = statement.executeQuery();
@@ -151,7 +154,8 @@ public class ParcelDatabaseService {
                     this.cache.getParcels().add(parcel);
                 }
                 return Optional.ofNullable(parcel);
-            } catch (SQLException e) {
+            }
+            catch (SQLException e) {
                 Sentry.captureException(e);
                 throw new ParcelLockersException(e);
             }
@@ -160,7 +164,7 @@ public class ParcelDatabaseService {
 
     public CompletableFuture<Set<Parcel>> findBySender(UUID sender) {
         return CompletableFuture.supplyAsync(() -> {
-            try (Connection connection = dataSource.getConnection();
+            try (Connection connection = this.dataSource.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
                          "SELECT * FROM `parcels` WHERE `sender` = ?"
                  )
@@ -188,7 +192,8 @@ public class ParcelDatabaseService {
                 }
                 return parcels;
 
-            } catch (SQLException e) {
+            }
+            catch (SQLException e) {
                 Sentry.captureException(e);
                 throw new ParcelLockersException(e);
             }
@@ -197,7 +202,7 @@ public class ParcelDatabaseService {
 
     public CompletableFuture<Set<Parcel>> findByReceiver(UUID receiver) {
         return CompletableFuture.supplyAsync(() -> {
-            try (Connection connection = dataSource.getConnection();
+            try (Connection connection = this.dataSource.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
                          "SELECT * FROM `parcels` WHERE `receiver` = ?"
                  )
@@ -226,7 +231,8 @@ public class ParcelDatabaseService {
                 }
                 return parcels;
 
-            } catch (SQLException e) {
+            }
+            catch (SQLException e) {
                 Sentry.captureException(e);
                 throw new ParcelLockersException(e);
             }
@@ -235,7 +241,7 @@ public class ParcelDatabaseService {
 
     public CompletableFuture<Set<Parcel>> findAll() {
         return CompletableFuture.supplyAsync(() -> {
-            try (Connection connection = dataSource.getConnection();
+            try (Connection connection = this.dataSource.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
                          "SELECT * FROM `parcels`"
                  )
@@ -243,14 +249,22 @@ public class ParcelDatabaseService {
                 Set<Parcel> parcels = new HashSet<>();
                 ResultSet rs = statement.executeQuery();
                 while (rs.next()) {
+                    ParcelLocker entryLocker = this.parcelLockerDatabaseService.findByUUID(UUID.fromString(rs.getString("entryLocker")))
+                            .join()
+                            .orElseThrow();
+
+                    ParcelLocker destinationLocker = this.parcelLockerDatabaseService.findByUUID(UUID.fromString(rs.getString("destinationLocker")))
+                            .join()
+                            .orElseThrow();
+
                     ParcelMeta meta = new ParcelMeta(
                             rs.getString("name"),
                             rs.getString("description"),
                             rs.getBoolean("priority"),
                             UUID.fromString(rs.getString("receiver")),
                             ParcelSize.valueOf(rs.getString("size")),
-                            null,
-                            null
+                            entryLocker,
+                            destinationLocker
                     );
                     Parcel parcel = new Parcel(
                             UUID.fromString(rs.getString("uuid")),
@@ -263,7 +277,8 @@ public class ParcelDatabaseService {
                 this.cache.getParcels().addAll(parcels);
                 return parcels;
 
-            } catch (SQLException e) {
+            }
+            catch (SQLException e) {
                 Sentry.captureException(e);
                 throw new ParcelLockersException(e);
             }
@@ -276,7 +291,7 @@ public class ParcelDatabaseService {
 
     public CompletableFuture<Void> remove(UUID uuid) {
         return CompletableFuture.runAsync(() -> {
-            try (Connection connection = dataSource.getConnection();
+            try (Connection connection = this.dataSource.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
                          "DELETE FROM `parcels` WHERE `uuid` = ?"
                  )
@@ -285,7 +300,8 @@ public class ParcelDatabaseService {
                 statement.execute();
                 this.cache.getParcels().removeIf(parcel -> parcel.uuid().equals(uuid));
 
-            } catch (SQLException e) {
+            }
+            catch (SQLException e) {
                 Sentry.captureException(e);
                 throw new ParcelLockersException(e);
             }
