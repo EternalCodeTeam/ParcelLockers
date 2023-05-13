@@ -33,7 +33,7 @@ dependencies {
     compileOnly("org.spigotmc:spigot-api:1.19.3-R0.1-SNAPSHOT")
     implementation("net.kyori:adventure-platform-bukkit:4.3.0")
     implementation("net.kyori:adventure-text-minimessage:4.13.1")
-    implementation("dev.rollczi.litecommands:bukkit-adventure:2.8.7")
+    implementation("dev.rollczi.litecommands:bukkit-adventure:2.8.8")
 
     // skull api
     implementation("dev.rollczi:liteskullapi:1.3.0")
@@ -68,7 +68,7 @@ dependencies {
     implementation("org.panda-lang:panda-utilities:0.5.2-alpha")
 
     // errorprone
-    errorprone("com.google.errorprone:error_prone_core:2.19.0")
+    errorprone("com.google.errorprone:error_prone_core:2.19.1")
 }
 
 java {
@@ -76,7 +76,7 @@ java {
 }
 
 checkstyle {
-    toolVersion = "10.10.0"
+    toolVersion = "10.11.0"
 
     configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
 
