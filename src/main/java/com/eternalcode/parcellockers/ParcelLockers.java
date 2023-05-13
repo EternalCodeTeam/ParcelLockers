@@ -100,7 +100,7 @@ public final class ParcelLockers extends JavaPlugin {
         UpdaterService updater = new UpdaterService(this.getDescription());
 
         long millis = started.stop().elapsed(TimeUnit.MILLISECONDS);
-        this.getLogger().log(Level.INFO, "Successfuly enabled ParcelLockers in {0}ms", millis);
+        this.getLogger().log(Level.INFO, "Successfully enabled ParcelLockers in {0}ms", millis);
     }
 
     @Override
