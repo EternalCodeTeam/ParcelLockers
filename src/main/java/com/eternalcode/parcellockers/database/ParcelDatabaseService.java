@@ -137,14 +137,21 @@ public class ParcelDatabaseService {
                 ResultSet rs = statement.executeQuery();
                 Parcel parcel = null;
                 if (rs.next()) {
+                    ParcelLocker entryLocker = this.parcelLockerDatabaseService.findByUUID(UUID.fromString(rs.getString("entryLocker")))
+                            .join()
+                            .orElseThrow();
+
+                    ParcelLocker destinationLocker = this.parcelLockerDatabaseService.findByUUID(UUID.fromString(rs.getString("destinationLocker")))
+                            .join()
+                            .orElseThrow();
                     ParcelMeta meta = new ParcelMeta(
                             rs.getString("name"),
                             rs.getString("description"),
                             rs.getBoolean("priority"),
                             UUID.fromString(rs.getString("receiver")),
                             ParcelSize.valueOf(rs.getString("size")),
-                            null,
-                            null
+                            entryLocker,
+                            destinationLocker
                     );
                     parcel = new Parcel(
                             UUID.fromString(rs.getString("uuid")),
@@ -173,14 +180,22 @@ public class ParcelDatabaseService {
                 ResultSet rs = statement.executeQuery();
                 Set<Parcel> parcels = new HashSet<>();
                 while (rs.next()) {
+                    ParcelLocker entryLocker = this.parcelLockerDatabaseService.findByUUID(UUID.fromString(rs.getString("entryLocker")))
+                            .join()
+                            .orElseThrow();
+
+                    ParcelLocker destinationLocker = this.parcelLockerDatabaseService.findByUUID(UUID.fromString(rs.getString("destinationLocker")))
+                            .join()
+                            .orElseThrow();
+
                     ParcelMeta meta = new ParcelMeta(
                             rs.getString("name"),
                             rs.getString("description"),
                             rs.getBoolean("priority"),
                             UUID.fromString(rs.getString("receiver")),
                             ParcelSize.valueOf(rs.getString("size")),
-                            null,
-                            null
+                            entryLocker,
+                            destinationLocker
                     );
                     Parcel parcel = new Parcel(
                             UUID.fromString(rs.getString("uuid")),
@@ -212,14 +227,21 @@ public class ParcelDatabaseService {
                 Set<Parcel> parcels = new HashSet<>();
 
                 while (rs.next()) {
+                    ParcelLocker entryLocker = this.parcelLockerDatabaseService.findByUUID(UUID.fromString(rs.getString("entryLocker")))
+                            .join()
+                            .orElseThrow();
+
+                    ParcelLocker destinationLocker = this.parcelLockerDatabaseService.findByUUID(UUID.fromString(rs.getString("destinationLocker")))
+                            .join()
+                            .orElseThrow();
                     ParcelMeta meta = new ParcelMeta(
                             rs.getString("name"),
                             rs.getString("description"),
                             rs.getBoolean("priority"),
                             UUID.fromString(rs.getString("receiver")),
                             ParcelSize.valueOf(rs.getString("size")),
-                            null,
-                            null
+                            entryLocker,
+                            destinationLocker
                     );
                     Parcel parcel = new Parcel(
                             UUID.fromString(rs.getString("uuid")),
