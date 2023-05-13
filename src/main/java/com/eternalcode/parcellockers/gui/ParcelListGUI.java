@@ -4,20 +4,20 @@ import com.eternalcode.parcellockers.configuration.implementation.PluginConfigur
 import com.eternalcode.parcellockers.database.ParcelDatabaseService;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelMeta;
-import dev.triumphteam.gui.builder.item.ItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.Server;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.plugin.Plugin;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class ParcelListGUI {
 
@@ -41,6 +41,7 @@ public class ParcelListGUI {
 
     public void showParcelListGUI(Player player) {
 
+        GuiItem parcelItem = this.config.guiSettings.parcelItem.toGuiItem(this.miniMessage);
         GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
         GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem(this.miniMessage);
         GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage);
@@ -61,28 +62,46 @@ public class ParcelListGUI {
 
         this.parcelDatabaseService.findAll().whenComplete((parcels, throwable) -> {
             for (Parcel parcel : parcels) {
-                ParcelMeta meta = parcel.meta();
-                String sender = this.server.getPlayer(parcel.sender()).getName();
-                String receiver = this.server.getPlayer(meta.getReceiver()).getName();
+                List<String> newLore = this.replaceParcelPlaceholders(parcel, parcelItem.getItemStack().getItemMeta().getLore());
+                parcelItem.getItemStack().getItemMeta().setLore(newLore);
 
-                gui.addItem(ItemBuilder.from(Material.CHEST_MINECART)
-                        .name(this.miniMessage.deserialize(meta.getName()))
-                        .lore(this.miniMessage.deserialize("&3UUID: ").append(Component.text(parcel.uuid().toString())),
-                                this.miniMessage.deserialize("&3Sender: ").append(Component.text(sender)),
-                                this.miniMessage.deserialize("&3Receiver: ").append(Component.text(receiver)),
-                                this.miniMessage.deserialize("&3Size: ").append(Component.text(meta.getSize().toString())),
-                                this.miniMessage.deserialize("&3Priority: ").append(Component.text(meta.isPriority() ? ChatColor.GREEN + "Yes" : ChatColor.RED + "&cNo")),
-                                this.miniMessage.deserialize("&3Description: ").append(Component.text(meta.getDescription())),
-                                this.miniMessage.deserialize("&3Position: ").append(Component.text(meta.getDestinationLocker().getPosition().toString())),
-                                this.miniMessage.deserialize("&3Recipients: ").append(Component.text(meta.getRecipients().stream().map(Bukkit::getPlayer).map(HumanEntity::getName).toList().toString())))
-                        .flags(ItemFlag.HIDE_ATTRIBUTES)
-                        .asGuiItem());
+                gui.addItem(parcelItem);
             }
 
             gui.setItem(49, closeItem);
-            this.server.getScheduler().runTask(this.plugin, () -> gui.open(player)); // sync
+            this.server.getScheduler().runTask(this.plugin, () -> gui.open(player));
         });
 
+    }
+
+    public List<String> replaceParcelPlaceholders(Parcel parcel, List<String> lore) {
+        if (lore == null || lore.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        ParcelMeta meta = parcel.meta();
+        List<String> newLore = new ArrayList<>();
+
+        for (String line : lore) {
+            line = line.replace("{UUID}", parcel.uuid().toString());
+            line = line.replace("{NAME}", meta.getName());
+            line = line.replace("{SENDER}", this.server.getPlayer(parcel.sender()).getName());
+            line = line.replace("{RECEIVER}", this.server.getPlayer(meta.getReceiver()).getName());
+            line = line.replace("{SIZE}", meta.getSize().toString());
+            line = line.replace("{PRIORITY}", meta.isPriority() ? ChatColor.GREEN + "Yes" : ChatColor.RED + "&cNo");
+            line = line.replace("{DESCRIPTION}", meta.getDescription());
+            line = line.replace("{POSITION}",
+                    "X: " + meta.getDestinationLocker().getPosition().x()
+                            + " Y: " + meta.getDestinationLocker().getPosition().y()
+                            + " Z: " + meta.getDestinationLocker().getPosition().z());
+            line = line.replace("{RECIPIENTS}", meta.getRecipients().stream()
+                    .map(Bukkit::getPlayer)
+                    .map(HumanEntity::getName)
+                    .toList()
+                    .toString());
+            newLore.add(line);
+        }
+        return newLore;
     }
 
 }

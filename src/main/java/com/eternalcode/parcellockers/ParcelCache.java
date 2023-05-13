@@ -5,6 +5,7 @@ import com.eternalcode.parcellockers.parcel.ParcelLocker;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 public class ParcelCache {
 
@@ -17,6 +18,20 @@ public class ParcelCache {
 
     public Set<ParcelLocker> getParcelLockers() {
         return this.parcelLockers;
+    }
+
+    public Parcel findParcel(UUID uuid) {
+        return this.parcels.stream()
+                .filter(parcel -> parcel.uuid().equals(uuid))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public ParcelLocker findParcelLocker(UUID uuid) {
+        return this.parcelLockers.stream()
+                .filter(parcelLocker -> parcelLocker.getUuid().equals(uuid))
+                .findFirst()
+                .orElse(null);
     }
 
 }

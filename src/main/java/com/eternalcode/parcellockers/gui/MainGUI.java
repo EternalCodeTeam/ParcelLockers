@@ -6,7 +6,6 @@ import dev.triumphteam.gui.components.GuiType;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
@@ -59,11 +58,11 @@ public class MainGUI {
         gui.addSlotAction(40, event -> event.getView().close());
         gui.addSlotAction(20, event -> {
             event.getView().close();
-            new ParcelListGUI(this.plugin, Bukkit.getServer(), this.miniMessage, this.config, this.parcelDatabaseService).showParcelListGUI(player);
+            new ParcelListGUI(this.plugin, this.plugin.getServer(), this.miniMessage, this.config, this.parcelDatabaseService).showParcelListGUI(player);
         });
         gui.addSlotAction(22, event -> {
             event.getView().close();
-            new SentParcelsGUI(this.plugin, Bukkit.getServer(), this.miniMessage, this.config, this.parcelDatabaseService).showSentParcelsGUI(player);
+            new SentParcelsGUI(this.plugin, this.plugin.getServer(), this.miniMessage, this.config, this.parcelDatabaseService).showSentParcelsGUI(player);
         });
         gui.setDefaultClickAction(event -> event.setCancelled(true));
         gui.open(player);

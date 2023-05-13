@@ -25,13 +25,13 @@ public class InvalidUsage implements InvalidUsageHandler<CommandSender> {
         List<String> schematics = schematic.getSchematics();
 
         if (schematic.isOnlyFirst()) {
-            this.announcer.sendMessage(sender, this.config.messages.invalidUsage);
+            this.announcer.sendMessage(sender, this.config.messages.parcelCommandUsage);
             return;
         }
 
         for (String scheme : schematics) {
             Formatter formatter = new Formatter()
-                    .register("&7» &3{USAGE}", scheme);
+                    .register("{USAGE}", scheme);
 
             this.announcer.sendMessage(sender, formatter.format(this.config.messages.invalidUsage));
         }

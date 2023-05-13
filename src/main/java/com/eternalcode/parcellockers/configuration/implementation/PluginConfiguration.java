@@ -14,13 +14,13 @@ import java.util.List;
 
 public class PluginConfiguration implements ReloadableConfig {
 
-    @Description({" ", "# Do you want to change the plugin settings?"})
+    @Description({" ", "# Parcel Lockers plugin configuration file."})
     public Settings settings = new Settings();
 
-    @Description({" ", "# Do you want to change the plugin messages?"})
+    @Description({" ", "# The plugin messages."})
     public Messages messages = new Messages();
 
-    @Description({" ", "# Do you want to change the plugin GUI settings?"})
+    @Description({" ", "# The plugin GUI settings."})
     public GuiSettings guiSettings = new GuiSettings();
 
     @Contextual
@@ -118,7 +118,21 @@ public class PluginConfiguration implements ReloadableConfig {
                 .setLore(List.of("&eClick to show all parcels, which you sent or received in the past."))
                 .setType(Material.WRITTEN_BOOK);
 
-
+        @Description({" ", "# The item of the parcel"})
+        public ConfigItem parcelItem = new ConfigItem()
+                .setName("&6{NAME}")
+                .setLore(List.of(
+                        "&6UUID: &e{UUID}",
+                        "&Sender: &e{SENDER}",
+                        "&6Receiver: &e{RECEIVER}",
+                        "&6Size: &e{SIZE}",
+                        "&6Position: &e{POSITION}",
+                        "&6Priority: &e{PRIORITY}",
+                        "&6Description: &e{DESCRIPTION}",
+                        "&6Recipients: &e{RECIPIENTS}"
+                        )
+                )
+                .setType(Material.CHEST_MINECART);
     }
 
     @Override
