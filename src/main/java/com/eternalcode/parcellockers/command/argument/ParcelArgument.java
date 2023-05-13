@@ -1,7 +1,6 @@
 package com.eternalcode.parcellockers.command.argument;
 
 import com.eternalcode.parcellockers.ParcelCache;
-import com.eternalcode.parcellockers.database.ParcelDatabaseService;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import dev.rollczi.litecommands.argument.ArgumentName;
 import dev.rollczi.litecommands.argument.simple.OneArgument;
@@ -15,11 +14,9 @@ import java.util.UUID;
 @ArgumentName("parcel")
 public class ParcelArgument implements OneArgument<Parcel> {
 
-    private final ParcelDatabaseService databaseService;
     private final ParcelCache cache;
 
-    public ParcelArgument(ParcelDatabaseService databaseService, ParcelCache cache) {
-        this.databaseService = databaseService;
+    public ParcelArgument(ParcelCache cache) {
         this.cache = cache;
     }
 

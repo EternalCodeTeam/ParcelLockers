@@ -61,12 +61,12 @@ public class PluginConfiguration implements ReloadableConfig {
 
     @Contextual
     public static class Messages {
-        public String onlyForPlayers = "&7› &cThis command is only available to players!";
-        public String noPermission = "&7› &cYou don't have permission to perform this command! &c(&7{PERMISSION}&c)";
-        public String cantFindPlayer = "&7› &cThe specified player could not be found!";
-        public String invalidUsage = "&7› &bCorrect usage: &e{USAGE}.";
-        public String reload = "&7› &bConfiguration has been successfully reloaded!";
-        public String parcelCommandUsage = "&7› &3/parcel &b<list|info> [parcel]";
+        public String onlyForPlayers = "&7» &cThis command is only available to players!";
+        public String noPermission = "&7» &cYou don't have permission to perform this command! &c(&7{PERMISSION}&c)";
+        public String cantFindPlayer = "&7» &cThe specified player could not be found!";
+        public String invalidUsage = "&7» &bCorrect usage: &e{USAGE}.";
+        public String reload = "&7» &bConfiguration has been successfully reloaded!";
+        public String parcelCommandUsage = "&7» &3/parcel &b<list|info> [parcel]";
     }
 
     @Contextual

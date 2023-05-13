@@ -12,10 +12,10 @@ import com.eternalcode.parcellockers.database.ParcelDatabaseService;
 import com.eternalcode.parcellockers.database.ParcelLockerDatabaseService;
 import com.eternalcode.parcellockers.gui.MainGUI;
 import com.eternalcode.parcellockers.gui.ParcelListGUI;
-import com.eternalcode.parcellockers.parcel.ParcelLockerManager;
-import com.eternalcode.parcellockers.parcel.ParcelManager;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.Parcel;
+import com.eternalcode.parcellockers.parcel.ParcelLockerManager;
+import com.eternalcode.parcellockers.parcel.ParcelManager;
 import com.eternalcode.parcellockers.updater.UpdaterService;
 import com.eternalcode.parcellockers.util.legacy.LegacyColorProcessor;
 import com.google.common.base.Stopwatch;
@@ -85,7 +85,7 @@ public final class ParcelLockers extends JavaPlugin {
         ParcelListGUI parcelListGUI = new ParcelListGUI(this, this.getServer(), miniMessage, config, parcelDatabaseService);
 
         this.liteCommands = LiteBukkitAdventurePlatformFactory.builder(this.getServer(), "parcellockers", false, this.audiences, true)
-                .argument(Parcel.class, new ParcelArgument(parcelDatabaseService, cache))
+                .argument(Parcel.class, new ParcelArgument(cache))
                 .argument(Player.class, new PlayerArgument(this.getServer(), config))
                 .contextualBind(Player.class, new BukkitOnlyPlayerContextual<>(config.messages.onlyForPlayers))
                 .commandInstance(
