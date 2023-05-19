@@ -45,14 +45,14 @@ dependencies {
     implementation("net.dzikoysk:cdn:1.14.4")
 
     // expressible
-    implementation("org.panda-lang:expressible:1.3.4")
+    implementation("org.panda-lang:expressible:1.3.5")
 
     // gitcheck
     implementation("com.eternalcode:gitcheck:1.0.0")
 
     // metrics and sentry
     implementation("org.bstats:bstats-bukkit:3.0.2")
-    implementation("io.sentry:sentry:6.18.1")
+    implementation("io.sentry:sentry:6.19.1")
 
     // lombok
     compileOnly("org.projectlombok:lombok:1.18.26")
