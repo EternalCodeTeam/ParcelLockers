@@ -3,11 +3,10 @@ package com.eternalcode.parcellockers.database;
 import com.eternalcode.parcellockers.ParcelCache;
 import com.eternalcode.parcellockers.exception.ParcelLockersException;
 import com.eternalcode.parcellockers.parcel.Parcel;
-import com.eternalcode.parcellockers.parcellocker.ParcelLocker;
 import com.eternalcode.parcellockers.parcel.ParcelMeta;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
-import com.eternalcode.parcellockers.parcellocker.repository.ParcelLockerRepository;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
+import com.eternalcode.parcellockers.parcellocker.repository.ParcelLockerRepository;
 import io.sentry.Sentry;
 
 import javax.sql.DataSource;
@@ -83,8 +82,8 @@ public class ParcelDatabaseService implements ParcelRepository {
                 statement.setBoolean(4, meta.isPriority());
                 statement.setString(5, meta.getReceiver().toString());
                 statement.setString(6, meta.getSize().name());
-                statement.setString(7, meta.getEntryLocker().getUuid().toString());
-                statement.setString(8, meta.getDestinationLocker().getUuid().toString());
+                statement.setString(7, meta.getEntryLocker().toString());
+                statement.setString(8, meta.getDestinationLocker().toString());
                 statement.setString(9, parcel.sender().toString());
                 statement.execute();
                 this.cache.getParcels().add(parcel);
@@ -120,8 +119,8 @@ public class ParcelDatabaseService implements ParcelRepository {
                 statement.setBoolean(3, meta.isPriority());
                 statement.setString(4, meta.getReceiver().toString());
                 statement.setString(5, meta.getSize().name());
-                statement.setString(6, meta.getEntryLocker().getUuid().toString());
-                statement.setString(7, meta.getDestinationLocker().getUuid().toString());
+                statement.setString(6, meta.getEntryLocker().toString());
+                statement.setString(7, meta.getDestinationLocker().toString());
                 statement.setString(8, newParcel.sender().toString());
                 statement.setString(9, oldParcel.uuid().toString());
                 statement.execute();
@@ -143,21 +142,14 @@ public class ParcelDatabaseService implements ParcelRepository {
                 ResultSet rs = statement.executeQuery();
                 Parcel parcel = null;
                 if (rs.next()) {
-                    ParcelLocker entryLocker = this.parcelLockerRepository.findByUUID(UUID.fromString(rs.getString("entryLocker")))
-                            .join()
-                            .orElseThrow();
-
-                    ParcelLocker destinationLocker = this.parcelLockerRepository.findByUUID(UUID.fromString(rs.getString("destinationLocker")))
-                            .join()
-                            .orElseThrow();
                     ParcelMeta meta = new ParcelMeta(
                             rs.getString("name"),
                             rs.getString("description"),
                             rs.getBoolean("priority"),
                             UUID.fromString(rs.getString("receiver")),
                             ParcelSize.valueOf(rs.getString("size")),
-                            entryLocker,
-                            destinationLocker
+                            UUID.fromString(rs.getString("entryLocker")),
+                            UUID.fromString(rs.getString("destinationLocker"))
                     );
                     parcel = new Parcel(
                             UUID.fromString(rs.getString("uuid")),
@@ -187,22 +179,14 @@ public class ParcelDatabaseService implements ParcelRepository {
                 ResultSet rs = statement.executeQuery();
                 Set<Parcel> parcels = new HashSet<>();
                 while (rs.next()) {
-                    ParcelLocker entryLocker = this.parcelLockerRepository.findByUUID(UUID.fromString(rs.getString("entryLocker")))
-                            .join()
-                            .orElseThrow();
-
-                    ParcelLocker destinationLocker = this.parcelLockerRepository.findByUUID(UUID.fromString(rs.getString("destinationLocker")))
-                            .join()
-                            .orElseThrow();
-
                     ParcelMeta meta = new ParcelMeta(
                             rs.getString("name"),
                             rs.getString("description"),
                             rs.getBoolean("priority"),
                             UUID.fromString(rs.getString("receiver")),
                             ParcelSize.valueOf(rs.getString("size")),
-                            entryLocker,
-                            destinationLocker
+                            UUID.fromString(rs.getString("entryLocker")),
+                            UUID.fromString(rs.getString("destinationLocker"))
                     );
                     Parcel parcel = new Parcel(
                             UUID.fromString(rs.getString("uuid")),
@@ -235,21 +219,14 @@ public class ParcelDatabaseService implements ParcelRepository {
                 Set<Parcel> parcels = new HashSet<>();
 
                 while (rs.next()) {
-                    ParcelLocker entryLocker = this.parcelLockerRepository.findByUUID(UUID.fromString(rs.getString("entryLocker")))
-                            .join()
-                            .orElseThrow();
-
-                    ParcelLocker destinationLocker = this.parcelLockerRepository.findByUUID(UUID.fromString(rs.getString("destinationLocker")))
-                            .join()
-                            .orElseThrow();
                     ParcelMeta meta = new ParcelMeta(
                             rs.getString("name"),
                             rs.getString("description"),
                             rs.getBoolean("priority"),
                             UUID.fromString(rs.getString("receiver")),
                             ParcelSize.valueOf(rs.getString("size")),
-                            entryLocker,
-                            destinationLocker
+                            UUID.fromString(rs.getString("entryLocker")),
+                            UUID.fromString(rs.getString("destinationLocker"))
                     );
                     Parcel parcel = new Parcel(
                             UUID.fromString(rs.getString("uuid")),
@@ -280,22 +257,14 @@ public class ParcelDatabaseService implements ParcelRepository {
                 Set<Parcel> parcels = new HashSet<>();
                 ResultSet rs = statement.executeQuery();
                 while (rs.next()) {
-                    ParcelLocker entryLocker = this.parcelLockerRepository.findByUUID(UUID.fromString(rs.getString("entryLocker")))
-                            .join()
-                            .orElseThrow();
-
-                    ParcelLocker destinationLocker = this.parcelLockerRepository.findByUUID(UUID.fromString(rs.getString("destinationLocker")))
-                            .join()
-                            .orElseThrow();
-
                     ParcelMeta meta = new ParcelMeta(
                             rs.getString("name"),
                             rs.getString("description"),
                             rs.getBoolean("priority"),
                             UUID.fromString(rs.getString("receiver")),
                             ParcelSize.valueOf(rs.getString("size")),
-                            entryLocker,
-                            destinationLocker
+                            UUID.fromString(rs.getString("entryLocker")),
+                            UUID.fromString(rs.getString("destinationLocker"))
                     );
                     Parcel parcel = new Parcel(
                             UUID.fromString(rs.getString("uuid")),

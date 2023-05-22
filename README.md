@@ -53,7 +53,7 @@ more.
 - [ ] Add Discord integration (bot, webhooks, etc...)
 - [ ] Add more commands
 - [ ] Isolate cache into separate classes
-- [ ] Extract database service methods into repositories (interfaces)
+- [x] Extract database service methods into repositories (interfaces)
 - [ ] Delete cyclic dependency (Parcel <-> ParcelLocker), switch to UUID instead of object references
 
 # License

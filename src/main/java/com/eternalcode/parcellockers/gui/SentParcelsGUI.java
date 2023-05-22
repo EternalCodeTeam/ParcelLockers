@@ -84,10 +84,10 @@ public class SentParcelsGUI {
             line = line.replace("{SIZE}", meta.getSize().toString());
             line = line.replace("{PRIORITY}", meta.isPriority() ? ChatColor.GREEN + "Yes" : ChatColor.RED + "&cNo");
             line = line.replace("{DESCRIPTION}", meta.getDescription());
-            line = line.replace("{POSITION}",
-                    "X: " + meta.getDestinationLocker().getPosition().x()
-                    + " Y: " + meta.getDestinationLocker().getPosition().y()
-                    + " Z: " + meta.getDestinationLocker().getPosition().z());
+            /*line = line.replace("{POSITION}",
+                    "X: " + meta.getDestinationLocker().position().x()
+                    + " Y: " + meta.getDestinationLocker().position().y()
+                    + " Z: " + meta.getDestinationLocker().position().z());*/
             line = line.replace("{RECIPIENTS}", meta.getRecipients().stream()
                     .map(Bukkit::getPlayer)
                     .map(HumanEntity::getName)

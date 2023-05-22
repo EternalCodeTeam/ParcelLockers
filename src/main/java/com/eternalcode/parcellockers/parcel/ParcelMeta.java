@@ -1,7 +1,5 @@
 package com.eternalcode.parcellockers.parcel;
 
-import com.eternalcode.parcellockers.parcellocker.ParcelLocker;
-
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -14,10 +12,10 @@ public class ParcelMeta {
     private final Set<UUID> recipients;
     private final UUID receiver;
     private final ParcelSize size;
-    private final ParcelLocker entryLocker;
-    private final ParcelLocker destinationLocker;
+    private final UUID entryLocker;
+    private final UUID destinationLocker;
 
-    public ParcelMeta(String name, String description, boolean priority, UUID receiver, ParcelSize size, ParcelLocker entryLocker, ParcelLocker destinationLocker) {
+    public ParcelMeta(String name, String description, boolean priority, UUID receiver, ParcelSize size, UUID entryLocker, UUID destinationLocker) {
         this.name = name;
         this.description = description;
         this.priority = priority;
@@ -52,11 +50,11 @@ public class ParcelMeta {
         return this.size;
     }
 
-    public ParcelLocker getEntryLocker() {
+    public UUID getEntryLocker() {
         return this.entryLocker;
     }
 
-    public ParcelLocker getDestinationLocker() {
+    public UUID getDestinationLocker() {
         return this.destinationLocker;
     }
 }

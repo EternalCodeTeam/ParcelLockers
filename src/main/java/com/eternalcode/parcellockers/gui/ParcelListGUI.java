@@ -8,7 +8,6 @@ import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Server;
 import org.bukkit.entity.HumanEntity;
@@ -90,12 +89,12 @@ public class ParcelListGUI {
             line = line.replace("{SIZE}", meta.getSize().toString());
             line = line.replace("{PRIORITY}", meta.isPriority() ? ChatColor.GREEN + "Yes" : ChatColor.RED + "&cNo");
             line = line.replace("{DESCRIPTION}", meta.getDescription());
-            line = line.replace("{POSITION}",
-                    "X: " + meta.getDestinationLocker().getPosition().x()
-                            + " Y: " + meta.getDestinationLocker().getPosition().y()
-                            + " Z: " + meta.getDestinationLocker().getPosition().z());
+            /*line = line.replace("{POSITION}",
+                    "X: " + meta.getDestinationLocker().position().x()
+                            + " Y: " + meta.getDestinationLocker().position().y()
+                            + " Z: " + meta.getDestinationLocker().position().z());*/
             line = line.replace("{RECIPIENTS}", meta.getRecipients().stream()
-                    .map(Bukkit::getPlayer)
+                    .map(this.server::getPlayer)
                     .map(HumanEntity::getName)
                     .toList()
                     .toString());

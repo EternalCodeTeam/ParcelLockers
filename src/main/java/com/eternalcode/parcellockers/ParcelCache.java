@@ -29,7 +29,7 @@ public class ParcelCache {
 
     public ParcelLocker findParcelLocker(UUID uuid) {
         return this.parcelLockers.stream()
-                .filter(parcelLocker -> parcelLocker.getUuid().equals(uuid))
+                .filter(parcelLocker -> parcelLocker.uuid().equals(uuid))
                 .findFirst()
                 .orElse(null);
     }

@@ -61,9 +61,9 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
                                  ") VALUES(?, ?, ?);"
                  )
             ) {
-                statement.setString(1, parcelLocker.getUuid().toString());
-                statement.setString(2, parcelLocker.getDescription());
-                statement.setString(3, parcelLocker.getPosition().toString());
+                statement.setString(1, parcelLocker.uuid().toString());
+                statement.setString(2, parcelLocker.description());
+                statement.setString(3, parcelLocker.position().toString());
                 statement.execute();
                 this.cache.getParcelLockers().add(parcelLocker);
             }
@@ -172,7 +172,7 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
             ) {
                 statement.setString(1, uuid.toString());
                 statement.execute();
-                this.cache.getParcelLockers().removeIf(parcelLocker -> parcelLocker.getUuid().equals(uuid));
+                this.cache.getParcelLockers().removeIf(parcelLocker -> parcelLocker.uuid().equals(uuid));
             }
             catch (SQLException e) {
                 Sentry.captureException(e);
@@ -183,7 +183,7 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
 
     @Override
     public CompletableFuture<Void> remove(ParcelLocker parcelLocker) {
-        return this.remove(parcelLocker.getUuid());
+        return this.remove(parcelLocker.uuid());
     }
 
 
