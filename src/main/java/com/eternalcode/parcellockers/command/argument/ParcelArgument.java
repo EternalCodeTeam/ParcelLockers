@@ -1,6 +1,6 @@
 package com.eternalcode.parcellockers.command.argument;
 
-import com.eternalcode.parcellockers.ParcelCache;
+import com.eternalcode.parcellockers.database.ParcelDatabaseService;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import dev.rollczi.litecommands.argument.ArgumentName;
 import dev.rollczi.litecommands.argument.simple.OneArgument;
@@ -14,15 +14,15 @@ import java.util.UUID;
 @ArgumentName("parcel")
 public class ParcelArgument implements OneArgument<Parcel> {
 
-    private final ParcelCache cache;
+    private final ParcelDatabaseService cache;
 
-    public ParcelArgument(ParcelCache cache) {
+    public ParcelArgument(ParcelDatabaseService cache) {
         this.cache = cache;
     }
 
     @Override
     public Result<Parcel, ?> parse(LiteInvocation invocation, String argument) {
-        return Result.ok(this.cache.findParcel(UUID.fromString(argument)));
+        return Result.ok(this.cache.getParcel(UUID.fromString(argument)));
     }
 
 

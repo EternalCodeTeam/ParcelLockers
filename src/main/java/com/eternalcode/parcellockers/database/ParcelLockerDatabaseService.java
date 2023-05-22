@@ -1,6 +1,5 @@
 package com.eternalcode.parcellockers.database;
 
-import com.eternalcode.parcellockers.ParcelCache;
 import com.eternalcode.parcellockers.exception.ParcelLockersException;
 import com.eternalcode.parcellockers.parcellocker.ParcelLocker;
 import com.eternalcode.parcellockers.parcellocker.repository.ParcelLockerRepository;
@@ -13,20 +12,22 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 public class ParcelLockerDatabaseService implements ParcelLockerRepository {
 
-    private final DataSource dataSource;
-    private final ParcelCache cache;
+    private final Set<ParcelLocker> cache = new HashSet<>();
 
-    public ParcelLockerDatabaseService(DataSource dataSource, ParcelCache cache) {
+    private final DataSource dataSource;
+
+    public ParcelLockerDatabaseService(DataSource dataSource) {
         this.dataSource = dataSource;
-        this.cache = cache;
 
         this.initTable();
     }
@@ -65,7 +66,7 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
                 statement.setString(2, parcelLocker.description());
                 statement.setString(3, parcelLocker.position().toString());
                 statement.execute();
-                this.cache.getParcelLockers().add(parcelLocker);
+                this.getParcelLockers().add(parcelLocker);
             }
             catch (SQLException e) {
                 Sentry.captureException(e);
@@ -93,8 +94,8 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
                     );
                     list.add(parcelLocker);
                 }
-                this.cache.getParcelLockers().clear();
-                this.cache.getParcelLockers().addAll(list);
+                this.getParcelLockers().clear();
+                this.getParcelLockers().addAll(list);
                 return list;
             }
             catch (SQLException e) {
@@ -123,7 +124,7 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
                             Position.parse(rs.getString("position"))
                     );
                 }
-                this.cache.getParcelLockers().add(parcelLocker);
+                this.getParcelLockers().add(parcelLocker);
                 return Optional.ofNullable(parcelLocker);
             }
             catch (SQLException e) {
@@ -152,7 +153,7 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
                             Position.parse(rs.getString("position"))
                     );
                 }
-                this.cache.getParcelLockers().add(parcelLocker);
+                this.getParcelLockers().add(parcelLocker);
                 return Optional.ofNullable(parcelLocker);
             }
             catch (SQLException e) {
@@ -172,7 +173,7 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
             ) {
                 statement.setString(1, uuid.toString());
                 statement.execute();
-                this.cache.getParcelLockers().removeIf(parcelLocker -> parcelLocker.uuid().equals(uuid));
+                this.getParcelLockers().removeIf(parcelLocker -> parcelLocker.uuid().equals(uuid));
             }
             catch (SQLException e) {
                 Sentry.captureException(e);
@@ -184,6 +185,17 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
     @Override
     public CompletableFuture<Void> remove(ParcelLocker parcelLocker) {
         return this.remove(parcelLocker.uuid());
+    }
+
+    public Set<ParcelLocker> getParcelLockers() {
+        return this.cache;
+    }
+
+    public ParcelLocker findParcelLocker(UUID uuid) {
+        return this.cache.stream()
+                .filter(parcelLocker -> parcelLocker.uuid().equals(uuid))
+                .findFirst()
+                .orElse(null);
     }
 
 

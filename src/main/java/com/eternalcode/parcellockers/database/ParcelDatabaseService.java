@@ -1,6 +1,5 @@
 package com.eternalcode.parcellockers.database;
 
-import com.eternalcode.parcellockers.ParcelCache;
 import com.eternalcode.parcellockers.exception.ParcelLockersException;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelMeta;
@@ -24,14 +23,14 @@ import java.util.concurrent.TimeUnit;
 
 public class ParcelDatabaseService implements ParcelRepository {
 
+    private final Set<Parcel> parcels = new HashSet<>();
+
     private final DataSource dataSource;
     private final ParcelLockerRepository parcelLockerRepository;
-    private final ParcelCache cache;
 
-    public ParcelDatabaseService(DataSource dataSource, ParcelLockerRepository parcelLockerRepository, ParcelCache cache) {
+    public ParcelDatabaseService(DataSource dataSource, ParcelLockerRepository parcelLockerRepository) {
         this.dataSource = dataSource;
         this.parcelLockerRepository = parcelLockerRepository;
-        this.cache = cache;
 
         this.initTable();
     }
@@ -86,7 +85,7 @@ public class ParcelDatabaseService implements ParcelRepository {
                 statement.setString(8, meta.getDestinationLocker().toString());
                 statement.setString(9, parcel.sender().toString());
                 statement.execute();
-                this.cache.getParcels().add(parcel);
+                this.getParcels().add(parcel);
 
             }
             catch (SQLException e) {
@@ -156,7 +155,7 @@ public class ParcelDatabaseService implements ParcelRepository {
                             UUID.fromString(rs.getString("sender")),
                             meta
                     );
-                    this.cache.getParcels().add(parcel);
+                    this.getParcels().add(parcel);
                 }
                 return Optional.ofNullable(parcel);
             }
@@ -193,7 +192,7 @@ public class ParcelDatabaseService implements ParcelRepository {
                             UUID.fromString(rs.getString("sender")),
                             meta
                     );
-                    this.cache.getParcels().add(parcel);
+                    this.getParcels().add(parcel);
                     parcels.add(parcel);
                 }
                 return parcels;
@@ -234,7 +233,7 @@ public class ParcelDatabaseService implements ParcelRepository {
                             meta
                     );
                     parcels.add(parcel);
-                    this.cache.getParcels().add(parcel);
+                    this.getParcels().add(parcel);
                 }
                 return parcels;
 
@@ -273,8 +272,8 @@ public class ParcelDatabaseService implements ParcelRepository {
                     );
                     parcels.add(parcel);
                 }
-                this.cache.getParcels().clear();
-                this.cache.getParcels().addAll(parcels);
+                this.getParcels().clear();
+                this.getParcels().addAll(parcels);
                 return parcels;
 
             }
@@ -300,7 +299,7 @@ public class ParcelDatabaseService implements ParcelRepository {
             ) {
                 statement.setString(1, uuid.toString());
                 statement.execute();
-                this.cache.getParcels().removeIf(parcel -> parcel.uuid().equals(uuid));
+                this.getParcels().removeIf(parcel -> parcel.uuid().equals(uuid));
 
             }
             catch (SQLException e) {
@@ -313,5 +312,16 @@ public class ParcelDatabaseService implements ParcelRepository {
     @Override
     public CompletableFuture<List<Parcel>> findPage(int page, int pageSize) {
         return null;
+    }
+
+    public Set<Parcel> getParcels() {
+        return this.parcels;
+    }
+
+    public Parcel getParcel(UUID uuid) {
+        return this.parcels.stream()
+                .filter(parcel -> parcel.uuid().equals(uuid))
+                .findFirst()
+                .orElse(null);
     }
 }
