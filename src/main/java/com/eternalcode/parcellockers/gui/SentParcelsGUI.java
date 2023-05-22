@@ -2,7 +2,6 @@ package com.eternalcode.parcellockers.gui;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.parcel.Parcel;
-import com.eternalcode.parcellockers.parcel.ParcelMeta;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
@@ -73,22 +72,21 @@ public class SentParcelsGUI {
             return Collections.emptyList();
         }
 
-        ParcelMeta meta = parcel.meta();
         List<String> newLore = new ArrayList<>();
 
         for (String line : lore) {
             line = line.replace("{UUID}", parcel.uuid().toString());
-            line = line.replace("{NAME}", meta.getName());
+            line = line.replace("{NAME}", parcel.name());
             line = line.replace("{SENDER}", this.server.getPlayer(parcel.sender()).getName());
-            line = line.replace("{RECEIVER}", this.server.getPlayer(meta.getReceiver()).getName());
-            line = line.replace("{SIZE}", meta.getSize().toString());
-            line = line.replace("{PRIORITY}", meta.isPriority() ? ChatColor.GREEN + "Yes" : ChatColor.RED + "&cNo");
-            line = line.replace("{DESCRIPTION}", meta.getDescription());
+            line = line.replace("{RECEIVER}", this.server.getPlayer(parcel.receiver()).getName());
+            line = line.replace("{SIZE}", parcel.size().toString());
+            line = line.replace("{PRIORITY}", parcel.priority() ? ChatColor.GREEN + "Yes" : ChatColor.RED + "&cNo");
+            line = line.replace("{DESCRIPTION}", parcel.description());
             /*line = line.replace("{POSITION}",
                     "X: " + meta.getDestinationLocker().position().x()
                     + " Y: " + meta.getDestinationLocker().position().y()
                     + " Z: " + meta.getDestinationLocker().position().z());*/
-            line = line.replace("{RECIPIENTS}", meta.getRecipients().stream()
+            line = line.replace("{RECIPIENTS}", parcel.recipients().stream()
                     .map(Bukkit::getPlayer)
                     .map(HumanEntity::getName)
                     .toList()
