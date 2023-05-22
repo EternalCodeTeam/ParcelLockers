@@ -1,5 +1,6 @@
-package com.eternalcode.parcellockers.parcel;
+package com.eternalcode.parcellockers.parcellocker;
 
+import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.shared.Position;
 
 import java.util.HashSet;

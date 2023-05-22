@@ -1,18 +1,18 @@
 package com.eternalcode.parcellockers.parcel;
 
-import com.eternalcode.parcellockers.database.ParcelDatabaseService;
-import com.eternalcode.parcellockers.database.ParcelLockerDatabaseService;
+import com.eternalcode.parcellockers.parcellocker.repository.ParcelLockerRepository;
+import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import org.bukkit.plugin.Plugin;
 
 public class ParcelManager {
 
     private final Plugin plugin;
-    private final ParcelDatabaseService databaseService;
-    private final ParcelLockerDatabaseService parcelLockerDatabaseService;
+    private final ParcelRepository databaseService;
+    private final ParcelLockerRepository parcelLockerRepository;
 
-    public ParcelManager(Plugin plugin, ParcelDatabaseService databaseService, ParcelLockerDatabaseService parcelLockerDatabaseService) {
+    public ParcelManager(Plugin plugin, ParcelRepository databaseService, ParcelLockerRepository parcelLockerRepository) {
         this.plugin = plugin;
         this.databaseService = databaseService;
-        this.parcelLockerDatabaseService = parcelLockerDatabaseService;
+        this.parcelLockerRepository = parcelLockerRepository;
     }
 }

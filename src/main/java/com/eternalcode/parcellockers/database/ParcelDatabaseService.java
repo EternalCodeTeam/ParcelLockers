@@ -3,9 +3,11 @@ package com.eternalcode.parcellockers.database;
 import com.eternalcode.parcellockers.ParcelCache;
 import com.eternalcode.parcellockers.exception.ParcelLockersException;
 import com.eternalcode.parcellockers.parcel.Parcel;
-import com.eternalcode.parcellockers.parcel.ParcelLocker;
+import com.eternalcode.parcellockers.parcellocker.ParcelLocker;
 import com.eternalcode.parcellockers.parcel.ParcelMeta;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
+import com.eternalcode.parcellockers.parcellocker.repository.ParcelLockerRepository;
+import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import io.sentry.Sentry;
 
 import javax.sql.DataSource;
@@ -14,21 +16,22 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-public class ParcelDatabaseService {
+public class ParcelDatabaseService implements ParcelRepository {
 
     private final DataSource dataSource;
-    private final ParcelLockerDatabaseService parcelLockerDatabaseService;
+    private final ParcelLockerRepository parcelLockerRepository;
     private final ParcelCache cache;
 
-    public ParcelDatabaseService(DataSource dataSource, ParcelLockerDatabaseService parcelLockerDatabaseService, ParcelCache cache) {
+    public ParcelDatabaseService(DataSource dataSource, ParcelLockerRepository parcelLockerRepository, ParcelCache cache) {
         this.dataSource = dataSource;
-        this.parcelLockerDatabaseService = parcelLockerDatabaseService;
+        this.parcelLockerRepository = parcelLockerRepository;
         this.cache = cache;
 
         this.initTable();
@@ -58,6 +61,7 @@ public class ParcelDatabaseService {
         }
     }
 
+    @Override
     public CompletableFuture<Void> save(Parcel parcel) {
         return CompletableFuture.runAsync(() -> {
             ParcelMeta meta = parcel.meta();
@@ -93,6 +97,7 @@ public class ParcelDatabaseService {
         }).orTimeout(5, TimeUnit.SECONDS);
     }
 
+    @Override
     public CompletableFuture<Void> update(Parcel oldParcel, Parcel newParcel) {
         return CompletableFuture.runAsync(() -> {
             ParcelMeta meta = newParcel.meta();
@@ -129,6 +134,7 @@ public class ParcelDatabaseService {
         }).orTimeout(5, TimeUnit.SECONDS);
     }
 
+    @Override
     public CompletableFuture<Optional<Parcel>> findByUUID(UUID uuid) {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = this.dataSource.getConnection();
@@ -137,11 +143,11 @@ public class ParcelDatabaseService {
                 ResultSet rs = statement.executeQuery();
                 Parcel parcel = null;
                 if (rs.next()) {
-                    ParcelLocker entryLocker = this.parcelLockerDatabaseService.findByUUID(UUID.fromString(rs.getString("entryLocker")))
+                    ParcelLocker entryLocker = this.parcelLockerRepository.findByUUID(UUID.fromString(rs.getString("entryLocker")))
                             .join()
                             .orElseThrow();
 
-                    ParcelLocker destinationLocker = this.parcelLockerDatabaseService.findByUUID(UUID.fromString(rs.getString("destinationLocker")))
+                    ParcelLocker destinationLocker = this.parcelLockerRepository.findByUUID(UUID.fromString(rs.getString("destinationLocker")))
                             .join()
                             .orElseThrow();
                     ParcelMeta meta = new ParcelMeta(
@@ -169,6 +175,7 @@ public class ParcelDatabaseService {
         }).orTimeout(5, TimeUnit.SECONDS);
     }
 
+    @Override
     public CompletableFuture<Set<Parcel>> findBySender(UUID sender) {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = this.dataSource.getConnection();
@@ -180,11 +187,11 @@ public class ParcelDatabaseService {
                 ResultSet rs = statement.executeQuery();
                 Set<Parcel> parcels = new HashSet<>();
                 while (rs.next()) {
-                    ParcelLocker entryLocker = this.parcelLockerDatabaseService.findByUUID(UUID.fromString(rs.getString("entryLocker")))
+                    ParcelLocker entryLocker = this.parcelLockerRepository.findByUUID(UUID.fromString(rs.getString("entryLocker")))
                             .join()
                             .orElseThrow();
 
-                    ParcelLocker destinationLocker = this.parcelLockerDatabaseService.findByUUID(UUID.fromString(rs.getString("destinationLocker")))
+                    ParcelLocker destinationLocker = this.parcelLockerRepository.findByUUID(UUID.fromString(rs.getString("destinationLocker")))
                             .join()
                             .orElseThrow();
 
@@ -215,6 +222,7 @@ public class ParcelDatabaseService {
         }).orTimeout(5, TimeUnit.SECONDS);
     }
 
+    @Override
     public CompletableFuture<Set<Parcel>> findByReceiver(UUID receiver) {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = this.dataSource.getConnection();
@@ -227,11 +235,11 @@ public class ParcelDatabaseService {
                 Set<Parcel> parcels = new HashSet<>();
 
                 while (rs.next()) {
-                    ParcelLocker entryLocker = this.parcelLockerDatabaseService.findByUUID(UUID.fromString(rs.getString("entryLocker")))
+                    ParcelLocker entryLocker = this.parcelLockerRepository.findByUUID(UUID.fromString(rs.getString("entryLocker")))
                             .join()
                             .orElseThrow();
 
-                    ParcelLocker destinationLocker = this.parcelLockerDatabaseService.findByUUID(UUID.fromString(rs.getString("destinationLocker")))
+                    ParcelLocker destinationLocker = this.parcelLockerRepository.findByUUID(UUID.fromString(rs.getString("destinationLocker")))
                             .join()
                             .orElseThrow();
                     ParcelMeta meta = new ParcelMeta(
@@ -261,6 +269,7 @@ public class ParcelDatabaseService {
         }).orTimeout(5, TimeUnit.SECONDS);
     }
 
+    @Override
     public CompletableFuture<Set<Parcel>> findAll() {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = this.dataSource.getConnection();
@@ -271,11 +280,11 @@ public class ParcelDatabaseService {
                 Set<Parcel> parcels = new HashSet<>();
                 ResultSet rs = statement.executeQuery();
                 while (rs.next()) {
-                    ParcelLocker entryLocker = this.parcelLockerDatabaseService.findByUUID(UUID.fromString(rs.getString("entryLocker")))
+                    ParcelLocker entryLocker = this.parcelLockerRepository.findByUUID(UUID.fromString(rs.getString("entryLocker")))
                             .join()
                             .orElseThrow();
 
-                    ParcelLocker destinationLocker = this.parcelLockerDatabaseService.findByUUID(UUID.fromString(rs.getString("destinationLocker")))
+                    ParcelLocker destinationLocker = this.parcelLockerRepository.findByUUID(UUID.fromString(rs.getString("destinationLocker")))
                             .join()
                             .orElseThrow();
 
@@ -307,10 +316,12 @@ public class ParcelDatabaseService {
         }).orTimeout(5, TimeUnit.SECONDS);
     }
 
+    @Override
     public CompletableFuture<Void> remove(Parcel parcel) {
         return this.remove(parcel.uuid());
     }
 
+    @Override
     public CompletableFuture<Void> remove(UUID uuid) {
         return CompletableFuture.runAsync(() -> {
             try (Connection connection = this.dataSource.getConnection();
@@ -328,5 +339,10 @@ public class ParcelDatabaseService {
                 throw new ParcelLockersException(e);
             }
         }).orTimeout(5, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public CompletableFuture<List<Parcel>> findPage(int page, int pageSize) {
+        return null;
     }
 }

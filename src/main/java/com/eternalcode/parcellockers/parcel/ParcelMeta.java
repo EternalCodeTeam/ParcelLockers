@@ -1,5 +1,7 @@
 package com.eternalcode.parcellockers.parcel;
 
+import com.eternalcode.parcellockers.parcellocker.ParcelLocker;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;

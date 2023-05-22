@@ -2,7 +2,8 @@ package com.eternalcode.parcellockers.database;
 
 import com.eternalcode.parcellockers.ParcelCache;
 import com.eternalcode.parcellockers.exception.ParcelLockersException;
-import com.eternalcode.parcellockers.parcel.ParcelLocker;
+import com.eternalcode.parcellockers.parcellocker.ParcelLocker;
+import com.eternalcode.parcellockers.parcellocker.repository.ParcelLockerRepository;
 import com.eternalcode.parcellockers.shared.Position;
 import io.sentry.Sentry;
 
@@ -18,7 +19,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-public class ParcelLockerDatabaseService {
+public class ParcelLockerDatabaseService implements ParcelLockerRepository {
 
     private final DataSource dataSource;
     private final ParcelCache cache;
@@ -49,6 +50,7 @@ public class ParcelLockerDatabaseService {
         }
     }
 
+    @Override
     public CompletableFuture<Void> save(ParcelLocker parcelLocker) {
         return CompletableFuture.runAsync(() -> {
             try (Connection connection = this.dataSource.getConnection();
@@ -72,6 +74,7 @@ public class ParcelLockerDatabaseService {
         }).orTimeout(5, TimeUnit.SECONDS);
     }
 
+    @Override
     public CompletableFuture<List<ParcelLocker>> findAll() {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = this.dataSource.getConnection();
@@ -101,6 +104,7 @@ public class ParcelLockerDatabaseService {
         }).orTimeout(5, TimeUnit.SECONDS);
     }
 
+    @Override
     public CompletableFuture<Optional<ParcelLocker>> findByUUID(UUID uuid) {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = this.dataSource.getConnection();
@@ -129,6 +133,7 @@ public class ParcelLockerDatabaseService {
         }).orTimeout(5, TimeUnit.SECONDS);
     }
 
+    @Override
     public CompletableFuture<Optional<ParcelLocker>> findByPosition(Position position) {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = this.dataSource.getConnection();
@@ -157,6 +162,7 @@ public class ParcelLockerDatabaseService {
         }).orTimeout(5, TimeUnit.SECONDS);
     }
 
+    @Override
     public CompletableFuture<Void> remove(UUID uuid) {
         return CompletableFuture.runAsync(() -> {
             try (Connection connection = this.dataSource.getConnection();
@@ -175,6 +181,7 @@ public class ParcelLockerDatabaseService {
         }).orTimeout(5, TimeUnit.SECONDS);
     }
 
+    @Override
     public CompletableFuture<Void> remove(ParcelLocker parcelLocker) {
         return this.remove(parcelLocker.getUuid());
     }

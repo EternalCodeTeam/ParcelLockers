@@ -1,7 +1,7 @@
 package com.eternalcode.parcellockers;
 
 import com.eternalcode.parcellockers.parcel.Parcel;
-import com.eternalcode.parcellockers.parcel.ParcelLocker;
+import com.eternalcode.parcellockers.parcellocker.ParcelLocker;
 
 import java.util.HashSet;
 import java.util.Set;

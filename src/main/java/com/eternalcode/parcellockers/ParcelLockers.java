@@ -14,8 +14,10 @@ import com.eternalcode.parcellockers.gui.MainGUI;
 import com.eternalcode.parcellockers.gui.ParcelListGUI;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.Parcel;
-import com.eternalcode.parcellockers.parcel.ParcelLockerManager;
+import com.eternalcode.parcellockers.parcellocker.ParcelLockerManager;
 import com.eternalcode.parcellockers.parcel.ParcelManager;
+import com.eternalcode.parcellockers.parcellocker.repository.ParcelLockerRepository;
+import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.updater.UpdaterService;
 import com.eternalcode.parcellockers.util.legacy.LegacyColorProcessor;
 import com.google.common.base.Stopwatch;
@@ -75,14 +77,14 @@ public final class ParcelLockers extends JavaPlugin {
 
         ParcelCache cache = new ParcelCache();
 
-        ParcelLockerDatabaseService parcelLockerDatabaseService = new ParcelLockerDatabaseService(dataSource, cache);
-        ParcelDatabaseService parcelDatabaseService = new ParcelDatabaseService(dataSource, parcelLockerDatabaseService, cache);
+        ParcelLockerRepository parcelLockerRepository = new ParcelLockerDatabaseService(dataSource, cache);
+        ParcelRepository parcelRepository = new ParcelDatabaseService(dataSource, parcelLockerRepository, cache);
 
-        ParcelManager parcelManager = new ParcelManager(this, parcelDatabaseService, parcelLockerDatabaseService);
-        ParcelLockerManager parcelLockerManager = new ParcelLockerManager(parcelLockerDatabaseService);
+        ParcelManager parcelManager = new ParcelManager(this, parcelRepository, parcelLockerRepository);
+        ParcelLockerManager parcelLockerManager = new ParcelLockerManager(parcelLockerRepository);
 
-        MainGUI mainGUI = new MainGUI(this, miniMessage, config, parcelDatabaseService);
-        ParcelListGUI parcelListGUI = new ParcelListGUI(this, this.getServer(), miniMessage, config, parcelDatabaseService);
+        MainGUI mainGUI = new MainGUI(this, miniMessage, config, parcelRepository);
+        ParcelListGUI parcelListGUI = new ParcelListGUI(this, this.getServer(), miniMessage, config, parcelRepository);
 
         this.liteCommands = LiteBukkitAdventurePlatformFactory.builder(this.getServer(), "parcellockers", false, this.audiences, true)
                 .argument(Parcel.class, new ParcelArgument(cache))

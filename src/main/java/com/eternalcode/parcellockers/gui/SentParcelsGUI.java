@@ -1,9 +1,9 @@
 package com.eternalcode.parcellockers.gui;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
-import com.eternalcode.parcellockers.database.ParcelDatabaseService;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelMeta;
+import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
@@ -27,14 +27,14 @@ public class SentParcelsGUI {
     private final Server server;
     private final MiniMessage miniMessage;
     private final PluginConfiguration config;
-    private final ParcelDatabaseService parcelDatabaseService;
+    private final ParcelRepository parcelRepository;
 
-    public SentParcelsGUI(Plugin plugin, Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelDatabaseService parcelDatabaseService) {
+    public SentParcelsGUI(Plugin plugin, Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelRepository parcelRepository) {
         this.plugin = plugin;
         this.server = server;
         this.miniMessage = miniMessage;
         this.config = config;
-        this.parcelDatabaseService = parcelDatabaseService;
+        this.parcelRepository = parcelRepository;
     }
 
     public void showSentParcelsGUI(Player player) {
@@ -57,7 +57,7 @@ public class SentParcelsGUI {
             gui.setItem(slot, backgroundItem);
         }
 
-        this.parcelDatabaseService.findBySender(player.getUniqueId()).whenComplete((parcels, throwable) -> {
+        this.parcelRepository.findBySender(player.getUniqueId()).whenComplete((parcels, throwable) -> {
             for (Parcel parcel : parcels) {
                 List<String> newLore = this.replaceParcelPlaceholders(parcel, parcelItem.getItemStack().getItemMeta().getLore());
                 parcelItem.getItemStack().getItemMeta().setLore(newLore);
