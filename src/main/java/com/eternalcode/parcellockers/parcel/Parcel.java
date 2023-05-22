@@ -15,9 +15,6 @@ public record Parcel(UUID uuid, UUID sender, ParcelMeta meta) {
         private UUID sender;
         private ParcelMeta meta;
 
-        public Builder() {
-        }
-
         public Builder uuid(UUID uuid) {
             this.uuid = uuid;
             return this;
