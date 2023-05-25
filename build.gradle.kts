@@ -55,8 +55,8 @@ dependencies {
     implementation("io.sentry:sentry:6.19.1")
 
     // lombok
-    compileOnly("org.projectlombok:lombok:1.18.26")
-    annotationProcessor("org.projectlombok:lombok:1.18.26")
+    compileOnly("org.projectlombok:lombok:1.18.28")
+    annotationProcessor("org.projectlombok:lombok:1.18.28")
 
     // jetbrains annotations
     api("org.jetbrains:annotations:24.0.1")
