@@ -5,7 +5,6 @@ import com.eternalcode.parcellockers.parcellocker.ParcelLocker;
 import com.eternalcode.parcellockers.parcellocker.repository.ParcelLockerRepository;
 import com.eternalcode.parcellockers.shared.Position;
 import io.sentry.Sentry;
-import org.jetbrains.annotations.NotNull;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -193,7 +192,6 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
         }).orTimeout(5, TimeUnit.SECONDS);
     }
 
-    @NotNull
     private Set<ParcelLocker> extractParcelLockers(PreparedStatement statement) throws SQLException {
         Set<ParcelLocker> set = new HashSet<>();
         ResultSet rs = statement.executeQuery();
