@@ -13,7 +13,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -22,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 public class ParcelDatabaseService implements ParcelRepository {
 
-    private final Set<Parcel> parcels = new HashSet<>();
+    private final Set<Parcel> cache = new HashSet<>();
 
     private final DataSource dataSource;
     private final ParcelLockerRepository parcelLockerRepository;
@@ -83,7 +82,7 @@ public class ParcelDatabaseService implements ParcelRepository {
                 statement.setString(8, parcel.destinationLocker().toString());
                 statement.setString(9, parcel.sender().toString());
                 statement.execute();
-                this.getParcels().add(parcel);
+                this.getCache().add(parcel);
 
             }
             catch (SQLException e) {
@@ -150,7 +149,7 @@ public class ParcelDatabaseService implements ParcelRepository {
                             UUID.fromString(rs.getString("entryLocker")),
                             UUID.fromString(rs.getString("destinationLocker"))
                     );
-                    this.getParcels().add(parcel);
+                    this.getCache().add(parcel);
                 }
                 return Optional.ofNullable(parcel);
             }
@@ -185,7 +184,7 @@ public class ParcelDatabaseService implements ParcelRepository {
                             UUID.fromString(rs.getString("entryLocker")),
                             UUID.fromString(rs.getString("destinationLocker"))
                     );
-                    this.getParcels().add(parcel);
+                    this.getCache().add(parcel);
                     parcels.add(parcel);
                 }
                 return parcels;
@@ -224,7 +223,7 @@ public class ParcelDatabaseService implements ParcelRepository {
                             UUID.fromString(rs.getString("destinationLocker"))
                     );
                     parcels.add(parcel);
-                    this.getParcels().add(parcel);
+                    this.getCache().add(parcel);
                 }
                 return parcels;
 
@@ -261,8 +260,8 @@ public class ParcelDatabaseService implements ParcelRepository {
                     );
                     parcels.add(parcel);
                 }
-                this.getParcels().clear();
-                this.getParcels().addAll(parcels);
+                this.getCache().clear();
+                this.getCache().addAll(parcels);
                 return parcels;
 
             }
@@ -288,7 +287,7 @@ public class ParcelDatabaseService implements ParcelRepository {
             ) {
                 statement.setString(1, uuid.toString());
                 statement.execute();
-                this.getParcels().removeIf(parcel -> parcel.uuid().equals(uuid));
+                this.getCache().removeIf(parcel -> parcel.uuid().equals(uuid));
 
             }
             catch (SQLException e) {
@@ -299,16 +298,49 @@ public class ParcelDatabaseService implements ParcelRepository {
     }
 
     @Override
-    public CompletableFuture<List<Parcel>> findPage(int page, int pageSize) {
-        return null;
+    public CompletableFuture<Set<Parcel>> findPage(int page, int pageSize) {
+        return CompletableFuture.supplyAsync(() -> {
+            try (Connection connection = this.dataSource.getConnection();
+                 PreparedStatement statement = connection.prepareStatement(
+                         "SELECT * FROM `parcels` LIMIT ? OFFSET ?"
+                 )
+            ) {
+                statement.setInt(1, pageSize);
+                statement.setInt(2, page * pageSize);
+                Set<Parcel> parcels = new HashSet<>();
+                ResultSet rs = statement.executeQuery();
+                while (rs.next()) {
+                    Parcel parcel = new Parcel(
+                            UUID.fromString(rs.getString("uuid")),
+                            UUID.fromString(rs.getString("sender")),
+                            rs.getString("name"),
+                            rs.getString("description"),
+                            rs.getBoolean("priority"),
+                            new HashSet<>(),
+                            UUID.fromString(rs.getString("receiver")),
+                            ParcelSize.valueOf(rs.getString("size")),
+                            UUID.fromString(rs.getString("entryLocker")),
+                            UUID.fromString(rs.getString("destinationLocker"))
+                    );
+                    parcels.add(parcel);
+                }
+                this.getCache().addAll(parcels);
+                return parcels;
+
+            }
+            catch (SQLException e) {
+                Sentry.captureException(e);
+                throw new ParcelLockersException(e);
+            }
+        }).orTimeout(5, TimeUnit.SECONDS);
     }
 
-    public Set<Parcel> getParcels() {
-        return this.parcels;
+    public Set<Parcel> getCache() {
+        return this.cache;
     }
 
-    public Parcel getParcel(UUID uuid) {
-        return this.parcels.stream()
+    public Parcel getFromCache(UUID uuid) {
+        return this.cache.stream()
                 .filter(parcel -> parcel.uuid().equals(uuid))
                 .findFirst()
                 .orElse(null);

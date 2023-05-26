@@ -5,15 +5,14 @@ import com.eternalcode.parcellockers.parcellocker.ParcelLocker;
 import com.eternalcode.parcellockers.parcellocker.repository.ParcelLockerRepository;
 import com.eternalcode.parcellockers.shared.Position;
 import io.sentry.Sentry;
+import org.jetbrains.annotations.NotNull;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -66,7 +65,7 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
                 statement.setString(2, parcelLocker.description());
                 statement.setString(3, parcelLocker.position().toString());
                 statement.execute();
-                this.getParcelLockers().add(parcelLocker);
+                this.getCache().add(parcelLocker);
             }
             catch (SQLException e) {
                 Sentry.captureException(e);
@@ -76,27 +75,14 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
     }
 
     @Override
-    public CompletableFuture<List<ParcelLocker>> findAll() {
+    public CompletableFuture<Set<ParcelLocker>> findAll() {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = this.dataSource.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
                          "SELECT * FROM `parcellockers`;"
                  )
             ) {
-                List<ParcelLocker> list = new ArrayList<>();
-                ResultSet rs = statement.executeQuery();
-
-                while (rs.next()) {
-                    ParcelLocker parcelLocker = new ParcelLocker(
-                            UUID.fromString(rs.getString("uuid")),
-                            rs.getString("description"),
-                            Position.parse(rs.getString("position"))
-                    );
-                    list.add(parcelLocker);
-                }
-                this.getParcelLockers().clear();
-                this.getParcelLockers().addAll(list);
-                return list;
+                return this.extractParcelLockers(statement);
             }
             catch (SQLException e) {
                 Sentry.captureException(e);
@@ -104,6 +90,7 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
             }
         }).orTimeout(5, TimeUnit.SECONDS);
     }
+
 
     @Override
     public CompletableFuture<Optional<ParcelLocker>> findByUUID(UUID uuid) {
@@ -124,7 +111,7 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
                             Position.parse(rs.getString("position"))
                     );
                 }
-                this.getParcelLockers().add(parcelLocker);
+                this.getCache().add(parcelLocker);
                 return Optional.ofNullable(parcelLocker);
             }
             catch (SQLException e) {
@@ -153,7 +140,7 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
                             Position.parse(rs.getString("position"))
                     );
                 }
-                this.getParcelLockers().add(parcelLocker);
+                this.getCache().add(parcelLocker);
                 return Optional.ofNullable(parcelLocker);
             }
             catch (SQLException e) {
@@ -173,7 +160,7 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
             ) {
                 statement.setString(1, uuid.toString());
                 statement.execute();
-                this.getParcelLockers().removeIf(parcelLocker -> parcelLocker.uuid().equals(uuid));
+                this.getCache().removeIf(parcelLocker -> parcelLocker.uuid().equals(uuid));
             }
             catch (SQLException e) {
                 Sentry.captureException(e);
@@ -187,11 +174,48 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
         return this.remove(parcelLocker.uuid());
     }
 
-    public Set<ParcelLocker> getParcelLockers() {
+    @Override
+    public CompletableFuture<Set<ParcelLocker>> findPage(int page, int pageSize) {
+        return CompletableFuture.supplyAsync(() -> {
+            try (Connection connection = this.dataSource.getConnection();
+                 PreparedStatement statement = connection.prepareStatement(
+                         "SELECT * FROM `parcellockers` LIMIT ? OFFSET ?;"
+                 )
+            ) {
+                statement.setInt(1, pageSize);
+                statement.setInt(2, page * pageSize);
+                return this.extractParcelLockers(statement);
+            }
+            catch (SQLException e) {
+                Sentry.captureException(e);
+                throw new ParcelLockersException(e);
+            }
+        }).orTimeout(5, TimeUnit.SECONDS);
+    }
+
+    @NotNull
+    private Set<ParcelLocker> extractParcelLockers(PreparedStatement statement) throws SQLException {
+        Set<ParcelLocker> set = new HashSet<>();
+        ResultSet rs = statement.executeQuery();
+
+        while (rs.next()) {
+            ParcelLocker parcelLocker = new ParcelLocker(
+                    UUID.fromString(rs.getString("uuid")),
+                    rs.getString("description"),
+                    Position.parse(rs.getString("position"))
+            );
+            set.add(parcelLocker);
+        }
+        this.getCache().clear();
+        this.getCache().addAll(set);
+        return set;
+    }
+
+    public Set<ParcelLocker> getCache() {
         return this.cache;
     }
 
-    public ParcelLocker findParcelLocker(UUID uuid) {
+    public ParcelLocker getFromCache(UUID uuid) {
         return this.cache.stream()
                 .filter(parcelLocker -> parcelLocker.uuid().equals(uuid))
                 .findFirst()

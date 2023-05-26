@@ -22,13 +22,13 @@ public class ParcelArgument implements OneArgument<Parcel> {
 
     @Override
     public Result<Parcel, ?> parse(LiteInvocation invocation, String argument) {
-        return Result.ok(this.cache.getParcel(UUID.fromString(argument)));
+        return Result.ok(this.cache.getFromCache(UUID.fromString(argument)));
     }
 
 
     @Override
     public List<Suggestion> suggest(LiteInvocation invocation) {
-        return this.cache.getParcels().stream()
+        return this.cache.getCache().stream()
                 .map(Parcel::uuid)
                 .map(UUID::toString)
                 .map(Suggestion::of)
