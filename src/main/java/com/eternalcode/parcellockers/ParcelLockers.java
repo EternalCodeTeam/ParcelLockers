@@ -80,8 +80,8 @@ public final class ParcelLockers extends JavaPlugin {
         ParcelManager parcelManager = new ParcelManager(this, parcelRepository, parcelLockerRepository);
         ParcelLockerManager parcelLockerManager = new ParcelLockerManager(parcelLockerRepository);
 
-        MainGUI mainGUI = new MainGUI(this, miniMessage, config, parcelRepository);
-        ParcelListGUI parcelListGUI = new ParcelListGUI(this, this.getServer(), miniMessage, config, parcelRepository);
+        MainGUI mainGUI = new MainGUI(this, miniMessage, config, parcelRepository, parcelLockerRepository);
+        ParcelListGUI parcelListGUI = new ParcelListGUI(this, this.getServer(), miniMessage, config, parcelRepository, parcelLockerRepository);
 
         this.liteCommands = LiteBukkitAdventurePlatformFactory.builder(this.getServer(), "parcellockers", false, this.audiences, true)
                 .argument(Parcel.class, new ParcelArgument(parcelRepository))

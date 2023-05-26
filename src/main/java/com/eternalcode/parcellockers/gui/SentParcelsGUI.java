@@ -3,16 +3,17 @@ package com.eternalcode.parcellockers.gui;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
+import com.eternalcode.parcellockers.parcellocker.ParcelLocker;
+import com.eternalcode.parcellockers.parcellocker.repository.ParcelLockerRepository;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Server;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+import panda.utilities.text.Formatter;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,13 +28,15 @@ public class SentParcelsGUI {
     private final MiniMessage miniMessage;
     private final PluginConfiguration config;
     private final ParcelRepository parcelRepository;
+    private final ParcelLockerRepository parcelLockerRepository;
 
-    public SentParcelsGUI(Plugin plugin, Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelRepository parcelRepository) {
+    public SentParcelsGUI(Plugin plugin, Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelRepository parcelRepository, ParcelLockerRepository parcelLockerRepository) {
         this.plugin = plugin;
         this.server = server;
         this.miniMessage = miniMessage;
         this.config = config;
         this.parcelRepository = parcelRepository;
+        this.parcelLockerRepository = parcelLockerRepository;
     }
 
     public void showSentParcelsGUI(Player player) {
@@ -72,25 +75,27 @@ public class SentParcelsGUI {
             return Collections.emptyList();
         }
 
+        ParcelLocker destination = this.parcelLockerRepository.findByUUID(parcel.destinationLocker()).join().get();
+        Formatter formatter = new Formatter();
+        formatter.register("{UUID}", parcel.uuid().toString());
+        formatter.register("{NAME}", parcel.name());
+        formatter.register("{SENDER}", this.server.getPlayer(parcel.sender()).getName());
+        formatter.register("{RECEIVER}", this.server.getPlayer(parcel.receiver()).getName());
+        formatter.register("{SIZE}", parcel.size().toString());
+        formatter.register("{PRIORITY}", parcel.priority() ? this.miniMessage.deserialize("&aYes") : this.miniMessage.deserialize("&cNo"));
+        formatter.register("{DESCRIPTION}", parcel.description());
+        formatter.register("{POSITION_X}", String.valueOf(destination.position().x()));
+        formatter.register("{POSITION_Y}", String.valueOf(destination.position().y()));
+        formatter.register("{POSITION_Z}", String.valueOf(destination.position().z()));
+        formatter.register("{RECIPIENTS}", parcel.recipients().stream()
+                .map(Bukkit::getPlayer)
+                .map(Player::getName)
+                .toList()
+                .toString());
         List<String> newLore = new ArrayList<>();
 
         for (String line : lore) {
-            line = line.replace("{UUID}", parcel.uuid().toString());
-            line = line.replace("{NAME}", parcel.name());
-            line = line.replace("{SENDER}", this.server.getPlayer(parcel.sender()).getName());
-            line = line.replace("{RECEIVER}", this.server.getPlayer(parcel.receiver()).getName());
-            line = line.replace("{SIZE}", parcel.size().toString());
-            line = line.replace("{PRIORITY}", parcel.priority() ? ChatColor.GREEN + "Yes" : ChatColor.RED + "&cNo");
-            line = line.replace("{DESCRIPTION}", parcel.description());
-            /*line = line.replace("{POSITION}",
-                    "X: " + meta.getDestinationLocker().position().x()
-                    + " Y: " + meta.getDestinationLocker().position().y()
-                    + " Z: " + meta.getDestinationLocker().position().z());*/
-            line = line.replace("{RECIPIENTS}", parcel.recipients().stream()
-                    .map(Bukkit::getPlayer)
-                    .map(HumanEntity::getName)
-                    .toList()
-                    .toString());
+            formatter.format(line);
             newLore.add(line);
         }
         return newLore;
