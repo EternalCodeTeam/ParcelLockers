@@ -52,7 +52,7 @@ dependencies {
 
     // metrics and sentry
     implementation("org.bstats:bstats-bukkit:3.0.2")
-    implementation("io.sentry:sentry:6.19.1")
+    implementation("io.sentry:sentry:6.21.0")
 
     // lombok
     compileOnly("org.projectlombok:lombok:1.18.28")
@@ -76,7 +76,7 @@ java {
 }
 
 checkstyle {
-    toolVersion = "10.11.0"
+    toolVersion = "10.12.0"
 
     configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
 
