@@ -126,7 +126,7 @@ public class PluginConfiguration implements ReloadableConfig {
                         "&Sender: &e{SENDER}",
                         "&6Receiver: &e{RECEIVER}",
                         "&6Size: &e{SIZE}",
-                        "&6Position: &e{POSITION}",
+                        "&6Position: &6X: &e{POSITION_X}, &6Y: &e{POSITION_Y}, &6Z: &e{POSITION_Z}",
                         "&6Priority: &e{PRIORITY}",
                         "&6Description: &e{DESCRIPTION}",
                         "&6Recipients: &e{RECIPIENTS}"
