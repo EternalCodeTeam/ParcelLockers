@@ -9,7 +9,6 @@ import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.ChatColor;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -88,7 +87,7 @@ public class ParcelListGUI {
         formatter.register("{SENDER}", this.server.getPlayer(parcel.sender()).getName());
         formatter.register("{RECEIVER}", this.server.getPlayer(parcel.receiver()).getName());
         formatter.register("{SIZE}", parcel.size().toString());
-        formatter.register("{PRIORITY}", parcel.priority() ? ChatColor.GREEN + "Yes" : ChatColor.RED + "&cNo");
+        formatter.register("{PRIORITY}", parcel.priority() ? this.miniMessage.deserialize("&aYes") : this.miniMessage.deserialize("&cNo"));
         formatter.register("{DESCRIPTION}", parcel.description());
         formatter.register("{POSITION_X}", destination.position().x());
         formatter.register("{POSITION_Y}", destination.position().y());
