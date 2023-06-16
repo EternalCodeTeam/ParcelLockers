@@ -184,7 +184,7 @@ public class ParcelDatabaseService implements ParcelRepository {
                             UUID.fromString(rs.getString("entryLocker")),
                             UUID.fromString(rs.getString("destinationLocker"))
                     );
-                    this.getCache().add(parcel);
+                    this.cache.add(parcel);
                     parcels.add(parcel);
                 }
                 return parcels;
