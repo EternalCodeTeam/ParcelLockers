@@ -159,7 +159,7 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
             ) {
                 statement.setString(1, uuid.toString());
                 statement.execute();
-                this.getCache().removeIf(parcelLocker -> parcelLocker.uuid().equals(uuid));
+                this.cache.removeIf(parcelLocker -> parcelLocker.uuid().equals(uuid));
             }
             catch (SQLException e) {
                 Sentry.captureException(e);
