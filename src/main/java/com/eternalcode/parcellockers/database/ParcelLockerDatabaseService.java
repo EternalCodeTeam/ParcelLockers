@@ -205,7 +205,7 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
             set.add(parcelLocker);
         }
         this.getCache().clear();
-        this.getCache().addAll(set);
+        this.cache.addAll(set);
         return set;
     }
 
