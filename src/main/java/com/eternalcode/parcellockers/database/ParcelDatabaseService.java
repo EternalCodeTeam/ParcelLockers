@@ -260,7 +260,7 @@ public class ParcelDatabaseService implements ParcelRepository {
                     );
                     parcels.add(parcel);
                 }
-                this.getCache().clear();
+                this.cache.clear();
                 this.getCache().addAll(parcels);
                 return parcels;
 
