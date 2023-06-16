@@ -287,7 +287,7 @@ public class ParcelDatabaseService implements ParcelRepository {
             ) {
                 statement.setString(1, uuid.toString());
                 statement.execute();
-                this.getCache().removeIf(parcel -> parcel.uuid().equals(uuid));
+                this.cache.removeIf(parcel -> parcel.uuid().equals(uuid));
 
             }
             catch (SQLException e) {
