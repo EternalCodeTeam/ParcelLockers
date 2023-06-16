@@ -32,7 +32,7 @@ dependencies {
     // minecraft development api
     compileOnly("org.spigotmc:spigot-api:1.19.3-R0.1-SNAPSHOT")
     implementation("net.kyori:adventure-platform-bukkit:4.3.0")
-    implementation("net.kyori:adventure-text-minimessage:4.13.1")
+    implementation("net.kyori:adventure-text-minimessage:4.14.0")
     implementation("dev.rollczi.litecommands:bukkit-adventure:2.8.8")
 
     // skull api
@@ -52,7 +52,7 @@ dependencies {
 
     // metrics and sentry
     implementation("org.bstats:bstats-bukkit:3.0.2")
-    implementation("io.sentry:sentry:6.21.0")
+    implementation("io.sentry:sentry:6.23.0")
 
     // database
     implementation("com.zaxxer:HikariCP:5.0.1")
