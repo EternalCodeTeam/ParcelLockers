@@ -223,7 +223,7 @@ public class ParcelDatabaseService implements ParcelRepository {
                             UUID.fromString(rs.getString("destinationLocker"))
                     );
                     parcels.add(parcel);
-                    this.getCache().add(parcel);
+                    this.cache.add(parcel);
                 }
                 return parcels;
 
