@@ -82,7 +82,7 @@ public class ParcelDatabaseService implements ParcelRepository {
                 statement.setString(8, parcel.destinationLocker().toString());
                 statement.setString(9, parcel.sender().toString());
                 statement.execute();
-                this.getCache().add(parcel);
+               this.cache.add(parcel);
 
             }
             catch (SQLException e) {
