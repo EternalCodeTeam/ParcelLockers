@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 public class ParcelLockerDatabaseService implements ParcelLockerRepository {
 
-    private final Set<ParcelLocker> cache = new HashSet<>();
+    public final Set<ParcelLocker> cache = new HashSet<>();
 
     private final DataSource dataSource;
 
@@ -207,10 +207,6 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
         this.cache.clear();
         this.cache.addAll(set);
         return set;
-    }
-
-    public Set<ParcelLocker> getCache() {
-        return this.cache;
     }
 
     public ParcelLocker getFromCache(UUID uuid) {

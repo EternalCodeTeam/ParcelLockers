@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 public class ParcelDatabaseService implements ParcelRepository {
 
-    private final Set<Parcel> cache = new HashSet<>();
+    public final Set<Parcel> cache = new HashSet<>();
 
     private final DataSource dataSource;
     private final ParcelLockerRepository parcelLockerRepository;
@@ -119,6 +119,8 @@ public class ParcelDatabaseService implements ParcelRepository {
                 statement.setString(8, newParcel.sender().toString());
                 statement.setString(9, oldParcel.uuid().toString());
                 statement.execute();
+                this.cache.remove(oldParcel);
+                this.cache.add(newParcel);
 
             }
             catch (SQLException e) {
@@ -130,6 +132,11 @@ public class ParcelDatabaseService implements ParcelRepository {
 
     @Override
     public CompletableFuture<Optional<Parcel>> findByUUID(UUID uuid) {
+
+        if (this.cache.stream().anyMatch(parcel -> parcel.uuid().equals(uuid))) {
+            return CompletableFuture.completedFuture(this.cache.stream().filter(parcel -> parcel.uuid().equals(uuid)).findFirst());
+        }
+
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = this.dataSource.getConnection();
             PreparedStatement statement = connection.prepareStatement("SELECT * FROM `parcels` WHERE `uuid` = ?")) {
@@ -333,10 +340,6 @@ public class ParcelDatabaseService implements ParcelRepository {
                 throw new ParcelLockersException(e);
             }
         }).orTimeout(5, TimeUnit.SECONDS);
-    }
-
-    public Set<Parcel> getCache() {
-        return this.cache;
     }
 
     public Parcel getFromCache(UUID uuid) {

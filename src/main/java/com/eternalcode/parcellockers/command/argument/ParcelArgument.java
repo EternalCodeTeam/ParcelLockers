@@ -14,21 +14,21 @@ import java.util.UUID;
 @ArgumentName("parcel")
 public class ParcelArgument implements OneArgument<Parcel> {
 
-    private final ParcelDatabaseService cache;
+    private final ParcelDatabaseService databaseService;
 
     public ParcelArgument(ParcelDatabaseService cache) {
-        this.cache = cache;
+        this.databaseService = cache;
     }
 
     @Override
     public Result<Parcel, ?> parse(LiteInvocation invocation, String argument) {
-        return Result.ok(this.cache.getFromCache(UUID.fromString(argument)));
+        return Result.ok(this.databaseService.getFromCache(UUID.fromString(argument)));
     }
 
 
     @Override
     public List<Suggestion> suggest(LiteInvocation invocation) {
-        return this.cache.getCache().stream()
+        return this.databaseService.cache.stream()
                 .map(Parcel::uuid)
                 .map(UUID::toString)
                 .map(Suggestion::of)
