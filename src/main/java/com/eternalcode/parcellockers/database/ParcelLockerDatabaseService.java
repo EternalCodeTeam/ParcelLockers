@@ -110,7 +110,7 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
                             Position.parse(rs.getString("position"))
                     );
                 }
-                this.getCache().add(parcelLocker);
+                this.cache.add(parcelLocker);
                 return Optional.ofNullable(parcelLocker);
             }
             catch (SQLException e) {
