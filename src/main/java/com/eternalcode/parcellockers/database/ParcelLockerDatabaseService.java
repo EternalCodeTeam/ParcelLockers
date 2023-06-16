@@ -64,7 +64,7 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
                 statement.setString(2, parcelLocker.description());
                 statement.setString(3, parcelLocker.position().toString());
                 statement.execute();
-                this.getCache().add(parcelLocker);
+                this.cache.add(parcelLocker);
             }
             catch (SQLException e) {
                 Sentry.captureException(e);
