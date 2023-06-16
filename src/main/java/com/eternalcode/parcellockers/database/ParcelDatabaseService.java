@@ -324,7 +324,7 @@ public class ParcelDatabaseService implements ParcelRepository {
                     );
                     parcels.add(parcel);
                 }
-                this.getCache().addAll(parcels);
+                this.cache.addAll(parcels);
                 return parcels;
 
             }
