@@ -71,7 +71,7 @@ dependencies {
     implementation("org.panda-lang:panda-utilities:0.5.2-alpha")
 
     // errorprone
-    errorprone("com.google.errorprone:error_prone_core:2.19.1")
+    errorprone("com.google.errorprone:error_prone_core:2.20.0")
 }
 
 java {
