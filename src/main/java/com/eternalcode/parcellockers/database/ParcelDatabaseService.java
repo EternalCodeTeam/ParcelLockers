@@ -12,6 +12,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -21,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 public class ParcelDatabaseService implements ParcelRepository {
 
-    public final Set<Parcel> cache = new HashSet<>();
+    private final Set<Parcel> cache = new HashSet<>();
 
     private final DataSource dataSource;
     private final ParcelLockerRepository parcelLockerRepository;
@@ -347,5 +348,9 @@ public class ParcelDatabaseService implements ParcelRepository {
                 .filter(parcel -> parcel.uuid().equals(uuid))
                 .findFirst()
                 .orElse(null);
+    }
+
+    public Set<Parcel> cache() {
+        return Collections.unmodifiableSet(this.cache);
     }
 }

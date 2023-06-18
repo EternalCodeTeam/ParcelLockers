@@ -28,7 +28,7 @@ public class ParcelArgument implements OneArgument<Parcel> {
 
     @Override
     public List<Suggestion> suggest(LiteInvocation invocation) {
-        return this.databaseService.cache.stream()
+        return this.databaseService.cache().stream()
                 .map(Parcel::uuid)
                 .map(UUID::toString)
                 .map(Suggestion::of)
