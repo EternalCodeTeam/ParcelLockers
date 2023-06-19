@@ -12,7 +12,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -21,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 public class ParcelLockerDatabaseService implements ParcelLockerRepository {
 
-    private final Set<ParcelLocker> cache = new HashSet<>();
+    private final Map<UUID, ParcelLocker> cache = new HashMap<>();
 
     private final DataSource dataSource;
 
@@ -65,7 +67,7 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
                 statement.setString(2, parcelLocker.description());
                 statement.setString(3, parcelLocker.position().toString());
                 statement.execute();
-                this.cache.add(parcelLocker);
+                this.cache.put(parcelLocker.uuid(), parcelLocker);
             }
             catch (SQLException e) {
                 Sentry.captureException(e);
@@ -111,7 +113,7 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
                             Position.parse(rs.getString("position"))
                     );
                 }
-                this.cache.add(parcelLocker);
+                this.cache.put(parcelLocker.uuid(), parcelLocker);
                 return Optional.ofNullable(parcelLocker);
             }
             catch (SQLException e) {
@@ -140,7 +142,7 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
                             Position.parse(rs.getString("position"))
                     );
                 }
-                this.cache.add(parcelLocker);
+                this.cache.put(parcelLocker.uuid(), parcelLocker);
                 return Optional.ofNullable(parcelLocker);
             }
             catch (SQLException e) {
@@ -160,7 +162,7 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
             ) {
                 statement.setString(1, uuid.toString());
                 statement.execute();
-                this.cache.removeIf(parcelLocker -> parcelLocker.uuid().equals(uuid));
+                this.cache.remove(uuid);
             }
             catch (SQLException e) {
                 Sentry.captureException(e);
@@ -206,18 +208,15 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
             set.add(parcelLocker);
         }
         this.cache.clear();
-        this.cache.addAll(set);
+        set.forEach(parcelLocker -> this.cache.put(parcelLocker.uuid(), parcelLocker));
         return set;
     }
 
     public ParcelLocker getFromCache(UUID uuid) {
-        return this.cache.stream()
-                .filter(parcelLocker -> parcelLocker.uuid().equals(uuid))
-                .findFirst()
-                .orElse(null);
+        return this.cache.get(uuid);
     }
 
-    public Set<ParcelLocker> cache() {
-        return Collections.unmodifiableSet(this.cache);
+    public Map<UUID, ParcelLocker> cache() {
+        return Collections.unmodifiableMap(this.cache);
     }
 }

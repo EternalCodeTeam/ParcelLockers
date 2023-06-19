@@ -13,7 +13,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -22,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 public class ParcelDatabaseService implements ParcelRepository {
 
-    private final Set<Parcel> cache = new HashSet<>();
+    private final Map<UUID, Parcel> cache = new HashMap<>();
 
     private final DataSource dataSource;
     private final ParcelLockerRepository parcelLockerRepository;
@@ -83,8 +85,7 @@ public class ParcelDatabaseService implements ParcelRepository {
                 statement.setString(8, parcel.destinationLocker().toString());
                 statement.setString(9, parcel.sender().toString());
                 statement.execute();
-               this.cache.add(parcel);
-
+                this.cache.put(parcel.uuid(), parcel);
             }
             catch (SQLException e) {
                 Sentry.captureException(e);
@@ -120,8 +121,8 @@ public class ParcelDatabaseService implements ParcelRepository {
                 statement.setString(8, newParcel.sender().toString());
                 statement.setString(9, oldParcel.uuid().toString());
                 statement.execute();
-                this.cache.remove(oldParcel);
-                this.cache.add(newParcel);
+                this.cache.remove(oldParcel.uuid());
+                this.cache.put(newParcel.uuid(), newParcel);
 
             }
             catch (SQLException e) {
@@ -134,8 +135,8 @@ public class ParcelDatabaseService implements ParcelRepository {
     @Override
     public CompletableFuture<Optional<Parcel>> findByUUID(UUID uuid) {
 
-        if (this.cache.stream().anyMatch(parcel -> parcel.uuid().equals(uuid))) {
-            return CompletableFuture.completedFuture(this.cache.stream().filter(parcel -> parcel.uuid().equals(uuid)).findFirst());
+        if (this.cache.containsKey(uuid)) {
+            return CompletableFuture.completedFuture(Optional.ofNullable(this.cache.get(uuid)));
         }
 
         return CompletableFuture.supplyAsync(() -> {
@@ -157,7 +158,7 @@ public class ParcelDatabaseService implements ParcelRepository {
                             UUID.fromString(rs.getString("entryLocker")),
                             UUID.fromString(rs.getString("destinationLocker"))
                     );
-                    this.cache.add(parcel);
+                    this.cache.put(parcel.uuid(), parcel);
                 }
                 return Optional.ofNullable(parcel);
             }
@@ -192,7 +193,7 @@ public class ParcelDatabaseService implements ParcelRepository {
                             UUID.fromString(rs.getString("entryLocker")),
                             UUID.fromString(rs.getString("destinationLocker"))
                     );
-                    this.cache.add(parcel);
+                    this.cache.put(parcel.uuid(), parcel);
                     parcels.add(parcel);
                 }
                 return parcels;
@@ -231,7 +232,7 @@ public class ParcelDatabaseService implements ParcelRepository {
                             UUID.fromString(rs.getString("destinationLocker"))
                     );
                     parcels.add(parcel);
-                    this.cache.add(parcel);
+                    this.cache.put(parcel.uuid(), parcel);
                 }
                 return parcels;
 
@@ -269,7 +270,7 @@ public class ParcelDatabaseService implements ParcelRepository {
                     parcels.add(parcel);
                 }
                 this.cache.clear();
-                this.cache.addAll(parcels);
+                parcels.forEach(parcel -> this.cache.put(parcel.uuid(), parcel));
                 return parcels;
 
             }
@@ -295,7 +296,7 @@ public class ParcelDatabaseService implements ParcelRepository {
             ) {
                 statement.setString(1, uuid.toString());
                 statement.execute();
-                this.cache.removeIf(parcel -> parcel.uuid().equals(uuid));
+                this.cache.remove(uuid);
 
             }
             catch (SQLException e) {
@@ -332,7 +333,7 @@ public class ParcelDatabaseService implements ParcelRepository {
                     );
                     parcels.add(parcel);
                 }
-                this.cache.addAll(parcels);
+                parcels.forEach(parcel -> this.cache.put(parcel.uuid(), parcel));
                 return parcels;
 
             }
@@ -344,13 +345,10 @@ public class ParcelDatabaseService implements ParcelRepository {
     }
 
     public Parcel getFromCache(UUID uuid) {
-        return this.cache.stream()
-                .filter(parcel -> parcel.uuid().equals(uuid))
-                .findFirst()
-                .orElse(null);
+        return this.cache.get(uuid);
     }
 
-    public Set<Parcel> cache() {
-        return Collections.unmodifiableSet(this.cache);
+    public Map<UUID, Parcel> cache() {
+        return Collections.unmodifiableMap(this.cache);
     }
 }
