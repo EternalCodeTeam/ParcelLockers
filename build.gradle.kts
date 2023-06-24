@@ -17,7 +17,6 @@ description =
 repositories {
     gradlePluginPortal()
     mavenCentral()
-    mavenLocal()
 
     maven { url = uri("https://repo.panda-lang.org/releases") }
     maven { url = uri("https://hub.spigotmc.org/nexus/content/repositories/snapshots/") }
