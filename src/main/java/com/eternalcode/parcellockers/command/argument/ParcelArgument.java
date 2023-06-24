@@ -22,7 +22,7 @@ public class ParcelArgument implements OneArgument<Parcel> {
 
     @Override
     public Result<Parcel, ?> parse(LiteInvocation invocation, String argument) {
-        Parcel parcel = this.databaseService.getFromCache(UUID.fromString(argument));
+        Parcel parcel = this.databaseService.findParcel(UUID.fromString(argument)).orElse(null);
         if (parcel == null) {
             return Result.error();
         }
