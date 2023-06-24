@@ -52,7 +52,7 @@ dependencies {
 
     // metrics and sentry
     implementation("org.bstats:bstats-bukkit:3.0.2")
-    implementation("io.sentry:sentry:6.23.0")
+    implementation("io.sentry:sentry:6.24.0")
 
     // database
     implementation("com.zaxxer:HikariCP:5.0.1")
