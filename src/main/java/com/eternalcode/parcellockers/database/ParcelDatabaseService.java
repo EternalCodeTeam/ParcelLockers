@@ -3,6 +3,8 @@ package com.eternalcode.parcellockers.database;
 import com.eternalcode.parcellockers.exception.ParcelLockersException;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
+import com.eternalcode.parcellockers.parcel.repository.ParcelPage;
+import com.eternalcode.parcellockers.parcel.repository.ParcelPageResult;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import io.sentry.Sentry;
 
@@ -242,43 +244,6 @@ public class ParcelDatabaseService implements ParcelRepository {
     }
 
     @Override
-    public CompletableFuture<Set<Parcel>> findAll() {
-        return CompletableFuture.supplyAsync(() -> {
-            try (Connection connection = this.dataSource.getConnection();
-                 PreparedStatement statement = connection.prepareStatement(
-                         "SELECT * FROM `parcels`"
-                 )
-            ) {
-                Set<Parcel> parcels = new HashSet<>();
-                ResultSet rs = statement.executeQuery();
-                while (rs.next()) {
-                    Parcel parcel = new Parcel(
-                            UUID.fromString(rs.getString("uuid")),
-                            UUID.fromString(rs.getString("sender")),
-                            rs.getString("name"),
-                            rs.getString("description"),
-                            rs.getBoolean("priority"),
-                            new HashSet<>(),
-                            UUID.fromString(rs.getString("receiver")),
-                            ParcelSize.valueOf(rs.getString("size")),
-                            UUID.fromString(rs.getString("entryLocker")),
-                            UUID.fromString(rs.getString("destinationLocker"))
-                    );
-                    parcels.add(parcel);
-                }
-                this.cache.clear();
-                parcels.forEach(parcel -> this.cache.put(parcel.uuid(), parcel));
-                return parcels;
-
-            }
-            catch (SQLException e) {
-                Sentry.captureException(e);
-                throw new ParcelLockersException(e);
-            }
-        }).orTimeout(5, TimeUnit.SECONDS);
-    }
-
-    @Override
     public CompletableFuture<Void> remove(Parcel parcel) {
         return this.remove(parcel.uuid());
     }
@@ -304,35 +269,43 @@ public class ParcelDatabaseService implements ParcelRepository {
     }
 
     @Override
-    public CompletableFuture<Set<Parcel>> findPage(int page, int pageSize) {
+    public CompletableFuture<ParcelPageResult> findPage(ParcelPage page) {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = this.dataSource.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
-                         "SELECT * FROM `parcels` LIMIT ? OFFSET ?"
+                     "SELECT * FROM `parcels` LIMIT ? OFFSET ?"
                  )
             ) {
-                statement.setInt(1, pageSize);
-                statement.setInt(2, page * pageSize);
+                statement.setInt(1, page.getLimit());
+                statement.setInt(2, page.getOffset());
                 Set<Parcel> parcels = new HashSet<>();
                 ResultSet rs = statement.executeQuery();
                 while (rs.next()) {
                     Parcel parcel = new Parcel(
-                            UUID.fromString(rs.getString("uuid")),
-                            UUID.fromString(rs.getString("sender")),
-                            rs.getString("name"),
-                            rs.getString("description"),
-                            rs.getBoolean("priority"),
-                            new HashSet<>(),
-                            UUID.fromString(rs.getString("receiver")),
-                            ParcelSize.valueOf(rs.getString("size")),
-                            UUID.fromString(rs.getString("entryLocker")),
-                            UUID.fromString(rs.getString("destinationLocker"))
+                        UUID.fromString(rs.getString("uuid")),
+                        UUID.fromString(rs.getString("sender")),
+                        rs.getString("name"),
+                        rs.getString("description"),
+                        rs.getBoolean("priority"),
+                        new HashSet<>(),
+                        UUID.fromString(rs.getString("receiver")),
+                        ParcelSize.valueOf(rs.getString("size")),
+                        UUID.fromString(rs.getString("entryLocker")),
+                        UUID.fromString(rs.getString("destinationLocker"))
                     );
                     parcels.add(parcel);
                 }
                 parcels.forEach(parcel -> this.cache.put(parcel.uuid(), parcel));
-                return parcels;
 
+                try (PreparedStatement statement1 = connection.prepareStatement(
+                    "SELECT * FROM `parcels` LIMIT 1 OFFSET ?"
+                )) {
+                    statement1.setInt(1, page.getLimit() + page.getOffset());
+                    ResultSet rs1 = statement1.executeQuery();
+                    boolean hasNext = rs1.next();
+
+                    return new ParcelPageResult(parcels, hasNext);
+                }
             }
             catch (SQLException e) {
                 Sentry.captureException(e);

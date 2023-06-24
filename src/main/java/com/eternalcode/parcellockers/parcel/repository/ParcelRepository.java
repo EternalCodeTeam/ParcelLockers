@@ -19,11 +19,10 @@ public interface ParcelRepository {
 
     CompletableFuture<Set<Parcel>> findByReceiver(UUID receiver);
 
-    CompletableFuture<Set<Parcel>> findAll();
-
     CompletableFuture<Void> remove(Parcel parcel);
 
     CompletableFuture<Void> remove(UUID uuid);
 
-    CompletableFuture<Set<Parcel>> findPage(int page, int pageSize);
+    CompletableFuture<ParcelPageResult> findPage(ParcelPage page);
+
 }

@@ -2,13 +2,15 @@ package com.eternalcode.parcellockers.gui;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.parcel.Parcel;
+import com.eternalcode.parcellockers.parcel.repository.ParcelPage;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
-import com.eternalcode.parcellockers.parcellocker.ParcelLocker;
 import com.eternalcode.parcellockers.parcellocker.repository.ParcelLockerRepository;
+import dev.triumphteam.gui.builder.item.ItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.Material;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -17,6 +19,7 @@ import panda.utilities.text.Formatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public class ParcelListGUI {
 
@@ -30,6 +33,9 @@ public class ParcelListGUI {
     private final ParcelRepository parcelRepository;
     private final ParcelLockerRepository parcelLockerRepository;
 
+    private static final int WIDTH = 7;
+    private static final int HEIGHT = 4;
+    private static final ParcelPage FIRST_PAGE = new ParcelPage(0, WIDTH * HEIGHT);
 
     public ParcelListGUI(Plugin plugin, Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelRepository parcelRepository, ParcelLockerRepository parcelLockerRepository) {
         this.plugin = plugin;
@@ -41,11 +47,15 @@ public class ParcelListGUI {
     }
 
     public void showParcelListGUI(Player player) {
+        this.showParcelListGUI(player, FIRST_PAGE);
+    }
+
+    private void showParcelListGUI(Player player, ParcelPage page) {
 
         GuiItem parcelItem = this.config.guiSettings.parcelItem.toGuiItem(this.miniMessage);
         GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
         GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem(this.miniMessage);
-        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage);
+        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage, event -> player.closeInventory());
 
         PaginatedGui gui = Gui.paginated()
                 .title(this.miniMessage.deserialize(this.config.guiSettings.parcelListGuiTitle))
@@ -61,8 +71,13 @@ public class ParcelListGUI {
             gui.setItem(slot, backgroundItem);
         }
 
-        this.parcelRepository.findAll().whenComplete((parcels, throwable) -> {
-            for (Parcel parcel : parcels) {
+        this.parcelRepository.findPage(page).whenComplete((result, throwable) -> {
+            if (result.parcels().isEmpty() && page.hasPrevious()) {
+                this.showParcelListGUI(player, page.previous());
+                return;
+            }
+
+            for (Parcel parcel : result.parcels()) {
                 List<String> newLore = this.replaceParcelPlaceholders(parcel, parcelItem.getItemStack().getItemMeta().getLore());
                 parcelItem.getItemStack().getItemMeta().setLore(newLore);
 
@@ -70,6 +85,15 @@ public class ParcelListGUI {
             }
 
             gui.setItem(49, closeItem);
+
+            if (result.hasNextPage()) {
+                gui.setItem(51, ItemBuilder.from(Material.ARROW).asGuiItem(event -> this.showParcelListGUI(player, page.next())));
+            }
+
+            if (page.hasPrevious()) {
+                gui.setItem(47, ItemBuilder.from(Material.ARROW).asGuiItem(event -> this.showParcelListGUI(player, page.previous())));
+            }
+
             this.server.getScheduler().runTask(this.plugin, () -> gui.open(player));
         });
 
@@ -80,7 +104,6 @@ public class ParcelListGUI {
             return Collections.emptyList();
         }
 
-        ParcelLocker destination = this.parcelLockerRepository.findByUUID(parcel.destinationLocker()).join().get();
         Formatter formatter = new Formatter()
             .register("{UUID}", parcel.uuid().toString())
             .register("{NAME}", parcel.name())
@@ -89,20 +112,27 @@ public class ParcelListGUI {
             .register("{SIZE}", parcel.size().toString())
             .register("{PRIORITY}", parcel.priority() ? this.miniMessage.deserialize("&aYes") : this.miniMessage.deserialize("&cNo"))
             .register("{DESCRIPTION}", parcel.description())
-            .register("{POSITION_X}", destination.position().x())
-            .register("{POSITION_Y}", destination.position().y())
-            .register("{POSITION_Z}", destination.position().z())
             .register("{RECIPIENTS}", parcel.recipients().stream()
-                    .map(this.server::getPlayer)
-                    .map(Player::getName)
-                    .toList()
-                    .toString());
+                .map(this.server::getPlayer)
+                .filter(Objects::nonNull)
+                .map(Player::getName)
+                .toList()
+                .toString()
+            );
+
+        this.parcelLockerRepository.findByUUID(parcel.destinationLocker()).join().ifPresent(locker -> formatter
+            .register("{POSITION_X}", locker.position().x())
+            .register("{POSITION_Y}", locker.position().y())
+            .register("{POSITION_Z}", locker.position().z())
+        );
+
         List<String> newLore = new ArrayList<>();
 
         for (String line : lore) {
             formatter.format(line);
             newLore.add(line);
         }
+
         return newLore;
     }
 
