@@ -6,9 +6,9 @@ import com.zaxxer.hikari.HikariDataSource;
 
 import java.io.File;
 
-public class DataSourceBuilder {
+public class DataSourceFactory {
 
-    public HikariDataSource buildHikariDataSource(PluginConfiguration databaseConfig, File dataFolder) {
+    public static HikariDataSource buildHikariDataSource(PluginConfiguration databaseConfig, File dataFolder) {
         HikariConfig hikariConfig = new HikariConfig();
 
         hikariConfig.addDataSourceProperty("cachePrepStmts", "true");

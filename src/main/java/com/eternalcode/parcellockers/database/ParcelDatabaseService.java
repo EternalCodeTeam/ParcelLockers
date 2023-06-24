@@ -4,7 +4,6 @@ import com.eternalcode.parcellockers.exception.ParcelLockersException;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
-import com.eternalcode.parcellockers.parcellocker.repository.ParcelLockerRepository;
 import io.sentry.Sentry;
 
 import javax.sql.DataSource;
@@ -27,11 +26,9 @@ public class ParcelDatabaseService implements ParcelRepository {
     private final Map<UUID, Parcel> cache = new HashMap<>();
 
     private final DataSource dataSource;
-    private final ParcelLockerRepository parcelLockerRepository;
 
-    public ParcelDatabaseService(DataSource dataSource, ParcelLockerRepository parcelLockerRepository) {
+    public ParcelDatabaseService(DataSource dataSource) {
         this.dataSource = dataSource;
-        this.parcelLockerRepository = parcelLockerRepository;
 
         this.initTable();
     }

@@ -81,22 +81,22 @@ public class ParcelListGUI {
         }
 
         ParcelLocker destination = this.parcelLockerRepository.findByUUID(parcel.destinationLocker()).join().get();
-        Formatter formatter = new Formatter();
-        formatter.register("{UUID}", parcel.uuid().toString());
-        formatter.register("{NAME}", parcel.name());
-        formatter.register("{SENDER}", this.server.getPlayer(parcel.sender()).getName());
-        formatter.register("{RECEIVER}", this.server.getPlayer(parcel.receiver()).getName());
-        formatter.register("{SIZE}", parcel.size().toString());
-        formatter.register("{PRIORITY}", parcel.priority() ? this.miniMessage.deserialize("&aYes") : this.miniMessage.deserialize("&cNo"));
-        formatter.register("{DESCRIPTION}", parcel.description());
-        formatter.register("{POSITION_X}", destination.position().x());
-        formatter.register("{POSITION_Y}", destination.position().y());
-        formatter.register("{POSITION_Z}", destination.position().z());
-        formatter.register("{RECIPIENTS}", parcel.recipients().stream()
-                .map(this.server::getPlayer)
-                .map(Player::getName)
-                .toList()
-                .toString());
+        Formatter formatter = new Formatter()
+            .register("{UUID}", parcel.uuid().toString())
+            .register("{NAME}", parcel.name())
+            .register("{SENDER}", this.server.getPlayer(parcel.sender()).getName())
+            .register("{RECEIVER}", this.server.getPlayer(parcel.receiver()).getName())
+            .register("{SIZE}", parcel.size().toString())
+            .register("{PRIORITY}", parcel.priority() ? this.miniMessage.deserialize("&aYes") : this.miniMessage.deserialize("&cNo"))
+            .register("{DESCRIPTION}", parcel.description())
+            .register("{POSITION_X}", destination.position().x())
+            .register("{POSITION_Y}", destination.position().y())
+            .register("{POSITION_Z}", destination.position().z())
+            .register("{RECIPIENTS}", parcel.recipients().stream()
+                    .map(this.server::getPlayer)
+                    .map(Player::getName)
+                    .toList()
+                    .toString());
         List<String> newLore = new ArrayList<>();
 
         for (String line : lore) {

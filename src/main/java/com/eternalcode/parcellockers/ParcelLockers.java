@@ -7,7 +7,7 @@ import com.eternalcode.parcellockers.command.handler.InvalidUsage;
 import com.eternalcode.parcellockers.command.handler.PermissionMessage;
 import com.eternalcode.parcellockers.configuration.ConfigurationManager;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
-import com.eternalcode.parcellockers.database.DataSourceBuilder;
+import com.eternalcode.parcellockers.database.DataSourceFactory;
 import com.eternalcode.parcellockers.database.ParcelDatabaseService;
 import com.eternalcode.parcellockers.database.ParcelLockerDatabaseService;
 import com.eternalcode.parcellockers.gui.MainGUI;
@@ -72,10 +72,10 @@ public final class ParcelLockers extends JavaPlugin {
             });
         }
 
-        HikariDataSource dataSource = new DataSourceBuilder().buildHikariDataSource(config, this.getDataFolder());
+        HikariDataSource dataSource = DataSourceFactory.buildHikariDataSource(config, this.getDataFolder());
 
         ParcelLockerRepository parcelLockerRepository = new ParcelLockerDatabaseService(dataSource);
-        ParcelDatabaseService parcelRepository = new ParcelDatabaseService(dataSource, parcelLockerRepository);
+        ParcelDatabaseService parcelRepository = new ParcelDatabaseService(dataSource);
 
         ParcelManager parcelManager = new ParcelManager(this, parcelRepository, parcelLockerRepository);
         ParcelLockerManager parcelLockerManager = new ParcelLockerManager(parcelLockerRepository);
