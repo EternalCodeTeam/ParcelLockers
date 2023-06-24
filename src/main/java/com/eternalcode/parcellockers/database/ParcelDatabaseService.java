@@ -345,7 +345,7 @@ public class ParcelDatabaseService implements ParcelRepository {
     }
 
     public Optional<Parcel> findParcel(UUID uuid) {
-        return this.cache.get(uuid);
+        return Optional.ofNullable(this.cache.get(uuid));
     }
 
     public Map<UUID, Parcel> cache() {
