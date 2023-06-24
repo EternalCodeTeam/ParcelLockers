@@ -212,7 +212,7 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
         return set;
     }
 
-    public ParcelLocker getFromCache(UUID uuid) {
+    public Optional<ParcelLocker> findLocker(UUID uuid) {
         return this.cache.get(uuid);
     }
 
