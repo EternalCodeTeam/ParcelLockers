@@ -52,7 +52,7 @@ dependencies {
 
     // metrics and sentry
     implementation("org.bstats:bstats-bukkit:3.0.2")
-    implementation("io.sentry:sentry:6.23.0")
+    implementation("io.sentry:sentry:6.24.0")
 
     // lombok
     compileOnly("org.projectlombok:lombok:1.18.28")
