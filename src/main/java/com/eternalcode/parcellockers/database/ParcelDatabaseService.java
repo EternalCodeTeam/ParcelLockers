@@ -135,7 +135,7 @@ public class ParcelDatabaseService implements ParcelRepository {
     public CompletableFuture<Optional<Parcel>> findByUUID(UUID uuid) {
 
         if (this.cache.containsKey(uuid)) {
-            return CompletableFuture.completedFuture(Optional.ofNullable(this.cache.get(uuid)));
+            return CompletableFuture.completedFuture(Optional.of(this.cache.get(uuid)));
         }
 
         return CompletableFuture.supplyAsync(() -> {
