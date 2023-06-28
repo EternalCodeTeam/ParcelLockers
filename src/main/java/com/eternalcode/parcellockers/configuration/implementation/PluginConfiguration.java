@@ -133,6 +133,18 @@ public class PluginConfiguration implements ReloadableConfig {
                         )
                 )
                 .setType(Material.CHEST_MINECART);
+
+        @Description({" ", "# The item of the previous page button"})
+        public ConfigItem previousPageItem = new ConfigItem()
+                .setName("&bPrevious page")
+                .setLore(List.of("&bClick to go to the previous page."))
+                .setType(Material.ARROW);
+
+        @Description({" ", "# The item of the next page button"})
+        public ConfigItem nextPageItem = new ConfigItem()
+                .setName("&bNext page")
+                .setLore(List.of("&bClick to go to the next page."))
+                .setType(Material.ARROW);
     }
 
     @Override

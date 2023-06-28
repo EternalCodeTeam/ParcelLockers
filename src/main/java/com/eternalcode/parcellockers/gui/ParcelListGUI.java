@@ -5,12 +5,10 @@ import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.repository.ParcelPage;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.parcellocker.repository.ParcelLockerRepository;
-import dev.triumphteam.gui.builder.item.ItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Material;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -56,6 +54,8 @@ public class ParcelListGUI {
         GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
         GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem(this.miniMessage);
         GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage, event -> player.closeInventory());
+        GuiItem previousPageItem = this.config.guiSettings.previousPageItem.toGuiItem(this.miniMessage);
+        GuiItem nextPageItem = this.config.guiSettings.nextPageItem.toGuiItem(this.miniMessage);
 
         PaginatedGui gui = Gui.paginated()
                 .title(this.miniMessage.deserialize(this.config.guiSettings.parcelListGuiTitle))
@@ -87,11 +87,11 @@ public class ParcelListGUI {
             gui.setItem(49, closeItem);
 
             if (result.hasNextPage()) {
-                gui.setItem(51, ItemBuilder.from(Material.ARROW).asGuiItem(event -> this.showParcelListGUI(player, page.next())));
+                gui.setItem(51, nextPageItem);
             }
 
             if (page.hasPrevious()) {
-                gui.setItem(47, ItemBuilder.from(Material.ARROW).asGuiItem(event -> this.showParcelListGUI(player, page.previous())));
+                gui.setItem(47, previousPageItem);
             }
 
             this.server.getScheduler().runTask(this.plugin, () -> gui.open(player));
