@@ -76,18 +76,18 @@ public class SentParcelsGUI {
         }
 
         ParcelLocker destination = this.parcelLockerRepository.findByUUID(parcel.destinationLocker()).join().get();
-        Formatter formatter = new Formatter();
-        formatter.register("{UUID}", parcel.uuid().toString());
-        formatter.register("{NAME}", parcel.name());
-        formatter.register("{SENDER}", this.server.getPlayer(parcel.sender()).getName());
-        formatter.register("{RECEIVER}", this.server.getPlayer(parcel.receiver()).getName());
-        formatter.register("{SIZE}", parcel.size().toString());
-        formatter.register("{PRIORITY}", parcel.priority() ? this.miniMessage.deserialize("&aYes") : this.miniMessage.deserialize("&cNo"));
-        formatter.register("{DESCRIPTION}", parcel.description());
-        formatter.register("{POSITION_X}", String.valueOf(destination.position().x()));
-        formatter.register("{POSITION_Y}", String.valueOf(destination.position().y()));
-        formatter.register("{POSITION_Z}", String.valueOf(destination.position().z()));
-        formatter.register("{RECIPIENTS}", parcel.recipients().stream()
+        Formatter formatter = new Formatter()
+            .register("{UUID}", parcel.uuid().toString())
+            .register("{NAME}", parcel.name())
+            .register("{SENDER}", this.server.getPlayer(parcel.sender()).getName())
+            .register("{RECEIVER}", this.server.getPlayer(parcel.receiver()).getName())
+            .register("{SIZE}", parcel.size().toString())
+            .register("{PRIORITY}", parcel.priority() ? this.miniMessage.deserialize("&aYes") : this.miniMessage.deserialize("&cNo"))
+            .register("{DESCRIPTION}", parcel.description())
+            .register("{POSITION_X}", String.valueOf(destination.position().x()))
+            .register("{POSITION_Y}", String.valueOf(destination.position().y()))
+            .register("{POSITION_Z}", String.valueOf(destination.position().z()))
+            .register("{RECIPIENTS}", parcel.recipients().stream()
                 .map(Bukkit::getPlayer)
                 .map(Player::getName)
                 .toList()
