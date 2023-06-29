@@ -96,60 +96,12 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
 
     @Override
     public CompletableFuture<Optional<ParcelLocker>> findByUUID(UUID uuid) {
-        return CompletableFuture.supplyAsync(() -> {
-            try (Connection connection = this.dataSource.getConnection();
-                 PreparedStatement statement = connection.prepareStatement(
-                         "SELECT * FROM `parcellockers` WHERE `uuid` = ?;"
-                 )
-            ) {
-                statement.setString(1, uuid.toString());
-                ResultSet rs = statement.executeQuery();
-                ParcelLocker parcelLocker = null;
-
-                if (rs.next()) {
-                    parcelLocker = new ParcelLocker(
-                            UUID.fromString(rs.getString("uuid")),
-                            rs.getString("description"),
-                            Position.parse(rs.getString("position"))
-                    );
-                }
-                this.cache.put(parcelLocker.uuid(), parcelLocker);
-                return Optional.ofNullable(parcelLocker);
-            }
-            catch (SQLException e) {
-                Sentry.captureException(e);
-                throw new ParcelLockersException(e);
-            }
-        }).orTimeout(5, TimeUnit.SECONDS);
+        return this.findBy("uuid", uuid.toString());
     }
 
     @Override
     public CompletableFuture<Optional<ParcelLocker>> findByPosition(Position position) {
-        return CompletableFuture.supplyAsync(() -> {
-            try (Connection connection = this.dataSource.getConnection();
-                 PreparedStatement statement = connection.prepareStatement(
-                         "SELECT * FROM `parcelLockers` WHERE `position` = ?;"
-                 )
-            ) {
-                statement.setString(1, position.toString());
-                ResultSet rs = statement.executeQuery();
-                ParcelLocker parcelLocker = null;
-
-                if (rs.next()) {
-                    parcelLocker = new ParcelLocker(
-                            UUID.fromString(rs.getString("uuid")),
-                            rs.getString("description"),
-                            Position.parse(rs.getString("position"))
-                    );
-                }
-                this.cache.put(parcelLocker.uuid(), parcelLocker);
-                return Optional.ofNullable(parcelLocker);
-            }
-            catch (SQLException e) {
-                Sentry.captureException(e);
-                throw new ParcelLockersException(e);
-            }
-        }).orTimeout(5, TimeUnit.SECONDS);
+        return this.findBy("position", position.toString());
     }
 
     @Override
@@ -218,5 +170,33 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
 
     public Map<UUID, ParcelLocker> cache() {
         return Collections.unmodifiableMap(this.cache);
+    }
+
+    private CompletableFuture<Optional<ParcelLocker>> findBy(String column, String value) {
+        return CompletableFuture.supplyAsync(() -> {
+            try (Connection connection = this.dataSource.getConnection();
+                 PreparedStatement statement = connection.prepareStatement(
+                         "SELECT * FROM `parcelLockers` WHERE `" + column + "` = ?;"
+                 )
+            ) {
+                statement.setString(1, value);
+                ResultSet rs = statement.executeQuery();
+                ParcelLocker parcelLocker = null;
+
+                if (rs.next()) {
+                    parcelLocker = new ParcelLocker(
+                            UUID.fromString(rs.getString("uuid")),
+                            rs.getString("description"),
+                            Position.parse(rs.getString("position"))
+                    );
+                    this.cache.put(parcelLocker.uuid(), parcelLocker);
+                }
+                return Optional.ofNullable(parcelLocker);
+            }
+            catch (SQLException e) {
+                Sentry.captureException(e);
+                throw new ParcelLockersException(e);
+            }
+        }).orTimeout(5, TimeUnit.SECONDS);
     }
 }

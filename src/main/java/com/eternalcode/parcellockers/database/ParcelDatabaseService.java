@@ -141,25 +141,12 @@ public class ParcelDatabaseService implements ParcelRepository {
             PreparedStatement statement = connection.prepareStatement("SELECT * FROM `parcels` WHERE `uuid` = ?")) {
                 statement.setString(1, uuid.toString());
                 ResultSet rs = statement.executeQuery();
-                Parcel parcel = null;
-
                 if (rs.next()) {
-                    parcel = new Parcel(
-                            UUID.fromString(rs.getString("uuid")),
-                            UUID.fromString(rs.getString("sender")),
-                            rs.getString("name"),
-                            rs.getString("description"),
-                            rs.getBoolean("priority"),
-                            new HashSet<>(),
-                            UUID.fromString(rs.getString("receiver")),
-                            ParcelSize.valueOf(rs.getString("size")),
-                            UUID.fromString(rs.getString("entryLocker")),
-                            UUID.fromString(rs.getString("destinationLocker"))
-                    );
-
+                    Parcel parcel = this.createParcel(rs);
                     this.cache.put(parcel.uuid(), parcel);
+                    return Optional.of(parcel);
                 }
-                return Optional.ofNullable(parcel);
+                return Optional.<Parcel>empty();
             }
             catch (SQLException e) {
                 Sentry.captureException(e);
@@ -181,18 +168,7 @@ public class ParcelDatabaseService implements ParcelRepository {
                 ResultSet rs = statement.executeQuery();
                 Set<Parcel> parcels = new HashSet<>();
                 while (rs.next()) {
-                    Parcel parcel = new Parcel(
-                            UUID.fromString(rs.getString("uuid")),
-                            UUID.fromString(rs.getString("sender")),
-                            rs.getString("name"),
-                            rs.getString("description"),
-                            rs.getBoolean("priority"),
-                            new HashSet<>(),
-                            UUID.fromString(rs.getString("receiver")),
-                            ParcelSize.valueOf(rs.getString("size")),
-                            UUID.fromString(rs.getString("entryLocker")),
-                            UUID.fromString(rs.getString("destinationLocker"))
-                    );
+                    Parcel parcel = this.createParcel(rs);
                     this.cache.put(parcel.uuid(), parcel);
                     parcels.add(parcel);
                 }
@@ -204,6 +180,21 @@ public class ParcelDatabaseService implements ParcelRepository {
                 throw new ParcelLockersException(e);
             }
         }).orTimeout(5, TimeUnit.SECONDS);
+    }
+
+    private Parcel createParcel(ResultSet rs) throws SQLException {
+        return new Parcel(
+                UUID.fromString(rs.getString("uuid")),
+                UUID.fromString(rs.getString("sender")),
+                rs.getString("name"),
+                rs.getString("description"),
+                rs.getBoolean("priority"),
+                new HashSet<>(),
+                UUID.fromString(rs.getString("receiver")),
+                ParcelSize.valueOf(rs.getString("size")),
+                UUID.fromString(rs.getString("entryLocker")),
+                UUID.fromString(rs.getString("destinationLocker"))
+        );
     }
 
     @Override
@@ -219,18 +210,7 @@ public class ParcelDatabaseService implements ParcelRepository {
                 Set<Parcel> parcels = new HashSet<>();
 
                 while (rs.next()) {
-                    Parcel parcel = new Parcel(
-                            UUID.fromString(rs.getString("uuid")),
-                            UUID.fromString(rs.getString("sender")),
-                            rs.getString("name"),
-                            rs.getString("description"),
-                            rs.getBoolean("priority"),
-                            new HashSet<>(),
-                            UUID.fromString(rs.getString("receiver")),
-                            ParcelSize.valueOf(rs.getString("size")),
-                            UUID.fromString(rs.getString("entryLocker")),
-                            UUID.fromString(rs.getString("destinationLocker"))
-                    );
+                    Parcel parcel = this.createParcel(rs);
                     parcels.add(parcel);
                     this.cache.put(parcel.uuid(), parcel);
                 }
@@ -282,18 +262,7 @@ public class ParcelDatabaseService implements ParcelRepository {
                 Set<Parcel> parcels = new HashSet<>();
                 ResultSet rs = statement.executeQuery();
                 while (rs.next()) {
-                    Parcel parcel = new Parcel(
-                        UUID.fromString(rs.getString("uuid")),
-                        UUID.fromString(rs.getString("sender")),
-                        rs.getString("name"),
-                        rs.getString("description"),
-                        rs.getBoolean("priority"),
-                        new HashSet<>(),
-                        UUID.fromString(rs.getString("receiver")),
-                        ParcelSize.valueOf(rs.getString("size")),
-                        UUID.fromString(rs.getString("entryLocker")),
-                        UUID.fromString(rs.getString("destinationLocker"))
-                    );
+                    Parcel parcel = this.createParcel(rs);
                     parcels.add(parcel);
                 }
                 parcels.forEach(parcel -> this.cache.put(parcel.uuid(), parcel));
