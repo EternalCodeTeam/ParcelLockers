@@ -72,12 +72,12 @@ dependencies {
     // errorprone
     errorprone("com.google.errorprone:error_prone_core:2.20.0")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.3")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.3")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.3")
 
-    testImplementation("org.testcontainers:junit-jupiter:1.18.1")
-    testImplementation("org.testcontainers:mysql:1.18.1")
+    testImplementation("org.testcontainers:junit-jupiter:1.18.3")
+    testImplementation("org.testcontainers:mysql:1.18.3")
     testImplementation("mysql:mysql-connector-java:8.0.33")
 }
 
@@ -86,7 +86,7 @@ java {
 }
 
 checkstyle {
-    toolVersion = "10.12.0"
+    toolVersion = "10.12.1"
 
     configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
 
