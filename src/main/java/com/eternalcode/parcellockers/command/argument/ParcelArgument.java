@@ -1,49 +1,41 @@
 package com.eternalcode.parcellockers.command.argument;
 
+import com.eternalcode.parcellockers.database.ParcelDatabaseService;
 import com.eternalcode.parcellockers.parcel.Parcel;
-import com.eternalcode.parcellockers.parcel.ParcelRepositoryJdbcImpl;
 import dev.rollczi.litecommands.argument.ArgumentName;
 import dev.rollczi.litecommands.argument.simple.OneArgument;
 import dev.rollczi.litecommands.command.LiteInvocation;
 import dev.rollczi.litecommands.suggestion.Suggestion;
-import org.bukkit.ChatColor;
 import panda.std.Result;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 @ArgumentName("parcel")
 public class ParcelArgument implements OneArgument<Parcel> {
 
-    private final ParcelRepositoryJdbcImpl parcelRepository;
+    private final ParcelDatabaseService databaseService;
 
-    public ParcelArgument(ParcelRepositoryJdbcImpl parcelRepository) {
-        this.parcelRepository = parcelRepository;
+    public ParcelArgument(ParcelDatabaseService cache) {
+        this.databaseService = cache;
     }
 
     @Override
     public Result<Parcel, ?> parse(LiteInvocation invocation, String argument) {
-        CompletableFuture<Optional<Parcel>> parcel = this.parcelRepository.findByUuid(UUID.fromString(argument));
-        return parcel.whenComplete((optionalParcel, throwable) -> {
-            if (!optionalParcel.isPresent()) {
-                invocation.sender().sendMessage(ChatColor.RED + "Parcel not found");
-            }
-            if (throwable != null) {
-                throwable.printStackTrace();
-            }
-        }).thenApply(optionalParcel -> optionalParcel.map(Result::ok)
-                .orElse(Result.error("Something went wrong"))).join();
+        Parcel parcel = this.databaseService.findParcel(UUID.fromString(argument)).orElse(null);
+        
+        if (parcel == null) {
+            return Result.error();
+        }
+        return Result.ok(parcel);
     }
 
 
     @Override
     public List<Suggestion> suggest(LiteInvocation invocation) {
-        return this.parcelRepository.findAll().thenApply(parcels -> parcels.stream()
-                .map(Parcel::uuid)
+        return this.databaseService.cache().keySet().stream()
                 .map(UUID::toString)
                 .map(Suggestion::of)
-                .toList()).join();
+                .toList();
     }
 }

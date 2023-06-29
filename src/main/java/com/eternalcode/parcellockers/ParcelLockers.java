@@ -7,20 +7,20 @@ import com.eternalcode.parcellockers.command.handler.InvalidUsage;
 import com.eternalcode.parcellockers.command.handler.PermissionMessage;
 import com.eternalcode.parcellockers.configuration.ConfigurationManager;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
-import com.eternalcode.parcellockers.database.JdbcConnectionProvider;
+import com.eternalcode.parcellockers.database.DataSourceFactory;
+import com.eternalcode.parcellockers.database.ParcelDatabaseService;
+import com.eternalcode.parcellockers.database.ParcelLockerDatabaseService;
 import com.eternalcode.parcellockers.gui.MainGUI;
 import com.eternalcode.parcellockers.gui.ParcelListGUI;
-import com.eternalcode.parcellockers.manager.ParcelLockerManager;
-import com.eternalcode.parcellockers.manager.ParcelManager;
-import com.eternalcode.parcellockers.manager.UserManager;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.Parcel;
-import com.eternalcode.parcellockers.parcel.ParcelLockerRepositoryJdbcImpl;
-import com.eternalcode.parcellockers.parcel.ParcelRepositoryJdbcImpl;
+import com.eternalcode.parcellockers.parcel.ParcelManager;
+import com.eternalcode.parcellockers.parcellocker.ParcelLockerManager;
+import com.eternalcode.parcellockers.parcellocker.repository.ParcelLockerRepository;
 import com.eternalcode.parcellockers.updater.UpdaterService;
-import com.eternalcode.parcellockers.user.UserRepositoryJdbcImpl;
 import com.eternalcode.parcellockers.util.legacy.LegacyColorProcessor;
 import com.google.common.base.Stopwatch;
+import com.zaxxer.hikari.HikariDataSource;
 import dev.rollczi.litecommands.LiteCommands;
 import dev.rollczi.litecommands.bukkit.adventure.platform.LiteBukkitAdventurePlatformFactory;
 import dev.rollczi.litecommands.bukkit.tools.BukkitOnlyPlayerContextual;
@@ -36,6 +36,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public final class ParcelLockers extends JavaPlugin {
@@ -71,17 +72,16 @@ public final class ParcelLockers extends JavaPlugin {
             });
         }
 
-        JdbcConnectionProvider jdbcConnectionProvider = new JdbcConnectionProvider(config.settings.host, config.settings.port, config.settings.databaseName, config.settings.useSSL, config.settings.user, config.settings.password);
-        ParcelLockerRepositoryJdbcImpl parcelLockerRepository = ParcelLockerRepositoryJdbcImpl.create(jdbcConnectionProvider);
-        ParcelRepositoryJdbcImpl parcelRepository = ParcelRepositoryJdbcImpl.create(jdbcConnectionProvider);
-        UserRepositoryJdbcImpl userRepository = UserRepositoryJdbcImpl.create(jdbcConnectionProvider);
+        HikariDataSource dataSource = DataSourceFactory.buildHikariDataSource(config, this.getDataFolder());
 
-        ParcelManager parcelManager = new ParcelManager(parcelRepository, parcelLockerRepository);
+        ParcelLockerRepository parcelLockerRepository = new ParcelLockerDatabaseService(dataSource);
+        ParcelDatabaseService parcelRepository = new ParcelDatabaseService(dataSource);
+
+        ParcelManager parcelManager = new ParcelManager(this, parcelRepository, parcelLockerRepository);
         ParcelLockerManager parcelLockerManager = new ParcelLockerManager(parcelLockerRepository);
-        UserManager userManager = new UserManager(userRepository);
 
-        MainGUI mainGUI = new MainGUI(miniMessage, config, parcelRepository);
-        ParcelListGUI parcelListGUI = new ParcelListGUI(this.getServer(), miniMessage, config, parcelRepository);
+        MainGUI mainGUI = new MainGUI(this, this.getServer(), miniMessage, config, parcelRepository, parcelLockerRepository);
+        ParcelListGUI parcelListGUI = new ParcelListGUI(this, this.getServer(), miniMessage, config, parcelRepository, parcelLockerRepository);
 
         this.liteCommands = LiteBukkitAdventurePlatformFactory.builder(this.getServer(), "parcellockers", false, this.audiences, true)
                 .argument(Parcel.class, new ParcelArgument(parcelRepository))
@@ -96,10 +96,10 @@ public final class ParcelLockers extends JavaPlugin {
                 .register();
 
         new Metrics(this, 17677);
-        UpdaterService updater = new UpdaterService(this.getDescription());
+        new UpdaterService(this.getDescription());
 
         long millis = started.stop().elapsed(TimeUnit.MILLISECONDS);
-        this.getLogger().info("Successfully enabled ParcelLockers in " + millis + "ms");
+        this.getLogger().log(Level.INFO, "Successfully enabled ParcelLockers in {0}ms", millis);
     }
 
     @Override

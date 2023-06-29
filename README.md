@@ -23,7 +23,7 @@ ParcelLockers is at an very early stage of development, and you use it at your o
 # Building
 
 To build ParcelLockers execute this command using Gradle (Make sure you are using JDK 8 for maximum compatibility)
-[README.md](README.md)
+
 `./gradlew clean shadowJar`
 
 When you build it for the first time, it may take a little longer.
@@ -39,6 +39,22 @@ appropriate
 changes and then create a Pull Request.
 See [CONTRIBUTING.md](https://github.com/EternalCodeTeam/ParcelLockers/blob/master/.github/CONTRIBUTING.md) to find out
 more.
+
+## TODO
+- [ ] Add support for more databases (H2, PostgreSQL, MongoDB?)
+- [ ] Add translation system, more languages
+- [ ] Add delivery codes, so any person knowing the code can pick up the parcel
+- [ ] Add delivery time, so the parcel can be picked up only in a specific time
+- [ ] Rewrite database to ORMLite (far in future)
+- [ ] Add "business" logic
+- [ ] Rewrite Position class to use Integers instead of Doubles 
+- [ ] Finish GUIs
+- [ ] Add more GUIs (admin GUI, parcel create GUI, etc.)
+- [ ] Add Discord integration (bot, webhooks, etc...)
+- [ ] Add more commands
+- [x] Isolate cache into separate classes
+- [x] Extract database service methods into repositories (interfaces)
+- [x] Delete cyclic dependency (Parcel <-> ParcelLocker), switch to UUID instead of object references
 
 # License
 

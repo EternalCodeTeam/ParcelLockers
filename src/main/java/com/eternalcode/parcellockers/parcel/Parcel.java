@@ -1,9 +1,10 @@
 package com.eternalcode.parcellockers.parcel;
 
+import java.util.Set;
 import java.util.UUID;
 
 
-public record Parcel(UUID uuid, UUID sender, ParcelMeta meta) {
+public record Parcel(UUID uuid, UUID sender, String name, String description, boolean priority, Set<UUID> recipients, UUID receiver, ParcelSize size, UUID entryLocker, UUID destinationLocker) {
 
     public static Builder builder() {
         return new Builder();
@@ -13,10 +14,14 @@ public record Parcel(UUID uuid, UUID sender, ParcelMeta meta) {
 
         private UUID uuid;
         private UUID sender;
-        private ParcelMeta meta;
-
-        public Builder() {
-        }
+        private String name;
+        private String description;
+        private boolean priority;
+        private Set<UUID> recipients;
+        private UUID receiver;
+        private ParcelSize size;
+        private UUID entryLocker;
+        private UUID destinationLocker;
 
         public Builder uuid(UUID uuid) {
             this.uuid = uuid;
@@ -28,13 +33,49 @@ public record Parcel(UUID uuid, UUID sender, ParcelMeta meta) {
             return this;
         }
 
-        public Builder meta(ParcelMeta meta) {
-            this.meta = meta;
+        public Builder name(String name) {
+            this.name = name;
             return this;
         }
 
+        public Builder description(String description) {
+            this.description = description;
+            return this;
+        }
+
+        public Builder priority(boolean priority) {
+            this.priority = priority;
+            return this;
+        }
+
+        public Builder recipients(Set<UUID> recipients) {
+            this.recipients = recipients;
+            return this;
+        }
+
+        public Builder receiver(UUID receiver) {
+            this.receiver = receiver;
+            return this;
+        }
+
+        public Builder size(ParcelSize size) {
+            this.size = size;
+            return this;
+        }
+
+        public Builder entryLocker(UUID entryLocker) {
+            this.entryLocker = entryLocker;
+            return this;
+        }
+
+        public Builder destinationLocker(UUID destinationLocker) {
+            this.destinationLocker = destinationLocker;
+            return this;
+        }
+
+
         public Parcel build() {
-            return new Parcel(this.uuid, this.sender, this.meta);
+            return new Parcel(this.uuid, this.sender, this.name, this.description, this.priority, this.recipients, this.receiver, this.size, this.entryLocker, this.destinationLocker);
         }
     }
 }

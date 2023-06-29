@@ -2,39 +2,46 @@ package com.eternalcode.parcellockers.gui;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.parcel.Parcel;
-import com.eternalcode.parcellockers.parcel.ParcelMeta;
-import com.eternalcode.parcellockers.parcel.ParcelRepository;
-import dev.triumphteam.gui.builder.item.ItemBuilder;
+import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
+import com.eternalcode.parcellockers.parcellocker.ParcelLocker;
+import com.eternalcode.parcellockers.parcellocker.repository.ParcelLockerRepository;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.Server;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemFlag;
+import org.bukkit.plugin.Plugin;
+import panda.utilities.text.Formatter;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class SentParcelsGUI {
 
     private static final int[] CORNER_SLOTS = {0, 8, 45, 53};
     private static final int[] BORDER_SLOTS = {1, 2, 3, 4, 5, 6, 7, 9, 17, 18, 26, 27, 35, 36, 44, 46, 47, 48, 49, 50, 51, 52};
+    private final Plugin plugin;
     private final Server server;
     private final MiniMessage miniMessage;
     private final PluginConfiguration config;
-    private final ParcelRepository repository;
+    private final ParcelRepository parcelRepository;
+    private final ParcelLockerRepository parcelLockerRepository;
 
-    public SentParcelsGUI(Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelRepository repository) {
+    public SentParcelsGUI(Plugin plugin, Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelRepository parcelRepository, ParcelLockerRepository parcelLockerRepository) {
+        this.plugin = plugin;
         this.server = server;
         this.miniMessage = miniMessage;
         this.config = config;
-        this.repository = repository;
+        this.parcelRepository = parcelRepository;
+        this.parcelLockerRepository = parcelLockerRepository;
     }
 
     public void showSentParcelsGUI(Player player) {
 
+        GuiItem parcelItem = this.config.guiSettings.parcelItem.toGuiItem(this.miniMessage);
         GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem(this.miniMessage);
         GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
         GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage);
@@ -52,25 +59,45 @@ public class SentParcelsGUI {
             gui.setItem(slot, backgroundItem);
         }
 
-        for (Parcel parcel : this.repository.findBySender(player.getUniqueId()).join()) {
-            ParcelMeta meta = parcel.meta();
-            String sender = player.getName();
-            String receiver = Bukkit.getPlayer(meta.getReceiver()).getName();
+        this.parcelRepository.findBySender(player.getUniqueId()).whenComplete((parcels, throwable) -> {
+            for (Parcel parcel : parcels) {
+                List<String> newLore = this.replaceParcelPlaceholders(parcel, parcelItem.getItemStack().getItemMeta().getLore());
+                parcelItem.getItemStack().getItemMeta().setLore(newLore);
 
-            gui.addItem(ItemBuilder.from(Material.BUNDLE)
-                    .name(this.miniMessage.deserialize(meta.getName()))
-                    .lore(this.miniMessage.deserialize("&3UUID: ").append(Component.text(parcel.uuid().toString())),
-                            this.miniMessage.deserialize("&3Sender: ").append(Component.text(sender)),
-                            this.miniMessage.deserialize("&3Receiver: ").append(Component.text(receiver)),
-                            this.miniMessage.deserialize("&3Size: ").append(Component.text(meta.getSize().toString())),
-                            this.miniMessage.deserialize("&3Priority: ").append(Component.text(meta.isPriority() ? "&aYes" : "&cNo")),
-                            this.miniMessage.deserialize("&3Description: ").append(Component.text(meta.getDescription())),
-                            this.miniMessage.deserialize("&3Entry position: ").append(Component.text(meta.getEntryLocker().getPosition().toString())),
-                            this.miniMessage.deserialize("&3Target Position: ").append(Component.text(meta.getDestinationLocker().getPosition().toString())),
-                            this.miniMessage.deserialize("&3Recipients: ").append(Component.text(meta.getRecipients().stream().map(Bukkit::getPlayer).map(HumanEntity::getName).toList().toString())))
-                    .flags(ItemFlag.HIDE_ATTRIBUTES)
-                    .asGuiItem());
+                gui.addItem(parcelItem);
+            }
+            this.server.getScheduler().runTask(this.plugin, () -> gui.open(player));
+        });
+    }
+
+    public List<String> replaceParcelPlaceholders(Parcel parcel, List<String> lore) {
+        if (lore == null || lore.isEmpty()) {
+            return Collections.emptyList();
         }
-        gui.open(player);
+
+        ParcelLocker destination = this.parcelLockerRepository.findByUUID(parcel.destinationLocker()).join().get();
+        Formatter formatter = new Formatter()
+            .register("{UUID}", parcel.uuid().toString())
+            .register("{NAME}", parcel.name())
+            .register("{SENDER}", this.server.getPlayer(parcel.sender()).getName())
+            .register("{RECEIVER}", this.server.getPlayer(parcel.receiver()).getName())
+            .register("{SIZE}", parcel.size().toString())
+            .register("{PRIORITY}", parcel.priority() ? this.miniMessage.deserialize("&aYes") : this.miniMessage.deserialize("&cNo"))
+            .register("{DESCRIPTION}", parcel.description())
+            .register("{POSITION_X}", String.valueOf(destination.position().x()))
+            .register("{POSITION_Y}", String.valueOf(destination.position().y()))
+            .register("{POSITION_Z}", String.valueOf(destination.position().z()))
+            .register("{RECIPIENTS}", parcel.recipients().stream()
+                .map(Bukkit::getPlayer)
+                .map(Player::getName)
+                .toList()
+                .toString());
+        List<String> newLore = new ArrayList<>();
+
+        for (String line : lore) {
+            formatter.format(line);
+            newLore.add(line);
+        }
+        return newLore;
     }
 }

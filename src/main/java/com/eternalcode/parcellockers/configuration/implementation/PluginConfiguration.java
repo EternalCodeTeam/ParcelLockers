@@ -1,6 +1,7 @@
 package com.eternalcode.parcellockers.configuration.implementation;
 
 import com.eternalcode.parcellockers.configuration.ReloadableConfig;
+import com.eternalcode.parcellockers.database.DatabaseType;
 import net.dzikoysk.cdn.entity.Contextual;
 import net.dzikoysk.cdn.entity.Description;
 import net.dzikoysk.cdn.source.Resource;
@@ -13,13 +14,13 @@ import java.util.List;
 
 public class PluginConfiguration implements ReloadableConfig {
 
-    @Description({" ", "# Do you want to change the plugin settings?"})
+    @Description({" ", "# Parcel Lockers plugin configuration file."})
     public Settings settings = new Settings();
 
-    @Description({" ", "# Do you want to change the plugin messages?"})
+    @Description({" ", "# The plugin messages."})
     public Messages messages = new Messages();
 
-    @Description({" ", "# Do you want to change the plugin GUI settings?"})
+    @Description({" ", "# The plugin GUI settings."})
     public GuiSettings guiSettings = new GuiSettings();
 
     @Contextual
@@ -35,6 +36,9 @@ public class PluginConfiguration implements ReloadableConfig {
 
         @Description({" ", "# Whether the player after entering the server should receive information about the new version of the plugin?"})
         public boolean receiveUpdates = true;
+
+        @Description({" ", "# The database type. (MYSQL, SQLITE)"})
+        public DatabaseType databaseType = DatabaseType.MYSQL;
 
         @Description({" ", "# The URL to the database."})
         public String host = "localhost";
@@ -57,12 +61,12 @@ public class PluginConfiguration implements ReloadableConfig {
 
     @Contextual
     public static class Messages {
-        public String onlyForPlayers = "&7› &cThis command is only available to players!";
-        public String noPermission = "&7› &cYou don't have permission to perform this command! &c(&7{PERMISSION}&c)";
-        public String cantFindPlayer = "&7› &cThe specified player could not be found!";
-        public String invalidUsage = "&7› &bCorrect usage: &e{USAGE}.";
-        public String reload = "&7› &bConfiguration has been successfully reloaded!";
-        public String parcelCommandUsage = "&7› &3/parcel &b<list|info> [parcel]";
+        public String onlyForPlayers = "&7» &cThis command is only available to players!";
+        public String noPermission = "&7» &cYou don't have permission to perform this command! &c(&7{PERMISSION}&c)";
+        public String cantFindPlayer = "&7» &cThe specified player could not be found!";
+        public String invalidUsage = "&7» &bCorrect usage: &e{USAGE}.";
+        public String reload = "&7» &bConfiguration has been successfully reloaded!";
+        public String parcelCommandUsage = "&7» &3/parcel &b<list|info> [parcel]";
     }
 
     @Contextual
@@ -114,7 +118,33 @@ public class PluginConfiguration implements ReloadableConfig {
                 .setLore(List.of("&eClick to show all parcels, which you sent or received in the past."))
                 .setType(Material.WRITTEN_BOOK);
 
+        @Description({" ", "# The item of the parcel"})
+        public ConfigItem parcelItem = new ConfigItem()
+                .setName("&6{NAME}")
+                .setLore(List.of(
+                        "&6UUID: &e{UUID}",
+                        "&Sender: &e{SENDER}",
+                        "&6Receiver: &e{RECEIVER}",
+                        "&6Size: &e{SIZE}",
+                        "&6Position: &6X: &e{POSITION_X}, &6Y: &e{POSITION_Y}, &6Z: &e{POSITION_Z}",
+                        "&6Priority: &e{PRIORITY}",
+                        "&6Description: &e{DESCRIPTION}",
+                        "&6Recipients: &e{RECIPIENTS}"
+                        )
+                )
+                .setType(Material.CHEST_MINECART);
 
+        @Description({" ", "# The item of the previous page button"})
+        public ConfigItem previousPageItem = new ConfigItem()
+                .setName("&bPrevious page")
+                .setLore(List.of("&bClick to go to the previous page."))
+                .setType(Material.ARROW);
+
+        @Description({" ", "# The item of the next page button"})
+        public ConfigItem nextPageItem = new ConfigItem()
+                .setName("&bNext page")
+                .setLore(List.of("&bClick to go to the next page."))
+                .setType(Material.ARROW);
     }
 
     @Override
