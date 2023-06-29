@@ -8,6 +8,9 @@ import java.io.File;
 
 public class DataSourceFactory {
 
+    private DataSourceFactory() {
+    }
+
     public static HikariDataSource buildHikariDataSource(PluginConfiguration databaseConfig, File dataFolder) {
         HikariConfig hikariConfig = new HikariConfig();
 

@@ -182,21 +182,6 @@ public class ParcelDatabaseService implements ParcelRepository {
         }).orTimeout(5, TimeUnit.SECONDS);
     }
 
-    private Parcel createParcel(ResultSet rs) throws SQLException {
-        return new Parcel(
-                UUID.fromString(rs.getString("uuid")),
-                UUID.fromString(rs.getString("sender")),
-                rs.getString("name"),
-                rs.getString("description"),
-                rs.getBoolean("priority"),
-                new HashSet<>(),
-                UUID.fromString(rs.getString("receiver")),
-                ParcelSize.valueOf(rs.getString("size")),
-                UUID.fromString(rs.getString("entryLocker")),
-                UUID.fromString(rs.getString("destinationLocker"))
-        );
-    }
-
     @Override
     public CompletableFuture<Set<Parcel>> findByReceiver(UUID receiver) {
         return CompletableFuture.supplyAsync(() -> {
@@ -282,6 +267,21 @@ public class ParcelDatabaseService implements ParcelRepository {
                 throw new ParcelLockersException(e);
             }
         }).orTimeout(5, TimeUnit.SECONDS);
+    }
+
+    private Parcel createParcel(ResultSet rs) throws SQLException {
+        return new Parcel(
+                UUID.fromString(rs.getString("uuid")),
+                UUID.fromString(rs.getString("sender")),
+                rs.getString("name"),
+                rs.getString("description"),
+                rs.getBoolean("priority"),
+                new HashSet<>(),
+                UUID.fromString(rs.getString("receiver")),
+                ParcelSize.valueOf(rs.getString("size")),
+                UUID.fromString(rs.getString("entryLocker")),
+                UUID.fromString(rs.getString("destinationLocker"))
+        );
     }
 
     public Optional<Parcel> findParcel(UUID uuid) {
