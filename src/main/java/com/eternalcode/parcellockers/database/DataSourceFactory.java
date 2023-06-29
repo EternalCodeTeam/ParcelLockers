@@ -16,19 +16,20 @@ public class DataSourceFactory {
         hikariConfig.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
         hikariConfig.addDataSourceProperty("useServerPrepStmts", true);
 
-        switch (databaseConfig.settings.databaseType) {
+        PluginConfiguration.Settings settings = databaseConfig.settings;
+        switch (settings.databaseType) {
             case MYSQL -> {
                 hikariConfig.setDriverClassName("com.mysql.cj.jdbc.Driver");
-                hikariConfig.setJdbcUrl("jdbc:mysql://" + databaseConfig.settings.host + ":" + databaseConfig.settings.port + "/" + databaseConfig.settings.databaseName + "?useSSL=" + databaseConfig.settings.useSSL);
-                hikariConfig.setUsername(databaseConfig.settings.user);
-                hikariConfig.setPassword(databaseConfig.settings.password);
+                hikariConfig.setJdbcUrl("jdbc:mysql://" + settings.host + ":" + settings.port + "/" + settings.databaseName + "?useSSL=" + settings.useSSL);
+                hikariConfig.setUsername(settings.user);
+                hikariConfig.setPassword(settings.password);
             }
 
             case SQLITE -> {
                 hikariConfig.setDriverClassName("org.sqlite.JDBC");
                 hikariConfig.setJdbcUrl("jdbc:sqlite:" + dataFolder + "/database.db");
             }
-            default -> throw new IllegalStateException("Unexpected value: " + databaseConfig.settings.databaseType);
+            default -> throw new IllegalStateException("Unexpected value: " + settings.databaseType);
         }
 
         return new HikariDataSource(hikariConfig);

@@ -94,7 +94,7 @@ public class ParcelDatabaseService implements ParcelRepository {
     }
 
     @Override
-    public CompletableFuture<Void> update(Parcel oldParcel, Parcel newParcel) {
+    public CompletableFuture<Void> update(Parcel newParcel) {
         return CompletableFuture.runAsync(() -> {
             try (Connection connection = this.dataSource.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
@@ -118,11 +118,9 @@ public class ParcelDatabaseService implements ParcelRepository {
                 statement.setString(6, newParcel.entryLocker().toString());
                 statement.setString(7, newParcel.destinationLocker().toString());
                 statement.setString(8, newParcel.sender().toString());
-                statement.setString(9, oldParcel.uuid().toString());
+                statement.setString(9, newParcel.uuid().toString());
                 statement.execute();
-                this.cache.remove(oldParcel.uuid());
                 this.cache.put(newParcel.uuid(), newParcel);
-
             }
             catch (SQLException e) {
                 Sentry.captureException(e);
@@ -144,6 +142,7 @@ public class ParcelDatabaseService implements ParcelRepository {
                 statement.setString(1, uuid.toString());
                 ResultSet rs = statement.executeQuery();
                 Parcel parcel = null;
+
                 if (rs.next()) {
                     parcel = new Parcel(
                             UUID.fromString(rs.getString("uuid")),
@@ -157,6 +156,7 @@ public class ParcelDatabaseService implements ParcelRepository {
                             UUID.fromString(rs.getString("entryLocker")),
                             UUID.fromString(rs.getString("destinationLocker"))
                     );
+
                     this.cache.put(parcel.uuid(), parcel);
                 }
                 return Optional.ofNullable(parcel);
@@ -165,6 +165,7 @@ public class ParcelDatabaseService implements ParcelRepository {
                 Sentry.captureException(e);
                 throw new ParcelLockersException(e);
             }
+
         }).orTimeout(5, TimeUnit.SECONDS);
     }
 
