@@ -131,11 +131,6 @@ public class ParcelDatabaseService implements ParcelRepository {
 
     @Override
     public CompletableFuture<Optional<Parcel>> findByUUID(UUID uuid) {
-
-        if (this.cache.containsKey(uuid)) {
-            return CompletableFuture.completedFuture(Optional.of(this.cache.get(uuid)));
-        }
-
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = this.dataSource.getConnection();
             PreparedStatement statement = connection.prepareStatement("SELECT * FROM `parcels` WHERE `uuid` = ?")) {
