@@ -71,6 +71,14 @@ dependencies {
 
     // errorprone
     errorprone("com.google.errorprone:error_prone_core:2.20.0")
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.2")
+
+    testImplementation("org.testcontainers:junit-jupiter:1.18.1")
+    testImplementation("org.testcontainers:mysql:1.18.1")
+    testImplementation("mysql:mysql-connector-java:8.0.33")
 }
 
 java {
@@ -139,3 +147,6 @@ tasks {
     }
 }
 
+tasks.getByName<Test>("test") {
+    useJUnitPlatform()
+}

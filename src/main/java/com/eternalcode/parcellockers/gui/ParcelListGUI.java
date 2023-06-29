@@ -54,8 +54,8 @@ public class ParcelListGUI {
         GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
         GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem(this.miniMessage);
         GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage, event -> player.closeInventory());
-        GuiItem previousPageItem = this.config.guiSettings.previousPageItem.toGuiItem(this.miniMessage);
-        GuiItem nextPageItem = this.config.guiSettings.nextPageItem.toGuiItem(this.miniMessage);
+        GuiItem previousPageItem = this.config.guiSettings.previousPageItem.toGuiItem(this.miniMessage, event -> this.showParcelListGUI(player, page.previous()));
+        GuiItem nextPageItem = this.config.guiSettings.nextPageItem.toGuiItem(this.miniMessage, event -> this.showParcelListGUI(player, page.next()));
 
         PaginatedGui gui = Gui.paginated()
                 .title(this.miniMessage.deserialize(this.config.guiSettings.parcelListGuiTitle))
