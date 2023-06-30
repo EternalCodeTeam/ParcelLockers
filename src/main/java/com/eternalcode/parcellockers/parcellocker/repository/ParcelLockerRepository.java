@@ -22,5 +22,5 @@ public interface ParcelLockerRepository {
 
     CompletableFuture<Void> remove(ParcelLocker parcelLocker);
 
-    CompletableFuture<Set<ParcelLocker>> findPage(int page, int pageSize);
+    CompletableFuture<ParcelLockerPageResult> findPage(ParcelLockerPage page);
 }

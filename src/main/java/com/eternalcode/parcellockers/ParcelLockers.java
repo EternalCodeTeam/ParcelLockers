@@ -77,18 +77,18 @@ public final class ParcelLockers extends JavaPlugin {
         ParcelLockerRepository parcelLockerRepository = new ParcelLockerDatabaseService(dataSource);
         ParcelDatabaseService parcelRepository = new ParcelDatabaseService(dataSource);
 
-        ParcelManager parcelManager = new ParcelManager(this, parcelRepository, parcelLockerRepository);
+        ParcelManager parcelManager = new ParcelManager(this, config, announcer, parcelRepository, parcelLockerRepository);
         ParcelLockerManager parcelLockerManager = new ParcelLockerManager(parcelLockerRepository);
 
         MainGUI mainGUI = new MainGUI(this, this.getServer(), miniMessage, config, parcelRepository, parcelLockerRepository);
-        ParcelListGUI parcelListGUI = new ParcelListGUI(this, this.getServer(), miniMessage, config, parcelRepository, parcelLockerRepository);
+        ParcelListGUI parcelListGUI = new ParcelListGUI(this, this.getServer(), miniMessage, config, parcelRepository, parcelLockerRepository, mainGUI);
 
         this.liteCommands = LiteBukkitAdventurePlatformFactory.builder(this.getServer(), "parcellockers", false, this.audiences, true)
                 .argument(Parcel.class, new ParcelArgument(parcelRepository))
                 .argument(Player.class, new PlayerArgument(this.getServer(), config))
                 .contextualBind(Player.class, new BukkitOnlyPlayerContextual<>(config.messages.onlyForPlayers))
                 .commandInstance(
-                        new ParcelCommand(announcer, config, parcelManager, mainGUI, parcelListGUI),
+                        new ParcelCommand(this.getServer(), parcelLockerRepository, announcer, config, mainGUI, parcelListGUI, parcelManager),
                         new ParcelLockerCommand(configManager, config, announcer)
                 )
                 .invalidUsageHandler(new InvalidUsage(announcer, config))

@@ -64,11 +64,11 @@ public class MainGUI {
         gui.addSlotAction(40, event -> event.getView().close());
         gui.addSlotAction(20, event -> {
             event.getView().close();
-            new ParcelListGUI(this.plugin, this.server, this.miniMessage, this.config, this.parcelRepository, this.parcelLockerRepository).showParcelListGUI(player);
+            new ParcelListGUI(this.plugin, this.server, this.miniMessage, this.config, this.parcelRepository, this.parcelLockerRepository, this).showParcelListGUI(player);
         });
         gui.addSlotAction(22, event -> {
             event.getView().close();
-            new SentParcelsGUI(this.plugin, this.server, this.miniMessage, this.config, this.parcelRepository, this.parcelLockerRepository).showSentParcelsGUI(player);
+            new SentParcelsGUI(this.plugin, this.server, this.miniMessage, this.config, this.parcelRepository, this.parcelLockerRepository, this).showSentParcelsGUI(player);
         });
         gui.setDefaultClickAction(event -> event.setCancelled(true));
         gui.open(player);

@@ -30,18 +30,20 @@ public class ParcelListGUI {
     private final PluginConfiguration config;
     private final ParcelRepository parcelRepository;
     private final ParcelLockerRepository parcelLockerRepository;
+    private final MainGUI mainGUI;
 
     private static final int WIDTH = 7;
     private static final int HEIGHT = 4;
     private static final ParcelPage FIRST_PAGE = new ParcelPage(0, WIDTH * HEIGHT);
 
-    public ParcelListGUI(Plugin plugin, Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelRepository parcelRepository, ParcelLockerRepository parcelLockerRepository) {
+    public ParcelListGUI(Plugin plugin, Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelRepository parcelRepository, ParcelLockerRepository parcelLockerRepository, MainGUI mainGUI) {
         this.plugin = plugin;
         this.server = server;
         this.miniMessage = miniMessage;
         this.config = config;
         this.parcelRepository = parcelRepository;
         this.parcelLockerRepository = parcelLockerRepository;
+        this.mainGUI = mainGUI;
     }
 
     public void showParcelListGUI(Player player) {
@@ -53,7 +55,10 @@ public class ParcelListGUI {
         GuiItem parcelItem = this.config.guiSettings.parcelItem.toGuiItem(this.miniMessage);
         GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
         GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem(this.miniMessage);
-        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage, event -> player.closeInventory());
+        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage, event -> {
+            player.closeInventory();
+            this.mainGUI.showMainGUI(player);
+        });
         GuiItem previousPageItem = this.config.guiSettings.previousPageItem.toGuiItem(this.miniMessage, event -> this.showParcelListGUI(player, page.previous()));
         GuiItem nextPageItem = this.config.guiSettings.nextPageItem.toGuiItem(this.miniMessage, event -> this.showParcelListGUI(player, page.next()));
 

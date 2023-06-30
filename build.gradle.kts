@@ -29,7 +29,7 @@ repositories {
 
 dependencies {
     // minecraft development api
-    compileOnly("org.spigotmc:spigot-api:1.19.3-R0.1-SNAPSHOT")
+    compileOnly("org.spigotmc:spigot-api:1.20.1-R0.1-SNAPSHOT")
     implementation("net.kyori:adventure-platform-bukkit:4.3.0")
     implementation("net.kyori:adventure-text-minimessage:4.14.0")
     implementation("dev.rollczi.litecommands:bukkit-adventure:2.8.8")
@@ -112,7 +112,7 @@ tasks.withType<JavaCompile> {
 }
 
 tasks.withType<ShadowJar> {
-    archiveFileName.set("ParcelLockers v${project.version} (MC 1.8.8-1.19.x).jar")
+    archiveFileName.set("ParcelLockers v${project.version} (MC 1.8.8-1.20.x).jar")
 
     exclude(
         "org/intellij/lang/annotations/**",
@@ -143,7 +143,7 @@ tasks.withType<ShadowJar> {
 
 tasks {
     runServer {
-        minecraftVersion("1.19.4")
+        minecraftVersion("1.20.1")
     }
 }
 

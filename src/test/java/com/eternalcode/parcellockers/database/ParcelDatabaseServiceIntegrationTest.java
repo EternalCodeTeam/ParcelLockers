@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ParcelDatabaseServiceIntegrationTest {
 
     @Container
-    private static final MySQLContainer mySQLContainer = new MySQLContainer(DockerImageName.parse("mysql:8.0.33"));
+    private static final MySQLContainer mySQLContainer = new MySQLContainer(DockerImageName.parse("mysql:latest"));
 
     @Test
     void test() {

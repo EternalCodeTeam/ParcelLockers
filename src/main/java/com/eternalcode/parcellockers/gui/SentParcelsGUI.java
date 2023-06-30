@@ -29,14 +29,16 @@ public class SentParcelsGUI {
     private final PluginConfiguration config;
     private final ParcelRepository parcelRepository;
     private final ParcelLockerRepository parcelLockerRepository;
+    private final MainGUI mainGUI;
 
-    public SentParcelsGUI(Plugin plugin, Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelRepository parcelRepository, ParcelLockerRepository parcelLockerRepository) {
+    public SentParcelsGUI(Plugin plugin, Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelRepository parcelRepository, ParcelLockerRepository parcelLockerRepository, MainGUI mainGUI) {
         this.plugin = plugin;
         this.server = server;
         this.miniMessage = miniMessage;
         this.config = config;
         this.parcelRepository = parcelRepository;
         this.parcelLockerRepository = parcelLockerRepository;
+        this.mainGUI = mainGUI;
     }
 
     public void showSentParcelsGUI(Player player) {
@@ -44,7 +46,10 @@ public class SentParcelsGUI {
         GuiItem parcelItem = this.config.guiSettings.parcelItem.toGuiItem(this.miniMessage);
         GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem(this.miniMessage);
         GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
-        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage);
+        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage, event -> {
+            player.closeInventory();
+            this.mainGUI.showMainGUI(player);
+        });
         PaginatedGui gui = Gui.paginated()
                 .title(this.miniMessage.deserialize(this.config.guiSettings.sentParcelsTitle))
                 .rows(6)
@@ -58,6 +63,8 @@ public class SentParcelsGUI {
         for (int slot : BORDER_SLOTS) {
             gui.setItem(slot, backgroundItem);
         }
+
+        gui.setItem(49, closeItem);
 
         this.parcelRepository.findBySender(player.getUniqueId()).whenComplete((parcels, throwable) -> {
             for (Parcel parcel : parcels) {
@@ -84,14 +91,18 @@ public class SentParcelsGUI {
             .register("{SIZE}", parcel.size().toString())
             .register("{PRIORITY}", parcel.priority() ? this.miniMessage.deserialize("&aYes") : this.miniMessage.deserialize("&cNo"))
             .register("{DESCRIPTION}", parcel.description())
-            .register("{POSITION_X}", String.valueOf(destination.position().x()))
-            .register("{POSITION_Y}", String.valueOf(destination.position().y()))
-            .register("{POSITION_Z}", String.valueOf(destination.position().z()))
             .register("{RECIPIENTS}", parcel.recipients().stream()
                 .map(Bukkit::getPlayer)
                 .map(Player::getName)
                 .toList()
                 .toString());
+
+        this.parcelLockerRepository.findByUUID(parcel.destinationLocker()).join().ifPresent(locker -> formatter
+            .register("{POSITION_X}", locker.position().x())
+            .register("{POSITION_Y}", locker.position().y())
+            .register("{POSITION_Z}", locker.position().z())
+        );
+
         List<String> newLore = new ArrayList<>();
 
         for (String line : lore) {
