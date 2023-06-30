@@ -71,7 +71,7 @@ public class ParcelCommand {
         this.parcelManager.createParcel(player, parcel);
     }
 
-    @Execute(route = "delete", aliases = { "remove" })
+    @Execute(route = "delete", aliases = { "remove", "cancel" })
     void delete(Player player, @Arg Parcel parcel) {
         this.parcelManager.deleteParcel(player, parcel);
     }

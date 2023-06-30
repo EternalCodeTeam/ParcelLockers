@@ -66,7 +66,7 @@ public class PluginConfiguration implements ReloadableConfig {
         public String cantFindPlayer = "&7» &cThe specified player could not be found!";
         public String invalidUsage = "&7» &bCorrect usage: &e{USAGE}";
         public String reload = "&7» &bConfiguration has been successfully reloaded!";
-        public String parcelCommandUsage = "&7» &3/parcel &b<list|info> [parcel]";
+        public String parcelCommandUsage = "&7» &3/parcel &b<list|info|send|cancel> [parcel]";
         public String parcelSuccessfullyCreated = "&7» &aParcel created successfully.";
         public String failedToCreateParcel = "&7» &cAn error occurred while creating the parcel.";
         public String parcelSuccessfullyDeleted = "&7» &aParcel deleted successfully.";
