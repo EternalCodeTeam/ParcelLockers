@@ -31,7 +31,7 @@ If applicable, add screenshots to help explain your problem.
 ### Platform (please complete the following information):
 
 - Java Version: [e.g. JDK Temurin 17]
-- Server software: PaperMC build # 1.19.3
+- Server software: PaperMC build # 1.20.1
 
 ### Additional notes
 
