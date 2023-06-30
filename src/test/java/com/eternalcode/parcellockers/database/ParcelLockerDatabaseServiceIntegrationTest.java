@@ -4,7 +4,6 @@ import com.eternalcode.parcellockers.parcellocker.ParcelLocker;
 import com.eternalcode.parcellockers.parcellocker.repository.ParcelLockerPageResult;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.Position;
-import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
@@ -14,21 +13,19 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Testcontainers
-class ParcelLockerDatabaseServiceIntegrationTest {
+class ParcelLockerDatabaseServiceIntegrationTest extends ParcelLockerIntegrationSpec {
 
     @Container
     private static final MySQLContainer mySQLContainer = new MySQLContainer(DockerImageName.parse("mysql:latest"));
 
     @Test
     void test() {
-        HikariDataSource dataSource = buildHikariDataSource();
+        HikariDataSource dataSource = buildHikariDataSource(mySQLContainer);
 
         ParcelLockerDatabaseService parcelLockerDatabaseService = new ParcelLockerDatabaseService(dataSource);
 
@@ -55,22 +52,4 @@ class ParcelLockerDatabaseServiceIntegrationTest {
         Optional<ParcelLocker> removed = await(parcelLockerDatabaseService.findByUUID(uuid));
         assertTrue(removed.isEmpty());
     }
-
-    private <T> T await(CompletableFuture<T> future) {
-        return future
-            .orTimeout(5, TimeUnit.SECONDS)
-            .join();
-    }
-
-    private static HikariDataSource buildHikariDataSource() {
-        HikariConfig hikariConfig = new HikariConfig();
-
-        hikariConfig.setDriverClassName(mySQLContainer.getDriverClassName());
-        hikariConfig.setJdbcUrl(mySQLContainer.getJdbcUrl());
-        hikariConfig.setUsername(mySQLContainer.getUsername());
-        hikariConfig.setPassword(mySQLContainer.getPassword());
-
-        return new HikariDataSource(hikariConfig);
-    }
-
 }
