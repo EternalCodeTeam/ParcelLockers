@@ -2,8 +2,8 @@ package com.eternalcode.parcellockers.database;
 
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
-import com.eternalcode.parcellockers.parcel.repository.ParcelPage;
 import com.eternalcode.parcellockers.parcel.repository.ParcelPageResult;
+import com.eternalcode.parcellockers.shared.Page;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.junit.jupiter.api.Test;
@@ -63,7 +63,7 @@ class ParcelDatabaseServiceIntegrationTest {
         assertEquals(1, bySender.size());
         assertEquals(uuid, bySender.iterator().next().uuid());
 
-        ParcelPageResult pageResult = await(parcelDatabaseService.findPage(new ParcelPage(0, 28)));
+        ParcelPageResult pageResult = await(parcelDatabaseService.findPage(new Page(0, 28)));
         assertEquals(1, pageResult.parcels().size());
         assertEquals(uuid, pageResult.parcels().iterator().next().uuid());
 

@@ -1,8 +1,8 @@
 package com.eternalcode.parcellockers.database;
 
 import com.eternalcode.parcellockers.parcellocker.ParcelLocker;
-import com.eternalcode.parcellockers.parcellocker.repository.ParcelLockerPage;
 import com.eternalcode.parcellockers.parcellocker.repository.ParcelLockerPageResult;
+import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.Position;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -47,7 +47,7 @@ class ParcelLockerDatabaseServiceIntegrationTest {
         assertTrue(byPosition.isPresent());
         assertEquals(uuid, byPosition.get().uuid());
 
-        ParcelLockerPageResult pageResult = await(parcelLockerDatabaseService.findPage(new ParcelLockerPage(0, 28)));
+        ParcelLockerPageResult pageResult = await(parcelLockerDatabaseService.findPage(new Page(0, 28)));
         assertEquals(1, pageResult.parcelLockers().size());
         assertEquals(uuid, pageResult.parcelLockers().iterator().next().uuid());
 
