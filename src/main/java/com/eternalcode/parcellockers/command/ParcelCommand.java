@@ -46,7 +46,7 @@ public class ParcelCommand {
 
     @Execute(route = "list")
     void list(Player player) {
-        this.parcelListGUI.showParcelListGUI(player);
+        this.parcelListGUI.show(player);
     }
 
     @Execute(route = "info")
@@ -78,7 +78,7 @@ public class ParcelCommand {
 
     @Execute(route = "gui")
     void gui(Player player) {
-        this.mainGUI.showMainGUI(player);
+        this.mainGUI.show(player);
     }
 
     public List<String> replaceParcelPlaceholders(Parcel parcel, List<String> lore) {

@@ -13,7 +13,7 @@ import org.bukkit.plugin.Plugin;
 
 import static com.eternalcode.parcellockers.util.AdventureUtil.RESET_ITEM;
 
-public class MainGUI {
+public class MainGUI implements View {
 
     private final Plugin plugin;
     private final Server server;
@@ -31,7 +31,8 @@ public class MainGUI {
         this.parcelLockerRepository = parcelLockerRepository;
     }
 
-    public void showMainGUI(Player player) {
+    @Override
+    public void show(Player player) {
 
         GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
         GuiItem myParcelsItem = this.config.guiSettings.myParcelsItem.toGuiItem(this.miniMessage);
@@ -64,11 +65,11 @@ public class MainGUI {
         gui.addSlotAction(40, event -> event.getView().close());
         gui.addSlotAction(20, event -> {
             event.getView().close();
-            new ParcelListGUI(this.plugin, this.server, this.miniMessage, this.config, this.parcelRepository, this.parcelLockerRepository, this).showParcelListGUI(player);
+            new ParcelListGUI(this.plugin, this.server, this.miniMessage, this.config, this.parcelRepository, this.parcelLockerRepository, this).show(player);
         });
         gui.addSlotAction(22, event -> {
             event.getView().close();
-            new SentParcelsGUI(this.plugin, this.server, this.miniMessage, this.config, this.parcelRepository, this.parcelLockerRepository, this).showSentParcelsGUI(player);
+            new SentParcelsGUI(this.plugin, this.server, this.miniMessage, this.config, this.parcelRepository, this.parcelLockerRepository, this).show(player);
         });
         gui.setDefaultClickAction(event -> event.setCancelled(true));
         gui.open(player);

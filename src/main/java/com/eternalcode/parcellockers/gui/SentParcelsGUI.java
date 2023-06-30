@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class SentParcelsGUI {
+public class SentParcelsGUI implements View {
 
     private static final int[] CORNER_SLOTS = {0, 8, 45, 53};
     private static final int[] BORDER_SLOTS = {1, 2, 3, 4, 5, 6, 7, 9, 17, 18, 26, 27, 35, 36, 44, 46, 47, 48, 49, 50, 51, 52};
@@ -41,14 +41,15 @@ public class SentParcelsGUI {
         this.mainGUI = mainGUI;
     }
 
-    public void showSentParcelsGUI(Player player) {
+    @Override
+    public void show(Player player) {
 
         GuiItem parcelItem = this.config.guiSettings.parcelItem.toGuiItem(this.miniMessage);
         GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem(this.miniMessage);
         GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
         GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage, event -> {
             player.closeInventory();
-            this.mainGUI.showMainGUI(player);
+            this.mainGUI.show(player);
         });
         PaginatedGui gui = Gui.paginated()
                 .title(this.miniMessage.deserialize(this.config.guiSettings.sentParcelsTitle))
