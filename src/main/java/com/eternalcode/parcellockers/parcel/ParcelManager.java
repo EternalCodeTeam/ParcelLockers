@@ -24,7 +24,7 @@ public class ParcelManager {
     }
 
     public void createParcel(CommandSender sender, Parcel parcel) {
-        databaseService.save(parcel).whenComplete((v, throwable) -> {
+        this.databaseService.save(parcel).whenComplete((v, throwable) -> {
             if (throwable != null) {
                 this.announcer.sendMessage(sender, this.config.messages.failedToCreateParcel);
                 throwable.printStackTrace();
@@ -36,7 +36,7 @@ public class ParcelManager {
     }
 
     public void deleteParcel(CommandSender sender, Parcel parcel) {
-        databaseService.remove(parcel).whenComplete((v, throwable) -> {
+        this.databaseService.remove(parcel).whenComplete((v, throwable) -> {
             if (throwable != null) {
                 this.announcer.sendMessage(sender, this.config.messages.failedToDeleteParcel);
                 throwable.printStackTrace();
