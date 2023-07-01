@@ -57,6 +57,13 @@ public class PluginConfiguration implements ReloadableConfig {
 
         @Description({" ", "# The database password."})
         public String password = "";
+
+        @Description({" ", "# The parcel locker item."})
+        public ConfigItem parcelLockerItem = new ConfigItem()
+                .setName("&3Parcel locker")
+                .setType(Material.CHEST)
+                .setGlow(true)
+                .setLore(List.of("&bPlace to create a parcel locker."));
     }
 
     @Contextual
@@ -71,6 +78,9 @@ public class PluginConfiguration implements ReloadableConfig {
         public String failedToCreateParcel = "&7» &cAn error occurred while creating the parcel.";
         public String parcelSuccessfullyDeleted = "&7» &aParcel deleted successfully.";
         public String failedToDeleteParcel = "&7» &cAn error occurred while deleting the parcel.";
+        public String failedToCreateParcelLocker = "&7» &cCould not create the parcel locker.";
+        public String parcelLockerSuccessfullyCreated = "&7» &aParcel locker created successfully.";
+        public String enterDescriptionPrompt = "&7» &eEnter a description for the parcel locker:";
 
         @Description({" ", "# The parcel info message."})
         public List<String> parcelInfoMessages = List.of(
@@ -97,6 +107,9 @@ public class PluginConfiguration implements ReloadableConfig {
 
         @Description({" ", "# The item of the sent parcels GUI"})
         public String sentParcelsTitle = "&6Sent parcels";
+
+        @Description({" ", "# The item of the parcel locker main GUI"})
+        public String parcelLockerMainGuiTitle = "&3Parcel locker";
 
         @Description({" ", "# The close button item"})
         public ConfigItem closeItem = new ConfigItem()

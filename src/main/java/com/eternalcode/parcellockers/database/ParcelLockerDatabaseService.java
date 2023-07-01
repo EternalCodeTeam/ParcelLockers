@@ -171,7 +171,6 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
             );
             set.add(parcelLocker);
         }
-        this.cache.clear();
         set.forEach(parcelLocker -> this.cache.put(parcelLocker.uuid(), parcelLocker));
         return set;
     }

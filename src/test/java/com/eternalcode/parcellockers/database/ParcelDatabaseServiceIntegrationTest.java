@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Testcontainers
-class ParcelDatabaseServiceIntegrationTest extends ParcelLockerIntegrationSpec{
+class ParcelDatabaseServiceIntegrationTest extends ParcelLockerIntegrationSpec {
 
     @Container
     private static final MySQLContainer mySQLContainer = new MySQLContainer(DockerImageName.parse("mysql:latest"));

@@ -13,7 +13,7 @@ import org.bukkit.plugin.Plugin;
 
 import static com.eternalcode.parcellockers.util.AdventureUtil.RESET_ITEM;
 
-public class MainGUI implements View {
+public class MainGUI extends GuiView {
 
     private final Plugin plugin;
     private final Server server;
@@ -38,7 +38,7 @@ public class MainGUI implements View {
         GuiItem myParcelsItem = this.config.guiSettings.myParcelsItem.toGuiItem(this.miniMessage);
         GuiItem sentParcelsItem = this.config.guiSettings.sentParcelsItem.toGuiItem(this.miniMessage);
         GuiItem parcelArchiveItem = this.config.guiSettings.parcelArchiveItem.toGuiItem(this.miniMessage);
-        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage);
+        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage, event -> event.getView().close());
         GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem(this.miniMessage);
 
         Gui gui = Gui.gui()
@@ -52,17 +52,16 @@ public class MainGUI implements View {
         for (int i = 0; i < size; i++) {
             gui.setItem(i, backgroundItem);
         }
-        gui.setItem(0, cornerItem);
-        gui.setItem(8, cornerItem);
-        gui.setItem(45, cornerItem);
-        gui.setItem(53, cornerItem);
+
+        for (int slot : CORNER_SLOTS) {
+            gui.setItem(slot, cornerItem);
+        }
 
         gui.setItem(20, myParcelsItem);
         gui.setItem(22, sentParcelsItem);
         gui.setItem(24, parcelArchiveItem);
         gui.setItem(40, closeItem);
 
-        gui.addSlotAction(40, event -> event.getView().close());
         gui.addSlotAction(20, event -> {
             event.getView().close();
             new ParcelListGUI(this.plugin, this.server, this.miniMessage, this.config, this.parcelRepository, this.parcelLockerRepository, this).show(player);
