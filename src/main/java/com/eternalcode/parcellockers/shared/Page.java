@@ -1,6 +1,6 @@
-package com.eternalcode.parcellockers.parcel.repository;
+package com.eternalcode.parcellockers.shared;
 
-public record ParcelPage(int page, int size) {
+public record Page(int page, int size) {
 
     public boolean hasPrevious() {
         return this.page > 0;
@@ -14,16 +14,16 @@ public record ParcelPage(int page, int size) {
         return this.size;
     }
 
-    public ParcelPage next() {
-        return new ParcelPage(this.page + 1, this.size);
+    public Page next() {
+        return new Page(this.page + 1, this.size);
     }
 
-    public ParcelPage previous() {
+    public Page previous() {
         if (this.page == 0) {
             throw new IllegalStateException("Cannot go back from first page");
         }
 
-        return new ParcelPage(this.page - 1, this.size);
+        return new Page(this.page - 1, this.size);
     }
 
 }

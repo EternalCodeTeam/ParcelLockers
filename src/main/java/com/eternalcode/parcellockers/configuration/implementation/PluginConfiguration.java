@@ -64,9 +64,26 @@ public class PluginConfiguration implements ReloadableConfig {
         public String onlyForPlayers = "&7» &cThis command is only available to players!";
         public String noPermission = "&7» &cYou don't have permission to perform this command! &c(&7{PERMISSION}&c)";
         public String cantFindPlayer = "&7» &cThe specified player could not be found!";
-        public String invalidUsage = "&7» &bCorrect usage: &e{USAGE}.";
+        public String invalidUsage = "&7» &bCorrect usage: &e{USAGE}";
         public String reload = "&7» &bConfiguration has been successfully reloaded!";
-        public String parcelCommandUsage = "&7» &3/parcel &b<list|info> [parcel]";
+        public String parcelCommandUsage = "&7» &3/parcel &b<list|info|send|cancel> [parcel]";
+        public String parcelSuccessfullyCreated = "&7» &aParcel created successfully.";
+        public String failedToCreateParcel = "&7» &cAn error occurred while creating the parcel.";
+        public String parcelSuccessfullyDeleted = "&7» &aParcel deleted successfully.";
+        public String failedToDeleteParcel = "&7» &cAn error occurred while deleting the parcel.";
+
+        @Description({" ", "# The parcel info message."})
+        public List<String> parcelInfoMessages = List.of(
+            "&7» &6Parcel info:",
+            "&6UUID: &e{UUID}",
+            "&6Sender: &e{SENDER}",
+            "&6Receiver: &e{RECEIVER}",
+            "&6Size: &e{SIZE}",
+            "&6Position: &6X: &e{POSITION_X}, &6Y: &e{POSITION_Y}, &6Z: &e{POSITION_Z}",
+            "&6Priority: &e{PRIORITY}",
+            "&6Description: &e{DESCRIPTION}",
+            "&6Recipients: &e{RECIPIENTS}"
+        );
     }
 
     @Contextual

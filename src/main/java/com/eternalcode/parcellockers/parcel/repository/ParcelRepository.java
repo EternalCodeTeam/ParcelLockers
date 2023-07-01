@@ -1,6 +1,7 @@
 package com.eternalcode.parcellockers.parcel.repository;
 
 import com.eternalcode.parcellockers.parcel.Parcel;
+import com.eternalcode.parcellockers.shared.Page;
 
 import java.util.Optional;
 import java.util.Set;
@@ -23,6 +24,6 @@ public interface ParcelRepository {
 
     CompletableFuture<Void> remove(UUID uuid);
 
-    CompletableFuture<ParcelPageResult> findPage(ParcelPage page);
+    CompletableFuture<ParcelPageResult> findPage(Page page);
 
 }

@@ -2,7 +2,9 @@ package com.eternalcode.parcellockers.database;
 
 import com.eternalcode.parcellockers.exception.ParcelLockersException;
 import com.eternalcode.parcellockers.parcellocker.ParcelLocker;
+import com.eternalcode.parcellockers.parcellocker.repository.ParcelLockerPageResult;
 import com.eternalcode.parcellockers.parcellocker.repository.ParcelLockerRepository;
+import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.Position;
 import io.sentry.Sentry;
 
@@ -36,7 +38,7 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
     private void initTable() {
         try (Connection connection = this.dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(
-                     "CREATE TABLE IF NOT EXISTS `parcelLockers`(" +
+                     "CREATE TABLE IF NOT EXISTS `parcellockers`(" +
                              "uuid VARCHAR(36) NOT NULL, " +
                              "description VARCHAR(64) NOT NULL, " +
                              "position VARCHAR(255) NOT NULL, " +
@@ -129,16 +131,26 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
     }
 
     @Override
-    public CompletableFuture<Set<ParcelLocker>> findPage(int page, int pageSize) {
+    public CompletableFuture<ParcelLockerPageResult> findPage(Page page) {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = this.dataSource.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
-                         "SELECT * FROM `parcellockers` LIMIT ? OFFSET ?;"
+                     "SELECT * FROM `parcellockers` LIMIT ? OFFSET ?"
                  )
             ) {
-                statement.setInt(1, pageSize);
-                statement.setInt(2, page * pageSize);
-                return this.extractParcelLockers(statement);
+                statement.setInt(1, page.getLimit());
+                statement.setInt(2, page.getOffset());
+                Set<ParcelLocker> parcelLockers = this.extractParcelLockers(statement);
+
+                try (PreparedStatement statement1 = connection.prepareStatement(
+                    "SELECT * FROM `parcellockers` LIMIT 1 OFFSET ?"
+                )) {
+                    statement1.setInt(1, page.getLimit() + page.getOffset());
+                    ResultSet rs1 = statement1.executeQuery();
+                    boolean hasNext = rs1.next();
+
+                    return new ParcelLockerPageResult(parcelLockers, hasNext);
+                }
             }
             catch (SQLException e) {
                 Sentry.captureException(e);
@@ -176,22 +188,21 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = this.dataSource.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
-                         "SELECT * FROM `parcelLockers` WHERE `" + column + "` = ?;"
+                         "SELECT * FROM `parcellockers` WHERE `" + column + "` = ?;"
                  )
             ) {
                 statement.setString(1, value);
                 ResultSet rs = statement.executeQuery();
-                ParcelLocker parcelLocker = null;
-
                 if (rs.next()) {
-                    parcelLocker = new ParcelLocker(
+                    ParcelLocker parcelLocker = new ParcelLocker(
                             UUID.fromString(rs.getString("uuid")),
                             rs.getString("description"),
                             Position.parse(rs.getString("position"))
                     );
                     this.cache.put(parcelLocker.uuid(), parcelLocker);
+                    return Optional.of(parcelLocker);
                 }
-                return Optional.ofNullable(parcelLocker);
+                return Optional.<ParcelLocker>empty();
             }
             catch (SQLException e) {
                 Sentry.captureException(e);

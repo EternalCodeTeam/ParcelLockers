@@ -2,9 +2,9 @@ package com.eternalcode.parcellockers.gui;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.parcel.Parcel;
-import com.eternalcode.parcellockers.parcel.repository.ParcelPage;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.parcellocker.repository.ParcelLockerRepository;
+import com.eternalcode.parcellockers.shared.Page;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
@@ -19,7 +19,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-public class ParcelListGUI {
+public class ParcelListGUI implements View {
 
     private static final int[] CORNER_SLOTS = {0, 8, 45, 53};
     private static final int[] BORDER_SLOTS = {1, 2, 3, 4, 5, 6, 7, 9, 17, 18, 26, 27, 35, 36, 44, 46, 47, 48, 49, 50, 51, 52};
@@ -30,32 +30,38 @@ public class ParcelListGUI {
     private final PluginConfiguration config;
     private final ParcelRepository parcelRepository;
     private final ParcelLockerRepository parcelLockerRepository;
+    private final MainGUI mainGUI;
 
     private static final int WIDTH = 7;
     private static final int HEIGHT = 4;
-    private static final ParcelPage FIRST_PAGE = new ParcelPage(0, WIDTH * HEIGHT);
+    private static final Page FIRST_PAGE = new Page(0, WIDTH * HEIGHT);
 
-    public ParcelListGUI(Plugin plugin, Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelRepository parcelRepository, ParcelLockerRepository parcelLockerRepository) {
+    public ParcelListGUI(Plugin plugin, Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelRepository parcelRepository, ParcelLockerRepository parcelLockerRepository, MainGUI mainGUI) {
         this.plugin = plugin;
         this.server = server;
         this.miniMessage = miniMessage;
         this.config = config;
         this.parcelRepository = parcelRepository;
         this.parcelLockerRepository = parcelLockerRepository;
+        this.mainGUI = mainGUI;
     }
 
-    public void showParcelListGUI(Player player) {
-        this.showParcelListGUI(player, FIRST_PAGE);
+    @Override
+    public void show(Player player) {
+        this.show(player, FIRST_PAGE);
     }
 
-    private void showParcelListGUI(Player player, ParcelPage page) {
+    private void show(Player player, Page page) {
 
         GuiItem parcelItem = this.config.guiSettings.parcelItem.toGuiItem(this.miniMessage);
         GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
         GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem(this.miniMessage);
-        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage, event -> player.closeInventory());
-        GuiItem previousPageItem = this.config.guiSettings.previousPageItem.toGuiItem(this.miniMessage, event -> this.showParcelListGUI(player, page.previous()));
-        GuiItem nextPageItem = this.config.guiSettings.nextPageItem.toGuiItem(this.miniMessage, event -> this.showParcelListGUI(player, page.next()));
+        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage, event -> {
+            player.closeInventory();
+            this.mainGUI.show(player);
+        });
+        GuiItem previousPageItem = this.config.guiSettings.previousPageItem.toGuiItem(this.miniMessage, event -> this.show(player, page.previous()));
+        GuiItem nextPageItem = this.config.guiSettings.nextPageItem.toGuiItem(this.miniMessage, event -> this.show(player, page.next()));
 
         PaginatedGui gui = Gui.paginated()
                 .title(this.miniMessage.deserialize(this.config.guiSettings.parcelListGuiTitle))
@@ -73,7 +79,7 @@ public class ParcelListGUI {
 
         this.parcelRepository.findPage(page).whenComplete((result, throwable) -> {
             if (result.parcels().isEmpty() && page.hasPrevious()) {
-                this.showParcelListGUI(player, page.previous());
+                this.show(player, page.previous());
                 return;
             }
 

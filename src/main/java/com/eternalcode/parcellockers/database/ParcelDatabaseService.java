@@ -3,9 +3,9 @@ package com.eternalcode.parcellockers.database;
 import com.eternalcode.parcellockers.exception.ParcelLockersException;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
-import com.eternalcode.parcellockers.parcel.repository.ParcelPage;
 import com.eternalcode.parcellockers.parcel.repository.ParcelPageResult;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
+import com.eternalcode.parcellockers.shared.Page;
 import io.sentry.Sentry;
 
 import javax.sql.DataSource;
@@ -230,7 +230,7 @@ public class ParcelDatabaseService implements ParcelRepository {
     }
 
     @Override
-    public CompletableFuture<ParcelPageResult> findPage(ParcelPage page) {
+    public CompletableFuture<ParcelPageResult> findPage(Page page) {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = this.dataSource.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
