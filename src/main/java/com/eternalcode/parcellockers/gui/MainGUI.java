@@ -63,8 +63,7 @@ public class MainGUI extends GuiView {
         gui.setItem(40, closeItem);
 
         gui.addSlotAction(20, event -> {
-            event.getView().close();
-            new ParcelListGUI(this.plugin, this.server, this.miniMessage, this.config, this.parcelRepository, this.parcelLockerRepository, this).show(player);
+            new ParcelListGUI(this.plugin, this.miniMessage, this.config, this.parcelRepository, this.parcelLockerRepository).show(player);
         });
         gui.addSlotAction(22, event -> {
             event.getView().close();

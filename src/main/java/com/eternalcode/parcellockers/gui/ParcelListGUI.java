@@ -9,7 +9,6 @@ import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import panda.utilities.text.Formatter;
@@ -22,25 +21,21 @@ import java.util.Objects;
 public class ParcelListGUI extends GuiView {
 
     private final Plugin plugin;
-    private final Server server;
     private final MiniMessage miniMessage;
     private final PluginConfiguration config;
     private final ParcelRepository parcelRepository;
     private final ParcelLockerRepository parcelLockerRepository;
-    private final MainGUI mainGUI;
 
     private static final int WIDTH = 7;
     private static final int HEIGHT = 4;
     private static final Page FIRST_PAGE = new Page(0, WIDTH * HEIGHT);
 
-    public ParcelListGUI(Plugin plugin, Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelRepository parcelRepository, ParcelLockerRepository parcelLockerRepository, MainGUI mainGUI) {
+    public ParcelListGUI(Plugin plugin, MiniMessage miniMessage, PluginConfiguration config, ParcelRepository parcelRepository, ParcelLockerRepository parcelLockerRepository) {
         this.plugin = plugin;
-        this.server = server;
         this.miniMessage = miniMessage;
         this.config = config;
         this.parcelRepository = parcelRepository;
         this.parcelLockerRepository = parcelLockerRepository;
-        this.mainGUI = mainGUI;
     }
 
     @Override
@@ -55,7 +50,6 @@ public class ParcelListGUI extends GuiView {
         GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem(this.miniMessage);
         GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage, event -> {
             player.closeInventory();
-            this.mainGUI.show(player);
         });
         GuiItem previousPageItem = this.config.guiSettings.previousPageItem.toGuiItem(this.miniMessage, event -> this.show(player, page.previous()));
         GuiItem nextPageItem = this.config.guiSettings.nextPageItem.toGuiItem(this.miniMessage, event -> this.show(player, page.next()));
@@ -81,10 +75,12 @@ public class ParcelListGUI extends GuiView {
             }
 
             for (Parcel parcel : result.parcels()) {
-                List<String> newLore = this.replaceParcelPlaceholders(parcel, parcelItem.getItemStack().getItemMeta().getLore());
-                parcelItem.getItemStack().getItemMeta().setLore(newLore);
+                if (parcel.sender().equals(player.getUniqueId()) || parcel.recipients().contains(player.getUniqueId()) || player.hasPermission("parcellockers.admin.debug.seeOthersParcels")) {
+                    List<String> newLore = this.replaceParcelPlaceholders(parcel, parcelItem.getItemStack().getItemMeta().getLore());
+                    parcelItem.getItemStack().getItemMeta().setLore(newLore);
 
-                gui.addItem(parcelItem);
+                    gui.addItem(parcelItem);
+                }
             }
 
             gui.setItem(49, closeItem);
@@ -97,7 +93,7 @@ public class ParcelListGUI extends GuiView {
                 gui.setItem(47, previousPageItem);
             }
 
-            this.server.getScheduler().runTask(this.plugin, () -> gui.open(player));
+            this.plugin.getServer().getScheduler().runTask(this.plugin, () -> gui.open(player));
         });
 
     }
@@ -110,13 +106,13 @@ public class ParcelListGUI extends GuiView {
         Formatter formatter = new Formatter()
             .register("{UUID}", parcel.uuid().toString())
             .register("{NAME}", parcel.name())
-            .register("{SENDER}", this.server.getPlayer(parcel.sender()).getName())
-            .register("{RECEIVER}", this.server.getPlayer(parcel.receiver()).getName())
+            .register("{SENDER}", this.plugin.getServer().getPlayer(parcel.sender()).getName())
+            .register("{RECEIVER}", this.plugin.getServer().getPlayer(parcel.receiver()).getName())
             .register("{SIZE}", parcel.size().toString())
             .register("{PRIORITY}", parcel.priority() ? this.miniMessage.deserialize("&aYes") : this.miniMessage.deserialize("&cNo"))
             .register("{DESCRIPTION}", parcel.description())
             .register("{RECIPIENTS}", parcel.recipients().stream()
-                .map(this.server::getPlayer)
+                .map(this.plugin.getServer()::getPlayer)
                 .filter(Objects::nonNull)
                 .map(Player::getName)
                 .toList()
@@ -132,7 +128,7 @@ public class ParcelListGUI extends GuiView {
         List<String> newLore = new ArrayList<>();
 
         for (String line : lore) {
-            formatter.format(line);
+            line = formatter.format(line);
             newLore.add(line);
         }
 

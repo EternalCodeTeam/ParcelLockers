@@ -62,7 +62,6 @@ public class PluginConfiguration implements ReloadableConfig {
         public ConfigItem parcelLockerItem = new ConfigItem()
                 .setName("&3Parcel locker")
                 .setType(Material.CHEST)
-                .setGlow(true)
                 .setLore(List.of("&bPlace to create a parcel locker."));
     }
 
@@ -147,6 +146,27 @@ public class PluginConfiguration implements ReloadableConfig {
                 .setName("&5Parcel archive")
                 .setLore(List.of("&eClick to show all parcels, which you sent or received in the past."))
                 .setType(Material.WRITTEN_BOOK);
+
+        @Description({" ", "# The item of the parcel locker collect button"})
+        public ConfigItem parcelLockerCollectItem = new ConfigItem()
+                .setName("&aCollect parcels")
+                .setLore(List.of("&aClick to collect your parcels."))
+                .setType(Material.HOPPER)
+                .setGlow(true);
+
+        @Description({" ", "# The item of the parcel locker send button"})
+        public ConfigItem parcelLockerSendItem = new ConfigItem()
+                .setName("&bSend parcels")
+                .setLore(List.of("&bClick to send parcels."))
+                .setType(Material.BUNDLE)
+                .setGlow(true);
+
+        @Description({" ", "# The item of the parcel locker status button"})
+        public ConfigItem parcelLockerStatusItem = new ConfigItem()
+                .setName("&3Parcel locker status")
+                .setLore(List.of("&bClick to show the status of your parcel locker."))
+                .setType(Material.END_PORTAL_FRAME)
+                .setGlow(true);
 
         @Description({" ", "# The item of the parcel"})
         public ConfigItem parcelItem = new ConfigItem()

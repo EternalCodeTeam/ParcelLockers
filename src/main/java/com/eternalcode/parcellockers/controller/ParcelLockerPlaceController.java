@@ -37,7 +37,7 @@ public class ParcelLockerPlaceController implements Listener {
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent event) {
         Player player = event.getPlayer();
-        if (event.getItemInHand().equals(this.config.settings.parcelLockerItem.toGuiItem(this.miniMessage).getItemStack())) {
+        //if (event.getItemInHand().equals(this.config.settings.parcelLockerItem.toGuiItem(this.miniMessage).getItemStack())) {
             ConversationFactory conversationFactory = new ConversationFactory(this.plugin)
                 .addConversationAbandonedListener(e -> {
                     if (e.gracefulExit()) {
@@ -60,6 +60,6 @@ public class ParcelLockerPlaceController implements Listener {
                 .withFirstPrompt(new ParcelLockerPlacePrompt(this.announcer, this.config));
 
             player.beginConversation(conversationFactory.buildConversation(player));
-        }
+        //}
     }
 }

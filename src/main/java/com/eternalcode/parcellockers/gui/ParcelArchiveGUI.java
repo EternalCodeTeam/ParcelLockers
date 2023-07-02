@@ -5,7 +5,7 @@ import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 
-// TODO
+// TODO archive gui
 public class ParcelArchiveGUI extends GuiView {
 
     private final MiniMessage miniMessage;
