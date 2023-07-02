@@ -18,7 +18,6 @@ import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelManager;
 import com.eternalcode.parcellockers.parcellocker.ParcelLockerManager;
-import com.eternalcode.parcellockers.parcellocker.repository.ParcelLockerRepository;
 import com.eternalcode.parcellockers.updater.UpdaterService;
 import com.eternalcode.parcellockers.util.legacy.LegacyColorProcessor;
 import com.google.common.base.Stopwatch;
@@ -77,21 +76,21 @@ public final class ParcelLockers extends JavaPlugin {
 
         HikariDataSource dataSource = DataSourceFactory.buildHikariDataSource(config, this.getDataFolder());
 
-        ParcelLockerRepository parcelLockerRepository = new ParcelLockerDatabaseService(dataSource);
+        ParcelLockerDatabaseService parcelLockerDatabaseService = new ParcelLockerDatabaseService(dataSource);
         ParcelDatabaseService parcelRepository = new ParcelDatabaseService(dataSource);
 
-        ParcelManager parcelManager = new ParcelManager(this, config, announcer, parcelRepository, parcelLockerRepository);
-        ParcelLockerManager parcelLockerManager = new ParcelLockerManager(parcelLockerRepository);
+        ParcelManager parcelManager = new ParcelManager(this, config, announcer, parcelRepository, parcelLockerDatabaseService);
+        ParcelLockerManager parcelLockerManager = new ParcelLockerManager(parcelLockerDatabaseService);
 
-        MainGUI mainGUI = new MainGUI(this, this.getServer(), miniMessage, config, parcelRepository, parcelLockerRepository);
-        ParcelListGUI parcelListGUI = new ParcelListGUI(this, miniMessage, config, parcelRepository, parcelLockerRepository);
+        MainGUI mainGUI = new MainGUI(this, this.getServer(), miniMessage, config, parcelRepository, parcelLockerDatabaseService);
+        ParcelListGUI parcelListGUI = new ParcelListGUI(this, miniMessage, config, parcelRepository, parcelLockerDatabaseService);
 
         this.liteCommands = LiteBukkitAdventurePlatformFactory.builder(this.getServer(), "parcellockers", false, this.audiences, true)
                 .argument(Parcel.class, new ParcelArgument(parcelRepository))
                 .argument(Player.class, new PlayerArgument(this.getServer(), config))
                 .contextualBind(Player.class, new BukkitOnlyPlayerContextual<>(config.messages.onlyForPlayers))
                 .commandInstance(
-                        new ParcelCommand(this.getServer(), parcelLockerRepository, announcer, config, mainGUI, parcelListGUI, parcelManager),
+                        new ParcelCommand(this.getServer(), parcelLockerDatabaseService, announcer, config, mainGUI, parcelListGUI, parcelManager),
                         new ParcelLockerCommand(configManager, config, announcer, miniMessage)
                 )
                 .invalidUsageHandler(new InvalidUsage(announcer, config))
@@ -99,8 +98,8 @@ public final class ParcelLockers extends JavaPlugin {
                 .register();
 
         Stream.of(
-            new ParcelLockerInteractionController(parcelLockerRepository, parcelRepository, miniMessage, this, config),
-            new ParcelLockerPlaceController(config, miniMessage, this, parcelLockerRepository, announcer)
+            new ParcelLockerInteractionController(parcelLockerDatabaseService, parcelRepository, miniMessage, this, config),
+            new ParcelLockerPlaceController(config, miniMessage, this, parcelLockerDatabaseService, announcer)
         ).forEach(controller -> this.getServer().getPluginManager().registerEvents(controller, this));
 
         new Metrics(this, 17677);
