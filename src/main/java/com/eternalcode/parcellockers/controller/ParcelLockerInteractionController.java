@@ -11,9 +11,8 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.InventoryOpenEvent;
-import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.inventory.Inventory;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.plugin.Plugin;
 
 import java.util.Set;
@@ -35,14 +34,13 @@ public class ParcelLockerInteractionController implements Listener {
     }
 
     @EventHandler
-    public void onInventoryOpen(InventoryOpenEvent event) {
-        Inventory inventory = event.getInventory();
-        Player player = (Player) event.getPlayer();
+    public void onInventoryOpen(PlayerInteractEvent event) {
+        Player player = event.getPlayer();
         Position blockPos = PositionAdapter.convert(player.getTargetBlock(Set.of(Material.AIR), 5).getLocation());
-        if (inventory.getType() == InventoryType.CHEST && this.parcelLockerDatabaseService.cache()
-            .values()
-            .stream()
-            .anyMatch(parcelLocker -> parcelLocker.position().equals(blockPos))) {
+        if (event.getAction() == Action.RIGHT_CLICK_BLOCK && (event.getClickedBlock().getType() == Material.CHEST && this.parcelLockerDatabaseService.cache()
+                .values()
+                .stream()
+                .anyMatch(parcelLocker -> parcelLocker.position().equals(blockPos)))) {
                 event.setCancelled(true);
                 new ParcelLockerMainGUI(this.miniMessage, this.plugin, this.parcelRepository, this.parcelLockerDatabaseService, this.config).show(player);
         }

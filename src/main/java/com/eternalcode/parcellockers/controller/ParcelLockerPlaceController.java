@@ -57,6 +57,7 @@ public class ParcelLockerPlaceController implements Listener {
                 })
                 .withPrefix(new NullConversationPrefix())
                 .withModality(false)
+                .withLocalEcho(false)
                 .withFirstPrompt(new ParcelLockerPlacePrompt(this.announcer, this.config));
 
             player.beginConversation(conversationFactory.buildConversation(player));
