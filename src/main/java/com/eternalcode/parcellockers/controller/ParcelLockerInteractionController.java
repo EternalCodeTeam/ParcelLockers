@@ -37,12 +37,9 @@ public class ParcelLockerInteractionController implements Listener {
     public void onInventoryOpen(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         Position blockPos = PositionAdapter.convert(player.getTargetBlock(Set.of(Material.AIR), 5).getLocation());
-        if (event.getAction() == Action.RIGHT_CLICK_BLOCK && (event.getClickedBlock().getType() == Material.CHEST && this.parcelLockerDatabaseService.cache()
-                .values()
-                .stream()
-                .anyMatch(parcelLocker -> parcelLocker.position().equals(blockPos)))) {
-                event.setCancelled(true);
-                new ParcelLockerMainGUI(this.miniMessage, this.plugin, this.parcelRepository, this.parcelLockerDatabaseService, this.config).show(player);
+        if (event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getClickedBlock().getType() == Material.CHEST && this.parcelLockerDatabaseService.positionCache().containsKey(blockPos)) {
+            event.setCancelled(true);
+            new ParcelLockerMainGUI(this.miniMessage, this.plugin, this.parcelRepository, this.parcelLockerDatabaseService, this.config).show(player);
         }
     }
 }

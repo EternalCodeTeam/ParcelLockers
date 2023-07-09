@@ -7,6 +7,7 @@ import com.eternalcode.parcellockers.command.handler.InvalidUsage;
 import com.eternalcode.parcellockers.command.handler.PermissionMessage;
 import com.eternalcode.parcellockers.configuration.ConfigurationManager;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.controller.ParcelLockerBreakController;
 import com.eternalcode.parcellockers.controller.ParcelLockerInteractionController;
 import com.eternalcode.parcellockers.controller.ParcelLockerPlaceController;
 import com.eternalcode.parcellockers.database.DataSourceFactory;
@@ -99,11 +100,13 @@ public final class ParcelLockers extends JavaPlugin {
 
         Stream.of(
             new ParcelLockerInteractionController(parcelLockerDatabaseService, parcelRepository, miniMessage, this, config),
-            new ParcelLockerPlaceController(config, miniMessage, this, parcelLockerDatabaseService, announcer)
+            new ParcelLockerPlaceController(config, miniMessage, this, parcelLockerDatabaseService, announcer),
+            new ParcelLockerBreakController(parcelLockerDatabaseService, announcer, config.messages)
         ).forEach(controller -> this.getServer().getPluginManager().registerEvents(controller, this));
 
         new Metrics(this, 17677);
         new UpdaterService(this.getDescription());
+        parcelLockerDatabaseService.updatePositionCache();
 
         long millis = started.stop().elapsed(TimeUnit.MILLISECONDS);
         this.getLogger().log(Level.INFO, "Successfully enabled ParcelLockers in {0}ms", millis);

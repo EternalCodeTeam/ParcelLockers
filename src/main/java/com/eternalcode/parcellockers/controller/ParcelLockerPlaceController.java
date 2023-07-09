@@ -8,6 +8,7 @@ import com.eternalcode.parcellockers.parcellocker.ParcelLocker;
 import com.eternalcode.parcellockers.shared.PositionAdapter;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Location;
+import org.bukkit.block.Block;
 import org.bukkit.conversations.ConversationFactory;
 import org.bukkit.conversations.NullConversationPrefix;
 import org.bukkit.entity.Player;
@@ -37,7 +38,8 @@ public class ParcelLockerPlaceController implements Listener {
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent event) {
         Player player = event.getPlayer();
-        //if (event.getItemInHand().equals(this.config.settings.parcelLockerItem.toGuiItem(this.miniMessage).getItemStack())) {
+        Block block = event.getBlock();
+        if (event.getItemInHand().equals(this.config.settings.parcelLockerItem.toGuiItem(this.miniMessage).getItemStack())) {
             ConversationFactory conversationFactory = new ConversationFactory(this.plugin)
                 .addConversationAbandonedListener(e -> {
                     if (e.gracefulExit()) {
@@ -61,6 +63,6 @@ public class ParcelLockerPlaceController implements Listener {
                 .withFirstPrompt(new ParcelLockerPlacePrompt(this.announcer, this.config));
 
             player.beginConversation(conversationFactory.buildConversation(player));
-        //}
+        }
     }
 }

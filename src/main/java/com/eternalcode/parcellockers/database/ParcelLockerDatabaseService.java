@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 public class ParcelLockerDatabaseService implements ParcelLockerRepository {
 
     private final Map<UUID, ParcelLocker> cache = new HashMap<>();
+    private final Map<Position, UUID> positionCache = new HashMap<>();
 
     private final DataSource dataSource;
 
@@ -70,6 +71,7 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
                 statement.setString(3, parcelLocker.position().toString());
                 statement.execute();
                 this.cache.put(parcelLocker.uuid(), parcelLocker);
+                this.positionCache.put(parcelLocker.position(), parcelLocker.uuid());
             }
             catch (SQLException e) {
                 Sentry.captureException(e);
@@ -117,6 +119,7 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
                 statement.setString(1, uuid.toString());
                 statement.execute();
                 this.cache.remove(uuid);
+                this.positionCache.remove(this.cache.get(uuid).position());
             }
             catch (SQLException e) {
                 Sentry.captureException(e);
@@ -171,7 +174,10 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
             );
             set.add(parcelLocker);
         }
-        set.forEach(parcelLocker -> this.cache.put(parcelLocker.uuid(), parcelLocker));
+        set.forEach(parcelLocker -> {
+            this.cache.put(parcelLocker.uuid(), parcelLocker);
+            this.positionCache.put(parcelLocker.position(), parcelLocker.uuid());
+        });
         return set;
     }
 
@@ -181,6 +187,29 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
 
     public Map<UUID, ParcelLocker> cache() {
         return Collections.unmodifiableMap(this.cache);
+    }
+
+    public Map<Position, UUID> positionCache() {
+        return Collections.unmodifiableMap(this.positionCache);
+    }
+
+    public CompletableFuture<Void> updatePositionCache() {
+        return CompletableFuture.runAsync(() -> {
+            try (Connection connection = this.dataSource.getConnection();
+                 PreparedStatement statement = connection.prepareStatement(
+                     "SELECT * FROM `parcellockers` WHERE `position` IS NOT NULL;"
+                 )
+            ) {
+                ResultSet rs = statement.executeQuery();
+                this.positionCache.clear();
+                while (rs.next()) {
+                    this.positionCache.put(Position.parse(rs.getString("position")), UUID.fromString(rs.getString("uuid")));
+                }
+            } catch (SQLException e) {
+                Sentry.captureException(e);
+                throw new ParcelLockersException(e);
+            }
+        }).orTimeout(5, TimeUnit.SECONDS);
     }
 
     private CompletableFuture<Optional<ParcelLocker>> findBy(String column, String value) {

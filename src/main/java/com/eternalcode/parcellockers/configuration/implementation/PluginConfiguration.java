@@ -80,7 +80,9 @@ public class PluginConfiguration implements ReloadableConfig {
         public String failedToCreateParcelLocker = "&7» &cCould not create the parcel locker.";
         public String parcelLockerSuccessfullyCreated = "&7» &aParcel locker created successfully.";
         public String enterDescriptionPrompt = "&7» &eEnter a description for the parcel locker:";
-
+        public String cannotBreakParcelLocker = "&7» &cYou have no permission to break the parcel locker.";
+        public String parcelLockerSuccessfullyDeleted = "&7» &aParcel locker deleted successfully.";
+        public String broadcastParcelLockerRemoved = "&7» &a&lWARNING! &r&4The parcel locker at &c{X} {Y} {Z} in world {WORLD} &4has been removed by &4{PLAYER}!";
         @Description({" ", "# The parcel info message."})
         public List<String> parcelInfoMessages = List.of(
             "&7» &6Parcel info:",
@@ -158,7 +160,7 @@ public class PluginConfiguration implements ReloadableConfig {
         public ConfigItem parcelLockerSendItem = new ConfigItem()
                 .setName("&bSend parcels")
                 .setLore(List.of("&bClick to send parcels."))
-                .setType(Material.BUNDLE)
+                .setType(Material.SCULK_SHRIEKER)
                 .setGlow(true);
 
         @Description({" ", "# The item of the parcel locker status button"})

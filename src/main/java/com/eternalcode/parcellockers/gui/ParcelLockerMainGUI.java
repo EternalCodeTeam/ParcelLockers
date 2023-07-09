@@ -45,8 +45,8 @@ public class ParcelLockerMainGUI extends GuiView {
             gui.setItem(slot, cornerItem);
         }
 
-        for (int i = 0; i < gui.getRows() * 9 - 1; i++) {
-            gui.setItem(i, backgroundItem);
+        for (int slot : BORDER_SLOTS) {
+            gui.setItem(slot, backgroundItem);
         }
 
         gui.setItem(20, this.config.guiSettings.parcelLockerCollectItem.toGuiItem(this.miniMessage, event -> new ParcelListGUI(this.plugin, this.miniMessage, this.config, this.parcelRepository, this.parcelLockerRepository).show(player)));
