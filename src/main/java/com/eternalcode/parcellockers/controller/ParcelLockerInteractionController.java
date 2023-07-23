@@ -21,19 +21,13 @@ import java.util.Set;
 public class ParcelLockerInteractionController implements Listener {
 
     private final ParcelLockerDatabaseService parcelLockerDatabaseService;
-    private final ParcelRepository parcelRepository;
     private final MiniMessage miniMessage;
-    private final Plugin plugin;
     private final PluginConfiguration config;
-    private final MainGUI mainGUI;
 
     public ParcelLockerInteractionController(ParcelLockerDatabaseService parcelLockerDatabaseService, ParcelRepository parcelRepository, MiniMessage miniMessage, Plugin plugin, PluginConfiguration config, MainGUI mainGUI) {
         this.parcelLockerDatabaseService = parcelLockerDatabaseService;
-        this.parcelRepository = parcelRepository;
         this.miniMessage = miniMessage;
-        this.plugin = plugin;
         this.config = config;
-        this.mainGUI = mainGUI;
     }
 
     @EventHandler
@@ -42,7 +36,7 @@ public class ParcelLockerInteractionController implements Listener {
         Position blockPos = PositionAdapter.convert(player.getTargetBlock(Set.of(Material.AIR), 5).getLocation());
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getClickedBlock().getType() == Material.CHEST && this.parcelLockerDatabaseService.positionCache().containsKey(blockPos)) {
             event.setCancelled(true);
-            new ParcelLockerMainGUI(this.miniMessage, this.plugin, this.parcelRepository, this.parcelLockerDatabaseService, this.config, this.mainGUI).show(player);
+            new ParcelLockerMainGUI(this.miniMessage, this.config).show(player);
         }
     }
 }
