@@ -107,7 +107,7 @@ public final class ParcelLockers extends JavaPlugin {
 //        }
 
         Stream.of(
-            new ParcelLockerInteractionController(parcelLockerDatabaseService, parcelRepository, miniMessage, this, config, mainGUI),
+            new ParcelLockerInteractionController(parcelLockerDatabaseService, miniMessage, config),
             new ParcelLockerPlaceController(config, miniMessage, this, parcelLockerDatabaseService, announcer),
             new ParcelLockerBreakController(parcelLockerDatabaseService, announcer, config.messages)
         ).forEach(controller -> this.getServer().getPluginManager().registerEvents(controller, this));
