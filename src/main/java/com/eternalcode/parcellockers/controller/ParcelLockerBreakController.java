@@ -11,6 +11,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockBurnEvent;
+import org.bukkit.event.block.BlockDamageEvent;
+import org.bukkit.event.block.BlockExplodeEvent;
+import org.bukkit.event.block.BlockIgniteEvent;
 import panda.utilities.text.Formatter;
 
 
@@ -49,5 +53,45 @@ public class ParcelLockerBreakController implements Listener {
             this.announcer.broadcast(formatter.format(this.messages.broadcastParcelLockerRemoved));
         }
 
+    }
+
+    @EventHandler
+    public void onBlockBurn(BlockBurnEvent event) {
+        Block block = event.getBlock();
+        Location location = block.getLocation();
+        Position position = PositionAdapter.convert(location);
+        if (this.parcelLockerDatabaseService.positionCache().containsKey(position)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onBlockExplode(BlockExplodeEvent event) {
+        Block block = event.getBlock();
+        Location location = block.getLocation();
+        Position position = PositionAdapter.convert(location);
+        if (this.parcelLockerDatabaseService.positionCache().containsKey(position)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onBlockIgnite(BlockIgniteEvent event) {
+        Block block = event.getBlock();
+        Location location = block.getLocation();
+        Position position = PositionAdapter.convert(location);
+        if (this.parcelLockerDatabaseService.positionCache().containsKey(position)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onBlockDamage(BlockDamageEvent event) {
+        Block block = event.getBlock();
+        Location location = block.getLocation();
+        Position position = PositionAdapter.convert(location);
+        if (this.parcelLockerDatabaseService.positionCache().containsKey(position)) {
+            event.setCancelled(true);
+        }
     }
 }
