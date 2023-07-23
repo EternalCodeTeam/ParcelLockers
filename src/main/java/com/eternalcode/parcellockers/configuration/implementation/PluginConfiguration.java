@@ -63,6 +63,15 @@ public class PluginConfiguration implements ReloadableConfig {
                 .setName("&3Parcel locker")
                 .setType(Material.CHEST)
                 .setLore(List.of("&bPlace to create a parcel locker."));
+
+        @Description({" ", "# Small parcel cost."})
+        public double smallParcelCost = 5.0;
+
+        @Description({" ", "# Medium parcel cost."})
+        public double mediumParcelCost = 10.0;
+
+        @Description({" ", "# Large parcel cost."})
+        public double largeParcelCost = 15.0;
     }
 
     @Contextual
@@ -213,6 +222,12 @@ public class PluginConfiguration implements ReloadableConfig {
                 )
                 .setType(Material.CHEST_MINECART);
 
+        @Description({" ", "# The item of the parcel item storage button"})
+        public ConfigItem parcelStorageItem = new ConfigItem()
+            .setName("&6Parcel storage")
+            .setLore(List.of("&eClick to edit the parcel content."))
+            .setType(Material.CHEST);
+
         @Description({" ", "# The item of the previous page button"})
         public ConfigItem previousPageItem = new ConfigItem()
                 .setName("&bPrevious page")
@@ -224,6 +239,15 @@ public class PluginConfiguration implements ReloadableConfig {
                 .setName("&bNext page")
                 .setLore(List.of("&bClick to go to the next page."))
                 .setType(Material.ARROW);
+
+        @Description({" ", "# The name of the parcel small content GUI"})
+        public String parcelSmallContentGuiTitle = "&aSmall parcel content";
+
+        @Description({" ", "# The name of the parcel medium content GUI"})
+        public String parcelMediumContentGuiTitle = "&eMedium parcel content";
+
+        @Description({" ", "# The name of the parcel large content GUI"})
+        public String parcelLargeContentGuiTitle = "&cLarge parcel content";
     }
 
     @Override

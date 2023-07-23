@@ -35,7 +35,6 @@ import net.milkbowl.vault.economy.Economy;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Arrays;
@@ -88,8 +87,7 @@ public final class ParcelLockers extends JavaPlugin {
         ParcelLockerManager parcelLockerManager = new ParcelLockerManager(parcelLockerDatabaseService);
 
         MainGUI mainGUI = new MainGUI(this, this.getServer(), miniMessage, config, parcelRepository, parcelLockerDatabaseService);
-        ParcelListGUI parcelListGUI = new ParcelListGUI(this, miniMessage, config, parcelRepository, parcelLockerDatabaseService);
-
+        ParcelListGUI parcelListGUI = new ParcelListGUI(this, miniMessage, config, parcelRepository, parcelLockerDatabaseService, mainGUI);
         this.liteCommands = LiteBukkitAdventurePlatformFactory.builder(this.getServer(), "parcellockers", false, this.audiences, true)
                 .argument(Parcel.class, new ParcelArgument(parcelRepository))
                 .argument(Player.class, new PlayerArgument(this.getServer(), config))
@@ -102,14 +100,14 @@ public final class ParcelLockers extends JavaPlugin {
                 .permissionHandler(new PermissionMessage(announcer, config))
                 .register();
 
-        if (!this.setupEconomy()) {
-            this.getLogger().severe("Disabling due to no Vault dependency found!");
-            this.getServer().getPluginManager().disablePlugin(this);
-            return;
-        }
+//        if (!this.setupEconomy()) {
+//            this.getLogger().severe("Disabling due to no Vault dependency found!");
+//            this.getServer().getPluginManager().disablePlugin(this);
+//            return;
+//        }
 
         Stream.of(
-            new ParcelLockerInteractionController(parcelLockerDatabaseService, parcelRepository, miniMessage, this, config),
+            new ParcelLockerInteractionController(parcelLockerDatabaseService, parcelRepository, miniMessage, this, config, mainGUI),
             new ParcelLockerPlaceController(config, miniMessage, this, parcelLockerDatabaseService, announcer),
             new ParcelLockerBreakController(parcelLockerDatabaseService, announcer, config.messages)
         ).forEach(controller -> this.getServer().getPluginManager().registerEvents(controller, this));
@@ -153,17 +151,17 @@ public final class ParcelLockers extends JavaPlugin {
         logger.info("Server version: " + this.getServer().getVersion());
     }
 
-    private boolean setupEconomy() {
-        if (this.getServer().getPluginManager().getPlugin("Vault") == null) {
-            return false;
-        }
-        RegisteredServiceProvider<Economy> rsp = this.getServer().getServicesManager().getRegistration(Economy.class);
-        if (rsp == null) {
-            return false;
-        }
-        this.economy = rsp.getProvider();
-        return true;
-    }
+//    private boolean setupEconomy() {
+//        if (this.getServer().getPluginManager().getPlugin("Vault") == null) {
+//            return false;
+//        }
+//        RegisteredServiceProvider<Economy> rsp = this.getServer().getServicesManager().getRegistration(Economy.class);
+//        if (rsp == null) {
+//            return false;
+//        }
+//        this.economy = rsp.getProvider();
+//        return true;
+//    }
 
     public Economy getEconomy() {
         return this.economy;

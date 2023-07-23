@@ -25,17 +25,19 @@ public class ParcelListGUI extends GuiView {
     private final PluginConfiguration config;
     private final ParcelRepository parcelRepository;
     private final ParcelLockerRepository parcelLockerRepository;
+    private final MainGUI mainGUI;
 
     private static final int WIDTH = 7;
     private static final int HEIGHT = 4;
     private static final Page FIRST_PAGE = new Page(0, WIDTH * HEIGHT);
 
-    public ParcelListGUI(Plugin plugin, MiniMessage miniMessage, PluginConfiguration config, ParcelRepository parcelRepository, ParcelLockerRepository parcelLockerRepository) {
+    public ParcelListGUI(Plugin plugin, MiniMessage miniMessage, PluginConfiguration config, ParcelRepository parcelRepository, ParcelLockerRepository parcelLockerRepository, MainGUI mainGUI) {
         this.plugin = plugin;
         this.miniMessage = miniMessage;
         this.config = config;
         this.parcelRepository = parcelRepository;
         this.parcelLockerRepository = parcelLockerRepository;
+        this.mainGUI = mainGUI;
     }
 
     @Override
@@ -50,6 +52,7 @@ public class ParcelListGUI extends GuiView {
         GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem(this.miniMessage);
         GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage, event -> {
             player.closeInventory();
+            this.mainGUI.show(player);
         });
         GuiItem previousPageItem = this.config.guiSettings.previousPageItem.toGuiItem(this.miniMessage, event -> this.show(player, page.previous()));
         GuiItem nextPageItem = this.config.guiSettings.nextPageItem.toGuiItem(this.miniMessage, event -> this.show(player, page.next()));

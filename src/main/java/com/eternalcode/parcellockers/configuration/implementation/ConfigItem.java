@@ -28,6 +28,7 @@ public class ConfigItem {
             .lore(this.lore.stream().map(element -> RESET_ITEM.append(miniMessage.deserialize(element))).toList())
             .flags(ItemFlag.HIDE_ATTRIBUTES)
             .flags(ItemFlag.HIDE_ENCHANTS)
+            .glow(glow)
             .asGuiItem(action);
     }
 

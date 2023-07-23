@@ -2,6 +2,7 @@ package com.eternalcode.parcellockers.controller;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.database.ParcelLockerDatabaseService;
+import com.eternalcode.parcellockers.gui.MainGUI;
 import com.eternalcode.parcellockers.gui.ParcelLockerMainGUI;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.shared.Position;
@@ -24,13 +25,15 @@ public class ParcelLockerInteractionController implements Listener {
     private final MiniMessage miniMessage;
     private final Plugin plugin;
     private final PluginConfiguration config;
+    private final MainGUI mainGUI;
 
-    public ParcelLockerInteractionController(ParcelLockerDatabaseService parcelLockerDatabaseService, ParcelRepository parcelRepository, MiniMessage miniMessage, Plugin plugin, PluginConfiguration config) {
+    public ParcelLockerInteractionController(ParcelLockerDatabaseService parcelLockerDatabaseService, ParcelRepository parcelRepository, MiniMessage miniMessage, Plugin plugin, PluginConfiguration config, MainGUI mainGUI) {
         this.parcelLockerDatabaseService = parcelLockerDatabaseService;
         this.parcelRepository = parcelRepository;
         this.miniMessage = miniMessage;
         this.plugin = plugin;
         this.config = config;
+        this.mainGUI = mainGUI;
     }
 
     @EventHandler
@@ -39,7 +42,7 @@ public class ParcelLockerInteractionController implements Listener {
         Position blockPos = PositionAdapter.convert(player.getTargetBlock(Set.of(Material.AIR), 5).getLocation());
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getClickedBlock().getType() == Material.CHEST && this.parcelLockerDatabaseService.positionCache().containsKey(blockPos)) {
             event.setCancelled(true);
-            new ParcelLockerMainGUI(this.miniMessage, this.plugin, this.parcelRepository, this.parcelLockerDatabaseService, this.config).show(player);
+            new ParcelLockerMainGUI(this.miniMessage, this.plugin, this.parcelRepository, this.parcelLockerDatabaseService, this.config, this.mainGUI).show(player);
         }
     }
 }
