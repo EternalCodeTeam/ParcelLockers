@@ -31,9 +31,11 @@ import io.papermc.lib.environments.Environment;
 import io.sentry.Sentry;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.milkbowl.vault.economy.Economy;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Arrays;
@@ -47,6 +49,8 @@ public final class ParcelLockers extends JavaPlugin {
     private LiteCommands<CommandSender> liteCommands;
 
     private BukkitAudiences audiences;
+
+    private Economy economy;
 
     @Override
     public void onEnable() {
@@ -98,6 +102,12 @@ public final class ParcelLockers extends JavaPlugin {
                 .permissionHandler(new PermissionMessage(announcer, config))
                 .register();
 
+        if (!this.setupEconomy()) {
+            this.getLogger().severe("Disabling due to no Vault dependency found!");
+            this.getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+
         Stream.of(
             new ParcelLockerInteractionController(parcelLockerDatabaseService, parcelRepository, miniMessage, this, config),
             new ParcelLockerPlaceController(config, miniMessage, this, parcelLockerDatabaseService, announcer),
@@ -141,6 +151,22 @@ public final class ParcelLockers extends JavaPlugin {
 
         logger.info("Your server is running on supported software, congratulations!");
         logger.info("Server version: " + this.getServer().getVersion());
+    }
+
+    private boolean setupEconomy() {
+        if (this.getServer().getPluginManager().getPlugin("Vault") == null) {
+            return false;
+        }
+        RegisteredServiceProvider<Economy> rsp = this.getServer().getServicesManager().getRegistration(Economy.class);
+        if (rsp == null) {
+            return false;
+        }
+        this.economy = rsp.getProvider();
+        return true;
+    }
+
+    public Economy getEconomy() {
+        return this.economy;
     }
 }
 

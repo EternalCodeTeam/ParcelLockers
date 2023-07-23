@@ -37,6 +37,7 @@ public class ParcelLockerMainGUI extends GuiView {
             .title(RESET_ITEM.append(this.miniMessage.deserialize(this.config.guiSettings.mainGuiTitle)))
             .rows(6)
             .disableAllInteractions()
+            .title(this.miniMessage.deserialize(this.config.guiSettings.parcelLockerMainGuiTitle))
             .create();
 
         gui.setDefaultClickAction(event -> event.setCancelled(true));

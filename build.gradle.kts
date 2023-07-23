@@ -40,6 +40,9 @@ dependencies {
     // gui library
     implementation("dev.triumphteam:triumph-gui:3.1.5")
 
+    // economy
+    compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
+
     // CDN
     implementation("net.dzikoysk:cdn:1.14.4")
 

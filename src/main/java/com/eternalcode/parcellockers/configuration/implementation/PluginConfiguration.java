@@ -112,6 +112,33 @@ public class PluginConfiguration implements ReloadableConfig {
         @Description({" ", "# The item of the parcel locker main GUI"})
         public String parcelLockerMainGuiTitle = "&3Parcel locker";
 
+        @Description({" ", "# The item of the parcel locker sending GUI"})
+        public String parcelLockerSendingGuiTitle = "&3Parcel sending";
+
+        @Description({" ", "# The item of the small parcel size button"})
+        public ConfigItem smallParcelSizeItem = new ConfigItem()
+                .setName("&aSmall")
+                .setLore(List.of("&bClick to select the small parcel size."))
+                .setType(Material.LIME_STAINED_GLASS);
+
+        @Description({" ", "# The item of the medium parcel size button"})
+        public ConfigItem mediumParcelSizeItem = new ConfigItem()
+                .setName("&eMedium")
+                .setLore(List.of("&bClick to select the medium parcel size."))
+                .setType(Material.YELLOW_STAINED_GLASS);
+
+        @Description({" ", "# The item of the large parcel size button"})
+        public ConfigItem largeParcelSizeItem = new ConfigItem()
+                .setName("&cLarge")
+                .setLore(List.of("&bClick to select the large parcel size."))
+                .setType(Material.RED_STAINED_GLASS);
+
+        @Description({" ", "# The item of the priority button"})
+        public ConfigItem priorityItem = new ConfigItem()
+                .setName("&aPriority")
+                .setLore(List.of("&bClick to select the priority."))
+                .setType(Material.REDSTONE);
+
         @Description({" ", "# The close button item"})
         public ConfigItem closeItem = new ConfigItem()
                 .setName("&cClose")
