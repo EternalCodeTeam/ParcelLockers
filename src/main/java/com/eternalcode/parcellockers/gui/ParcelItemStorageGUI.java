@@ -19,6 +19,10 @@ public class ParcelItemStorageGUI {
     }
 
     void show(Player player, ParcelSize size) {
+        /**
+         * Confirm items button
+         * Cancel items button (closes GUI)
+         */
         switch (size) {
             case SMALL -> this.gui = Gui.storage()
                 .title(Component.text(this.config.guiSettings.parcelSmallContentGuiTitle))

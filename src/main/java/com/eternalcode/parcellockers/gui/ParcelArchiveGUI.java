@@ -19,7 +19,7 @@ public class ParcelArchiveGUI extends GuiView {
     }
 
     @Override
-    public void show(Player player) {
+    void show(Player player) {
 
     }
 }
