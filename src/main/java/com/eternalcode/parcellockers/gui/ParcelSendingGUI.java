@@ -28,7 +28,7 @@ public class ParcelSendingGUI extends GuiView {
         GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem(this.miniMessage);
         GuiItem storageItem = this.config.guiSettings.parcelStorageItem.toGuiItem(this.miniMessage, event -> {
             event.getView().close();
-            new ParcelItemStorageGUI(this.config).show(player, this.size);
+            new ParcelItemStorageGUI(this.config, this.miniMessage).show(player, this.size);
         });
         GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage, event -> {
             event.getView().close();
@@ -55,15 +55,15 @@ public class ParcelSendingGUI extends GuiView {
 
         GuiAction<InventoryClickEvent> mediumButtonAction = event -> {
             this.size = ParcelSize.MEDIUM;
-            gui.updateItem(20, smallButton.setGlow(false).toGuiItem(this.miniMessage));
+            gui.updateItem(20, smallButton.setGlow(false).toGuiItem(this.miniMessage, smallButtonAction));
             gui.updateItem(22, mediumButton.setGlow(true).toGuiItem(this.miniMessage));
             gui.updateItem(24, largeButton.setGlow(false).toGuiItem(this.miniMessage));
         };
 
         GuiAction<InventoryClickEvent> largeButtonAction = event -> {
             this.size = ParcelSize.LARGE;
-            gui.updateItem(20, smallButton.setGlow(false).toGuiItem(this.miniMessage));
-            gui.updateItem(22, mediumButton.setGlow(false).toGuiItem(this.miniMessage));
+            gui.updateItem(20, smallButton.setGlow(false).toGuiItem(this.miniMessage, smallButtonAction));
+            gui.updateItem(22, mediumButton.setGlow(false).toGuiItem(this.miniMessage, mediumButtonAction));
             gui.updateItem(24, largeButton.setGlow(true).toGuiItem(this.miniMessage));
         };
 

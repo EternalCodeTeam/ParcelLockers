@@ -240,6 +240,18 @@ public class PluginConfiguration implements ReloadableConfig {
                 .setLore(List.of("&bClick to go to the next page."))
                 .setType(Material.ARROW);
 
+        @Description({" ", "# The item of the confirm items button"})
+        public ConfigItem confirmItemsItem = new ConfigItem()
+                .setName("&aConfirm items")
+                .setLore(List.of("&aClick to confirm the items."))
+                .setType(Material.LIME_STAINED_GLASS_PANE);
+
+        @Description({" ", "# The item of the cancel items button"})
+        public ConfigItem cancelItemsItem = new ConfigItem()
+                .setName("&cCancel items")
+                .setLore(List.of("&cClick to cancel the items."))
+                .setType(Material.RED_STAINED_GLASS_PANE);
+
         @Description({" ", "# The name of the parcel small content GUI"})
         public String parcelSmallContentGuiTitle = "&aSmall parcel content";
 
