@@ -46,30 +46,19 @@ public class ParcelSendingGUI extends GuiView {
             .title(this.miniMessage.deserialize(this.config.guiSettings.parcelLockerSendingGuiTitle))
             .create();
 
-        GuiAction<InventoryClickEvent> smallButtonAction = event -> {
+        final GuiAction<InventoryClickEvent> smallButtonAction = event -> {
             this.size = ParcelSize.SMALL;
             gui.updateItem(20, smallButton.setGlow(true).toGuiItem(this.miniMessage));
             gui.updateItem(22, mediumButton.setGlow(false).toGuiItem(this.miniMessage));
             gui.updateItem(24, largeButton.setGlow(false).toGuiItem(this.miniMessage));
         };
 
-        GuiAction<InventoryClickEvent> mediumButtonAction = event -> {
-            this.size = ParcelSize.MEDIUM;
-            gui.updateItem(20, smallButton.setGlow(false).toGuiItem(this.miniMessage, smallButtonAction));
-            gui.updateItem(22, mediumButton.setGlow(true).toGuiItem(this.miniMessage));
-            gui.updateItem(24, largeButton.setGlow(false).toGuiItem(this.miniMessage));
-        };
+        final GuiAction<InventoryClickEvent> mediumButtonAction = event -> this.updateMediumButton(gui, smallButton, mediumButton, largeButton);
 
-        GuiAction<InventoryClickEvent> largeButtonAction = event -> {
-            this.size = ParcelSize.LARGE;
-            gui.updateItem(20, smallButton.setGlow(false).toGuiItem(this.miniMessage, smallButtonAction));
-            gui.updateItem(22, mediumButton.setGlow(false).toGuiItem(this.miniMessage, mediumButtonAction));
-            gui.updateItem(24, largeButton.setGlow(true).toGuiItem(this.miniMessage));
-        };
+        final GuiAction<InventoryClickEvent> largeButtonAction = event -> this.updateSmallButton(gui, smallButton, mediumButton, largeButton);
 
         GuiAction<InventoryClickEvent> priorityItemAction = event -> {
-            this.priority = !this.priority;
-            gui.updateItem(31, priorityItem.setGlow(this.priority).toGuiItem(this.miniMessage));
+            this.updatePriorityButton(gui, priorityItem);
         };
 
         for (int slot : CORNER_SLOTS) {
@@ -91,5 +80,31 @@ public class ParcelSendingGUI extends GuiView {
         gui.setItem(40, closeItem);
 
         gui.open(player);
+    }
+
+    private void updateSmallButton(Gui gui, ConfigItem smallButton, ConfigItem mediumButton, ConfigItem largeButton) {
+        this.size = ParcelSize.SMALL;
+        gui.updateItem(20, smallButton.setGlow(true).toGuiItem(this.miniMessage));
+        gui.updateItem(22, mediumButton.setGlow(false).toGuiItem(this.miniMessage, e -> updateMediumButton(gui, smallButton, mediumButton, largeButton)));
+        gui.updateItem(24, largeButton.setGlow(false).toGuiItem(this.miniMessage, e -> updateLargeButton(gui, smallButton, mediumButton, largeButton)));
+    }
+
+    private void updateMediumButton(Gui gui, ConfigItem smallButton, ConfigItem mediumButton, ConfigItem largeButton) {
+        this.size = ParcelSize.MEDIUM;
+        gui.updateItem(20, smallButton.setGlow(false).toGuiItem(this.miniMessage, e -> updateSmallButton(gui, smallButton, mediumButton, largeButton)));
+        gui.updateItem(22, mediumButton.setGlow(true).toGuiItem(this.miniMessage));
+        gui.updateItem(24, largeButton.setGlow(false).toGuiItem(this.miniMessage, e -> updateLargeButton(gui, smallButton, mediumButton, largeButton)));
+    }
+
+    private void updateLargeButton(Gui gui, ConfigItem smallButton, ConfigItem mediumButton, ConfigItem largeButton) {
+        this.size = ParcelSize.LARGE;
+        gui.updateItem(20, smallButton.setGlow(false).toGuiItem(this.miniMessage, e -> updateSmallButton(gui, smallButton, mediumButton, largeButton)));
+        gui.updateItem(22, mediumButton.setGlow(false).toGuiItem(this.miniMessage, e -> updateMediumButton(gui, smallButton, mediumButton, largeButton)));
+        gui.updateItem(24, largeButton.setGlow(true).toGuiItem(this.miniMessage));
+    }
+
+    private void updatePriorityButton(Gui gui, ConfigItem priorityItem) {
+        this.priority = !this.priority;
+        gui.updateItem(31, priorityItem.setGlow(this.priority).toGuiItem(this.miniMessage));
     }
 }

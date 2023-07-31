@@ -38,7 +38,7 @@ public class ParcelLockerPlaceController implements Listener {
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent event) {
         Player player = event.getPlayer();
-        if (event.getItemInHand().getItemMeta().getLore() != null && ItemUtil.equals(event.getItemInHand(), this.config.settings.parcelLockerItem.toGuiItem(this.miniMessage).getItemStack())) {
+        if (event.getItemInHand().getItemMeta().getLore() != null && (ItemUtil.equals(event.getItemInHand(), this.config.settings.parcelLockerItem.toGuiItem(this.miniMessage).getItemStack()))) {
             ConversationFactory conversationFactory = new ConversationFactory(this.plugin)
                 .addConversationAbandonedListener(e -> {
                     if (e.gracefulExit()) {
