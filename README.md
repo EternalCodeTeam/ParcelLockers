@@ -51,6 +51,7 @@ more.
 - [ ] Parcel fee
 - [ ] Rewrite database to ORMLite (far in future)
 - [ ] Add "business" logic
+- [ ] Add more parcel types (fragile, etc...)
 - [ ] Add option to config for parcel locker space (e.g. max parcels within a locker)
 - [ ] Rewrite Position class to use Integers instead of Doubles 
 - [ ] Finish GUIs

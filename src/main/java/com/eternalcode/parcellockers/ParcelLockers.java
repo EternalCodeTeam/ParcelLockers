@@ -1,5 +1,6 @@
 package com.eternalcode.parcellockers;
 
+import com.eternalcode.parcellockers.command.DebugCommand;
 import com.eternalcode.parcellockers.command.ParcelCommand;
 import com.eternalcode.parcellockers.command.argument.ParcelArgument;
 import com.eternalcode.parcellockers.command.argument.PlayerArgument;
@@ -94,7 +95,8 @@ public final class ParcelLockers extends JavaPlugin {
                 .contextualBind(Player.class, new BukkitOnlyPlayerContextual<>(config.messages.onlyForPlayers))
                 .commandInstance(
                         new ParcelCommand(this.getServer(), parcelLockerDatabaseService, announcer, config, mainGUI, parcelListGUI, parcelManager),
-                        new ParcelLockerCommand(configManager, config, announcer, miniMessage)
+                        new ParcelLockerCommand(configManager, config, announcer, miniMessage),
+                        new DebugCommand(parcelLockerDatabaseService)
                 )
                 .invalidUsageHandler(new InvalidUsage(announcer, config))
                 .permissionHandler(new PermissionMessage(announcer, config))

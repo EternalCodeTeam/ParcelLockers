@@ -67,9 +67,13 @@ public class ParcelLockerBreakController implements Listener {
 
     @EventHandler
     public void onBlockExplode(BlockExplodeEvent event) {
+        event.setCancelled(true);
+        System.out.println("BlockExplodeEvent");
         Block block = event.getBlock();
         Location location = block.getLocation();
+        System.out.println("Location: " + location);
         Position position = PositionAdapter.convert(location);
+        System.out.println("Position: " + position);
         if (this.parcelLockerDatabaseService.positionCache().containsKey(position)) {
             event.setCancelled(true);
         }
