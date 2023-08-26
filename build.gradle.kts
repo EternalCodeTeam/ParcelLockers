@@ -32,7 +32,7 @@ dependencies {
     compileOnly("org.spigotmc:spigot-api:1.20.1-experimental-SNAPSHOT")
     implementation("net.kyori:adventure-platform-bukkit:4.3.0")
     implementation("net.kyori:adventure-text-minimessage:4.14.0")
-    implementation("dev.rollczi.litecommands:bukkit-adventure:2.8.8")
+    implementation("dev.rollczi.litecommands:bukkit-adventure:2.8.9")
 
     // skull api
     implementation("dev.rollczi:liteskullapi:1.3.0")
@@ -44,14 +44,14 @@ dependencies {
     implementation("net.dzikoysk:cdn:1.14.4")
 
     // expressible
-    implementation("org.panda-lang:expressible:1.3.5")
+    implementation("org.panda-lang:expressible:1.3.6")
 
     // gitcheck
     implementation("com.eternalcode:gitcheck:1.0.0")
 
     // metrics and sentry
     implementation("org.bstats:bstats-bukkit:3.0.2")
-    implementation("io.sentry:sentry:6.26.0")
+    implementation("io.sentry:sentry:6.28.0")
 
     // database
     implementation("com.zaxxer:HikariCP:5.0.1")
@@ -70,14 +70,14 @@ dependencies {
     implementation("org.panda-lang:panda-utilities:0.5.2-alpha")
 
     // errorprone
-    errorprone("com.google.errorprone:error_prone_core:2.20.0")
+    errorprone("com.google.errorprone:error_prone_core:2.21.1")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.3")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.3")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.3")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.0")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.0")
 
-    testImplementation("org.testcontainers:junit-jupiter:1.18.3")
-    testImplementation("org.testcontainers:mysql:1.18.3")
+    testImplementation("org.testcontainers:junit-jupiter:1.19.0")
+    testImplementation("org.testcontainers:mysql:1.19.0")
     testImplementation("mysql:mysql-connector-java:8.0.33")
 }
 
@@ -86,7 +86,7 @@ java {
 }
 
 checkstyle {
-    toolVersion = "10.12.1"
+    toolVersion = "10.12.2"
 
     configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
 
