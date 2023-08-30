@@ -30,7 +30,7 @@ public class ParcelLockerBreakController implements Listener {
         this.messages = messages;
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
         Block block = event.getBlock();
         Location location = block.getLocation();
@@ -55,7 +55,7 @@ public class ParcelLockerBreakController implements Listener {
 
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onBlockBurn(BlockBurnEvent event) {
         Block block = event.getBlock();
         Location location = block.getLocation();
@@ -65,21 +65,17 @@ public class ParcelLockerBreakController implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onBlockExplode(BlockExplodeEvent event) {
-        event.setCancelled(true);
-        System.out.println("BlockExplodeEvent");
         Block block = event.getBlock();
         Location location = block.getLocation();
-        System.out.println("Location: " + location);
         Position position = PositionAdapter.convert(location);
-        System.out.println("Position: " + position);
         if (this.parcelLockerDatabaseService.positionCache().containsKey(position)) {
             event.setCancelled(true);
         }
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onBlockIgnite(BlockIgniteEvent event) {
         Block block = event.getBlock();
         Location location = block.getLocation();
@@ -89,7 +85,7 @@ public class ParcelLockerBreakController implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onBlockDamage(BlockDamageEvent event) {
         Block block = event.getBlock();
         Location location = block.getLocation();

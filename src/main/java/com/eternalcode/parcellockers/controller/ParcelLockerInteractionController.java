@@ -6,7 +6,7 @@ import com.eternalcode.parcellockers.gui.ParcelLockerMainGUI;
 import com.eternalcode.parcellockers.shared.Position;
 import com.eternalcode.parcellockers.shared.PositionAdapter;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Material;
+import org.bukkit.block.BlockType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -30,8 +30,8 @@ public class ParcelLockerInteractionController implements Listener {
     @EventHandler
     public void onInventoryOpen(PlayerInteractEvent event) {
         Player player = event.getPlayer();
-        Position blockPos = PositionAdapter.convert(player.getTargetBlock(Set.of(Material.AIR), 5).getLocation());
-        if (event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getClickedBlock().getType() == Material.CHEST && this.parcelLockerDatabaseService.positionCache().containsKey(blockPos)) {
+        Position blockPos = PositionAdapter.convert(player.getTargetBlock(Set.of(BlockType.AIR), 5).getLocation());
+        if (event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getClickedBlock().getType() == BlockType.CHEST && this.parcelLockerDatabaseService.positionCache().containsKey(blockPos)) {
             event.setCancelled(true);
             new ParcelLockerMainGUI(this.miniMessage, this.config).show(player);
         }
