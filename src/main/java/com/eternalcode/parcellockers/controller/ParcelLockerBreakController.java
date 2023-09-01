@@ -15,6 +15,7 @@ import org.bukkit.event.block.BlockBurnEvent;
 import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.BlockIgniteEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import panda.utilities.text.Formatter;
 
 
@@ -30,7 +31,7 @@ public class ParcelLockerBreakController implements Listener {
         this.messages = messages;
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
         Block block = event.getBlock();
         Location location = block.getLocation();
@@ -55,7 +56,7 @@ public class ParcelLockerBreakController implements Listener {
 
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler
     public void onBlockBurn(BlockBurnEvent event) {
         Block block = event.getBlock();
         Location location = block.getLocation();
@@ -65,7 +66,7 @@ public class ParcelLockerBreakController implements Listener {
         }
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler
     public void onBlockExplode(BlockExplodeEvent event) {
         Block block = event.getBlock();
         Location location = block.getLocation();
@@ -75,7 +76,16 @@ public class ParcelLockerBreakController implements Listener {
         }
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler
+    public void onEntityExplode(EntityExplodeEvent event) {
+        event.blockList().removeIf(block -> {
+            Location location = block.getLocation();
+            Position position = PositionAdapter.convert(location);
+            return this.parcelLockerDatabaseService.positionCache().containsKey(position);
+        });
+    }
+
+    @EventHandler
     public void onBlockIgnite(BlockIgniteEvent event) {
         Block block = event.getBlock();
         Location location = block.getLocation();
@@ -85,7 +95,7 @@ public class ParcelLockerBreakController implements Listener {
         }
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler
     public void onBlockDamage(BlockDamageEvent event) {
         Block block = event.getBlock();
         Location location = block.getLocation();
