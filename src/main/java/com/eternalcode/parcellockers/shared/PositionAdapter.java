@@ -13,7 +13,7 @@ public final class PositionAdapter {
             throw new IllegalStateException("World is not defined");
         }
 
-        return new Position(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch(), location.getWorld().getName());
+        return new Position(location.getBlockX(), location.getBlockY(), location.getBlockZ(), location.getWorld().getName());
     }
 
     public static Location convert(Position position) {
@@ -23,7 +23,7 @@ public final class PositionAdapter {
             throw new IllegalStateException("World is not defined");
         }
 
-        return new Location(world, position.x(), position.y(), position.z(), position.yaw(), position.pitch());
+        return new Location(world, position.x(), position.y(), position.z());
     }
 
 }

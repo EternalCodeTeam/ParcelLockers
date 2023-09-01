@@ -31,7 +31,7 @@ class ParcelLockerDatabaseServiceIntegrationTest extends ParcelLockerIntegration
 
         UUID uuid = UUID.randomUUID();
         String description = "Parcel locker description.";
-        Position position = new Position(1.0, 2.0, 3.0, 4.0F, 5.0F, "world");
+        Position position = new Position(1, 2, 3, "world");
 
 
         parcelLockerDatabaseService.save(new ParcelLocker(uuid, description, position));
