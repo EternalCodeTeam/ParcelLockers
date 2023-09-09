@@ -88,7 +88,7 @@ public class PluginConfiguration implements ReloadableConfig {
         public String failedToDeleteParcel = "&7» &cAn error occurred while deleting the parcel.";
         public String failedToCreateParcelLocker = "&7» &cCould not create the parcel locker.";
         public String parcelLockerSuccessfullyCreated = "&7» &aParcel locker created successfully.";
-        public String enterDescriptionPrompt = "&7» &eEnter a description for the parcel locker:";
+        public String enterDescriptionPrompt = "&7» &6Enter a description for the parcel locker:";
         public String cannotBreakParcelLocker = "&7» &cYou have no permission to break the parcel locker.";
         public String parcelLockerSuccessfullyDeleted = "&7» &aParcel locker deleted successfully.";
         public String broadcastParcelLockerRemoved = "&7» &a&lWARNING! &r&4The parcel locker at &c{X} {Y} {Z} in world {WORLD} &4has been removed by &4{PLAYER}!";

@@ -107,6 +107,7 @@ bukkit {
         "Plugin that provides functionality of parcel lockers in Minecraft, allowing players to send and receive parcels safely."
     website = "https://github.com/EternalCodeTeam/ParcelLockers"
     version = "1.0.0-SNAPSHOT"
+    depend = listOf("Vault")
 }
 
 tasks.withType<JavaCompile> {

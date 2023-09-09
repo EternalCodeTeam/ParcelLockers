@@ -10,7 +10,7 @@ public class RandomUtil {
         throw new IllegalStateException("This is a utility class and cannot be instantiated");
     }
 
-    public static String generateRandomDeliveryCode() {
+    public static String generateDeliveryCode() {
         int maxCode = 999999;
         int randomCode = RANDOM.nextInt(maxCode + 1);
         return String.format("%06d", randomCode);

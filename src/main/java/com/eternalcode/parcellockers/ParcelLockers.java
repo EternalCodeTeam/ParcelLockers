@@ -1,6 +1,5 @@
 package com.eternalcode.parcellockers;
 
-import com.eternalcode.parcellockers.command.DebugCommand;
 import com.eternalcode.parcellockers.command.ParcelCommand;
 import com.eternalcode.parcellockers.command.argument.ParcelArgument;
 import com.eternalcode.parcellockers.command.argument.PlayerArgument;
@@ -36,6 +35,7 @@ import net.milkbowl.vault.economy.Economy;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Arrays;
@@ -95,18 +95,17 @@ public final class ParcelLockers extends JavaPlugin {
                 .contextualBind(Player.class, new BukkitOnlyPlayerContextual<>(config.messages.onlyForPlayers))
                 .commandInstance(
                         new ParcelCommand(this.getServer(), parcelLockerDatabaseService, announcer, config, mainGUI, parcelListGUI, parcelManager),
-                        new ParcelLockerCommand(configManager, config, announcer, miniMessage),
-                        new DebugCommand(parcelLockerDatabaseService)
+                        new ParcelLockerCommand(configManager, config, announcer, miniMessage)
                 )
                 .invalidUsageHandler(new InvalidUsage(announcer, config))
                 .permissionHandler(new PermissionMessage(announcer, config))
                 .register();
 
-//        if (!this.setupEconomy()) {
-//            this.getLogger().severe("Disabling due to no Vault dependency found!");
-//            this.getServer().getPluginManager().disablePlugin(this);
-//            return;
-//        }
+        if (!this.setupEconomy()) {
+            this.getLogger().severe("Disabling due to no Vault dependency found!");
+            this.getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
 
         Stream.of(
             new ParcelLockerInteractionController(parcelLockerDatabaseService, miniMessage, config),
@@ -153,17 +152,17 @@ public final class ParcelLockers extends JavaPlugin {
         logger.info("Server version: " + this.getServer().getVersion());
     }
 
-//    private boolean setupEconomy() {
-//        if (this.getServer().getPluginManager().getPlugin("Vault") == null) {
-//            return false;
-//        }
-//        RegisteredServiceProvider<Economy> rsp = this.getServer().getServicesManager().getRegistration(Economy.class);
-//        if (rsp == null) {
-//            return false;
-//        }
-//        this.economy = rsp.getProvider();
-//        return true;
-//    }
+    private boolean setupEconomy() {
+        if (this.getServer().getPluginManager().getPlugin("Vault") == null) {
+            return false;
+        }
+        RegisteredServiceProvider<Economy> rsp = this.getServer().getServicesManager().getRegistration(Economy.class);
+        if (rsp == null) {
+            return false;
+        }
+        this.economy = rsp.getProvider();
+        return true;
+    }
 
     public Economy getEconomy() {
         return this.economy;
