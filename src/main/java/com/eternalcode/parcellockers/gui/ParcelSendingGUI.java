@@ -57,7 +57,7 @@ public class ParcelSendingGUI extends GuiView {
 
         final GuiAction<InventoryClickEvent> largeButtonAction = event -> this.updateSmallButton(gui, smallButton, mediumButton, largeButton);
 
-        GuiAction<InventoryClickEvent> priorityItemAction = event -> this.updatePriorityButton(gui, priorityItem);
+        final GuiAction<InventoryClickEvent> priorityItemAction = event -> this.updatePriorityButton(gui, priorityItem);
 
         for (int slot : CORNER_SLOTS) {
             gui.setItem(slot, cornerItem);
