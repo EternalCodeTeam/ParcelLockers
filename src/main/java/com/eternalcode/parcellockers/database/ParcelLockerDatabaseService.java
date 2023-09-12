@@ -203,7 +203,10 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
                 ResultSet rs = statement.executeQuery();
                 this.positionCache.clear();
                 while (rs.next()) {
-                    this.positionCache.put(Position.parse(rs.getString("position")), UUID.fromString(rs.getString("uuid")));
+                   Position position = Position.parse(rs.getString("position")); 
+                   UUID uuid = UUID.fromString(rs.getString("uuid"));
+                   
+                    this.positionCache.put(position, uuid);
                 }
             } catch (SQLException e) {
                 Sentry.captureException(e);
