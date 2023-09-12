@@ -37,6 +37,7 @@ public class ParcelLockerBreakController implements Listener {
         Location location = block.getLocation();
         Position position = PositionAdapter.convert(location);
         Player player = event.getPlayer();
+
         if (this.parcelLockerDatabaseService.positionCache().containsKey(position)) {
             if (!player.hasPermission("parcellockers.admin.break")) {
                 event.setCancelled(true);
