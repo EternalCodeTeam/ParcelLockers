@@ -58,9 +58,10 @@ public class ParcelLockerPlaceController implements Listener {
                             if (throwable != null) {
                                 throwable.printStackTrace();
                                 this.announcer.sendMessage(player, this.config.messages.failedToCreateParcelLocker);
-                            } else {
-                                this.announcer.sendMessage(player, this.config.messages.parcelLockerSuccessfullyCreated);
-                            }
+                                return;
+                            } 
+                            
+                            this.announcer.sendMessage(player, this.config.messages.parcelLockerSuccessfullyCreated);
                         });
                     } else {
                         event.setCancelled(true);
