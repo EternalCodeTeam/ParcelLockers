@@ -141,7 +141,7 @@ public class ParcelListGUI extends GuiView {
         List<String> newLore = new ArrayList<>();
 
         for (String line : lore) {
-            line = formatter.format(line);
+            newLore.add(formatter.format(line));
             newLore.add(line);
         }
 
