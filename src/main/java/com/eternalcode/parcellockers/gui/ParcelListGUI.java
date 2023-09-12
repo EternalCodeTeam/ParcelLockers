@@ -82,11 +82,11 @@ public class ParcelListGUI extends GuiView {
                    continue;
                 }
                 
-                if (!parcel.sender().equals(player.getUniqueId()) {
+                if (!parcel.sender().equals(player.getUniqueId())) {
                     continue;
                 }
                 
-                if (!parcel.recipients().contains(player.getUniqueId()) {
+                if (!parcel.recipients().contains(player.getUniqueId())) {
                     continue;
                 }
                     List<String> newLore = this.replaceParcelPlaceholders(parcel, parcelItem.getItemStack().getItemMeta().getLore());
@@ -94,7 +94,7 @@ public class ParcelListGUI extends GuiView {
 
                     gui.addItem(parcelItem);
                 }
-            }
+
 
             gui.setItem(49, closeItem);
 
