@@ -78,7 +78,17 @@ public class ParcelListGUI extends GuiView {
             }
 
             for (Parcel parcel : result.parcels()) {
-                if (parcel.sender().equals(player.getUniqueId()) || parcel.recipients().contains(player.getUniqueId()) || player.hasPermission("parcellockers.admin.debug.seeOthersParcels")) {
+               if (!player.hasPermission("parcellockers.admin.debug.seeOthersParcels")) {
+                   continue;
+                }
+                
+                if (!parcel.sender().equals(player.getUniqueId()) {
+                    continue;
+                }
+                
+                if (!parcel.recipients().contains(player.getUniqueId()) {
+                    continue;
+                }
                     List<String> newLore = this.replaceParcelPlaceholders(parcel, parcelItem.getItemStack().getItemMeta().getLore());
                     parcelItem.getItemStack().getItemMeta().setLore(newLore);
 
