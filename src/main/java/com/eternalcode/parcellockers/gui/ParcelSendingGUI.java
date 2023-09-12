@@ -40,10 +40,12 @@ public class ParcelSendingGUI extends GuiView {
         ConfigItem largeButton = this.config.guiSettings.largeParcelSizeItem;
         ConfigItem priorityItem = this.config.guiSettings.priorityItem;
 
+        Component guiTitle = this.miniMessage.deserialize(this.config.guiSettings.parcelLockerSendingGuiTitle));
+        
         Gui gui = Gui.gui()
             .rows(6)
             .disableAllInteractions()
-            .title(this.miniMessage.deserialize(this.config.guiSettings.parcelLockerSendingGuiTitle))
+            .title(guiTitle)
             .create();
 
         GuiAction<InventoryClickEvent> smallButtonAction = event -> {
