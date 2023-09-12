@@ -34,16 +34,17 @@ public class MainGUI extends GuiView {
     @Override
     public void show(Player player) {
 
-        GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
-        GuiItem myParcelsItem = this.config.guiSettings.myParcelsItem.toGuiItem(this.miniMessage);
-        GuiItem sentParcelsItem = this.config.guiSettings.sentParcelsItem.toGuiItem(this.miniMessage);
-        GuiItem parcelArchiveItem = this.config.guiSettings.parcelArchiveItem.toGuiItem(this.miniMessage);
-        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage, event -> event.getView().close());
-        GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem(this.miniMessage);
+        PluginConfiguration.GuiSettings guiSettings = this.config.guiSettings;
+        GuiItem backgroundItem = guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
+        GuiItem myParcelsItem = guiSettings.myParcelsItem.toGuiItem(this.miniMessage);
+        GuiItem sentParcelsItem = guiSettings.sentParcelsItem.toGuiItem(this.miniMessage);
+        GuiItem parcelArchiveItem = guiSettings.parcelArchiveItem.toGuiItem(this.miniMessage);
+        GuiItem closeItem = guiSettings.closeItem.toGuiItem(this.miniMessage, event -> event.getView().close());
+        GuiItem cornerItem = guiSettings.cornerItem.toGuiItem(this.miniMessage);
 
         Gui gui = Gui.gui()
                 .type(GuiType.CHEST)
-                .title(RESET_ITEM.append(this.miniMessage.deserialize(this.config.guiSettings.mainGuiTitle)))
+                .title(RESET_ITEM.append(this.miniMessage.deserialize(guiSettings.mainGuiTitle)))
                 .disableAllInteractions()
                 .rows(6)
                 .create();

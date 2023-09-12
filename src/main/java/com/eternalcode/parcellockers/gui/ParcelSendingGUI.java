@@ -46,18 +46,18 @@ public class ParcelSendingGUI extends GuiView {
             .title(this.miniMessage.deserialize(this.config.guiSettings.parcelLockerSendingGuiTitle))
             .create();
 
-        final GuiAction<InventoryClickEvent> smallButtonAction = event -> {
+        GuiAction<InventoryClickEvent> smallButtonAction = event -> {
             this.size = ParcelSize.SMALL;
             gui.updateItem(20, smallButton.setGlow(true).toGuiItem(this.miniMessage));
             gui.updateItem(22, mediumButton.setGlow(false).toGuiItem(this.miniMessage));
             gui.updateItem(24, largeButton.setGlow(false).toGuiItem(this.miniMessage));
         };
 
-        final GuiAction<InventoryClickEvent> mediumButtonAction = event -> this.updateMediumButton(gui, smallButton, mediumButton, largeButton);
+        GuiAction<InventoryClickEvent> mediumButtonAction = event -> this.updateMediumButton(gui, smallButton, mediumButton, largeButton);
 
-        final GuiAction<InventoryClickEvent> largeButtonAction = event -> this.updateSmallButton(gui, smallButton, mediumButton, largeButton);
+        GuiAction<InventoryClickEvent> largeButtonAction = event -> this.updateSmallButton(gui, smallButton, mediumButton, largeButton);
 
-        final GuiAction<InventoryClickEvent> priorityItemAction = event -> this.updatePriorityButton(gui, priorityItem);
+        GuiAction<InventoryClickEvent> priorityItemAction = event -> this.updatePriorityButton(gui, priorityItem);
 
         for (int slot : CORNER_SLOTS) {
             gui.setItem(slot, cornerItem);

@@ -23,27 +23,28 @@ public class ParcelItemStorageGUI {
     }
 
     void show(Player player, ParcelSize size) {
-        GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
-        GuiItem confirmItem = this.config.guiSettings.confirmItemsItem.toGuiItem(this.miniMessage, event -> {
+        PluginConfiguration.GuiSettings guiSettings = this.config.guiSettings;
+        GuiItem backgroundItem = guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
+        GuiItem confirmItem = guiSettings.confirmItemsItem.toGuiItem(this.miniMessage, event -> {
             this.confirmed = true;
             new ParcelSendingGUI(this.config, this.miniMessage).show(player);
         });
-        GuiItem cancelItem = this.config.guiSettings.cancelItemsItem.toGuiItem(this.miniMessage, event -> {
+        GuiItem cancelItem = guiSettings.cancelItemsItem.toGuiItem(this.miniMessage, event -> {
             this.confirmed = false;
             new ParcelSendingGUI(this.config, this.miniMessage).show(player);
         });
 
         switch (size) {
             case SMALL -> this.gui = Gui.storage()
-                .title(this.miniMessage.deserialize(this.config.guiSettings.parcelSmallContentGuiTitle))
+                .title(this.miniMessage.deserialize(guiSettings.parcelSmallContentGuiTitle))
                 .rows(2)
                 .create();
             case MEDIUM -> this.gui = Gui.storage()
-                .title(this.miniMessage.deserialize(this.config.guiSettings.parcelMediumContentGuiTitle))
+                .title(this.miniMessage.deserialize(guiSettings.parcelMediumContentGuiTitle))
                 .rows(3)
                 .create();
             case LARGE -> this.gui = Gui.storage()
-                .title(this.miniMessage.deserialize(this.config.guiSettings.parcelLargeContentGuiTitle))
+                .title(this.miniMessage.deserialize(guiSettings.parcelLargeContentGuiTitle))
                 .rows(4)
                 .create();
         }
