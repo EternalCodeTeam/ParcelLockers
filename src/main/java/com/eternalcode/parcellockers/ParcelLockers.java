@@ -82,6 +82,8 @@ public final class ParcelLockers extends JavaPlugin {
         HikariDataSource dataSource = DataSourceFactory.buildHikariDataSource(config, this.getDataFolder());
 
         ParcelLockerDatabaseService parcelLockerDatabaseService = new ParcelLockerDatabaseService(dataSource);
+        parcelLockerDatabaseService.updatePositionCache();
+        
         ParcelDatabaseService parcelRepository = new ParcelDatabaseService(dataSource);
 
         ParcelManager parcelManager = new ParcelManager(this, config, announcer, parcelRepository, parcelLockerDatabaseService);
