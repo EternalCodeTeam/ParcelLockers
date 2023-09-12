@@ -26,12 +26,10 @@ public class ParcelItemStorageGUI {
         GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
         GuiItem confirmItem = this.config.guiSettings.confirmItemsItem.toGuiItem(this.miniMessage, event -> {
             this.confirmed = true;
-            event.getView().close();
             new ParcelSendingGUI(this.config, this.miniMessage).show(player);
         });
         GuiItem cancelItem = this.config.guiSettings.cancelItemsItem.toGuiItem(this.miniMessage, event -> {
             this.confirmed = false;
-            event.getView().close();
             new ParcelSendingGUI(this.config, this.miniMessage).show(player);
         });
 
