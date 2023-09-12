@@ -43,14 +43,18 @@ public class ParcelLockerBreakController implements Listener {
                 this.announcer.sendMessage(player, this.messages.cannotBreakParcelLocker);
                 return;
             }
+            
             this.parcelLockerDatabaseService.remove(this.parcelLockerDatabaseService.positionCache().get(position));
+            
             this.announcer.sendMessage(player, this.messages.parcelLockerSuccessfullyDeleted);
+            
             Formatter formatter = new Formatter()
                 .register("{X}", position.x())
                 .register("{Y}", position.y())
                 .register("{Z}", position.z())
                 .register("{WORLD}", position.world())
                 .register("{PLAYER}", player.getName());
+                
             this.announcer.broadcast(formatter.format(this.messages.broadcastParcelLockerRemoved));
         }
 
