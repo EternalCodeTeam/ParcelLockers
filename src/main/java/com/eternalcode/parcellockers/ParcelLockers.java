@@ -156,10 +156,12 @@ public final class ParcelLockers extends JavaPlugin {
         if (this.getServer().getPluginManager().getPlugin("Vault") == null) {
             return false;
         }
+        
         RegisteredServiceProvider<Economy> rsp = this.getServer().getServicesManager().getRegistration(Economy.class);
         if (rsp == null) {
             return false;
         }
+        
         this.economy = rsp.getProvider();
         return true;
     }
