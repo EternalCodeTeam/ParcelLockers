@@ -55,20 +55,24 @@ public class ParcelItemStorageGUI {
         this.gui.setItem(gui.getRows(), 1, confirmItem);
         this.gui.setItem(gui.getRows(), 2, cancelItem);
         this.gui.setCloseGuiAction(event -> {
-            if (!this.confirmed) {
-                if (gui.getInventory().getContents() == null) {
-                    return;
+            if (this.confirmed) {
+                 return;
+            }
+            
+            if (gui.getInventory().getContents() == null) {
+                return;
+            }
+                
+            for (ItemStack item : this.gui.getInventory().getContents()) {
+                if (item == null) {
+                    continue;
                 }
-                for (ItemStack item : this.gui.getInventory().getContents()) {
-                    if (item == null) {
-                        continue;
-                    }
-                    player.getInventory().addItem(item);
-                    gui.removeItem(item);
-                }
+                    
+                player.getInventory().addItem(item);
+                gui.removeItem(item);
             }
         });
+        
         this.gui.open(player);
-
     }
 }
