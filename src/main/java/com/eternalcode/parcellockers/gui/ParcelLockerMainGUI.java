@@ -24,11 +24,12 @@ public class ParcelLockerMainGUI extends GuiView {
         GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem(this.miniMessage);
         GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage, event -> event.getView().close());
 
+        Component guiTitle = this.miniMessage.deserialize(this.config.guiSettings.mainGuiTitle));
+        
         Gui gui = Gui.gui()
-            .title(RESET_ITEM.append(this.miniMessage.deserialize(this.config.guiSettings.mainGuiTitle)))
+            .title(RESET_ITEM.append(guiTitle))
             .rows(6)
             .disableAllInteractions()
-            .title(this.miniMessage.deserialize(this.config.guiSettings.parcelLockerMainGuiTitle))
             .create();
 
         gui.setDefaultClickAction(event -> event.setCancelled(true));
