@@ -201,7 +201,9 @@ public class ParcelLockerDatabaseService implements ParcelLockerRepository {
                  )
             ) {
                 ResultSet rs = statement.executeQuery();
+
                 this.positionCache.clear();
+                
                 while (rs.next()) {
                    Position position = Position.parse(rs.getString("position")); 
                    UUID uuid = UUID.fromString(rs.getString("uuid"));
