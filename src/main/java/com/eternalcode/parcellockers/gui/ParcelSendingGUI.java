@@ -84,6 +84,7 @@ public class ParcelSendingGUI extends GuiView {
 
     private void updateSmallButton(Gui gui, ConfigItem smallButton, ConfigItem mediumButton, ConfigItem largeButton) {
         this.size = ParcelSize.SMALL;
+        
         gui.updateItem(20, smallButton.setGlow(true).toGuiItem(this.miniMessage));
         gui.updateItem(22, mediumButton.setGlow(false).toGuiItem(this.miniMessage, e -> updateMediumButton(gui, smallButton, mediumButton, largeButton)));
         gui.updateItem(24, largeButton.setGlow(false).toGuiItem(this.miniMessage, e -> updateLargeButton(gui, smallButton, mediumButton, largeButton)));
