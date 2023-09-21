@@ -13,6 +13,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -225,5 +226,9 @@ public class ParcelDatabaseService extends AbstractDatabaseService implements Pa
 
     private void removeParcelFromCache(UUID uuid) {
         this.cache.remove(uuid);
+    }
+
+    public Map<UUID, Parcel> cache() {
+        return Collections.unmodifiableMap(this.cache);
     }
 }

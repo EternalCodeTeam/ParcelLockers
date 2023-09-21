@@ -33,8 +33,8 @@ public class ParcelArgument implements OneArgument<Parcel> {
 
     @Override
     public List<Suggestion> suggest(LiteInvocation invocation) {
-        return this.databaseService.cache().keySet().stream()
-                .map(UUID::toString)
+        return this.databaseService.cache().values().stream()
+                .map(Parcel::name)
                 .map(Suggestion::of)
                 .toList();
     }
