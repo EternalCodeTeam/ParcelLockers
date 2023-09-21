@@ -6,31 +6,29 @@ import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.repository.ParcelPageResult;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.shared.Page;
-import io.sentry.Sentry;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
-public class ParcelDatabaseService implements ParcelRepository {
+public class ParcelDatabaseService extends AbstractDatabaseService implements ParcelRepository {
 
     private final Map<UUID, Parcel> cache = new HashMap<>();
 
-    private final DataSource dataSource;
-
     public ParcelDatabaseService(DataSource dataSource) {
-        this.dataSource = dataSource;
+        super(dataSource);
 
         this.initTable();
     }
@@ -61,147 +59,97 @@ public class ParcelDatabaseService implements ParcelRepository {
 
     @Override
     public CompletableFuture<Void> save(Parcel parcel) {
-        return CompletableFuture.runAsync(() -> {
-            try (Connection connection = this.dataSource.getConnection();
-                    PreparedStatement statement = connection.prepareStatement(
-                            "INSERT INTO `parcels`(uuid, " +
-                                    "`name`, " +
-                                    "`description`, " +
-                                    "`priority`, " +
-                                    "`receiver`, " +
-                                    "`size`, " +
-                                    "`entryLocker`, " +
-                                    "`destinationLocker`, " +
-                                    "`sender`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
-            ) {
-                statement.setString(1, parcel.uuid().toString());
-                statement.setString(2, parcel.name());
-                statement.setString(3, parcel.description());
-                statement.setBoolean(4, parcel.priority());
-                statement.setString(5, parcel.receiver().toString());
-                statement.setString(6, parcel.size().name());
-                statement.setString(7, parcel.entryLocker().toString());
-                statement.setString(8, parcel.destinationLocker().toString());
-                statement.setString(9, parcel.sender().toString());
-                statement.execute();
-                this.cache.put(parcel.uuid(), parcel);
-            }
-            catch (SQLException e) {
-                Sentry.captureException(e);
-                throw new ParcelLockersException(e);
-            }
-        }).orTimeout(5, TimeUnit.SECONDS);
+        return this.execute("INSERT INTO `parcels`(uuid, " +
+            "`name`, " +
+            "`description`, " +
+            "`priority`, " +
+            "`receiver`, " +
+            "`size`, " +
+            "`entryLocker`, " +
+            "`destinationLocker`, " +
+            "`sender`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", statement -> {
+            statement.setString(1, parcel.uuid().toString());
+            statement.setString(2, parcel.name());
+            statement.setString(3, parcel.description());
+            statement.setBoolean(4, parcel.priority());
+            statement.setString(5, parcel.receiver().toString());
+            statement.setString(6, parcel.size().name());
+            statement.setString(7, parcel.entryLocker().toString());
+            statement.setString(8, parcel.destinationLocker().toString());
+            statement.setString(9, parcel.sender().toString());
+            statement.execute();
+            this.cache.put(parcel.uuid(), parcel);
+        });
     }
 
     @Override
     public CompletableFuture<Void> update(Parcel newParcel) {
-        return CompletableFuture.runAsync(() -> {
-            try (Connection connection = this.dataSource.getConnection();
-                 PreparedStatement statement = connection.prepareStatement(
-                         "UPDATE `parcels` SET " +
-                                 "`name` = ?, " +
-                                 "`description` = ?, " +
-                                 "`priority` = ?, " +
-                                 "`receiver` = ?, " +
-                                 "`size` = ?, " +
-                                 "`entryLocker` = ?, " +
-                                 "`destinationLocker` = ?, " +
-                                 "`sender` = ? " +
-                                 "WHERE `uuid` = ?"
-                 )
-            ) {
-                statement.setString(1, newParcel.name());
-                statement.setString(2, newParcel.description());
-                statement.setBoolean(3, newParcel.priority());
-                statement.setString(4, newParcel.receiver().toString());
-                statement.setString(5, newParcel.size().name());
-                statement.setString(6, newParcel.entryLocker().toString());
-                statement.setString(7, newParcel.destinationLocker().toString());
-                statement.setString(8, newParcel.sender().toString());
-                statement.setString(9, newParcel.uuid().toString());
-                statement.execute();
-                this.cache.put(newParcel.uuid(), newParcel);
-            }
-            catch (SQLException e) {
-                Sentry.captureException(e);
-                throw new ParcelLockersException(e);
-            }
-        }).orTimeout(5, TimeUnit.SECONDS);
+        return this.execute("UPDATE `parcels` SET " +
+            "`name` = ?, " +
+            "`description` = ?, " +
+            "`priority` = ?, " +
+            "`receiver` = ?, " +
+            "`size` = ?, " +
+            "`entryLocker` = ?, " +
+            "`destinationLocker` = ?, " +
+            "`sender` = ? " +
+            "WHERE `uuid` = ?", statement -> {
+            statement.setString(1, newParcel.name());
+            statement.setString(2, newParcel.description());
+            statement.setBoolean(3, newParcel.priority());
+            statement.setString(4, newParcel.receiver().toString());
+            statement.setString(5, newParcel.size().name());
+            statement.setString(6, newParcel.entryLocker().toString());
+            statement.setString(7, newParcel.destinationLocker().toString());
+            statement.setString(8, newParcel.sender().toString());
+            statement.setString(9, newParcel.uuid().toString());
+            statement.execute();
+            this.cache.put(newParcel.uuid(), newParcel);
+        });
     }
 
     @Override
     public CompletableFuture<Optional<Parcel>> findByUUID(UUID uuid) {
-        return CompletableFuture.supplyAsync(() -> {
-            try (Connection connection = this.dataSource.getConnection();
-            PreparedStatement statement = connection.prepareStatement("SELECT * FROM `parcels` WHERE `uuid` = ?")) {
-                statement.setString(1, uuid.toString());
-                ResultSet rs = statement.executeQuery();
-                if (rs.next()) {
-                    Parcel parcel = this.createParcel(rs);
-                    this.cache.put(parcel.uuid(), parcel);
-                    return Optional.of(parcel);
-                }
-                return Optional.<Parcel>empty();
+        return this.supplyExecute("SELECT * FROM `parcels` WHERE `uuid` = ?", statement -> {
+            statement.setString(1, uuid.toString());
+            ResultSet rs = statement.executeQuery();
+            if (rs.next()) {
+                Parcel parcel = this.createParcel(rs);
+                this.cache.put(parcel.uuid(), parcel);
+                return Optional.of(parcel);
             }
-            catch (SQLException e) {
-                Sentry.captureException(e);
-                throw new ParcelLockersException(e);
-            }
-
-        }).orTimeout(5, TimeUnit.SECONDS);
+            return Optional.empty();
+        });
     }
 
     @Override
-    public CompletableFuture<Set<Parcel>> findBySender(UUID sender) {
-        return CompletableFuture.supplyAsync(() -> {
-            try (Connection connection = this.dataSource.getConnection();
-                 PreparedStatement statement = connection.prepareStatement(
-                         "SELECT * FROM `parcels` WHERE `sender` = ?"
-                 )
-            ) {
-                statement.setString(1, sender.toString());
-                ResultSet rs = statement.executeQuery();
-                Set<Parcel> parcels = new HashSet<>();
-                while (rs.next()) {
-                    Parcel parcel = this.createParcel(rs);
-                    this.cache.put(parcel.uuid(), parcel);
-                    parcels.add(parcel);
-                }
-                return parcels;
-
+    public CompletableFuture<List<Parcel>> findBySender(UUID sender) {
+        return this.supplyExecute("SELECT * FROM `parcels` WHERE `sender` = ?", statement -> {
+            statement.setString(1, sender.toString());
+            ResultSet rs = statement.executeQuery();
+            List<Parcel> parcels = new ArrayList<>();
+            while (rs.next()) {
+                Parcel parcel = this.createParcel(rs);
+                this.cache.put(parcel.uuid(), parcel);
+                parcels.add(parcel);
             }
-            catch (SQLException e) {
-                Sentry.captureException(e);
-                throw new ParcelLockersException(e);
-            }
-        }).orTimeout(5, TimeUnit.SECONDS);
+            return parcels;
+        });
     }
 
     @Override
-    public CompletableFuture<Set<Parcel>> findByReceiver(UUID receiver) {
-        return CompletableFuture.supplyAsync(() -> {
-            try (Connection connection = this.dataSource.getConnection();
-                 PreparedStatement statement = connection.prepareStatement(
-                         "SELECT * FROM `parcels` WHERE `receiver` = ?"
-                 )
-            ) {
-                statement.setString(1, receiver.toString());
-                ResultSet rs = statement.executeQuery();
-                Set<Parcel> parcels = new HashSet<>();
-
-                while (rs.next()) {
-                    Parcel parcel = this.createParcel(rs);
-                    parcels.add(parcel);
-                    this.cache.put(parcel.uuid(), parcel);
-                }
-                return parcels;
-
+    public CompletableFuture<List<Parcel>> findByReceiver(UUID receiver) {
+        return this.supplyExecute("SELECT * FROM `parcels` WHERE `receiver` = ?", statement -> {
+            statement.setString(1, receiver.toString());
+            ResultSet rs = statement.executeQuery();
+            List<Parcel> parcels = new ArrayList<>();
+            while (rs.next()) {
+                Parcel parcel = this.createParcel(rs);
+                this.cache.put(parcel.uuid(), parcel);
+                parcels.add(parcel);
             }
-            catch (SQLException e) {
-                Sentry.captureException(e);
-                throw new ParcelLockersException(e);
-            }
-        }).orTimeout(5, TimeUnit.SECONDS);
+            return parcels;
+        });
     }
 
     @Override
@@ -211,57 +159,33 @@ public class ParcelDatabaseService implements ParcelRepository {
 
     @Override
     public CompletableFuture<Void> remove(UUID uuid) {
-        return CompletableFuture.runAsync(() -> {
-            try (Connection connection = this.dataSource.getConnection();
-                 PreparedStatement statement = connection.prepareStatement(
-                         "DELETE FROM `parcels` WHERE `uuid` = ?"
-                 )
-            ) {
-                statement.setString(1, uuid.toString());
-                statement.execute();
-                this.cache.remove(uuid);
-
-            }
-            catch (SQLException e) {
-                Sentry.captureException(e);
-                throw new ParcelLockersException(e);
-            }
-        }).orTimeout(5, TimeUnit.SECONDS);
+        return this.supplyExecute("DELETE FROM `parcels` WHERE `uuid` = ?", statement -> {
+            statement.setString(1, uuid.toString());
+            statement.execute();
+            this.cache.remove(uuid);
+            return null;
+        });
     }
 
     @Override
     public CompletableFuture<ParcelPageResult> findPage(Page page) {
-        return CompletableFuture.supplyAsync(() -> {
-            try (Connection connection = this.dataSource.getConnection();
-                 PreparedStatement statement = connection.prepareStatement(
-                     "SELECT * FROM `parcels` LIMIT ? OFFSET ?"
-                 )
-            ) {
-                statement.setInt(1, page.getLimit());
-                statement.setInt(2, page.getOffset());
-                Set<Parcel> parcels = new HashSet<>();
-                ResultSet rs = statement.executeQuery();
-                while (rs.next()) {
-                    Parcel parcel = this.createParcel(rs);
-                    parcels.add(parcel);
-                }
-                parcels.forEach(parcel -> this.cache.put(parcel.uuid(), parcel));
-
-                try (PreparedStatement statement1 = connection.prepareStatement(
-                    "SELECT * FROM `parcels` LIMIT 1 OFFSET ?"
-                )) {
-                    statement1.setInt(1, page.getLimit() + page.getOffset());
-                    ResultSet rs1 = statement1.executeQuery();
-                    boolean hasNext = rs1.next();
-
-                    return new ParcelPageResult(parcels, hasNext);
-                }
+        return this.supplyExecute("SELECT * FROM `parcels` LIMIT ? OFFSET ?;", statement -> {
+            statement.setInt(1, page.getLimit() + 1);
+            statement.setInt(2, page.getOffset());
+            ResultSet rs = statement.executeQuery();
+            List<Parcel> parcels = new ArrayList<>();
+            while (rs.next()) {
+                Parcel parcel = this.createParcel(rs);
+                this.cache.put(parcel.uuid(), parcel);
+                parcels.add(parcel);
             }
-            catch (SQLException e) {
-                Sentry.captureException(e);
-                throw new ParcelLockersException(e);
+
+            boolean hasNext = parcels.size() > page.getLimit();
+            if (hasNext) {
+                parcels.remove(parcels.size() - 1);
             }
-        }).orTimeout(5, TimeUnit.SECONDS);
+            return new ParcelPageResult(parcels, hasNext);
+        });
     }
 
     private Parcel createParcel(ResultSet rs) throws SQLException {
@@ -278,6 +202,20 @@ public class ParcelDatabaseService implements ParcelRepository {
                 UUID.fromString(rs.getString("destinationLocker"))
         );
     }
+
+    private CompletableFuture<Optional<Parcel>> findBy(String column, String value) {
+        return this.supplyExecute("SELECT * FROM `parcels` WHERE `" + column + "` = ?;", statement -> {
+            statement.setString(1, value);
+            ResultSet rs = statement.executeQuery();
+            if (rs.next()) {
+                Parcel parcel = this.createParcel(rs);
+                this.cache.put(parcel.uuid(), parcel);
+                return Optional.of(parcel);
+            }
+            return Optional.empty();
+        });
+    }
+
 
     public Optional<Parcel> findParcel(UUID uuid) {
         return Optional.ofNullable(this.cache.get(uuid));

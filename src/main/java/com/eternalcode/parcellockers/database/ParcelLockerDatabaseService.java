@@ -7,8 +7,6 @@ import com.eternalcode.parcellockers.parcellocker.repository.ParcelLockerReposit
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.Position;
 import io.sentry.Sentry;
-import panda.std.function.ThrowingConsumer;
-import panda.std.function.ThrowingFunction;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -25,57 +23,24 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-public class ParcelLockerDatabaseService implements ParcelLockerRepository {
+public class ParcelLockerDatabaseService extends AbstractDatabaseService implements ParcelLockerRepository {
 
     private final Map<UUID, ParcelLocker> cache = new HashMap<>();
     private final Map<Position, UUID> positionCache = new HashMap<>();
 
-    private final DataSource dataSource;
-
     public ParcelLockerDatabaseService(DataSource dataSource) {
-        this.dataSource = dataSource;
+        super(dataSource);
 
         this.initTable();
     }
 
     private void initTable() {
-        try (Connection connection = this.dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement(
-                     "CREATE TABLE IF NOT EXISTS `parcellockers`(" +
-                             "uuid VARCHAR(36) NOT NULL, " +
-                             "description VARCHAR(64) NOT NULL, " +
-                             "position VARCHAR(255) NOT NULL, " +
-                             "PRIMARY KEY (uuid)" +
-                             ");"
-             )
-        ) {
-            statement.execute();
-        }
-        catch (SQLException e) {Sentry.captureException(e);
-            throw new ParcelLockersException(e);
-
-        }
-    }
-
-    public CompletableFuture<Void> execute(String sql, ThrowingConsumer<PreparedStatement, SQLException> consumer) {
-        return this.supplyExecute(sql, statement -> {
-            consumer.accept(statement);
-            return null;
-        });
-    }
-
-    public <T> CompletableFuture<T> supplyExecute(String sql, ThrowingFunction<PreparedStatement, T, SQLException> function) {
-        return CompletableFuture.supplyAsync(() -> {
-            try (Connection connection = this.dataSource.getConnection();
-                 PreparedStatement statement = connection.prepareStatement(sql)
-            ) {
-                return function.apply(statement);
-            }
-            catch (SQLException e) {
-                Sentry.captureException(e);
-                throw new ParcelLockersException(e);
-            }
-        }).orTimeout(5, TimeUnit.SECONDS);
+        this.executeSync("CREATE TABLE IF NOT EXISTS `parcellockers`(" +
+                "uuid VARCHAR(36) NOT NULL, " +
+                "description VARCHAR(64) NOT NULL, " +
+                "position VARCHAR(255) NOT NULL, " +
+                "PRIMARY KEY (uuid)" +
+                ");", PreparedStatement::execute);
     }
 
     @Override
