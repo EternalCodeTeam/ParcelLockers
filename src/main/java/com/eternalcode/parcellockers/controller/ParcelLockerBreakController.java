@@ -18,6 +18,9 @@ import org.bukkit.event.block.BlockIgniteEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import panda.utilities.text.Formatter;
 
+import java.util.Map;
+import java.util.UUID;
+
 
 public class ParcelLockerBreakController implements Listener {
 
@@ -38,14 +41,16 @@ public class ParcelLockerBreakController implements Listener {
         Position position = PositionAdapter.convert(location);
         Player player = event.getPlayer();
 
-        if (this.parcelLockerDatabaseService.positionCache().containsKey(position)) {
+        Map<Position, UUID> positionCache = this.parcelLockerDatabaseService.positionCache();
+        if (positionCache.containsKey(position)) {
             if (!player.hasPermission("parcellockers.admin.break")) {
                 event.setCancelled(true);
                 this.announcer.sendMessage(player, this.messages.cannotBreakParcelLocker);
                 return;
             }
-            
-            this.parcelLockerDatabaseService.remove(this.parcelLockerDatabaseService.positionCache().get(position));
+
+            UUID toRemove = positionCache.get(position);
+            this.parcelLockerDatabaseService.remove(toRemove);
             
             this.announcer.sendMessage(player, this.messages.parcelLockerSuccessfullyDeleted);
             

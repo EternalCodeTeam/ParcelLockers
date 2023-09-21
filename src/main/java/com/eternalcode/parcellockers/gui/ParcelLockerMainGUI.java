@@ -3,6 +3,7 @@ package com.eternalcode.parcellockers.gui;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 
@@ -20,17 +21,17 @@ public class ParcelLockerMainGUI extends GuiView {
 
     @Override
     public void show(Player player) {
-        GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
-        GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem(this.miniMessage);
-        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage, event -> event.getView().close());
-
-        Component guiTitle = this.miniMessage.deserialize(this.config.guiSettings.mainGuiTitle));
+        Component guiTitle = this.miniMessage.deserialize(this.config.guiSettings.mainGuiTitle);
         
         Gui gui = Gui.gui()
             .title(RESET_ITEM.append(guiTitle))
             .rows(6)
             .disableAllInteractions()
             .create();
+
+        GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
+        GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem(this.miniMessage);
+        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage, event -> gui.close(player));
 
         gui.setDefaultClickAction(event -> event.setCancelled(true));
 

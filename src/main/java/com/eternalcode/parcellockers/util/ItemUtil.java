@@ -11,7 +11,15 @@ public class ItemUtil {
         throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
     }
 
-    public static boolean equals(ItemStack first, ItemStack second) {
+    public static boolean compareMeta(ItemStack first, ItemStack second) {
+        if (!first.hasItemMeta()) {
+            return false;
+        }
+
+        if (second.hasItemMeta()) {
+            return false;
+        }
+
         return first.getType() == second.getType()
             && first.getItemMeta().getLore().containsAll(second.getItemMeta().getLore())
             && first.getItemMeta().getDisplayName().equals(second.getItemMeta().getDisplayName());

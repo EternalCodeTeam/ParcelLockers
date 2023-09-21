@@ -6,6 +6,7 @@ import com.eternalcode.parcellockers.parcel.ParcelSize;
 import dev.triumphteam.gui.components.GuiAction;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -24,6 +25,13 @@ public class ParcelSendingGUI extends GuiView {
 
     @Override
     void show(Player player) {
+
+        Component guiTitle = this.miniMessage.deserialize(this.config.guiSettings.parcelLockerSendingGuiTitle);
+        Gui gui = Gui.gui()
+            .rows(6)
+            .disableAllInteractions()
+            .title(guiTitle)
+            .create();
         GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
         GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem(this.miniMessage);
         GuiItem storageItem = this.config.guiSettings.parcelStorageItem.toGuiItem(this.miniMessage, event -> {
@@ -39,14 +47,6 @@ public class ParcelSendingGUI extends GuiView {
         ConfigItem mediumButton = this.config.guiSettings.mediumParcelSizeItem;
         ConfigItem largeButton = this.config.guiSettings.largeParcelSizeItem;
         ConfigItem priorityItem = this.config.guiSettings.priorityItem;
-
-        Component guiTitle = this.miniMessage.deserialize(this.config.guiSettings.parcelLockerSendingGuiTitle));
-        
-        Gui gui = Gui.gui()
-            .rows(6)
-            .disableAllInteractions()
-            .title(guiTitle)
-            .create();
 
         GuiAction<InventoryClickEvent> smallButtonAction = event -> {
             this.size = ParcelSize.SMALL;

@@ -42,18 +42,19 @@ public class SentParcelsGUI extends GuiView {
     @Override
     public void show(Player player) {
 
+        PaginatedGui gui = Gui.paginated()
+            .title(this.miniMessage.deserialize(this.config.guiSettings.sentParcelsTitle))
+            .rows(6)
+            .disableAllInteractions()
+            .create();
+
         GuiItem parcelItem = this.config.guiSettings.parcelItem.toGuiItem(this.miniMessage);
         GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem(this.miniMessage);
         GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
         GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage, event -> {
-            player.closeInventory();
+            gui.close(player);
             this.mainGUI.show(player);
         });
-        PaginatedGui gui = Gui.paginated()
-                .title(this.miniMessage.deserialize(this.config.guiSettings.sentParcelsTitle))
-                .rows(6)
-                .disableAllInteractions()
-                .create();
 
         for (int slot : CORNER_SLOTS) {
             gui.setItem(slot, cornerItem);

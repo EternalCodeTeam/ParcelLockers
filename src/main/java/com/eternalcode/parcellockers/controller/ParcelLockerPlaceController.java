@@ -15,6 +15,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.Plugin;
 
 import java.util.UUID;
@@ -45,7 +47,7 @@ public class ParcelLockerPlaceController implements Listener {
 
         ItemStack parcelLockerItem = this.config.settings.parcelLockerItem.toGuiItem(this.miniMessage).getItemStack();
         
-        if (!ItemUtil.equals(itemInMainHand, parcelLockerItem) && !ItemUtil.equals(itemInOffHand, parcelLockerItem)) {
+        if (!ItemUtil.compareMeta(itemInMainHand, parcelLockerItem) && !ItemUtil.compareMeta(itemInOffHand, parcelLockerItem)) {
             return;
          }
          
@@ -74,6 +76,5 @@ public class ParcelLockerPlaceController implements Listener {
                 .withFirstPrompt(new ParcelLockerPlacePrompt(this.announcer, this.config));
 
             player.beginConversation(conversationFactory.buildConversation(player));
-        }
     }
 }

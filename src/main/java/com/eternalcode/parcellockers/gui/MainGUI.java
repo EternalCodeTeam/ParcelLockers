@@ -35,19 +35,21 @@ public class MainGUI extends GuiView {
     public void show(Player player) {
 
         PluginConfiguration.GuiSettings guiSettings = this.config.guiSettings;
+
+        Gui gui = Gui.gui()
+            .type(GuiType.CHEST)
+            .title(RESET_ITEM.append(this.miniMessage.deserialize(guiSettings.mainGuiTitle)))
+            .disableAllInteractions()
+            .rows(6)
+            .create();
+
         GuiItem backgroundItem = guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
         GuiItem myParcelsItem = guiSettings.myParcelsItem.toGuiItem(this.miniMessage);
         GuiItem sentParcelsItem = guiSettings.sentParcelsItem.toGuiItem(this.miniMessage);
         GuiItem parcelArchiveItem = guiSettings.parcelArchiveItem.toGuiItem(this.miniMessage);
-        GuiItem closeItem = guiSettings.closeItem.toGuiItem(this.miniMessage, event -> event.getView().close());
+        GuiItem closeItem = guiSettings.closeItem.toGuiItem(this.miniMessage, event -> gui.close(player));
         GuiItem cornerItem = guiSettings.cornerItem.toGuiItem(this.miniMessage);
 
-        Gui gui = Gui.gui()
-                .type(GuiType.CHEST)
-                .title(RESET_ITEM.append(this.miniMessage.deserialize(guiSettings.mainGuiTitle)))
-                .disableAllInteractions()
-                .rows(6)
-                .create();
 
         int size = gui.getRows() * 9;
         for (int i = 0; i < size; i++) {
