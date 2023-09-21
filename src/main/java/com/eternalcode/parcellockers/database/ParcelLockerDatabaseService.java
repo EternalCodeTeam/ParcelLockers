@@ -89,8 +89,7 @@ public class ParcelLockerDatabaseService extends AbstractDatabaseService impleme
         return this.execute("DELETE FROM `parcellockers` WHERE `uuid` = ?;", statement -> {
             statement.setString(1, uuid.toString());
             statement.execute();
-            this.cache.remove(uuid);
-            this.positionCache.remove(this.cache.get(uuid).position());
+            this.removeFromCache(uuid);
         });
     }
 
@@ -126,10 +125,7 @@ public class ParcelLockerDatabaseService extends AbstractDatabaseService impleme
             );
             list.add(parcelLocker);
         }
-        list.forEach(parcelLocker -> {
-            this.cache.put(parcelLocker.uuid(), parcelLocker);
-            this.positionCache.put(parcelLocker.position(), parcelLocker.uuid());
-        });
+        list.forEach(this::addToCache);
         return list;
     }
 
@@ -137,8 +133,14 @@ public class ParcelLockerDatabaseService extends AbstractDatabaseService impleme
         return Optional.ofNullable(this.cache.get(uuid));
     }
 
-    public Map<UUID, ParcelLocker> cache() {
-        return Collections.unmodifiableMap(this.cache);
+    private void addToCache(ParcelLocker parcelLocker) {
+        this.cache.put(parcelLocker.uuid(), parcelLocker);
+        this.positionCache.put(parcelLocker.position(), parcelLocker.uuid());
+    }
+
+    private void removeFromCache(UUID uuid) {
+        this.cache.remove(uuid);
+        this.positionCache.remove(this.cache.get(uuid).position());
     }
 
     public Map<Position, UUID> positionCache() {
@@ -170,7 +172,7 @@ public class ParcelLockerDatabaseService extends AbstractDatabaseService impleme
                     rs.getString("description"),
                     Position.parse(rs.getString("position"))
                 );
-                this.cache.put(parcelLocker.uuid(), parcelLocker);
+                this.addToCache(parcelLocker);
                 return Optional.of(parcelLocker);
             }
             return Optional.empty();
