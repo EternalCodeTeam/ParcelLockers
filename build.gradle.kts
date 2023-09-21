@@ -4,7 +4,7 @@ plugins {
     `java-library`
     checkstyle
     id("net.minecrell.plugin-yml.bukkit") version "0.6.0"
-    id("xyz.jpenilla.run-paper") version "2.1.0"
+    id("xyz.jpenilla.run-paper") version "2.2.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("net.ltgt.errorprone") version "3.1.0"
 }
@@ -57,8 +57,8 @@ dependencies {
     implementation("com.zaxxer:HikariCP:5.0.1")
 
     // lombok
-    compileOnly("org.projectlombok:lombok:1.18.28")
-    annotationProcessor("org.projectlombok:lombok:1.18.28")
+    compileOnly("org.projectlombok:lombok:1.18.30")
+    annotationProcessor("org.projectlombok:lombok:1.18.30")
 
     // jetbrains annotations
     api("org.jetbrains:annotations:24.0.1")
