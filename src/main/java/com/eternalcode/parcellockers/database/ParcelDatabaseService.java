@@ -13,13 +13,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -78,7 +76,7 @@ public class ParcelDatabaseService extends AbstractDatabaseService implements Pa
             statement.setString(8, parcel.destinationLocker().toString());
             statement.setString(9, parcel.sender().toString());
             statement.execute();
-            this.cache.put(parcel.uuid(), parcel);
+            this.addParcelToCache(parcel);
         });
     }
 
@@ -104,7 +102,7 @@ public class ParcelDatabaseService extends AbstractDatabaseService implements Pa
             statement.setString(8, newParcel.sender().toString());
             statement.setString(9, newParcel.uuid().toString());
             statement.execute();
-            this.cache.put(newParcel.uuid(), newParcel);
+            this.addParcelToCache(newParcel);
         });
     }
 
@@ -115,7 +113,7 @@ public class ParcelDatabaseService extends AbstractDatabaseService implements Pa
             ResultSet rs = statement.executeQuery();
             if (rs.next()) {
                 Parcel parcel = this.createParcel(rs);
-                this.cache.put(parcel.uuid(), parcel);
+                this.addParcelToCache(parcel);
                 return Optional.of(parcel);
             }
             return Optional.empty();
@@ -130,7 +128,7 @@ public class ParcelDatabaseService extends AbstractDatabaseService implements Pa
             List<Parcel> parcels = new ArrayList<>();
             while (rs.next()) {
                 Parcel parcel = this.createParcel(rs);
-                this.cache.put(parcel.uuid(), parcel);
+                this.addParcelToCache(parcel);
                 parcels.add(parcel);
             }
             return parcels;
@@ -145,7 +143,7 @@ public class ParcelDatabaseService extends AbstractDatabaseService implements Pa
             List<Parcel> parcels = new ArrayList<>();
             while (rs.next()) {
                 Parcel parcel = this.createParcel(rs);
-                this.cache.put(parcel.uuid(), parcel);
+                this.addParcelToCache(parcel);
                 parcels.add(parcel);
             }
             return parcels;
@@ -176,7 +174,7 @@ public class ParcelDatabaseService extends AbstractDatabaseService implements Pa
             List<Parcel> parcels = new ArrayList<>();
             while (rs.next()) {
                 Parcel parcel = this.createParcel(rs);
-                this.cache.put(parcel.uuid(), parcel);
+                this.addParcelToCache(parcel);
                 parcels.add(parcel);
             }
 
@@ -209,7 +207,7 @@ public class ParcelDatabaseService extends AbstractDatabaseService implements Pa
             ResultSet rs = statement.executeQuery();
             if (rs.next()) {
                 Parcel parcel = this.createParcel(rs);
-                this.cache.put(parcel.uuid(), parcel);
+                this.addParcelToCache(parcel);
                 return Optional.of(parcel);
             }
             return Optional.empty();
@@ -221,7 +219,11 @@ public class ParcelDatabaseService extends AbstractDatabaseService implements Pa
         return Optional.ofNullable(this.cache.get(uuid));
     }
 
-    public Map<UUID, Parcel> cache() {
-        return Collections.unmodifiableMap(this.cache);
+    private void addParcelToCache(Parcel parcel) {
+        this.cache.put(parcel.uuid(), parcel);
+    }
+
+    private void removeParcelFromCache(Parcel parcel) {
+        this.cache.remove(parcel.uuid());
     }
 }
