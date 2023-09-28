@@ -52,6 +52,7 @@ public class ParcelListGUI extends GuiView {
             .disableAllInteractions()
             .rows(6)
             .create();
+            
         GuiItem parcelItem = this.config.guiSettings.parcelItem.toGuiItem(this.miniMessage);
         GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
         GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem(this.miniMessage);
