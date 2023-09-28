@@ -104,6 +104,7 @@ public class ParcelDatabaseService extends AbstractDatabaseService implements Pa
             statement.setString(8, newParcel.sender().toString());
             statement.setString(9, newParcel.uuid().toString());
             statement.execute();
+            
             this.addParcelToCache(newParcel);
         });
     }
