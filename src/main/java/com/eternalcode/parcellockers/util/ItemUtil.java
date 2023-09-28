@@ -2,6 +2,7 @@ package com.eternalcode.parcellockers.util;
 
 import com.google.gson.Gson;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 public class ItemUtil {
 
@@ -12,17 +13,20 @@ public class ItemUtil {
     }
 
     public static boolean compareMeta(ItemStack first, ItemStack second) {
-        if (!first.hasItemMeta()) {
+        ItemMeta firstMeta = first.getItemMeta();
+        if (firstMeta == null) {
+            return false;
+        }
+        ItemMeta secondMeta = second.getItemMeta();
+        if (secondMeta == null) {
             return false;
         }
 
-        if (second.hasItemMeta()) {
+        if (first.getType() != second.getType()) {
             return false;
         }
-
-        return first.getType() == second.getType()
-            && first.getItemMeta().getLore().containsAll(second.getItemMeta().getLore())
-            && first.getItemMeta().getDisplayName().equals(second.getItemMeta().getDisplayName());
+        return firstMeta.getLore().containsAll(secondMeta.getLore())
+            && firstMeta.getDisplayName().equals(secondMeta.getDisplayName());
     }
 
     public static String itemStackToString(ItemStack stack) {

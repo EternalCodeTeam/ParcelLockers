@@ -27,11 +27,13 @@ public class ParcelSendingGUI extends GuiView {
     void show(Player player) {
 
         Component guiTitle = this.miniMessage.deserialize(this.config.guiSettings.parcelLockerSendingGuiTitle);
+
         Gui gui = Gui.gui()
             .rows(6)
             .disableAllInteractions()
             .title(guiTitle)
             .create();
+
         GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
         GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem(this.miniMessage);
         GuiItem storageItem = this.config.guiSettings.parcelStorageItem.toGuiItem(this.miniMessage, event -> {
