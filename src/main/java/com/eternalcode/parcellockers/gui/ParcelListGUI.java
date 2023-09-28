@@ -56,7 +56,6 @@ public class ParcelListGUI extends GuiView {
         GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
         GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem(this.miniMessage);
         GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage, event -> {
-            gui.close(player);
             this.mainGUI.show(player);
         });
         GuiItem previousPageItem = this.config.guiSettings.previousPageItem.toGuiItem(this.miniMessage, event -> this.show(player, page.previous()));
