@@ -103,6 +103,7 @@ public class ParcelLockerDatabaseService extends AbstractDatabaseService impleme
         return this.supplyExecute("SELECT * FROM `parcellockers` LIMIT ? OFFSET ?;", statement -> {
             statement.setInt(1, page.getLimit() + 1);
             statement.setInt(2, page.getOffset());
+            
             List<ParcelLocker> parcelLockers = this.extractParcelLockers(statement);
 
             boolean hasNext = parcelLockers.size() > page.getLimit();
