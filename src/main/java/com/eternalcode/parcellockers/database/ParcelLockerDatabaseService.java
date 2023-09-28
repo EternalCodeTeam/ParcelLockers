@@ -172,6 +172,7 @@ public class ParcelLockerDatabaseService extends AbstractDatabaseService impleme
                     rs.getString("description"),
                     Position.parse(rs.getString("position"))
                 );
+                
                 this.addToCache(parcelLocker);
                 return Optional.of(parcelLocker);
             }
