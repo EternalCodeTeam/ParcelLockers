@@ -115,7 +115,9 @@ public class ParcelDatabaseService extends AbstractDatabaseService implements Pa
             ResultSet rs = statement.executeQuery();
             if (rs.next()) {
                 Parcel parcel = this.createParcel(rs);
+                
                 this.addParcelToCache(parcel);
+                
                 return Optional.of(parcel);
             }
             return Optional.empty();
