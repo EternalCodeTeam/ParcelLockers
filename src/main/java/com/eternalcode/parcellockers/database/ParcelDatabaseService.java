@@ -132,6 +132,7 @@ public class ParcelDatabaseService extends AbstractDatabaseService implements Pa
             List<Parcel> parcels = new ArrayList<>();
             while (rs.next()) {
                 Parcel parcel = this.createParcel(rs);
+                
                 this.addParcelToCache(parcel);
                 parcels.add(parcel);
             }
