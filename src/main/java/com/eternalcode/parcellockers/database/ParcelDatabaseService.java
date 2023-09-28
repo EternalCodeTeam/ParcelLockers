@@ -181,6 +181,7 @@ public class ParcelDatabaseService extends AbstractDatabaseService implements Pa
             statement.setInt(1, page.getLimit() + 1);
             statement.setInt(2, page.getOffset());
             ResultSet rs = statement.executeQuery();
+            
             List<Parcel> parcels = new ArrayList<>();
             while (rs.next()) {
                 Parcel parcel = this.createParcel(rs);
