@@ -125,7 +125,9 @@ public class ParcelLockerDatabaseService extends AbstractDatabaseService impleme
             );
             list.add(parcelLocker);
         }
+
         list.forEach(this::addToCache);
+        
         return list;
     }
 
