@@ -89,6 +89,7 @@ public class ParcelLockerDatabaseService extends AbstractDatabaseService impleme
         return this.execute("DELETE FROM `parcellockers` WHERE `uuid` = ?;", statement -> {
             statement.setString(1, uuid.toString());
             statement.execute();
+            
             this.removeFromCache(uuid);
         });
     }
