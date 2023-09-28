@@ -141,6 +141,7 @@ public class ParcelDatabaseService extends AbstractDatabaseService implements Pa
         return this.supplyExecute("SELECT * FROM `parcels` WHERE `receiver` = ?", statement -> {
             statement.setString(1, receiver.toString());
             ResultSet rs = statement.executeQuery();
+            
             List<Parcel> parcels = new ArrayList<>();
             while (rs.next()) {
                 Parcel parcel = this.createParcel(rs);
