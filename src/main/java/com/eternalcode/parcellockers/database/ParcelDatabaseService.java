@@ -169,6 +169,7 @@ public class ParcelDatabaseService extends AbstractDatabaseService implements Pa
         return this.supplyExecute("DELETE FROM `parcels` WHERE `uuid` = ?", statement -> {
             statement.setString(1, uuid.toString());
             statement.execute();
+            
             this.removeParcelFromCache(uuid);
             return null;
         });
