@@ -77,6 +77,7 @@ public class ParcelDatabaseService extends AbstractDatabaseService implements Pa
             statement.setString(8, parcel.destinationLocker().toString());
             statement.setString(9, parcel.sender().toString());
             statement.execute();
+            
             this.addParcelToCache(parcel);
         });
     }
