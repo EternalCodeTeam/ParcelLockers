@@ -123,6 +123,7 @@ public class ParcelLockerDatabaseService extends AbstractDatabaseService impleme
                     rs.getString("description"),
                     Position.parse(rs.getString("position"))
             );
+
             list.add(parcelLocker);
         }
 
