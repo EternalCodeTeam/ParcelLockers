@@ -42,7 +42,7 @@ public class ParcelLockerBreakController implements Listener {
         Player player = event.getPlayer();
 
         Map<Position, UUID> positionCache = this.parcelLockerDatabaseService.positionCache();
-        if (positionCache.containsKey(position)) {
+        if (this.isInCache(position)) {
             if (!player.hasPermission("parcellockers.admin.break")) {
                 event.setCancelled(true);
                 this.announcer.sendMessage(player, this.messages.cannotBreakParcelLocker);
@@ -71,7 +71,7 @@ public class ParcelLockerBreakController implements Listener {
         Block block = event.getBlock();
         Location location = block.getLocation();
         Position position = PositionAdapter.convert(location);
-        if (this.parcelLockerDatabaseService.positionCache().containsKey(position)) {
+        if (this.isInCache(position)) {
             event.setCancelled(true);
         }
     }
@@ -81,7 +81,7 @@ public class ParcelLockerBreakController implements Listener {
         Block block = event.getBlock();
         Location location = block.getLocation();
         Position position = PositionAdapter.convert(location);
-        if (this.parcelLockerDatabaseService.positionCache().containsKey(position)) {
+        if (this.isInCache(position)) {
             event.setCancelled(true);
         }
     }
@@ -91,7 +91,7 @@ public class ParcelLockerBreakController implements Listener {
         event.blockList().removeIf(block -> {
             Location location = block.getLocation();
             Position position = PositionAdapter.convert(location);
-            return this.parcelLockerDatabaseService.positionCache().containsKey(position);
+            return this.isInCache(position);
         });
     }
 
@@ -100,7 +100,7 @@ public class ParcelLockerBreakController implements Listener {
         Block block = event.getBlock();
         Location location = block.getLocation();
         Position position = PositionAdapter.convert(location);
-        if (this.parcelLockerDatabaseService.positionCache().containsKey(position)) {
+        if (this.isInCache(position)) {
             event.setCancelled(true);
         }
     }
@@ -110,8 +110,13 @@ public class ParcelLockerBreakController implements Listener {
         Block block = event.getBlock();
         Location location = block.getLocation();
         Position position = PositionAdapter.convert(location);
-        if (this.parcelLockerDatabaseService.positionCache().containsKey(position)) {
+        if (this.isInCache(position)) {
             event.setCancelled(true);
         }
     }
+
+    private boolean isInCache(Position position) {
+        return this.parcelLockerDatabaseService.positionCache().containsKey(position);
+    }
+
 }

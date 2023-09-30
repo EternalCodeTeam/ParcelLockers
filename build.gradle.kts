@@ -108,7 +108,6 @@ bukkit {
     website = "https://github.com/EternalCodeTeam/ParcelLockers"
     version = "1.0.0-SNAPSHOT"
     depend = listOf("Vault")
-    loadBefore = listOf("Vault")
 }
 
 tasks.withType<JavaCompile> {
