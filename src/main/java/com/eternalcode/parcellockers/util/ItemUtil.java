@@ -25,6 +25,7 @@ public class ItemUtil {
         if (first.getType() != second.getType()) {
             return false;
         }
+        
         return firstMeta.getLore().containsAll(secondMeta.getLore())
             && firstMeta.getDisplayName().equals(secondMeta.getDisplayName());
     }
