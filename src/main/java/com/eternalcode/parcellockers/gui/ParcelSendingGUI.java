@@ -25,7 +25,6 @@ public class ParcelSendingGUI extends GuiView {
 
     @Override
     void show(Player player) {
-
         Component guiTitle = this.miniMessage.deserialize(this.config.guiSettings.parcelLockerSendingGuiTitle);
 
         Gui gui = Gui.gui()
