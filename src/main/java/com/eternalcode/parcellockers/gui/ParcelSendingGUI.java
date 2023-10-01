@@ -35,14 +35,9 @@ public class ParcelSendingGUI extends GuiView {
 
         GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
         GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem(this.miniMessage);
-        GuiItem storageItem = this.config.guiSettings.parcelStorageItem.toGuiItem(this.miniMessage, event -> {
-            event.getView().close();
-            new ParcelItemStorageGUI(this.config, this.miniMessage).show(player, this.size);
-        });
-        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage, event -> {
-            event.getView().close();
-            new ParcelLockerMainGUI(this.miniMessage, this.config).show(player);
-        });
+        GuiItem storageItem = this.config.guiSettings.parcelStorageItem.toGuiItem(this.miniMessage, event -> new ParcelItemStorageGUI(this.config, this.miniMessage).show(player, this.size));
+
+        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage, event -> new ParcelLockerMainGUI(this.miniMessage, this.config).show(player));
 
         ConfigItem smallButton = this.config.guiSettings.smallParcelSizeItem;
         ConfigItem mediumButton = this.config.guiSettings.mediumParcelSizeItem;
