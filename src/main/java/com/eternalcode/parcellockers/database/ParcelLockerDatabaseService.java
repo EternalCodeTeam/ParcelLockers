@@ -152,6 +152,14 @@ public class ParcelLockerDatabaseService extends AbstractDatabaseService impleme
         return Collections.unmodifiableMap(this.positionCache);
     }
 
+    public boolean isInCache(Position position) {
+        return this.positionCache().containsKey(position);
+    }
+
+    public boolean isInCache(UUID uuid) {
+        return this.cache.containsKey(uuid);
+    }
+
     public CompletableFuture<Void> updatePositionCache() {
         return this.execute("SELECT * FROM `parcellockers` WHERE `position` IS NOT NULL;", statement -> {
             ResultSet rs = statement.executeQuery();

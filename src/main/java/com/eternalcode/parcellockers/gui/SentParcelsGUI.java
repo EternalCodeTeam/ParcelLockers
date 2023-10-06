@@ -51,9 +51,7 @@ public class SentParcelsGUI extends GuiView {
         GuiItem parcelItem = this.config.guiSettings.parcelItem.toGuiItem(this.miniMessage);
         GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem(this.miniMessage);
         GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
-        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage, event -> {
-            this.mainGUI.show(player);
-        });
+        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage, event -> this.mainGUI.show(player));
 
         for (int slot : CORNER_SLOTS) {
             gui.setItem(slot, cornerItem);
