@@ -24,6 +24,7 @@ public class ParcelItemStorageGUI {
 
     void show(Player player, ParcelSize size) {
         PluginConfiguration.GuiSettings guiSettings = this.config.guiSettings;
+        
         GuiItem backgroundItem = guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
         GuiItem confirmItem = guiSettings.confirmItemsItem.toGuiItem(this.miniMessage, event -> {
             this.confirmed = true;
