@@ -99,6 +99,7 @@ public class ParcelLockerBreakController implements Listener {
         Block block = event.getBlock();
         Location location = block.getLocation();
         Position position = PositionAdapter.convert(location);
+        
         if (this.parcelLockerDatabaseService.isInCache(position)) {
             event.setCancelled(true);
         }
