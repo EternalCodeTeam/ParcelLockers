@@ -41,7 +41,6 @@ public class ParcelLockerBreakController implements Listener {
         Position position = PositionAdapter.convert(location);
         Player player = event.getPlayer();
 
-        Map<Position, UUID> positionCache = this.parcelLockerDatabaseService.positionCache();
         if (this.parcelLockerDatabaseService.isInCache(position)) {
             if (!player.hasPermission("parcellockers.admin.break")) {
                 event.setCancelled(true);
@@ -49,7 +48,7 @@ public class ParcelLockerBreakController implements Listener {
                 return;
             }
 
-            UUID toRemove = positionCache.get(position);
+            UUID toRemove = this.parcelLockerDatabaseService.positionCache().get(position);
             this.parcelLockerDatabaseService.remove(toRemove);
             
             this.announcer.sendMessage(player, this.messages.parcelLockerSuccessfullyDeleted);
