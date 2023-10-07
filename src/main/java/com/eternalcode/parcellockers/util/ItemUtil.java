@@ -17,6 +17,7 @@ public class ItemUtil {
         if (firstMeta == null) {
             return false;
         }
+        
         ItemMeta secondMeta = second.getItemMeta();
         if (secondMeta == null) {
             return false;
