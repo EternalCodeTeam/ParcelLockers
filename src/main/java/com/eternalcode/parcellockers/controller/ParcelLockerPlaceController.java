@@ -41,40 +41,41 @@ public class ParcelLockerPlaceController implements Listener {
     public void onBlockPlace(BlockPlaceEvent event) {
         Player player = event.getPlayer();
         PlayerInventory playerInventory = player.getInventory();
-        
+
         ItemStack itemInMainHand = playerInventory.getItemInMainHand();
         ItemStack itemInOffHand = playerInventory.getItemInOffHand();
 
         ItemStack parcelLockerItem = this.config.settings.parcelLockerItem.toGuiItem(this.miniMessage).getItemStack();
-        
+
         if (!ItemUtil.compareMeta(itemInMainHand, parcelLockerItem) && !ItemUtil.compareMeta(itemInOffHand, parcelLockerItem)) {
             return;
-         }
-         
-            ConversationFactory conversationFactory = new ConversationFactory(this.plugin)
-                .addConversationAbandonedListener(e -> {
-                    if (e.gracefulExit()) {
-                        String description = (String) e.getContext().getSessionData("description");
-                        Location location = event.getBlockPlaced().getLocation();
-                        this.databaseService.save(new ParcelLocker(UUID.randomUUID(), description, PositionAdapter.convert(location))).whenComplete((parcelLocker, throwable) -> {
-                            if (throwable != null) {
-                                throwable.printStackTrace();
-                                this.announcer.sendMessage(player, this.config.messages.failedToCreateParcelLocker);
-                                return;
-                            } 
-                            
-                            this.announcer.sendMessage(player, this.config.messages.parcelLockerSuccessfullyCreated);
-                        });
-                    } else {
-                        event.setCancelled(true);
-                    }
-                })
-                .withPrefix(new NullConversationPrefix())
-                .withModality(false)
-                .withLocalEcho(false)
-                .withTimeout(60)
-                .withFirstPrompt(new ParcelLockerPlacePrompt(this.announcer, this.config));
+        }
 
-            player.beginConversation(conversationFactory.buildConversation(player));
+        ConversationFactory conversationFactory = new ConversationFactory(this.plugin)
+            .addConversationAbandonedListener(e -> {
+                if (e.gracefulExit()) {
+                    String description = (String) e.getContext().getSessionData("description");
+                    Location location = event.getBlockPlaced().getLocation();
+
+                    this.databaseService.save(new ParcelLocker(UUID.randomUUID(), description, PositionAdapter.convert(location))).whenComplete((parcelLocker, throwable) -> {
+                        if (throwable != null) {
+                            throwable.printStackTrace();
+                            this.announcer.sendMessage(player, this.config.messages.failedToCreateParcelLocker);
+                            return;
+                        }
+                        this.announcer.sendMessage(player, this.config.messages.parcelLockerSuccessfullyCreated);
+                    });
+                }
+                else {
+                    event.setCancelled(true);
+                }
+            })
+            .withPrefix(new NullConversationPrefix())
+            .withModality(false)
+            .withLocalEcho(false)
+            .withTimeout(60)
+            .withFirstPrompt(new ParcelLockerPlacePrompt(this.announcer, this.config));
+
+        player.beginConversation(conversationFactory.buildConversation(player));
     }
 }

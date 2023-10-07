@@ -33,6 +33,7 @@ import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.milkbowl.vault.economy.Economy;
 import org.bstats.bukkit.Metrics;
+import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -66,6 +67,8 @@ public final class ParcelLockers extends JavaPlugin {
 
         ConfigurationManager configManager = new ConfigurationManager(this.getDataFolder());
         PluginConfiguration config = configManager.load(new PluginConfiguration());
+        Server server = this.getServer();
+
         if (config.settings.enableSentry) {
             Sentry.init(options -> {
                 this.getLogger().info("Initializing Sentry...");
@@ -74,7 +77,7 @@ public final class ParcelLockers extends JavaPlugin {
                 options.setRelease(this.getDescription().getVersion());
                 options.setTag("serverVersion", this.getServer().getVersion());
                 options.setTag("serverSoftware", PaperLib.getEnvironment().getName());
-                options.setTag("plugins", Arrays.stream(this.getServer().getPluginManager().getPlugins()).toList().toString());
+                options.setTag("plugins", Arrays.stream(server.getPluginManager().getPlugins()).toList().toString());
                 this.getLogger().info("Sentry initialized successfully!");
             });
         }
@@ -89,15 +92,15 @@ public final class ParcelLockers extends JavaPlugin {
         ParcelManager parcelManager = new ParcelManager(this, config, announcer, parcelRepository, parcelLockerDatabaseService);
         ParcelLockerManager parcelLockerManager = new ParcelLockerManager(parcelLockerDatabaseService);
 
-        MainGUI mainGUI = new MainGUI(this, this.getServer(), miniMessage, config, parcelRepository, parcelLockerDatabaseService);
-        ParcelListGUI parcelListGUI = new ParcelListGUI(this, miniMessage, config, parcelRepository, parcelLockerDatabaseService, mainGUI);
+        MainGUI mainGUI = new MainGUI(this, server, miniMessage, config, parcelRepository, parcelLockerDatabaseService);
+        ParcelListGUI parcelListGUI = new ParcelListGUI(this, server, miniMessage, config, parcelRepository, parcelLockerDatabaseService, mainGUI);
         
-        this.liteCommands = LiteBukkitAdventurePlatformFactory.builder(this.getServer(), "parcellockers", false, this.audiences, true)
+        this.liteCommands = LiteBukkitAdventurePlatformFactory.builder(server, "parcellockers", false, this.audiences, true)
                 .argument(Parcel.class, new ParcelArgument(parcelRepository))
-                .argument(Player.class, new PlayerArgument(this.getServer(), config))
+                .argument(Player.class, new PlayerArgument(server, config))
                 .contextualBind(Player.class, new BukkitOnlyPlayerContextual<>(config.messages.onlyForPlayers))
                 .commandInstance(
-                        new ParcelCommand(this.getServer(), parcelLockerDatabaseService, announcer, config, mainGUI, parcelListGUI, parcelManager),
+                        new ParcelCommand(server, parcelLockerDatabaseService, announcer, config, mainGUI, parcelListGUI, parcelManager),
                         new ParcelLockerCommand(configManager, config, announcer, miniMessage)
                 )
                 .invalidUsageHandler(new InvalidUsage(announcer, config))
@@ -106,7 +109,7 @@ public final class ParcelLockers extends JavaPlugin {
 
         if (!this.setupEconomy()) {
             this.getLogger().severe("Disabling due to no Vault dependency found!");
-            this.getServer().getPluginManager().disablePlugin(this);
+            server.getPluginManager().disablePlugin(this);
             return;
         }
 
@@ -114,7 +117,7 @@ public final class ParcelLockers extends JavaPlugin {
             new ParcelLockerInteractionController(parcelLockerDatabaseService, miniMessage, config),
             new ParcelLockerPlaceController(config, miniMessage, this, parcelLockerDatabaseService, announcer),
             new ParcelLockerBreakController(parcelLockerDatabaseService, announcer, config.messages)
-        ).forEach(controller -> this.getServer().getPluginManager().registerEvents(controller, this));
+        ).forEach(controller -> server.getPluginManager().registerEvents(controller, this));
 
         new Metrics(this, 17677);
         new UpdaterService(this.getDescription());

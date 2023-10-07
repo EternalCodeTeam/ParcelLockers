@@ -18,7 +18,6 @@ import org.bukkit.event.block.BlockIgniteEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import panda.utilities.text.Formatter;
 
-import java.util.Map;
 import java.util.UUID;
 
 
