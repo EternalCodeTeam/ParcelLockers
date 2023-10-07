@@ -39,7 +39,7 @@ public class ParcelLockerInteractionController implements Listener {
              return;
          }
          
-        if (this.parcelLockerDatabaseService.positionCache().containsKey(blockPos)) {
+        if (this.parcelLockerDatabaseService.isInCache(blockPos)) {
             event.setCancelled(true);
             new ParcelLockerMainGUI(this.miniMessage, this.config).show(player);
         }
