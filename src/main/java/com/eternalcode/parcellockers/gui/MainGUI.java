@@ -33,7 +33,6 @@ public class MainGUI extends GuiView {
 
     @Override
     public void show(Player player) {
-
         PluginConfiguration.GuiSettings guiSettings = this.config.guiSettings;
 
         Gui gui = Gui.gui()
