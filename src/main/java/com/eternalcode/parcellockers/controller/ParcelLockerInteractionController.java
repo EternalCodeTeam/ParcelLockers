@@ -31,6 +31,7 @@ public class ParcelLockerInteractionController implements Listener {
     public void onInventoryOpen(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         Position blockPos = PositionAdapter.convert(player.getTargetBlock(Set.of(Material.AIR), 4).getLocation());
+        
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
             return;
          }
