@@ -84,23 +84,23 @@ public class ParcelSendingGUI extends GuiView {
         this.size = ParcelSize.SMALL;
         
         gui.updateItem(20, smallButton.setGlow(true).toGuiItem(this.miniMessage));
-        gui.updateItem(22, mediumButton.setGlow(false).toGuiItem(this.miniMessage, e -> updateMediumButton(gui, smallButton, mediumButton, largeButton)));
-        gui.updateItem(24, largeButton.setGlow(false).toGuiItem(this.miniMessage, e -> updateLargeButton(gui, smallButton, mediumButton, largeButton)));
+        gui.updateItem(22, mediumButton.setGlow(false).toGuiItem(this.miniMessage, e -> this.updateMediumButton(gui, smallButton, mediumButton, largeButton)));
+        gui.updateItem(24, largeButton.setGlow(false).toGuiItem(this.miniMessage, e -> this.updateLargeButton(gui, smallButton, mediumButton, largeButton)));
     }
 
     private void updateMediumButton(Gui gui, ConfigItem smallButton, ConfigItem mediumButton, ConfigItem largeButton) {
         this.size = ParcelSize.MEDIUM;
         
-        gui.updateItem(20, smallButton.setGlow(false).toGuiItem(this.miniMessage, e -> updateSmallButton(gui, smallButton, mediumButton, largeButton)));
+        gui.updateItem(20, smallButton.setGlow(false).toGuiItem(this.miniMessage, e -> this.updateSmallButton(gui, smallButton, mediumButton, largeButton)));
         gui.updateItem(22, mediumButton.setGlow(true).toGuiItem(this.miniMessage));
-        gui.updateItem(24, largeButton.setGlow(false).toGuiItem(this.miniMessage, e -> updateLargeButton(gui, smallButton, mediumButton, largeButton)));
+        gui.updateItem(24, largeButton.setGlow(false).toGuiItem(this.miniMessage, e -> this.updateLargeButton(gui, smallButton, mediumButton, largeButton)));
     }
 
     private void updateLargeButton(Gui gui, ConfigItem smallButton, ConfigItem mediumButton, ConfigItem largeButton) {
         this.size = ParcelSize.LARGE;
         
-        gui.updateItem(20, smallButton.setGlow(false).toGuiItem(this.miniMessage, e -> updateSmallButton(gui, smallButton, mediumButton, largeButton)));
-        gui.updateItem(22, mediumButton.setGlow(false).toGuiItem(this.miniMessage, e -> updateMediumButton(gui, smallButton, mediumButton, largeButton)));
+        gui.updateItem(20, smallButton.setGlow(false).toGuiItem(this.miniMessage, e -> this.updateSmallButton(gui, smallButton, mediumButton, largeButton)));
+        gui.updateItem(22, mediumButton.setGlow(false).toGuiItem(this.miniMessage, e -> this.updateMediumButton(gui, smallButton, mediumButton, largeButton)));
         gui.updateItem(24, largeButton.setGlow(true).toGuiItem(this.miniMessage));
     }
 

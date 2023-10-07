@@ -30,9 +30,9 @@ public record Position(int x, int y, int z, String world) {
 
         Position position = (Position) o;
 
-        return x == position.x
-            && y == position.y
-            && z == position.z
+        return this.x == position.x
+            && this.y == position.y
+            && this.z == position.z
             && this.world.equals(position.world);
     }
 

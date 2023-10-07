@@ -48,20 +48,21 @@ public class ParcelItemStorageGUI {
                 .title(this.miniMessage.deserialize(guiSettings.parcelLargeContentGuiTitle))
                 .rows(4)
                 .create();
+            default -> throw new IllegalStateException("Unexpected value: " + size);
         }
 
         for (int i = 0; i < 8; i++) {
-            this.gui.setItem(gui.getRows(), i, backgroundItem);
+            this.gui.setItem(this.gui.getRows(), i, backgroundItem);
         }
 
-        this.gui.setItem(gui.getRows(), 1, confirmItem);
-        this.gui.setItem(gui.getRows(), 2, cancelItem);
+        this.gui.setItem(this.gui.getRows(), 1, confirmItem);
+        this.gui.setItem(this.gui.getRows(), 2, cancelItem);
         this.gui.setCloseGuiAction(event -> {
             if (this.confirmed) {
                  return;
             }
             
-            if (gui.getInventory().getContents() == null) {
+            if (this.gui.getInventory().getContents() == null) {
                 return;
             }
                 
@@ -71,7 +72,7 @@ public class ParcelItemStorageGUI {
                 }
                     
                 player.getInventory().addItem(item);
-                gui.removeItem(item);
+                this.gui.removeItem(item);
             }
         });
         
