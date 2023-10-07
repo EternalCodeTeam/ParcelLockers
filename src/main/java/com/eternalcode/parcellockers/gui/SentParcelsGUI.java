@@ -41,7 +41,6 @@ public class SentParcelsGUI extends GuiView {
 
     @Override
     public void show(Player player) {
-
         PaginatedGui gui = Gui.paginated()
             .title(this.miniMessage.deserialize(this.config.guiSettings.sentParcelsTitle))
             .rows(6)
