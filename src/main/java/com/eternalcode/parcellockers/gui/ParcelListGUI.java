@@ -46,7 +46,6 @@ public class ParcelListGUI extends GuiView {
     }
 
     private void show(Player player, Page page) {
-
         PaginatedGui gui = Gui.paginated()
             .title(this.miniMessage.deserialize(this.config.guiSettings.parcelListGuiTitle))
             .disableAllInteractions()
