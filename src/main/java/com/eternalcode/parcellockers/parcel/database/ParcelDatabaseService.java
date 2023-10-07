@@ -1,5 +1,6 @@
-package com.eternalcode.parcellockers.database;
+package com.eternalcode.parcellockers.parcel.database;
 
+import com.eternalcode.parcellockers.database.AbstractDatabaseService;
 import com.eternalcode.parcellockers.exception.ParcelLockersException;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;

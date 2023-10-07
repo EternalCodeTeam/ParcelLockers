@@ -1,7 +1,7 @@
 package com.eternalcode.parcellockers.command.argument;
 
-import com.eternalcode.parcellockers.database.ParcelDatabaseService;
 import com.eternalcode.parcellockers.parcel.Parcel;
+import com.eternalcode.parcellockers.parcel.database.ParcelDatabaseService;
 import dev.rollczi.litecommands.argument.ArgumentName;
 import dev.rollczi.litecommands.argument.simple.OneArgument;
 import dev.rollczi.litecommands.command.LiteInvocation;

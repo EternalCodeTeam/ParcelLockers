@@ -1,8 +1,8 @@
-package com.eternalcode.parcellockers.controller;
+package com.eternalcode.parcellockers.locker.controller;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
-import com.eternalcode.parcellockers.database.ParcelLockerDatabaseService;
-import com.eternalcode.parcellockers.gui.ParcelLockerMainGUI;
+import com.eternalcode.parcellockers.locker.database.LockerDatabaseService;
+import com.eternalcode.parcellockers.locker.gui.LockerMainGUI;
 import com.eternalcode.parcellockers.shared.Position;
 import com.eternalcode.parcellockers.shared.PositionAdapter;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -15,13 +15,13 @@ import org.bukkit.event.player.PlayerInteractEvent;
 
 import java.util.Set;
 
-public class ParcelLockerInteractionController implements Listener {
+public class LockerInteractionController implements Listener {
 
-    private final ParcelLockerDatabaseService parcelLockerDatabaseService;
+    private final LockerDatabaseService parcelLockerDatabaseService;
     private final MiniMessage miniMessage;
     private final PluginConfiguration config;
 
-    public ParcelLockerInteractionController(ParcelLockerDatabaseService parcelLockerDatabaseService, MiniMessage miniMessage, PluginConfiguration config) {
+    public LockerInteractionController(LockerDatabaseService parcelLockerDatabaseService, MiniMessage miniMessage, PluginConfiguration config) {
         this.parcelLockerDatabaseService = parcelLockerDatabaseService;
         this.miniMessage = miniMessage;
         this.config = config;
@@ -42,7 +42,7 @@ public class ParcelLockerInteractionController implements Listener {
          
         if (this.parcelLockerDatabaseService.isInCache(blockPos)) {
             event.setCancelled(true);
-            new ParcelLockerMainGUI(this.miniMessage, this.config).show(player);
+            new LockerMainGUI(this.miniMessage, this.config).show(player);
         }
     }
 }

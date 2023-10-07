@@ -14,14 +14,14 @@ import org.bukkit.inventory.ItemStack;
 
 @Route(name = "parcellockers", aliases = {"parcellocker"})
 @Permission("parcellockers.admin")
-public class ParcelLockerCommand {
+public class ParcelLockersCommand {
 
     private final ConfigurationManager configManager;
     private final PluginConfiguration config;
     private final NotificationAnnouncer announcer;
     private final MiniMessage miniMessage;
 
-    public ParcelLockerCommand(ConfigurationManager configManager, PluginConfiguration config, NotificationAnnouncer announcer, MiniMessage miniMessage) {
+    public ParcelLockersCommand(ConfigurationManager configManager, PluginConfiguration config, NotificationAnnouncer announcer, MiniMessage miniMessage) {
         this.configManager = configManager;
         this.config = config;
         this.announcer = announcer;

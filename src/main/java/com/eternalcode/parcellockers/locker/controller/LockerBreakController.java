@@ -1,7 +1,7 @@
-package com.eternalcode.parcellockers.controller;
+package com.eternalcode.parcellockers.locker.controller;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
-import com.eternalcode.parcellockers.database.ParcelLockerDatabaseService;
+import com.eternalcode.parcellockers.locker.database.LockerDatabaseService;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.shared.Position;
 import com.eternalcode.parcellockers.shared.PositionAdapter;
@@ -21,13 +21,13 @@ import panda.utilities.text.Formatter;
 import java.util.UUID;
 
 
-public class ParcelLockerBreakController implements Listener {
+public class LockerBreakController implements Listener {
 
-    private final ParcelLockerDatabaseService parcelLockerDatabaseService;
+    private final LockerDatabaseService parcelLockerDatabaseService;
     private final NotificationAnnouncer announcer;
     private final PluginConfiguration.Messages messages;
 
-    public ParcelLockerBreakController(ParcelLockerDatabaseService parcelLockerDatabaseService, NotificationAnnouncer announcer, PluginConfiguration.Messages messages) {
+    public LockerBreakController(LockerDatabaseService parcelLockerDatabaseService, NotificationAnnouncer announcer, PluginConfiguration.Messages messages) {
         this.parcelLockerDatabaseService = parcelLockerDatabaseService;
         this.announcer = announcer;
         this.messages = messages;

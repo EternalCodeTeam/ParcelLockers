@@ -1,7 +1,9 @@
-package com.eternalcode.parcellockers.gui;
+package com.eternalcode.parcellockers.parcel.gui;
 
 import com.eternalcode.parcellockers.configuration.implementation.ConfigItem;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.gui.GuiView;
+import com.eternalcode.parcellockers.locker.gui.LockerMainGUI;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import dev.triumphteam.gui.components.GuiAction;
 import dev.triumphteam.gui.guis.Gui;
@@ -24,7 +26,7 @@ public class ParcelSendingGUI extends GuiView {
     }
 
     @Override
-    void show(Player player) {
+    public void show(Player player) {
         Component guiTitle = this.miniMessage.deserialize(this.config.guiSettings.parcelLockerSendingGuiTitle);
 
         Gui gui = Gui.gui()
@@ -37,7 +39,7 @@ public class ParcelSendingGUI extends GuiView {
         GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem(this.miniMessage);
         GuiItem storageItem = this.config.guiSettings.parcelStorageItem.toGuiItem(this.miniMessage, event -> new ParcelItemStorageGUI(this.config, this.miniMessage).show(player, this.size));
 
-        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage, event -> new ParcelLockerMainGUI(this.miniMessage, this.config).show(player));
+        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage, event -> new LockerMainGUI(this.miniMessage, this.config).show(player));
 
         ConfigItem smallButton = this.config.guiSettings.smallParcelSizeItem;
         ConfigItem mediumButton = this.config.guiSettings.mediumParcelSizeItem;

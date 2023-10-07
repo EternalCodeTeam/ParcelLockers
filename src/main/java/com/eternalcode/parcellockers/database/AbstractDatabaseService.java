@@ -12,7 +12,7 @@ import java.sql.SQLException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-abstract class AbstractDatabaseService {
+public abstract class AbstractDatabaseService {
 
     protected final DataSource dataSource;
 

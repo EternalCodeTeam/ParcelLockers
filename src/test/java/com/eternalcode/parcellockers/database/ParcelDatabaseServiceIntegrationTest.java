@@ -2,6 +2,7 @@ package com.eternalcode.parcellockers.database;
 
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
+import com.eternalcode.parcellockers.parcel.database.ParcelDatabaseService;
 import com.eternalcode.parcellockers.parcel.repository.ParcelPageResult;
 import com.eternalcode.parcellockers.shared.Page;
 import com.zaxxer.hikari.HikariDataSource;

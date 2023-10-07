@@ -1,8 +1,11 @@
-package com.eternalcode.parcellockers.gui;
+package com.eternalcode.parcellockers.locker.gui;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.gui.GuiView;
+import com.eternalcode.parcellockers.locker.repository.LockerRepository;
+import com.eternalcode.parcellockers.parcel.gui.ParcelListGUI;
+import com.eternalcode.parcellockers.parcel.gui.SentParcelsGUI;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
-import com.eternalcode.parcellockers.parcellocker.repository.ParcelLockerRepository;
 import dev.triumphteam.gui.components.GuiType;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
@@ -20,15 +23,15 @@ public class MainGUI extends GuiView {
     private final MiniMessage miniMessage;
     private final PluginConfiguration config;
     private final ParcelRepository parcelRepository;
-    private final ParcelLockerRepository parcelLockerRepository;
+    private final LockerRepository lockerRepository;
 
-    public MainGUI(Plugin plugin, Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelRepository parcelRepository, ParcelLockerRepository parcelLockerRepository) {
+    public MainGUI(Plugin plugin, Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelRepository parcelRepository, LockerRepository lockerRepository) {
         this.plugin = plugin;
         this.server = server;
         this.miniMessage = miniMessage;
         this.config = config;
         this.parcelRepository = parcelRepository;
-        this.parcelLockerRepository = parcelLockerRepository;
+        this.lockerRepository = lockerRepository;
     }
 
     @Override
@@ -64,10 +67,10 @@ public class MainGUI extends GuiView {
         gui.setItem(24, parcelArchiveItem);
         gui.setItem(40, closeItem);
 
-        gui.addSlotAction(20, event -> new ParcelListGUI(this.plugin, this.server, this.miniMessage, this.config, this.parcelRepository, this.parcelLockerRepository, this).show(player));
+        gui.addSlotAction(20, event -> new ParcelListGUI(this.plugin, this.server, this.miniMessage, this.config, this.parcelRepository, this.lockerRepository, this).show(player));
         gui.addSlotAction(22, event -> {
             event.getView().close();
-            new SentParcelsGUI(this.plugin, this.server, this.miniMessage, this.config, this.parcelRepository, this.parcelLockerRepository, this).show(player);
+            new SentParcelsGUI(this.plugin, this.server, this.miniMessage, this.config, this.parcelRepository, this.lockerRepository, this).show(player);
         });
         gui.setDefaultClickAction(event -> event.setCancelled(true));
         gui.open(player);

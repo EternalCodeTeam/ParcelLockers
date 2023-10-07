@@ -1,4 +1,4 @@
-package com.eternalcode.parcellockers.gui;
+package com.eternalcode.parcellockers.parcel.gui;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.parcel.ParcelSize;

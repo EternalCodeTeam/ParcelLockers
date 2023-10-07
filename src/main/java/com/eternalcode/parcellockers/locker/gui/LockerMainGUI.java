@@ -1,6 +1,8 @@
-package com.eternalcode.parcellockers.gui;
+package com.eternalcode.parcellockers.locker.gui;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.gui.GuiView;
+import com.eternalcode.parcellockers.parcel.gui.ParcelSendingGUI;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import net.kyori.adventure.text.Component;
@@ -9,12 +11,12 @@ import org.bukkit.entity.Player;
 
 import static com.eternalcode.parcellockers.util.AdventureUtil.RESET_ITEM;
 
-public class ParcelLockerMainGUI extends GuiView {
+public class LockerMainGUI extends GuiView {
 
     private final MiniMessage miniMessage;
     private final PluginConfiguration config;
 
-    public ParcelLockerMainGUI(MiniMessage miniMessage, PluginConfiguration config) {
+    public LockerMainGUI(MiniMessage miniMessage, PluginConfiguration config) {
         this.miniMessage = miniMessage;
         this.config = config;
     }

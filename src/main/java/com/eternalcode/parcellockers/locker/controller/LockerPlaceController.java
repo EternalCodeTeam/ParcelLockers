@@ -1,10 +1,10 @@
-package com.eternalcode.parcellockers.controller;
+package com.eternalcode.parcellockers.locker.controller;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.conversation.ParcelLockerPlacePrompt;
-import com.eternalcode.parcellockers.database.ParcelLockerDatabaseService;
+import com.eternalcode.parcellockers.locker.Locker;
+import com.eternalcode.parcellockers.locker.database.LockerDatabaseService;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
-import com.eternalcode.parcellockers.parcellocker.ParcelLocker;
 import com.eternalcode.parcellockers.shared.PositionAdapter;
 import com.eternalcode.parcellockers.util.ItemUtil;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -21,15 +21,15 @@ import org.bukkit.plugin.Plugin;
 
 import java.util.UUID;
 
-public class ParcelLockerPlaceController implements Listener {
+public class LockerPlaceController implements Listener {
 
     private final PluginConfiguration config;
     private final MiniMessage miniMessage;
     private final Plugin plugin;
-    private final ParcelLockerDatabaseService databaseService;
+    private final LockerDatabaseService databaseService;
     private final NotificationAnnouncer announcer;
 
-    public ParcelLockerPlaceController(PluginConfiguration config, MiniMessage miniMessage, Plugin plugin, ParcelLockerDatabaseService databaseService, NotificationAnnouncer announcer) {
+    public LockerPlaceController(PluginConfiguration config, MiniMessage miniMessage, Plugin plugin, LockerDatabaseService databaseService, NotificationAnnouncer announcer) {
         this.config = config;
         this.miniMessage = miniMessage;
         this.plugin = plugin;
@@ -57,7 +57,7 @@ public class ParcelLockerPlaceController implements Listener {
                     String description = (String) e.getContext().getSessionData("description");
                     Location location = event.getBlockPlaced().getLocation();
 
-                    this.databaseService.save(new ParcelLocker(UUID.randomUUID(), description, PositionAdapter.convert(location))).whenComplete((parcelLocker, throwable) -> {
+                    this.databaseService.save(new Locker(UUID.randomUUID(), description, PositionAdapter.convert(location))).whenComplete((parcelLocker, throwable) -> {
                         if (throwable != null) {
                             throwable.printStackTrace();
                             this.announcer.sendMessage(player, this.config.messages.failedToCreateParcelLocker);

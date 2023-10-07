@@ -1,6 +1,7 @@
-package com.eternalcode.parcellockers.gui;
+package com.eternalcode.parcellockers.parcel.gui;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
@@ -19,7 +20,7 @@ public class ParcelArchiveGUI extends GuiView {
     }
 
     @Override
-    void show(Player player) {
+    public void show(Player player) {
 
     }
 }
