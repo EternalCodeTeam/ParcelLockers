@@ -1,5 +1,3 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-
 plugins {
     `java-library`
     checkstyle
@@ -111,42 +109,42 @@ tasks.withType<JavaCompile> {
     options.setIncremental(true)
 }
 
-tasks.withType<ShadowJar> {
-    archiveFileName.set("ParcelLockers v${project.version} (MC 1.8.8-1.20.x).jar")
-
-    exclude(
-        "org/intellij/lang/annotations/**",
-        "org/jetbrains/annotations/**",
-        "META-INF/**",
-        "javax/**",
-    )
-
-    mergeServiceFiles()
-    minimize()
-
-    val prefix = "com.eternalcode.parcellockers.libs"
-    listOf(
-        "panda",
-        "org.panda_lang",
-        "net.dzikoysk",
-        "io.papermc.lib",
-        "org.bstats",
-        "dev.rollczi",
-        "net.kyori",
-        "okhttp3",
-        "org.json",
-        "com.fasterxml"
-    ).forEach { pack ->
-        relocate(pack, "$prefix.$pack")
-    }
-}
-
 tasks {
     runServer {
         minecraftVersion("1.20.1")
     }
-}
 
-tasks.getByName<Test>("test") {
-    useJUnitPlatform()
+    test {
+        useJUnitPlatform()
+    }
+
+    shadowJar {
+        archiveFileName.set("ParcelLockers v${project.version} (MC 1.8.8-1.20.x).jar")
+
+        exclude(
+            "org/intellij/lang/annotations/**",
+            "org/jetbrains/annotations/**",
+            "META-INF/**",
+            "javax/**",
+        )
+
+        mergeServiceFiles()
+        minimize()
+
+        val prefix = "com.eternalcode.parcellockers.libs"
+        listOf(
+            "panda",
+            "org.panda_lang",
+            "net.dzikoysk",
+            "io.papermc.lib",
+            "org.bstats",
+            "dev.rollczi",
+            "net.kyori",
+            "okhttp3",
+            "org.json",
+            "com.fasterxml"
+        ).forEach { pack ->
+            relocate(pack, "$prefix.$pack")
+        }
+    }
 }
