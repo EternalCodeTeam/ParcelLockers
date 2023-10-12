@@ -13,6 +13,7 @@ import dev.triumphteam.gui.guis.PaginatedGui;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 import panda.utilities.text.Formatter;
 
@@ -89,11 +90,12 @@ public class ParcelListGUI extends GuiView {
                 if (!parcel.recipients().contains(player.getUniqueId())) {
                     continue;
                 }
+
                 ItemMeta parcelItemMeta = parcelItem.getItemStack().getItemMeta();
                 
                 List<String> newLore = this.replaceParcelPlaceholders(parcel, parcelItemMeta.getLore());
 
-                parcelItem.getItemStack().getItemMeta().setLore(newLore);
+                parcelItemMeta.setLore(newLore);
                 gui.addItem(parcelItem);
 
             }
@@ -113,7 +115,7 @@ public class ParcelListGUI extends GuiView {
 
     }
 
-    public List<String> replaceParcelPlaceholders(Parcel parcel, List<String> lore) {
+    private List<String> replaceParcelPlaceholders(Parcel parcel, List<String> lore) {
         if (lore == null || lore.isEmpty()) {
             return Collections.emptyList();
         }

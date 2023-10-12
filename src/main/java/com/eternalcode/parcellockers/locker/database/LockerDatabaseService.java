@@ -59,6 +59,7 @@ public class LockerDatabaseService extends AbstractDatabaseService implements Lo
                 statement.setString(2, locker.description());
                 statement.setString(3, locker.position().toString());
                 statement.execute();
+
                 this.cache.put(locker.uuid(), locker);
                 this.positionCache.put(locker.position(), locker.uuid());
             }
@@ -122,9 +123,9 @@ public class LockerDatabaseService extends AbstractDatabaseService implements Lo
 
         while (rs.next()) {
             Locker locker = new Locker(
-                    UUID.fromString(rs.getString("uuid")),
-                    rs.getString("description"),
-                    Position.parse(rs.getString("position"))
+                UUID.fromString(rs.getString("uuid")),
+                rs.getString("description"),
+                Position.parse(rs.getString("position"))
             );
 
             list.add(locker);

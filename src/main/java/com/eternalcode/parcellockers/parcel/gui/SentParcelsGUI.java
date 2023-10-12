@@ -2,7 +2,6 @@ package com.eternalcode.parcellockers.parcel.gui;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.gui.GuiView;
-import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.locker.gui.MainGUI;
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.parcel.Parcel;
@@ -80,7 +79,6 @@ public class SentParcelsGUI extends GuiView {
             return Collections.emptyList();
         }
 
-        Locker destination = this.lockerRepository.findByUUID(parcel.destinationLocker()).join().get();
         Formatter formatter = new Formatter()
             .register("{UUID}", parcel.uuid().toString())
             .register("{NAME}", parcel.name())

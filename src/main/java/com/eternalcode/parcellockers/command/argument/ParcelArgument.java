@@ -30,7 +30,6 @@ public class ParcelArgument implements OneArgument<Parcel> {
         return Result.ok(parcel);
     }
 
-
     @Override
     public List<Suggestion> suggest(LiteInvocation invocation) {
         return this.databaseService.cache().values().stream()
