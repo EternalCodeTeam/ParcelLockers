@@ -2,8 +2,8 @@ package com.eternalcode.parcellockers.parcel.gui;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.gui.GuiView;
+import com.eternalcode.parcellockers.locker.database.LockerDatabaseService;
 import com.eternalcode.parcellockers.locker.gui.MainGUI;
-import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.shared.Page;
@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 public class ParcelListGUI extends GuiView {
 
@@ -29,14 +30,14 @@ public class ParcelListGUI extends GuiView {
     private final MiniMessage miniMessage;
     private final PluginConfiguration config;
     private final ParcelRepository parcelRepository;
-    private final LockerRepository lockerRepository;
+    private final LockerDatabaseService lockerRepository;
     private final MainGUI mainGUI;
 
     private static final int WIDTH = 7;
     private static final int HEIGHT = 4;
     private static final Page FIRST_PAGE = new Page(0, WIDTH * HEIGHT);
 
-    public ParcelListGUI(Plugin plugin, Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelRepository parcelRepository, LockerRepository lockerRepository, MainGUI mainGUI) {
+    public ParcelListGUI(Plugin plugin, Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelRepository parcelRepository, LockerDatabaseService lockerRepository, MainGUI mainGUI) {
         this.plugin = plugin;
         this.server = server;
         this.miniMessage = miniMessage;
@@ -136,11 +137,21 @@ public class ParcelListGUI extends GuiView {
                 .toString()
             );
 
-        this.lockerRepository.findByUUID(parcel.destinationLocker()).join().ifPresent(locker -> formatter
+        UUID destinationLocker = parcel.destinationLocker();
+        if (!this.lockerRepository.isInCache(destinationLocker)) {
+            this.lockerRepository.findByUUID(destinationLocker).join().ifPresent(locker -> formatter
+                .register("{POSITION_X}", locker.position().x())
+                .register("{POSITION_Y}", locker.position().y())
+                .register("{POSITION_Z}", locker.position().z())
+            );
+        }
+
+        this.lockerRepository.findLocker(destinationLocker).ifPresent(locker -> formatter
             .register("{POSITION_X}", locker.position().x())
             .register("{POSITION_Y}", locker.position().y())
             .register("{POSITION_Z}", locker.position().z())
         );
+
 
         List<String> newLore = new ArrayList<>();
 

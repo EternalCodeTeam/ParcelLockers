@@ -1,4 +1,4 @@
-package com.eternalcode.parcellockers.command.argument;
+package com.eternalcode.parcellockers.parcel.command.argument;
 
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.database.ParcelDatabaseService;

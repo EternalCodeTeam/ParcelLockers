@@ -1,7 +1,5 @@
 package com.eternalcode.parcellockers;
 
-import com.eternalcode.parcellockers.command.ParcelCommand;
-import com.eternalcode.parcellockers.command.argument.ParcelArgument;
 import com.eternalcode.parcellockers.command.argument.PlayerArgument;
 import com.eternalcode.parcellockers.command.handler.InvalidUsage;
 import com.eternalcode.parcellockers.command.handler.PermissionMessage;
@@ -17,6 +15,8 @@ import com.eternalcode.parcellockers.locker.gui.MainGUI;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelManager;
+import com.eternalcode.parcellockers.parcel.command.ParcelCommand;
+import com.eternalcode.parcellockers.parcel.command.argument.ParcelArgument;
 import com.eternalcode.parcellockers.parcel.database.ParcelDatabaseService;
 import com.eternalcode.parcellockers.parcel.gui.ParcelListGUI;
 import com.eternalcode.parcellockers.updater.UpdaterService;
