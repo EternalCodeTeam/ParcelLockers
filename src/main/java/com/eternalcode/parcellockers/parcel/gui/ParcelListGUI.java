@@ -89,8 +89,9 @@ public class ParcelListGUI extends GuiView {
                 if (!parcel.recipients().contains(player.getUniqueId())) {
                     continue;
                 }
-
-                List<String> newLore = this.replaceParcelPlaceholders(parcel, parcelItem.getItemStack().getItemMeta().getLore());
+                ItemMeta parcelItemMeta = parcelItem.getItemStack().getItemMeta();
+                
+                List<String> newLore = this.replaceParcelPlaceholders(parcel, parcelItemMeta.getLore());
 
                 parcelItem.getItemStack().getItemMeta().setLore(newLore);
                 gui.addItem(parcelItem);
