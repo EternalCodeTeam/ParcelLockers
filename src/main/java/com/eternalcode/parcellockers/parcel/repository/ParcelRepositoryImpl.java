@@ -1,11 +1,9 @@
-package com.eternalcode.parcellockers.parcel.database;
+package com.eternalcode.parcellockers.parcel.repository;
 
 import com.eternalcode.parcellockers.database.AbstractDatabaseService;
 import com.eternalcode.parcellockers.exception.ParcelLockersException;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
-import com.eternalcode.parcellockers.parcel.repository.ParcelPageResult;
-import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.shared.Page;
 
 import javax.sql.DataSource;
@@ -23,11 +21,11 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-public class ParcelDatabaseService extends AbstractDatabaseService implements ParcelRepository {
+public class ParcelRepositoryImpl extends AbstractDatabaseService implements ParcelRepository {
 
     private final Map<UUID, Parcel> cache = new HashMap<>();
 
-    public ParcelDatabaseService(DataSource dataSource) {
+    public ParcelRepositoryImpl(DataSource dataSource) {
         super(dataSource);
 
         this.initTable();

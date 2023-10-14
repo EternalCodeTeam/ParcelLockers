@@ -1,8 +1,8 @@
 package com.eternalcode.parcellockers.database;
 
 import com.eternalcode.parcellockers.locker.Locker;
-import com.eternalcode.parcellockers.locker.database.LockerDatabaseService;
 import com.eternalcode.parcellockers.locker.repository.LockerPageResult;
+import com.eternalcode.parcellockers.locker.repository.LockerRepositoryImpl;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.Position;
 import com.zaxxer.hikari.HikariDataSource;
@@ -28,29 +28,29 @@ class ParcelLockerDatabaseServiceIntegrationTest extends ParcelLockerIntegration
     void test() {
         HikariDataSource dataSource = buildHikariDataSource(mySQLContainer);
 
-        LockerDatabaseService parcelLockerDatabaseService = new LockerDatabaseService(dataSource);
+        LockerRepositoryImpl parcelLockerRepositoryImpl = new LockerRepositoryImpl(dataSource);
 
         UUID uuid = UUID.randomUUID();
         String description = "Parcel locker description.";
         Position position = new Position(1, 2, 3, "world");
 
 
-        parcelLockerDatabaseService.save(new Locker(uuid, description, position));
+        parcelLockerRepositoryImpl.save(new Locker(uuid, description, position));
 
-        Optional<Locker> parcelLocker = await(parcelLockerDatabaseService.findByUUID(uuid));
+        Optional<Locker> parcelLocker = await(parcelLockerRepositoryImpl.findByUUID(uuid));
         assertTrue(parcelLocker.isPresent());
         assertEquals(uuid, parcelLocker.get().uuid());
 
-        Optional<Locker> byPosition = await(parcelLockerDatabaseService.findByPosition(position));
+        Optional<Locker> byPosition = await(parcelLockerRepositoryImpl.findByPosition(position));
         assertTrue(byPosition.isPresent());
         assertEquals(uuid, byPosition.get().uuid());
 
-        LockerPageResult pageResult = await(parcelLockerDatabaseService.findPage(new Page(0, 28)));
+        LockerPageResult pageResult = await(parcelLockerRepositoryImpl.findPage(new Page(0, 28)));
         assertEquals(1, pageResult.lockers().size());
         assertEquals(uuid, pageResult.lockers().iterator().next().uuid());
 
-        await(parcelLockerDatabaseService.remove(uuid));
-        Optional<Locker> removed = await(parcelLockerDatabaseService.findByUUID(uuid));
+        await(parcelLockerRepositoryImpl.remove(uuid));
+        Optional<Locker> removed = await(parcelLockerRepositoryImpl.findByUUID(uuid));
         assertTrue(removed.isEmpty());
     }
 }

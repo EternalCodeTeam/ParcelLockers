@@ -1,8 +1,8 @@
 package com.eternalcode.parcellockers.locker.controller;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
-import com.eternalcode.parcellockers.locker.database.LockerDatabaseService;
 import com.eternalcode.parcellockers.locker.gui.LockerMainGUI;
+import com.eternalcode.parcellockers.locker.repository.LockerRepositoryImpl;
 import com.eternalcode.parcellockers.shared.Position;
 import com.eternalcode.parcellockers.shared.PositionAdapter;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -17,12 +17,12 @@ import java.util.Set;
 
 public class LockerInteractionController implements Listener {
 
-    private final LockerDatabaseService parcelLockerDatabaseService;
+    private final LockerRepositoryImpl parcelLockerRepositoryImpl;
     private final MiniMessage miniMessage;
     private final PluginConfiguration config;
 
-    public LockerInteractionController(LockerDatabaseService parcelLockerDatabaseService, MiniMessage miniMessage, PluginConfiguration config) {
-        this.parcelLockerDatabaseService = parcelLockerDatabaseService;
+    public LockerInteractionController(LockerRepositoryImpl parcelLockerRepositoryImpl, MiniMessage miniMessage, PluginConfiguration config) {
+        this.parcelLockerRepositoryImpl = parcelLockerRepositoryImpl;
         this.miniMessage = miniMessage;
         this.config = config;
     }
@@ -40,7 +40,7 @@ public class LockerInteractionController implements Listener {
              return;
          }
          
-        if (this.parcelLockerDatabaseService.isInCache(blockPos)) {
+        if (this.parcelLockerRepositoryImpl.isInCache(blockPos)) {
             event.setCancelled(true);
             new LockerMainGUI(this.miniMessage, this.config).show(player);
         }
