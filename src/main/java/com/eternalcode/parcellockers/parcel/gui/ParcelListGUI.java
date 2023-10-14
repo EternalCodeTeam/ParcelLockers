@@ -138,19 +138,13 @@ public class ParcelListGUI extends GuiView {
             );
 
         UUID destinationLocker = parcel.destinationLocker();
-        if (!this.lockerRepository.isInCache(destinationLocker)) {
-            this.lockerRepository.findByUUID(destinationLocker).join().ifPresent(locker -> formatter
-                .register("{POSITION_X}", locker.position().x())
-                .register("{POSITION_Y}", locker.position().y())
-                .register("{POSITION_Z}", locker.position().z())
-            );
-        }
-
-        this.lockerRepository.findLocker(destinationLocker).ifPresent(locker -> formatter
-            .register("{POSITION_X}", locker.position().x())
-            .register("{POSITION_Y}", locker.position().y())
-            .register("{POSITION_Z}", locker.position().z())
-        );
+        this.lockerRepository.findLocker(destinationLocker)
+                .or(() -> this.lockerRepository.findByUUID(destinationLocker))
+                .ifPresent(locker -> formatter
+                       .register("{POSITION_X}", locker.position().x())
+                       .register("{POSITION_Y}", locker.position().y())
+                       .register("{POSITION_Z}", locker.position().z())
+                ))
 
 
         List<String> newLore = new ArrayList<>();
