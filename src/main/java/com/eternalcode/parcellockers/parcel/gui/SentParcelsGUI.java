@@ -1,10 +1,11 @@
-package com.eternalcode.parcellockers.gui;
+package com.eternalcode.parcellockers.parcel.gui;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.gui.GuiView;
+import com.eternalcode.parcellockers.locker.gui.MainGUI;
+import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
-import com.eternalcode.parcellockers.parcellocker.ParcelLocker;
-import com.eternalcode.parcellockers.parcellocker.repository.ParcelLockerRepository;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
@@ -19,43 +20,38 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class SentParcelsGUI implements View {
+public class SentParcelsGUI extends GuiView {
 
-    private static final int[] CORNER_SLOTS = {0, 8, 45, 53};
-    private static final int[] BORDER_SLOTS = {1, 2, 3, 4, 5, 6, 7, 9, 17, 18, 26, 27, 35, 36, 44, 46, 47, 48, 49, 50, 51, 52};
     private final Plugin plugin;
     private final Server server;
     private final MiniMessage miniMessage;
     private final PluginConfiguration config;
     private final ParcelRepository parcelRepository;
-    private final ParcelLockerRepository parcelLockerRepository;
+    private final LockerRepository lockerRepository;
     private final MainGUI mainGUI;
 
-    public SentParcelsGUI(Plugin plugin, Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelRepository parcelRepository, ParcelLockerRepository parcelLockerRepository, MainGUI mainGUI) {
+    public SentParcelsGUI(Plugin plugin, Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelRepository parcelRepository, LockerRepository lockerRepository, MainGUI mainGUI) {
         this.plugin = plugin;
         this.server = server;
         this.miniMessage = miniMessage;
         this.config = config;
         this.parcelRepository = parcelRepository;
-        this.parcelLockerRepository = parcelLockerRepository;
+        this.lockerRepository = lockerRepository;
         this.mainGUI = mainGUI;
     }
 
     @Override
     public void show(Player player) {
+        PaginatedGui gui = Gui.paginated()
+            .title(this.miniMessage.deserialize(this.config.guiSettings.sentParcelsTitle))
+            .rows(6)
+            .disableAllInteractions()
+            .create();
 
         GuiItem parcelItem = this.config.guiSettings.parcelItem.toGuiItem(this.miniMessage);
         GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem(this.miniMessage);
         GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
-        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage, event -> {
-            player.closeInventory();
-            this.mainGUI.show(player);
-        });
-        PaginatedGui gui = Gui.paginated()
-                .title(this.miniMessage.deserialize(this.config.guiSettings.sentParcelsTitle))
-                .rows(6)
-                .disableAllInteractions()
-                .create();
+        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage, event -> this.mainGUI.show(player));
 
         for (int slot : CORNER_SLOTS) {
             gui.setItem(slot, cornerItem);
@@ -83,7 +79,6 @@ public class SentParcelsGUI implements View {
             return Collections.emptyList();
         }
 
-        ParcelLocker destination = this.parcelLockerRepository.findByUUID(parcel.destinationLocker()).join().get();
         Formatter formatter = new Formatter()
             .register("{UUID}", parcel.uuid().toString())
             .register("{NAME}", parcel.name())
@@ -98,7 +93,7 @@ public class SentParcelsGUI implements View {
                 .toList()
                 .toString());
 
-        this.parcelLockerRepository.findByUUID(parcel.destinationLocker()).join().ifPresent(locker -> formatter
+        this.lockerRepository.findByUUID(parcel.destinationLocker()).join().ifPresent(locker -> formatter
             .register("{POSITION_X}", locker.position().x())
             .register("{POSITION_Y}", locker.position().y())
             .register("{POSITION_Z}", locker.position().z())

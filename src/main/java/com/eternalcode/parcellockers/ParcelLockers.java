@@ -1,22 +1,24 @@
 package com.eternalcode.parcellockers;
 
-import com.eternalcode.parcellockers.command.ParcelCommand;
-import com.eternalcode.parcellockers.command.argument.ParcelArgument;
 import com.eternalcode.parcellockers.command.argument.PlayerArgument;
 import com.eternalcode.parcellockers.command.handler.InvalidUsage;
 import com.eternalcode.parcellockers.command.handler.PermissionMessage;
 import com.eternalcode.parcellockers.configuration.ConfigurationManager;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.database.DataSourceFactory;
-import com.eternalcode.parcellockers.database.ParcelDatabaseService;
-import com.eternalcode.parcellockers.database.ParcelLockerDatabaseService;
-import com.eternalcode.parcellockers.gui.MainGUI;
-import com.eternalcode.parcellockers.gui.ParcelListGUI;
+import com.eternalcode.parcellockers.locker.LockerManager;
+import com.eternalcode.parcellockers.locker.controller.LockerBreakController;
+import com.eternalcode.parcellockers.locker.controller.LockerInteractionController;
+import com.eternalcode.parcellockers.locker.controller.LockerPlaceController;
+import com.eternalcode.parcellockers.locker.database.LockerDatabaseService;
+import com.eternalcode.parcellockers.locker.gui.MainGUI;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelManager;
-import com.eternalcode.parcellockers.parcellocker.ParcelLockerManager;
-import com.eternalcode.parcellockers.parcellocker.repository.ParcelLockerRepository;
+import com.eternalcode.parcellockers.parcel.command.ParcelCommand;
+import com.eternalcode.parcellockers.parcel.command.argument.ParcelArgument;
+import com.eternalcode.parcellockers.parcel.database.ParcelDatabaseService;
+import com.eternalcode.parcellockers.parcel.gui.ParcelListGUI;
 import com.eternalcode.parcellockers.updater.UpdaterService;
 import com.eternalcode.parcellockers.util.legacy.LegacyColorProcessor;
 import com.google.common.base.Stopwatch;
@@ -29,21 +31,27 @@ import io.papermc.lib.environments.Environment;
 import io.sentry.Sentry;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.milkbowl.vault.economy.Economy;
 import org.bstats.bukkit.Metrics;
+import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 public final class ParcelLockers extends JavaPlugin {
 
     private LiteCommands<CommandSender> liteCommands;
 
     private BukkitAudiences audiences;
+
+    private Economy economy;
 
     @Override
     public void onEnable() {
@@ -59,6 +67,8 @@ public final class ParcelLockers extends JavaPlugin {
 
         ConfigurationManager configManager = new ConfigurationManager(this.getDataFolder());
         PluginConfiguration config = configManager.load(new PluginConfiguration());
+        Server server = this.getServer();
+
         if (config.settings.enableSentry) {
             Sentry.init(options -> {
                 this.getLogger().info("Initializing Sentry...");
@@ -67,33 +77,47 @@ public final class ParcelLockers extends JavaPlugin {
                 options.setRelease(this.getDescription().getVersion());
                 options.setTag("serverVersion", this.getServer().getVersion());
                 options.setTag("serverSoftware", PaperLib.getEnvironment().getName());
-                options.setTag("plugins", Arrays.stream(this.getServer().getPluginManager().getPlugins()).toList().toString());
+                options.setTag("plugins", Arrays.stream(server.getPluginManager().getPlugins()).toList().toString());
                 this.getLogger().info("Sentry initialized successfully!");
             });
         }
 
         HikariDataSource dataSource = DataSourceFactory.buildHikariDataSource(config, this.getDataFolder());
 
-        ParcelLockerRepository parcelLockerRepository = new ParcelLockerDatabaseService(dataSource);
+        LockerDatabaseService parcelLockerDatabaseService = new LockerDatabaseService(dataSource);
+        parcelLockerDatabaseService.updatePositionCache();
+        
         ParcelDatabaseService parcelRepository = new ParcelDatabaseService(dataSource);
 
-        ParcelManager parcelManager = new ParcelManager(this, config, announcer, parcelRepository, parcelLockerRepository);
-        ParcelLockerManager parcelLockerManager = new ParcelLockerManager(parcelLockerRepository);
+        ParcelManager parcelManager = new ParcelManager(this, config, announcer, parcelRepository, parcelLockerDatabaseService);
+        LockerManager lockerManager = new LockerManager(parcelLockerDatabaseService);
 
-        MainGUI mainGUI = new MainGUI(this, this.getServer(), miniMessage, config, parcelRepository, parcelLockerRepository);
-        ParcelListGUI parcelListGUI = new ParcelListGUI(this, this.getServer(), miniMessage, config, parcelRepository, parcelLockerRepository, mainGUI);
-
-        this.liteCommands = LiteBukkitAdventurePlatformFactory.builder(this.getServer(), "parcellockers", false, this.audiences, true)
+        MainGUI mainGUI = new MainGUI(this, server, miniMessage, config, parcelRepository, parcelLockerDatabaseService);
+        ParcelListGUI parcelListGUI = new ParcelListGUI(this, server, miniMessage, config, parcelRepository, parcelLockerDatabaseService, mainGUI);
+        
+        this.liteCommands = LiteBukkitAdventurePlatformFactory.builder(server, "parcellockers", false, this.audiences, true)
                 .argument(Parcel.class, new ParcelArgument(parcelRepository))
-                .argument(Player.class, new PlayerArgument(this.getServer(), config))
+                .argument(Player.class, new PlayerArgument(server, config))
                 .contextualBind(Player.class, new BukkitOnlyPlayerContextual<>(config.messages.onlyForPlayers))
                 .commandInstance(
-                        new ParcelCommand(this.getServer(), parcelLockerRepository, announcer, config, mainGUI, parcelListGUI, parcelManager),
-                        new ParcelLockerCommand(configManager, config, announcer)
+                        new ParcelCommand(server, parcelLockerDatabaseService, announcer, config, mainGUI, parcelListGUI, parcelManager),
+                        new ParcelLockersCommand(configManager, config, announcer, miniMessage)
                 )
                 .invalidUsageHandler(new InvalidUsage(announcer, config))
                 .permissionHandler(new PermissionMessage(announcer, config))
                 .register();
+
+        if (!this.setupEconomy()) {
+            this.getLogger().severe("Disabling due to no Vault dependency found!");
+            server.getPluginManager().disablePlugin(this);
+            return;
+        }
+
+        Stream.of(
+            new LockerInteractionController(parcelLockerDatabaseService, miniMessage, config),
+            new LockerPlaceController(config, miniMessage, this, parcelLockerDatabaseService, announcer),
+            new LockerBreakController(parcelLockerDatabaseService, announcer, config.messages)
+        ).forEach(controller -> server.getPluginManager().registerEvents(controller, this));
 
         new Metrics(this, 17677);
         new UpdaterService(this.getDescription());
@@ -131,6 +155,24 @@ public final class ParcelLockers extends JavaPlugin {
 
         logger.info("Your server is running on supported software, congratulations!");
         logger.info("Server version: " + this.getServer().getVersion());
+    }
+
+    private boolean setupEconomy() {
+        if (this.getServer().getPluginManager().getPlugin("Vault") == null) {
+            return false;
+        }
+        
+        RegisteredServiceProvider<Economy> rsp = this.getServer().getServicesManager().getRegistration(Economy.class);
+        if (rsp == null) {
+            return false;
+        }
+        
+        this.economy = rsp.getProvider();
+        return true;
+    }
+
+    public Economy getEconomy() {
+        return this.economy;
     }
 }
 

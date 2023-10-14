@@ -45,8 +45,14 @@ more.
 - [ ] Add translation system, more languages
 - [ ] Add delivery codes, so any person knowing the code can pick up the parcel
 - [ ] Add delivery time, so the parcel can be picked up only in a specific time
+- [ ] Parcel permissions for user
+- [ ] Parcel return logic
+- [ ] Banned parcel items (configurable)
+- [ ] Parcel fee
 - [ ] Rewrite database to ORMLite (far in future)
 - [ ] Add "business" logic
+- [ ] Add more parcel types (fragile, etc...)
+- [ ] Add option to config for parcel locker space (e.g. max parcels within a locker)
 - [ ] Rewrite Position class to use Integers instead of Doubles 
 - [ ] Finish GUIs
 - [ ] Add more GUIs (admin GUI, parcel create GUI, etc.)

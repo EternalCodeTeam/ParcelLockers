@@ -1,12 +1,9 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-
 plugins {
     `java-library`
     checkstyle
     id("net.minecrell.plugin-yml.bukkit") version "0.6.0"
     id("xyz.jpenilla.run-paper") version "2.2.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("net.ltgt.errorprone") version "3.1.0"
 }
 
 group = "com.eternalcode"
@@ -29,7 +26,7 @@ repositories {
 
 dependencies {
     // minecraft development api
-    compileOnly("org.spigotmc:spigot-api:1.20.1-experimental-SNAPSHOT")
+    compileOnly("org.spigotmc:spigot-api:1.20.2-R0.1-SNAPSHOT")
     implementation("net.kyori:adventure-platform-bukkit:4.3.0")
     implementation("net.kyori:adventure-text-minimessage:4.14.0")
     implementation("dev.rollczi.litecommands:bukkit-adventure:2.8.9")
@@ -39,6 +36,9 @@ dependencies {
 
     // gui library
     implementation("dev.triumphteam:triumph-gui:3.1.5")
+
+    // economy
+    compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
 
     // CDN
     implementation("net.dzikoysk:cdn:1.14.4")
@@ -68,9 +68,6 @@ dependencies {
 
     // panda-utilities
     implementation("org.panda-lang:panda-utilities:0.5.2-alpha")
-
-    // errorprone
-    errorprone("com.google.errorprone:error_prone_core:2.21.1")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.0")
@@ -104,6 +101,7 @@ bukkit {
         "Plugin that provides functionality of parcel lockers in Minecraft, allowing players to send and receive parcels safely."
     website = "https://github.com/EternalCodeTeam/ParcelLockers"
     version = "1.0.0-SNAPSHOT"
+    depend = listOf("Vault")
 }
 
 tasks.withType<JavaCompile> {
@@ -111,42 +109,39 @@ tasks.withType<JavaCompile> {
     options.setIncremental(true)
 }
 
-tasks.withType<ShadowJar> {
-    archiveFileName.set("ParcelLockers v${project.version} (MC 1.8.8-1.20.x).jar")
-
-    exclude(
-        "org/intellij/lang/annotations/**",
-        "org/jetbrains/annotations/**",
-        "META-INF/**",
-        "javax/**",
-    )
-
-    mergeServiceFiles()
-    minimize()
-
-    val prefix = "com.eternalcode.parcellockers.libs"
-    listOf(
-        "panda",
-        "org.panda_lang",
-        "net.dzikoysk",
-        "io.papermc.lib",
-        "org.bstats",
-        "dev.rollczi",
-        "net.kyori",
-        "okhttp3",
-        "org.json",
-        "com.fasterxml"
-    ).forEach { pack ->
-        relocate(pack, "$prefix.$pack")
-    }
-}
-
 tasks {
     runServer {
         minecraftVersion("1.20.1")
     }
-}
 
-tasks.getByName<Test>("test") {
-    useJUnitPlatform()
+    test {
+        useJUnitPlatform()
+    }
+
+    shadowJar {
+        archiveFileName.set("ParcelLockers v${project.version} (MC 1.8.8-1.20.x).jar")
+
+        exclude(
+            "org/intellij/lang/annotations/**",
+            "org/jetbrains/annotations/**",
+            "META-INF/**",
+            "javax/**",
+        )
+
+        mergeServiceFiles()
+        minimize()
+
+        val prefix = "com.eternalcode.parcellockers.libs"
+        listOf(
+            "panda",
+            "org.panda_lang",
+            "net.dzikoysk",
+            "io.papermc.lib",
+            "org.bstats",
+            "dev.rollczi",
+            "net.kyori",
+            "org.json",
+            "com.fasterxml"
+        ).forEach { relocate(it, prefix) }
+    }
 }

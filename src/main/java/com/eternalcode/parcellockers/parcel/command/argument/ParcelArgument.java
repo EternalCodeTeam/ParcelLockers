@@ -1,7 +1,7 @@
-package com.eternalcode.parcellockers.command.argument;
+package com.eternalcode.parcellockers.parcel.command.argument;
 
-import com.eternalcode.parcellockers.database.ParcelDatabaseService;
 import com.eternalcode.parcellockers.parcel.Parcel;
+import com.eternalcode.parcellockers.parcel.database.ParcelDatabaseService;
 import dev.rollczi.litecommands.argument.ArgumentName;
 import dev.rollczi.litecommands.argument.simple.OneArgument;
 import dev.rollczi.litecommands.command.LiteInvocation;
@@ -30,11 +30,10 @@ public class ParcelArgument implements OneArgument<Parcel> {
         return Result.ok(parcel);
     }
 
-
     @Override
     public List<Suggestion> suggest(LiteInvocation invocation) {
-        return this.databaseService.cache().keySet().stream()
-                .map(UUID::toString)
+        return this.databaseService.cache().values().stream()
+                .map(Parcel::name)
                 .map(Suggestion::of)
                 .toList();
     }

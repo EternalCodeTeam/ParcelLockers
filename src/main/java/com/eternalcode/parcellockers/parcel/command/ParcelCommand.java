@@ -1,13 +1,13 @@
-package com.eternalcode.parcellockers.command;
+package com.eternalcode.parcellockers.parcel.command;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
-import com.eternalcode.parcellockers.gui.MainGUI;
-import com.eternalcode.parcellockers.gui.ParcelListGUI;
+import com.eternalcode.parcellockers.locker.gui.MainGUI;
+import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelManager;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
-import com.eternalcode.parcellockers.parcellocker.repository.ParcelLockerRepository;
+import com.eternalcode.parcellockers.parcel.gui.ParcelListGUI;
 import dev.rollczi.litecommands.argument.Arg;
 import dev.rollczi.litecommands.command.execute.Execute;
 import dev.rollczi.litecommands.command.permission.Permission;
@@ -27,16 +27,16 @@ import java.util.UUID;
 public class ParcelCommand {
 
     private final Server server;
-    private final ParcelLockerRepository parcelLockerRepository;
+    private final LockerRepository lockerRepository;
     private final NotificationAnnouncer announcer;
     private final PluginConfiguration config;
     private final MainGUI mainGUI;
     private final ParcelListGUI parcelListGUI;
     private final ParcelManager parcelManager;
 
-    public ParcelCommand(Server server, ParcelLockerRepository parcelLockerRepository, NotificationAnnouncer announcer, PluginConfiguration config, MainGUI mainGUI, ParcelListGUI parcelListGUI, ParcelManager parcelManager) {
+    public ParcelCommand(Server server, LockerRepository lockerRepository, NotificationAnnouncer announcer, PluginConfiguration config, MainGUI mainGUI, ParcelListGUI parcelListGUI, ParcelManager parcelManager) {
         this.server = server;
-        this.parcelLockerRepository = parcelLockerRepository;
+        this.lockerRepository = lockerRepository;
         this.announcer = announcer;
         this.config = config;
         this.mainGUI = mainGUI;
@@ -102,7 +102,7 @@ public class ParcelCommand {
                 .toString()
             );
 
-        this.parcelLockerRepository.findByUUID(parcel.destinationLocker()).join().ifPresent(locker -> formatter
+        this.lockerRepository.findByUUID(parcel.destinationLocker()).join().ifPresent(locker -> formatter
             .register("{POSITION_X}", locker.position().x())
             .register("{POSITION_Y}", locker.position().y())
             .register("{POSITION_Z}", locker.position().z())

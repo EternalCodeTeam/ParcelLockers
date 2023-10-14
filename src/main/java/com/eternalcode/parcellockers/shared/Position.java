@@ -4,15 +4,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Disclaimer - Bukkit {@link org.bukkit.Location} storage may cause a memory leak, because it is a wrapper for
- * coordinates and {@link org.bukkit.World} reference. If you need to store location use {@link Position} and
+ * Disclaimer - Bukkit {@link org.bukkit.Location} storage may cause a memory leak because it is a wrapper for
+ * coordinates and {@link org.bukkit.World} reference. If you need to store location, use {@link Position} and
  * {@link PositionAdapter}.
  */
-public record Position(double x, double y, double z, float yaw, float pitch, String world) {
+public record Position(int x, int y, int z, String world) {
 
     public static final String NONE_WORLD = "__NONE__";
 
-    private static final Pattern PARSE_FORMAT = Pattern.compile("Position\\{x=(?<x>-?[\\d.]+), y=(?<y>-?[\\d.]+), z=(?<z>-?[\\d.]+), yaw=(?<yaw>-?[\\d.]+), pitch=(?<pitch>-?[\\d.]+), world='(?<world>.+)'}");
+    private static final Pattern PARSE_FORMAT = Pattern.compile("Position\\{x=(?<x>-?\\d+), y=(?<y>-?\\d+), z=(?<z>-?\\d+), world='(?<world>.+)'}");
 
     public boolean isNoneWorld() {
         return this.world.equals(NONE_WORLD);
@@ -30,24 +30,20 @@ public record Position(double x, double y, double z, float yaw, float pitch, Str
 
         Position position = (Position) o;
 
-        return Double.compare(position.x, this.x) == 0
-                && Double.compare(position.y, this.y) == 0
-                && Double.compare(position.z, this.z) == 0
-                && Float.compare(position.yaw, this.yaw) == 0
-                && Float.compare(position.pitch, this.pitch) == 0
-                && this.world.equals(position.world);
+        return this.x == position.x
+            && this.y == position.y
+            && this.z == position.z
+            && this.world.equals(position.world);
     }
 
     @Override
     public String toString() {
         return "Position{" +
-                "x=" + this.x +
-                ", y=" + this.y +
-                ", z=" + this.z +
-                ", yaw=" + this.yaw +
-                ", pitch=" + this.pitch +
-                ", world='" + this.world + '\'' +
-                '}';
+            "x=" + this.x +
+            ", y=" + this.y +
+            ", z=" + this.z +
+            ", world='" + this.world + '\'' +
+            '}';
     }
 
     public static Position parse(String parse) {
@@ -58,12 +54,10 @@ public record Position(double x, double y, double z, float yaw, float pitch, Str
         }
 
         return new Position(
-                Double.parseDouble(matcher.group("x")),
-                Double.parseDouble(matcher.group("y")),
-                Double.parseDouble(matcher.group("z")),
-                Float.parseFloat(matcher.group("yaw")),
-                Float.parseFloat(matcher.group("pitch")),
-                matcher.group("world")
+            Integer.parseInt(matcher.group("x")),
+            Integer.parseInt(matcher.group("y")),
+            Integer.parseInt(matcher.group("z")),
+            matcher.group("world")
         );
     }
 }

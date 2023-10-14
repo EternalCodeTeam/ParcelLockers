@@ -1,0 +1,81 @@
+package com.eternalcode.parcellockers.locker.controller;
+
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.conversation.ParcelLockerPlacePrompt;
+import com.eternalcode.parcellockers.locker.Locker;
+import com.eternalcode.parcellockers.locker.database.LockerDatabaseService;
+import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
+import com.eternalcode.parcellockers.shared.PositionAdapter;
+import com.eternalcode.parcellockers.util.ItemUtil;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.Location;
+import org.bukkit.conversations.ConversationFactory;
+import org.bukkit.conversations.NullConversationPrefix;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.plugin.Plugin;
+
+import java.util.UUID;
+
+public class LockerPlaceController implements Listener {
+
+    private final PluginConfiguration config;
+    private final MiniMessage miniMessage;
+    private final Plugin plugin;
+    private final LockerDatabaseService databaseService;
+    private final NotificationAnnouncer announcer;
+
+    public LockerPlaceController(PluginConfiguration config, MiniMessage miniMessage, Plugin plugin, LockerDatabaseService databaseService, NotificationAnnouncer announcer) {
+        this.config = config;
+        this.miniMessage = miniMessage;
+        this.plugin = plugin;
+        this.databaseService = databaseService;
+        this.announcer = announcer;
+    }
+
+    @EventHandler
+    public void onBlockPlace(BlockPlaceEvent event) {
+        Player player = event.getPlayer();
+        PlayerInventory playerInventory = player.getInventory();
+
+        ItemStack itemInMainHand = playerInventory.getItemInMainHand();
+        ItemStack itemInOffHand = playerInventory.getItemInOffHand();
+
+        ItemStack parcelLockerItem = this.config.settings.parcelLockerItem.toGuiItem(this.miniMessage).getItemStack();
+
+        if (!ItemUtil.compareMeta(itemInMainHand, parcelLockerItem) && !ItemUtil.compareMeta(itemInOffHand, parcelLockerItem)) {
+            return;
+        }
+
+        ConversationFactory conversationFactory = new ConversationFactory(this.plugin)
+            .addConversationAbandonedListener(e -> {
+                if (e.gracefulExit()) {
+                    String description = (String) e.getContext().getSessionData("description");
+                    Location location = event.getBlockPlaced().getLocation();
+
+                    this.databaseService.save(new Locker(UUID.randomUUID(), description, PositionAdapter.convert(location))).whenComplete((parcelLocker, throwable) -> {
+                        if (throwable != null) {
+                            throwable.printStackTrace();
+                            this.announcer.sendMessage(player, this.config.messages.failedToCreateParcelLocker);
+                            return;
+                        }
+                        this.announcer.sendMessage(player, this.config.messages.parcelLockerSuccessfullyCreated);
+                    });
+                }
+                else {
+                    event.setCancelled(true);
+                }
+            })
+            .withPrefix(new NullConversationPrefix())
+            .withModality(false)
+            .withLocalEcho(false)
+            .withTimeout(60)
+            .withFirstPrompt(new ParcelLockerPlacePrompt(this.announcer, this.config));
+
+        player.beginConversation(conversationFactory.buildConversation(player));
+    }
+}

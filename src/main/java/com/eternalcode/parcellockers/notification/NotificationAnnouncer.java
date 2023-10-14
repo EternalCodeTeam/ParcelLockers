@@ -47,8 +47,11 @@ public class NotificationAnnouncer {
         audience.sendMessage(this.miniMessage.deserialize(text));
     }
 
-    public void broadcast(CommandSender commandSender, String text) {
-        this.audienceProvider.all().sendMessage(this.miniMessage.deserialize(text));
+    public void broadcast(String text) {
+        Audience audience = this.audienceProvider.all();
+        Component message = this.miniMessage.deserialize(text);
+        
+        audience.sendMessage(message);
     }
 
     private Audience audience(CommandSender sender) {

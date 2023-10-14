@@ -2,6 +2,7 @@ package com.eternalcode.parcellockers.database;
 
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
+import com.eternalcode.parcellockers.parcel.database.ParcelDatabaseService;
 import com.eternalcode.parcellockers.parcel.repository.ParcelPageResult;
 import com.eternalcode.parcellockers.shared.Page;
 import com.zaxxer.hikari.HikariDataSource;
@@ -11,6 +12,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -19,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Testcontainers
-class ParcelDatabaseServiceIntegrationTest extends ParcelLockerIntegrationSpec{
+class ParcelDatabaseServiceIntegrationTest extends ParcelLockerIntegrationSpec {
 
     @Container
     private static final MySQLContainer mySQLContainer = new MySQLContainer(DockerImageName.parse("mysql:latest"));
@@ -52,11 +54,11 @@ class ParcelDatabaseServiceIntegrationTest extends ParcelLockerIntegrationSpec{
         assertTrue(parcel.isPresent());
         assertEquals(uuid, parcel.get().uuid());
 
-        Set<Parcel> byReceiver = await(parcelDatabaseService.findByReceiver(receiver));
+        List<Parcel> byReceiver = await(parcelDatabaseService.findByReceiver(receiver));
         assertEquals(1, byReceiver.size());
         assertEquals(uuid, byReceiver.iterator().next().uuid());
 
-        Set<Parcel> bySender = await(parcelDatabaseService.findBySender(sender));
+        List<Parcel> bySender = await(parcelDatabaseService.findBySender(sender));
         assertEquals(1, bySender.size());
         assertEquals(uuid, bySender.iterator().next().uuid());
 
