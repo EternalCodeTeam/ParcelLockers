@@ -10,15 +10,15 @@ import com.eternalcode.parcellockers.locker.LockerManager;
 import com.eternalcode.parcellockers.locker.controller.LockerBreakController;
 import com.eternalcode.parcellockers.locker.controller.LockerInteractionController;
 import com.eternalcode.parcellockers.locker.controller.LockerPlaceController;
-import com.eternalcode.parcellockers.locker.database.LockerDatabaseService;
 import com.eternalcode.parcellockers.locker.gui.MainGUI;
+import com.eternalcode.parcellockers.locker.repository.LockerRepositoryImpl;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelManager;
 import com.eternalcode.parcellockers.parcel.command.ParcelCommand;
 import com.eternalcode.parcellockers.parcel.command.argument.ParcelArgument;
-import com.eternalcode.parcellockers.parcel.database.ParcelDatabaseService;
 import com.eternalcode.parcellockers.parcel.gui.ParcelListGUI;
+import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryImpl;
 import com.eternalcode.parcellockers.updater.UpdaterService;
 import com.eternalcode.parcellockers.util.legacy.LegacyColorProcessor;
 import com.google.common.base.Stopwatch;
@@ -84,23 +84,23 @@ public final class ParcelLockers extends JavaPlugin {
 
         HikariDataSource dataSource = DataSourceFactory.buildHikariDataSource(config, this.getDataFolder());
 
-        LockerDatabaseService parcelLockerDatabaseService = new LockerDatabaseService(dataSource);
-        parcelLockerDatabaseService.updatePositionCache();
+        LockerRepositoryImpl parcelLockerRepositoryImpl = new LockerRepositoryImpl(dataSource);
+        parcelLockerRepositoryImpl.updatePositionCache();
         
-        ParcelDatabaseService parcelRepository = new ParcelDatabaseService(dataSource);
+        ParcelRepositoryImpl parcelRepository = new ParcelRepositoryImpl(dataSource);
 
-        ParcelManager parcelManager = new ParcelManager(this, config, announcer, parcelRepository, parcelLockerDatabaseService);
-        LockerManager lockerManager = new LockerManager(parcelLockerDatabaseService);
+        ParcelManager parcelManager = new ParcelManager(this, config, announcer, parcelRepository, parcelLockerRepositoryImpl);
+        LockerManager lockerManager = new LockerManager(parcelLockerRepositoryImpl);
 
-        MainGUI mainGUI = new MainGUI(this, server, miniMessage, config, parcelRepository, parcelLockerDatabaseService);
-        ParcelListGUI parcelListGUI = new ParcelListGUI(this, server, miniMessage, config, parcelRepository, parcelLockerDatabaseService, mainGUI);
+        MainGUI mainGUI = new MainGUI(this, server, miniMessage, config, parcelRepository, parcelLockerRepositoryImpl);
+        ParcelListGUI parcelListGUI = new ParcelListGUI(this, server, miniMessage, config, parcelRepository, parcelLockerRepositoryImpl, mainGUI);
         
         this.liteCommands = LiteBukkitAdventurePlatformFactory.builder(server, "parcellockers", false, this.audiences, true)
                 .argument(Parcel.class, new ParcelArgument(parcelRepository))
                 .argument(Player.class, new PlayerArgument(server, config))
                 .contextualBind(Player.class, new BukkitOnlyPlayerContextual<>(config.messages.onlyForPlayers))
                 .commandInstance(
-                        new ParcelCommand(server, parcelLockerDatabaseService, announcer, config, mainGUI, parcelListGUI, parcelManager),
+                        new ParcelCommand(server, parcelLockerRepositoryImpl, announcer, config, mainGUI, parcelListGUI, parcelManager),
                         new ParcelLockersCommand(configManager, config, announcer, miniMessage)
                 )
                 .invalidUsageHandler(new InvalidUsage(announcer, config))
@@ -114,9 +114,9 @@ public final class ParcelLockers extends JavaPlugin {
         }
 
         Stream.of(
-            new LockerInteractionController(parcelLockerDatabaseService, miniMessage, config),
-            new LockerPlaceController(config, miniMessage, this, parcelLockerDatabaseService, announcer),
-            new LockerBreakController(parcelLockerDatabaseService, announcer, config.messages)
+            new LockerInteractionController(parcelLockerRepositoryImpl, miniMessage, config),
+            new LockerPlaceController(config, miniMessage, this, parcelLockerRepositoryImpl, announcer),
+            new LockerBreakController(parcelLockerRepositoryImpl, announcer, config.messages)
         ).forEach(controller -> server.getPluginManager().registerEvents(controller, this));
 
         new Metrics(this, 17677);

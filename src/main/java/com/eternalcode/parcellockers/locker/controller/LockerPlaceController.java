@@ -3,7 +3,7 @@ package com.eternalcode.parcellockers.locker.controller;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.conversation.ParcelLockerPlacePrompt;
 import com.eternalcode.parcellockers.locker.Locker;
-import com.eternalcode.parcellockers.locker.database.LockerDatabaseService;
+import com.eternalcode.parcellockers.locker.repository.LockerRepositoryImpl;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.shared.PositionAdapter;
 import com.eternalcode.parcellockers.util.ItemUtil;
@@ -26,10 +26,10 @@ public class LockerPlaceController implements Listener {
     private final PluginConfiguration config;
     private final MiniMessage miniMessage;
     private final Plugin plugin;
-    private final LockerDatabaseService databaseService;
+    private final LockerRepositoryImpl databaseService;
     private final NotificationAnnouncer announcer;
 
-    public LockerPlaceController(PluginConfiguration config, MiniMessage miniMessage, Plugin plugin, LockerDatabaseService databaseService, NotificationAnnouncer announcer) {
+    public LockerPlaceController(PluginConfiguration config, MiniMessage miniMessage, Plugin plugin, LockerRepositoryImpl databaseService, NotificationAnnouncer announcer) {
         this.config = config;
         this.miniMessage = miniMessage;
         this.plugin = plugin;

@@ -2,8 +2,8 @@ package com.eternalcode.parcellockers.parcel.gui;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.gui.GuiView;
-import com.eternalcode.parcellockers.locker.database.LockerDatabaseService;
 import com.eternalcode.parcellockers.locker.gui.MainGUI;
+import com.eternalcode.parcellockers.locker.repository.LockerRepositoryImpl;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.shared.Page;
@@ -30,14 +30,14 @@ public class ParcelListGUI extends GuiView {
     private final MiniMessage miniMessage;
     private final PluginConfiguration config;
     private final ParcelRepository parcelRepository;
-    private final LockerDatabaseService lockerRepository;
+    private final LockerRepositoryImpl lockerRepository;
     private final MainGUI mainGUI;
 
     private static final int WIDTH = 7;
     private static final int HEIGHT = 4;
     private static final Page FIRST_PAGE = new Page(0, WIDTH * HEIGHT);
 
-    public ParcelListGUI(Plugin plugin, Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelRepository parcelRepository, LockerDatabaseService lockerRepository, MainGUI mainGUI) {
+    public ParcelListGUI(Plugin plugin, Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelRepository parcelRepository, LockerRepositoryImpl lockerRepository, MainGUI mainGUI) {
         this.plugin = plugin;
         this.server = server;
         this.miniMessage = miniMessage;
