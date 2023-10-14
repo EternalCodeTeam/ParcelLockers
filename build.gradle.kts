@@ -27,7 +27,7 @@ repositories {
 dependencies {
     // minecraft development api
     compileOnly("org.spigotmc:spigot-api:1.20.2-R0.1-SNAPSHOT")
-    implementation("net.kyori:adventure-platform-bukkit:4.3.0")
+    implementation("net.kyori:adventure-platform-bukkit:4.3.1")
     implementation("net.kyori:adventure-text-minimessage:4.14.0")
     implementation("dev.rollczi.litecommands:bukkit-adventure:2.8.9")
 
@@ -35,7 +35,7 @@ dependencies {
     implementation("dev.rollczi:liteskullapi:1.3.0")
 
     // gui library
-    implementation("dev.triumphteam:triumph-gui:3.1.5")
+    implementation("dev.triumphteam:triumph-gui:3.1.6")
 
     // economy
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
@@ -51,7 +51,7 @@ dependencies {
 
     // metrics and sentry
     implementation("org.bstats:bstats-bukkit:3.0.2")
-    implementation("io.sentry:sentry:6.29.0")
+    implementation("io.sentry:sentry:6.31.0")
 
     // database
     implementation("com.zaxxer:HikariCP:5.0.1")
@@ -73,8 +73,8 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.0")
 
-    testImplementation("org.testcontainers:junit-jupiter:1.19.0")
-    testImplementation("org.testcontainers:mysql:1.19.0")
+    testImplementation("org.testcontainers:junit-jupiter:1.19.1")
+    testImplementation("org.testcontainers:mysql:1.19.1")
     testImplementation("mysql:mysql-connector-java:8.0.33")
 }
 
@@ -83,7 +83,7 @@ java {
 }
 
 checkstyle {
-    toolVersion = "10.12.3"
+    toolVersion = "10.12.4"
 
     configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
 
