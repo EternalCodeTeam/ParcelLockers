@@ -140,7 +140,7 @@ public class LockerDatabaseService extends AbstractDatabaseService implements Lo
         if (this.isInCache(uuid)) {
             return Optional.ofNullable(this.cache.get(uuid));
         }
-        return Optional.ofNullable(this.findByUUID(uuid).join().orElse(null));
+        return this.findByUUID(uuid).join();
     }
 
     private void addToCache(Locker locker) {
