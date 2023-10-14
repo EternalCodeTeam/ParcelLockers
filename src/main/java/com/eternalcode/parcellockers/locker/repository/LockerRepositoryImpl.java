@@ -1,10 +1,8 @@
-package com.eternalcode.parcellockers.locker.database;
+package com.eternalcode.parcellockers.locker.repository;
 
 import com.eternalcode.parcellockers.database.AbstractDatabaseService;
 import com.eternalcode.parcellockers.exception.ParcelLockersException;
 import com.eternalcode.parcellockers.locker.Locker;
-import com.eternalcode.parcellockers.locker.repository.LockerPageResult;
-import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.Position;
 import io.sentry.Sentry;
@@ -24,12 +22,12 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-public class LockerDatabaseService extends AbstractDatabaseService implements LockerRepository {
+public class LockerRepositoryImpl extends AbstractDatabaseService implements LockerRepository {
 
     private final Map<UUID, Locker> cache = new HashMap<>();
     private final Map<Position, UUID> positionCache = new HashMap<>();
 
-    public LockerDatabaseService(DataSource dataSource) {
+    public LockerRepositoryImpl(DataSource dataSource) {
         super(dataSource);
 
         this.initTable();

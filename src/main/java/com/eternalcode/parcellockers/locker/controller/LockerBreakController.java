@@ -1,7 +1,7 @@
 package com.eternalcode.parcellockers.locker.controller;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
-import com.eternalcode.parcellockers.locker.database.LockerDatabaseService;
+import com.eternalcode.parcellockers.locker.repository.LockerRepositoryImpl;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.shared.Position;
 import com.eternalcode.parcellockers.shared.PositionAdapter;
@@ -23,12 +23,12 @@ import java.util.UUID;
 
 public class LockerBreakController implements Listener {
 
-    private final LockerDatabaseService parcelLockerDatabaseService;
+    private final LockerRepositoryImpl parcelLockerRepositoryImpl;
     private final NotificationAnnouncer announcer;
     private final PluginConfiguration.Messages messages;
 
-    public LockerBreakController(LockerDatabaseService parcelLockerDatabaseService, NotificationAnnouncer announcer, PluginConfiguration.Messages messages) {
-        this.parcelLockerDatabaseService = parcelLockerDatabaseService;
+    public LockerBreakController(LockerRepositoryImpl parcelLockerRepositoryImpl, NotificationAnnouncer announcer, PluginConfiguration.Messages messages) {
+        this.parcelLockerRepositoryImpl = parcelLockerRepositoryImpl;
         this.announcer = announcer;
         this.messages = messages;
     }
@@ -40,15 +40,15 @@ public class LockerBreakController implements Listener {
         Position position = PositionAdapter.convert(location);
         Player player = event.getPlayer();
 
-        if (this.parcelLockerDatabaseService.isInCache(position)) {
+        if (this.parcelLockerRepositoryImpl.isInCache(position)) {
             if (!player.hasPermission("parcellockers.admin.break")) {
                 event.setCancelled(true);
                 this.announcer.sendMessage(player, this.messages.cannotBreakParcelLocker);
                 return;
             }
 
-            UUID toRemove = this.parcelLockerDatabaseService.positionCache().get(position);
-            this.parcelLockerDatabaseService.remove(toRemove);
+            UUID toRemove = this.parcelLockerRepositoryImpl.positionCache().get(position);
+            this.parcelLockerRepositoryImpl.remove(toRemove);
             
             this.announcer.sendMessage(player, this.messages.parcelLockerSuccessfullyDeleted);
             
@@ -70,7 +70,7 @@ public class LockerBreakController implements Listener {
         Location location = block.getLocation();
         Position position = PositionAdapter.convert(location);
         
-        if (this.parcelLockerDatabaseService.isInCache(position)) {
+        if (this.parcelLockerRepositoryImpl.isInCache(position)) {
             event.setCancelled(true);
         }
     }
@@ -81,7 +81,7 @@ public class LockerBreakController implements Listener {
         Location location = block.getLocation();
         Position position = PositionAdapter.convert(location);
         
-        if (this.parcelLockerDatabaseService.isInCache(position)) {
+        if (this.parcelLockerRepositoryImpl.isInCache(position)) {
             event.setCancelled(true);
         }
     }
@@ -91,7 +91,7 @@ public class LockerBreakController implements Listener {
         event.blockList().removeIf(block -> {
             Location location = block.getLocation();
             Position position = PositionAdapter.convert(location);
-            return this.parcelLockerDatabaseService.isInCache(position);
+            return this.parcelLockerRepositoryImpl.isInCache(position);
         });
     }
 
@@ -101,7 +101,7 @@ public class LockerBreakController implements Listener {
         Location location = block.getLocation();
         Position position = PositionAdapter.convert(location);
         
-        if (this.parcelLockerDatabaseService.isInCache(position)) {
+        if (this.parcelLockerRepositoryImpl.isInCache(position)) {
             event.setCancelled(true);
         }
     }
@@ -112,7 +112,7 @@ public class LockerBreakController implements Listener {
         Location location = block.getLocation();
         Position position = PositionAdapter.convert(location);
         
-        if (this.parcelLockerDatabaseService.isInCache(position)) {
+        if (this.parcelLockerRepositoryImpl.isInCache(position)) {
             event.setCancelled(true);
         }
     }
