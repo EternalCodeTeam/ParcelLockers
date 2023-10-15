@@ -60,8 +60,8 @@ public final class ParcelLockers extends JavaPlugin {
 
         this.audiences = BukkitAudiences.create(this);
         MiniMessage miniMessage = MiniMessage.builder()
-                .postProcessor(new LegacyColorProcessor())
-                .build();
+            .postProcessor(new LegacyColorProcessor())
+            .build();
         NotificationAnnouncer announcer = new NotificationAnnouncer(this.audiences, miniMessage);
 
         ConfigurationManager configManager = new ConfigurationManager(this.getDataFolder());
@@ -85,25 +85,25 @@ public final class ParcelLockers extends JavaPlugin {
 
         LockerRepositoryImpl lockerRepositoryImpl = new LockerRepositoryImpl(dataSource);
         lockerRepositoryImpl.updatePositionCache();
-        
+
         ParcelRepositoryImpl parcelRepository = new ParcelRepositoryImpl(dataSource);
 
         ParcelManager parcelManager = new ParcelManager(config, announcer, parcelRepository);
 
         MainGUI mainGUI = new MainGUI(this, server, miniMessage, config, parcelRepository, lockerRepositoryImpl);
         ParcelListGUI parcelListGUI = new ParcelListGUI(this, server, miniMessage, config, parcelRepository, lockerRepositoryImpl, mainGUI);
-        
+
         this.liteCommands = LiteBukkitAdventurePlatformFactory.builder(server, "parcellockers", false, this.audiences, true)
-                .argument(Parcel.class, new ParcelArgument(parcelRepository))
-                .argument(Player.class, new PlayerArgument(server, config))
-                .contextualBind(Player.class, new BukkitOnlyPlayerContextual<>(config.messages.onlyForPlayers))
-                .commandInstance(
-                        new ParcelCommand(server, lockerRepositoryImpl, announcer, config, mainGUI, parcelListGUI, parcelManager),
-                        new ParcelLockersCommand(configManager, config, announcer, miniMessage)
-                )
-                .invalidUsageHandler(new InvalidUsage(announcer, config))
-                .permissionHandler(new PermissionMessage(announcer, config))
-                .register();
+            .argument(Parcel.class, new ParcelArgument(parcelRepository))
+            .argument(Player.class, new PlayerArgument(server, config))
+            .contextualBind(Player.class, new BukkitOnlyPlayerContextual<>(config.messages.onlyForPlayers))
+            .commandInstance(
+                new ParcelCommand(server, lockerRepositoryImpl, announcer, config, mainGUI, parcelListGUI, parcelManager),
+                new ParcelLockersCommand(configManager, config, announcer, miniMessage)
+            )
+            .invalidUsageHandler(new InvalidUsage(announcer, config))
+            .permissionHandler(new PermissionMessage(announcer, config))
+            .register();
 
         if (!this.setupEconomy()) {
             this.getLogger().severe("Disabling due to no Vault dependency found!");
@@ -159,12 +159,12 @@ public final class ParcelLockers extends JavaPlugin {
         if (this.getServer().getPluginManager().getPlugin("Vault") == null) {
             return false;
         }
-        
+
         RegisteredServiceProvider<Economy> rsp = this.getServer().getServicesManager().getRegistration(Economy.class);
         if (rsp == null) {
             return false;
         }
-        
+
         this.economy = rsp.getProvider();
         return true;
     }

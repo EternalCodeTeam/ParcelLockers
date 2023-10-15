@@ -14,7 +14,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class DeliveryCodeRepositoryImpl extends AbstractDatabaseService implements DeliveryCodeRepository {
 
-    private Map<UUID, DeliveryCode> cache = new HashMap<>();
+    private final Map<UUID, DeliveryCode> cache = new HashMap<>();
 
     protected DeliveryCodeRepositoryImpl(DataSource dataSource) {
         super(dataSource);
@@ -24,10 +24,10 @@ public class DeliveryCodeRepositoryImpl extends AbstractDatabaseService implemen
 
     private void initTable() {
         this.executeSync("CREATE TABLE IF NOT EXISTS `delivery_codes`(" +
-                "`parcelUUID` VARCHAR(36) NOT NULL, " +
-                "`code` VARCHAR(6) NOT NULL, " +
-                "PRIMARY KEY (parcelUUID) " +
-                ");", PreparedStatement::execute);
+            "`parcelUUID` VARCHAR(36) NOT NULL, " +
+            "`code` VARCHAR(6) NOT NULL, " +
+            "PRIMARY KEY (parcelUUID) " +
+            ");", PreparedStatement::execute);
     }
 
     @Override
@@ -51,13 +51,13 @@ public class DeliveryCodeRepositoryImpl extends AbstractDatabaseService implemen
             }
 
             this.cache.putIfAbsent(parcelUUID, new DeliveryCode(
-                    UUID.fromString(rs.getString("parcelUUID")),
-                    rs.getString("code")
+                UUID.fromString(rs.getString("parcelUUID")),
+                rs.getString("code")
             ));
 
             return new DeliveryCode(
-                    UUID.fromString(rs.getString("parcelUUID")),
-                    rs.getString("code")
+                UUID.fromString(rs.getString("parcelUUID")),
+                rs.getString("code")
             );
         });
     }

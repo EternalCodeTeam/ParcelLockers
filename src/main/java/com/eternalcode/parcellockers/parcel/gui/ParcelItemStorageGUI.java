@@ -24,7 +24,7 @@ public class ParcelItemStorageGUI {
 
     void show(Player player, ParcelSize size) {
         PluginConfiguration.GuiSettings guiSettings = this.config.guiSettings;
-        
+
         GuiItem backgroundItem = guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
         GuiItem confirmItem = guiSettings.confirmItemsItem.toGuiItem(this.miniMessage, event -> {
             this.confirmed = true;
@@ -59,23 +59,23 @@ public class ParcelItemStorageGUI {
         this.gui.setItem(this.gui.getRows(), 2, cancelItem);
         this.gui.setCloseGuiAction(event -> {
             if (this.confirmed) {
-                 return;
+                return;
             }
-            
+
             if (this.gui.getInventory().getContents() == null) {
                 return;
             }
-                
+
             for (ItemStack item : this.gui.getInventory().getContents()) {
                 if (item == null) {
                     continue;
                 }
-                    
+
                 player.getInventory().addItem(item);
                 this.gui.removeItem(item);
             }
         });
-        
+
         this.gui.open(player);
     }
 }

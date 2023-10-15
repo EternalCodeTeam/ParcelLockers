@@ -24,7 +24,7 @@ public class LockerMainGUI extends GuiView {
     @Override
     public void show(Player player) {
         Component guiTitle = this.miniMessage.deserialize(this.config.guiSettings.mainGuiTitle);
-        
+
         Gui gui = Gui.gui()
             .title(RESET_ITEM.append(guiTitle))
             .rows(6)

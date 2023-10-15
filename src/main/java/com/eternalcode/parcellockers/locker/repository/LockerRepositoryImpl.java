@@ -35,11 +35,11 @@ public class LockerRepositoryImpl extends AbstractDatabaseService implements Loc
 
     private void initTable() {
         this.executeSync("CREATE TABLE IF NOT EXISTS `lockers`(" +
-                "uuid VARCHAR(36) NOT NULL, " +
-                "description VARCHAR(64) NOT NULL, " +
-                "position VARCHAR(255) NOT NULL, " +
-                "PRIMARY KEY (uuid)" +
-                ");", PreparedStatement::execute);
+            "uuid VARCHAR(36) NOT NULL, " +
+            "description VARCHAR(64) NOT NULL, " +
+            "position VARCHAR(255) NOT NULL, " +
+            "PRIMARY KEY (uuid)" +
+            ");", PreparedStatement::execute);
     }
 
     @Override
@@ -47,10 +47,10 @@ public class LockerRepositoryImpl extends AbstractDatabaseService implements Loc
         return CompletableFuture.runAsync(() -> {
             try (Connection connection = this.dataSource.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
-                         "INSERT INTO `lockers`(`uuid`, " +
-                                 "`description`, " +
-                                 "`position`" +
-                                 ") VALUES(?, ?, ?);"
+                     "INSERT INTO `lockers`(`uuid`, " +
+                         "`description`, " +
+                         "`position`" +
+                         ") VALUES(?, ?, ?);"
                  )
             ) {
                 statement.setString(1, locker.uuid().toString());
@@ -89,7 +89,7 @@ public class LockerRepositoryImpl extends AbstractDatabaseService implements Loc
         return this.execute("DELETE FROM `lockers` WHERE `uuid` = ?;", statement -> {
             statement.setString(1, uuid.toString());
             statement.execute();
-            
+
             this.removeFromCache(uuid);
         });
     }
@@ -104,7 +104,7 @@ public class LockerRepositoryImpl extends AbstractDatabaseService implements Loc
         return this.supplyExecute("SELECT * FROM `lockers` LIMIT ? OFFSET ?;", statement -> {
             statement.setInt(1, page.getLimit() + 1);
             statement.setInt(2, page.getOffset());
-            
+
             List<Locker> lockers = this.extractParcelLockers(statement);
 
             boolean hasNext = lockers.size() > page.getLimit();
@@ -130,7 +130,7 @@ public class LockerRepositoryImpl extends AbstractDatabaseService implements Loc
         }
 
         list.forEach(this::addToCache);
-        
+
         return list;
     }
 
@@ -188,7 +188,7 @@ public class LockerRepositoryImpl extends AbstractDatabaseService implements Loc
                     rs.getString("description"),
                     Position.parse(rs.getString("position"))
                 );
-                
+
                 this.addToCache(locker);
                 return Optional.of(locker);
             }

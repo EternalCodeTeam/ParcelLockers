@@ -10,6 +10,7 @@ import panda.std.Lazy;
 import java.util.concurrent.CompletableFuture;
 
 public class UpdaterService {
+
     private static final GitRepository GIT_REPOSITORY = GitRepository.of("EternalCodeTeam", "ParcelLockers");
     private final GitCheck gitCheck = new GitCheck();
     private final Lazy<GitCheckResult> gitCheckResult;

@@ -33,7 +33,8 @@ public class ConfigItem {
     }
 
     public GuiItem toGuiItem(MiniMessage miniMessage) {
-        return this.toGuiItem(miniMessage, event -> {});
+        return this.toGuiItem(miniMessage, event -> {
+        });
     }
 
     public ConfigItem setType(Material type) {
