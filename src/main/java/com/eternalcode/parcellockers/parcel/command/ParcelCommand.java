@@ -2,7 +2,7 @@ package com.eternalcode.parcellockers.parcel.command;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.locker.gui.MainGUI;
-import com.eternalcode.parcellockers.locker.repository.LockerRepository;
+import com.eternalcode.parcellockers.locker.repository.LockerRepositoryImpl;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelManager;
@@ -27,14 +27,14 @@ import java.util.UUID;
 public class ParcelCommand {
 
     private final Server server;
-    private final LockerRepository lockerRepository;
+    private final LockerRepositoryImpl lockerRepository;
     private final NotificationAnnouncer announcer;
     private final PluginConfiguration config;
     private final MainGUI mainGUI;
     private final ParcelListGUI parcelListGUI;
     private final ParcelManager parcelManager;
 
-    public ParcelCommand(Server server, LockerRepository lockerRepository, NotificationAnnouncer announcer, PluginConfiguration config, MainGUI mainGUI, ParcelListGUI parcelListGUI, ParcelManager parcelManager) {
+    public ParcelCommand(Server server, LockerRepositoryImpl lockerRepository, NotificationAnnouncer announcer, PluginConfiguration config, MainGUI mainGUI, ParcelListGUI parcelListGUI, ParcelManager parcelManager) {
         this.server = server;
         this.lockerRepository = lockerRepository;
         this.announcer = announcer;

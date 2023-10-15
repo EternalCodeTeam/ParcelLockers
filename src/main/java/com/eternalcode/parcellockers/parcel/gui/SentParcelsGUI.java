@@ -3,9 +3,9 @@ package com.eternalcode.parcellockers.parcel.gui;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.locker.gui.MainGUI;
-import com.eternalcode.parcellockers.locker.repository.LockerRepository;
+import com.eternalcode.parcellockers.locker.repository.LockerRepositoryImpl;
 import com.eternalcode.parcellockers.parcel.Parcel;
-import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
+import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryImpl;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
@@ -26,11 +26,11 @@ public class SentParcelsGUI extends GuiView {
     private final Server server;
     private final MiniMessage miniMessage;
     private final PluginConfiguration config;
-    private final ParcelRepository parcelRepository;
-    private final LockerRepository lockerRepository;
+    private final ParcelRepositoryImpl parcelRepository;
+    private final LockerRepositoryImpl lockerRepository;
     private final MainGUI mainGUI;
 
-    public SentParcelsGUI(Plugin plugin, Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelRepository parcelRepository, LockerRepository lockerRepository, MainGUI mainGUI) {
+    public SentParcelsGUI(Plugin plugin, Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelRepositoryImpl parcelRepository, LockerRepositoryImpl lockerRepository, MainGUI mainGUI) {
         this.plugin = plugin;
         this.server = server;
         this.miniMessage = miniMessage;
