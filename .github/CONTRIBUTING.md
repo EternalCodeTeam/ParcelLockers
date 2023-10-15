@@ -1,4 +1,4 @@
-# Contributing to EternalCore
+# Contributing to ParcelLockers
 
 We welcome contributions to ParcelLockers! Whether you're fixing a bug, adding a new feature, or improving
 documentation,
