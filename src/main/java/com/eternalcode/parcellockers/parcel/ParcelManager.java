@@ -1,30 +1,24 @@
 package com.eternalcode.parcellockers.parcel;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
-import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
-import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
+import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryImpl;
 import org.bukkit.command.CommandSender;
-import org.bukkit.plugin.Plugin;
 
 public class ParcelManager {
 
-    private final Plugin plugin;
     private final PluginConfiguration config;
     private final NotificationAnnouncer announcer;
-    private final ParcelRepository databaseService;
-    private final LockerRepository lockerRepository;
+    private final ParcelRepositoryImpl parcelRepository;
 
-    public ParcelManager(Plugin plugin, PluginConfiguration config, NotificationAnnouncer announcer, ParcelRepository databaseService, LockerRepository lockerRepository) {
-        this.plugin = plugin;
+    public ParcelManager(PluginConfiguration config, NotificationAnnouncer announcer, ParcelRepositoryImpl parcelRepository) {
         this.config = config;
         this.announcer = announcer;
-        this.databaseService = databaseService;
-        this.lockerRepository = lockerRepository;
+        this.parcelRepository = parcelRepository;
     }
 
     public void createParcel(CommandSender sender, Parcel parcel) {
-        this.databaseService.save(parcel).whenComplete((v, throwable) -> {
+        this.parcelRepository.save(parcel).whenComplete((v, throwable) -> {
             if (throwable != null) {
                 this.announcer.sendMessage(sender, this.config.messages.failedToCreateParcel);
                 throwable.printStackTrace();
@@ -36,7 +30,7 @@ public class ParcelManager {
     }
 
     public void deleteParcel(CommandSender sender, Parcel parcel) {
-        this.databaseService.remove(parcel).whenComplete((v, throwable) -> {
+        this.parcelRepository.remove(parcel).whenComplete((v, throwable) -> {
             if (throwable != null) {
                 this.announcer.sendMessage(sender, this.config.messages.failedToDeleteParcel);
                 throwable.printStackTrace();
