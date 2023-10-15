@@ -89,7 +89,7 @@ public final class ParcelLockers extends JavaPlugin {
         ParcelRepositoryImpl parcelRepository = new ParcelRepositoryImpl(dataSource);
 
         ParcelManager parcelManager = new ParcelManager(config, announcer, parcelRepository);
-        LockerManager lockerManager = new LockerManager(parcelLockerRepositoryImpl);
+        LockerManager lockerManager = new LockerManager(lockerRepositoryImpl);
 
         MainGUI mainGUI = new MainGUI(this, server, miniMessage, config, parcelRepository, lockerRepositoryImpl);
         ParcelListGUI parcelListGUI = new ParcelListGUI(this, server, miniMessage, config, parcelRepository, lockerRepositoryImpl, mainGUI);
