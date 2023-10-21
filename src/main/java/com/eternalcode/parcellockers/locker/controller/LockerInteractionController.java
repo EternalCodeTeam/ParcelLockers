@@ -6,7 +6,7 @@ import com.eternalcode.parcellockers.locker.repository.LockerRepositoryImpl;
 import com.eternalcode.parcellockers.shared.Position;
 import com.eternalcode.parcellockers.shared.PositionAdapter;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Material;
+import org.bukkit.block.BlockType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -30,13 +30,13 @@ public class LockerInteractionController implements Listener {
     @EventHandler
     public void onInventoryOpen(PlayerInteractEvent event) {
         Player player = event.getPlayer();
-        Position blockPos = PositionAdapter.convert(player.getTargetBlock(Set.of(Material.AIR), 4).getLocation());
+        Position blockPos = PositionAdapter.convert(player.getTargetBlock(Set.of(BlockType.AIR), 4).getLocation());
 
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
             return;
         }
 
-        if (event.getClickedBlock().getType() != Material.CHEST) {
+        if (event.getClickedBlock().getType() != BlockType.CHEST) {
             return;
         }
 
