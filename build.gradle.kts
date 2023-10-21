@@ -26,7 +26,7 @@ repositories {
 
 dependencies {
     // minecraft development api
-    compileOnly("org.spigotmc:spigot-api:1.20.2-R0.1-SNAPSHOT")
+    compileOnly("org.spigotmc:spigot-api:1.20.2-experimental-SNAPSHOT")
     implementation("net.kyori:adventure-platform-bukkit:4.3.1")
     implementation("net.kyori:adventure-text-minimessage:4.14.0")
     implementation("dev.rollczi.litecommands:bukkit-adventure:2.8.9")
@@ -51,7 +51,7 @@ dependencies {
 
     // metrics and sentry
     implementation("org.bstats:bstats-bukkit:3.0.2")
-    implementation("io.sentry:sentry:6.31.0")
+    implementation("io.sentry:sentry:6.32.0")
 
     // database
     implementation("com.zaxxer:HikariCP:5.0.1")
