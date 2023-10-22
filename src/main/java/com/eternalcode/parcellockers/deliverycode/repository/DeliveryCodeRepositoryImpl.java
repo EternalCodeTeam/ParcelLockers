@@ -50,15 +50,11 @@ public class DeliveryCodeRepositoryImpl extends AbstractDatabaseService implemen
                 return null;
             }
 
-            this.cache.putIfAbsent(parcelUUID, new DeliveryCode(
-                UUID.fromString(rs.getString("parcelUUID")),
-                rs.getString("code")
-            ));
-
-            return new DeliveryCode(
-                UUID.fromString(rs.getString("parcelUUID")),
-                rs.getString("code")
-            );
+           DeliveryCode deliveryCode = new DeliveryCode(UUID.fromString(rs.getString("parcelUUID")), rs.getString("code"));
+           
+            this.cache.putIfAbsent(parcelUUID, deliveryCode);
+           
+            return Optional.of(deliveryCode);
         });
     }
 
