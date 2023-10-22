@@ -74,11 +74,7 @@ public class DeliveryCodeRepositoryImpl extends AbstractDatabaseService implemen
     }
 
     public Optional<DeliveryCode> find(UUID parcelUUID) {
-       Optional<DeliveryCode> deliveryCodeOptional = Optional.ofNullable(this.cache.get(parcelUUID));
-       if (deliveryCodeOptional.isPresent()) {
-           return Optional.ofNullable(this.cache.get(parcelUUID)).or(() -> this.findByUUID(parcelUUID).join());
-       }
-
-        return this.findByUUID(parcelUUID).join();
+       return Optional.ofNullable(this.cache.get(parcelUUID))
+           .or(() -> this.findByUUID(parcelUUID).join());
     }
 }
