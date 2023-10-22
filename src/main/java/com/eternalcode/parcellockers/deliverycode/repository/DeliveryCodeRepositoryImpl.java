@@ -41,7 +41,7 @@ public class DeliveryCodeRepositoryImpl extends AbstractDatabaseService implemen
     }
 
     @Override
-    public CompletableFuture<DeliveryCode> findByUUID(UUID parcelUUID) {
+    public CompletableFuture<Optional<DeliveryCode>> findByUUID(UUID parcelUUID) {
         return this.supplyExecute("SELECT * FROM `delivery_codes` WHERE `parcelUUID` = ?;", statement -> {
             statement.setString(1, parcelUUID.toString());
             ResultSet rs = statement.executeQuery();
