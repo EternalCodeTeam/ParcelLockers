@@ -47,7 +47,7 @@ public class DeliveryCodeRepositoryImpl extends AbstractDatabaseService implemen
             ResultSet rs = statement.executeQuery();
 
             if (!rs.next()) {
-                return null;
+                return Optional.empty();
             }
 
            DeliveryCode deliveryCode = new DeliveryCode(UUID.fromString(rs.getString("parcelUUID")), rs.getString("code"));
