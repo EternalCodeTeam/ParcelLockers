@@ -36,8 +36,8 @@ public class PlayerArgument implements OneArgument<Player> {
     @Override
     public List<Suggestion> suggest(LiteInvocation invocation) {
         return this.server.getOnlinePlayers().stream()
-                .map(HumanEntity::getName)
-                .map(Suggestion::of)
-                .toList();
+            .map(HumanEntity::getName)
+            .map(Suggestion::of)
+            .toList();
     }
 }

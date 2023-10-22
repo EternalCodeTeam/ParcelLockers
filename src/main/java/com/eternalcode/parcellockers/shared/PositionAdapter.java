@@ -6,7 +6,8 @@ import org.bukkit.World;
 
 public final class PositionAdapter {
 
-    private PositionAdapter() {}
+    private PositionAdapter() {
+    }
 
     public static Position convert(Location location) {
         if (location.getWorld() == null) {

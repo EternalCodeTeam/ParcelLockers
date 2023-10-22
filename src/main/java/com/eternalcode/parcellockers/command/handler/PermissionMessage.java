@@ -22,11 +22,11 @@ public class PermissionMessage implements PermissionHandler<CommandSender> {
     @Override
     public void handle(CommandSender commandSender, LiteInvocation invocation, RequiredPermissions requiredPermissions) {
         String value = Joiner.on(", ")
-                .join(requiredPermissions.getPermissions())
-                .toString();
+            .join(requiredPermissions.getPermissions())
+            .toString();
 
         Formatter formatter = new Formatter()
-                .register("{PERMISSION}", value);
+            .register("{PERMISSION}", value);
 
         this.announcer.sendMessage(commandSender, formatter.format(this.config.messages.noPermission));
     }

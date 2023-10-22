@@ -23,7 +23,7 @@ public class ParcelArgument implements OneArgument<Parcel> {
     @Override
     public Result<Parcel, ?> parse(LiteInvocation invocation, String argument) {
         Parcel parcel = this.databaseService.findParcel(UUID.fromString(argument)).orElse(null);
-        
+
         if (parcel == null) {
             return Result.error();
         }
@@ -33,8 +33,8 @@ public class ParcelArgument implements OneArgument<Parcel> {
     @Override
     public List<Suggestion> suggest(LiteInvocation invocation) {
         return this.databaseService.cache().values().stream()
-                .map(Parcel::name)
-                .map(Suggestion::of)
-                .toList();
+            .map(Parcel::name)
+            .map(Suggestion::of)
+            .toList();
     }
 }

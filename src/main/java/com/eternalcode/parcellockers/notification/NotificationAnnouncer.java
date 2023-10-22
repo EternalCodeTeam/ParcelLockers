@@ -14,10 +14,10 @@ import java.util.function.BiConsumer;
 public class NotificationAnnouncer {
 
     private final static Map<NotificationType, BiConsumer<Audience, Component>> NOTIFICATION_HANDLERS = Map.of(
-            NotificationType.CHAT, Audience::sendMessage,
-            NotificationType.ACTION_BAR, Audience::sendActionBar,
-            NotificationType.TITLE, (audience, component) -> audience.showTitle(Title.title(component, Component.empty())),
-            NotificationType.SUBTITLE, (audience, component) -> audience.showTitle(Title.title(Component.empty(), component))
+        NotificationType.CHAT, Audience::sendMessage,
+        NotificationType.ACTION_BAR, Audience::sendActionBar,
+        NotificationType.TITLE, (audience, component) -> audience.showTitle(Title.title(component, Component.empty())),
+        NotificationType.SUBTITLE, (audience, component) -> audience.showTitle(Title.title(Component.empty(), component))
     );
 
     private final AudienceProvider audienceProvider;
@@ -50,7 +50,7 @@ public class NotificationAnnouncer {
     public void broadcast(String text) {
         Audience audience = this.audienceProvider.all();
         Component message = this.miniMessage.deserialize(text);
-        
+
         audience.sendMessage(message);
     }
 

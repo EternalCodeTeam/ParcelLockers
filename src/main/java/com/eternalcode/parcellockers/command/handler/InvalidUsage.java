@@ -31,7 +31,7 @@ public class InvalidUsage implements InvalidUsageHandler<CommandSender> {
 
         for (String scheme : schematics) {
             Formatter formatter = new Formatter()
-                    .register("{USAGE}", scheme);
+                .register("{USAGE}", scheme);
 
             this.announcer.sendMessage(sender, formatter.format(this.config.messages.invalidUsage));
         }

@@ -58,7 +58,7 @@ public class ParcelListGUI extends GuiView {
             .disableAllInteractions()
             .rows(6)
             .create();
-            
+
         GuiItem parcelItem = this.config.guiSettings.parcelItem.toGuiItem(this.miniMessage);
         GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
         GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem(this.miniMessage);
@@ -81,19 +81,19 @@ public class ParcelListGUI extends GuiView {
 
             for (Parcel parcel : result.parcels()) {
                 if (!player.hasPermission("parcellockers.admin.debug.seeOthersParcels")) {
-                   continue;
+                    continue;
                 }
-                
+
                 if (!parcel.sender().equals(player.getUniqueId())) {
                     continue;
                 }
-                
+
                 if (!parcel.recipients().contains(player.getUniqueId())) {
                     continue;
                 }
 
                 ItemMeta parcelItemMeta = parcelItem.getItemStack().getItemMeta();
-                
+
                 List<String> newLore = this.replaceParcelPlaceholders(parcel, parcelItemMeta.getLore());
 
                 parcelItemMeta.setLore(newLore);

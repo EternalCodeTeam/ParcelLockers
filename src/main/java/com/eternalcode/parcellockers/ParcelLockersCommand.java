@@ -27,7 +27,7 @@ public class ParcelLockersCommand {
         this.announcer = announcer;
         this.miniMessage = miniMessage;
     }
-    
+
     @Async
     @Execute(route = "reload", aliases = {"rl"})
     void reload(CommandSender sender) {

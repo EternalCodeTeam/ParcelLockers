@@ -17,7 +17,7 @@ public class ItemUtil {
         if (firstMeta == null) {
             return false;
         }
-        
+
         ItemMeta secondMeta = second.getItemMeta();
         if (secondMeta == null) {
             return false;
@@ -26,7 +26,7 @@ public class ItemUtil {
         if (first.getType() != second.getType()) {
             return false;
         }
-        
+
         return firstMeta.getLore().containsAll(secondMeta.getLore())
             && firstMeta.getDisplayName().equals(secondMeta.getDisplayName());
     }
