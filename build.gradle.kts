@@ -35,7 +35,7 @@ dependencies {
     implementation("dev.rollczi:liteskullapi:1.3.0")
 
     // gui library
-    implementation("dev.triumphteam:triumph-gui:3.1.6")
+    implementation("dev.triumphteam:triumph-gui:3.1.7")
 
     // economy
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
@@ -51,7 +51,7 @@ dependencies {
 
     // metrics and sentry
     implementation("org.bstats:bstats-bukkit:3.0.2")
-    implementation("io.sentry:sentry:6.31.0")
+    implementation("io.sentry:sentry:6.33.0")
 
     // database
     implementation("com.zaxxer:HikariCP:5.0.1")

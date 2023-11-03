@@ -1,7 +1,10 @@
 package com.eternalcode.parcellockers.parcel.gui;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.feature.itemstorage.ItemStorage;
+import com.eternalcode.parcellockers.feature.itemstorage.repository.ItemStorageRepositoryImpl;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
+import com.eternalcode.parcellockers.util.ItemUtil;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.StorageGui;
@@ -9,17 +12,22 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ParcelItemStorageGUI {
 
     private final PluginConfiguration config;
     private final MiniMessage miniMessage;
+    private final ItemStorageRepositoryImpl itemStorageRepository;
 
     private StorageGui gui;
     private boolean confirmed;
 
-    public ParcelItemStorageGUI(PluginConfiguration config, MiniMessage miniMessage) {
+    public ParcelItemStorageGUI(PluginConfiguration config, MiniMessage miniMessage, ItemStorageRepositoryImpl itemStorageRepository) {
         this.config = config;
         this.miniMessage = miniMessage;
+        this.itemStorageRepository = itemStorageRepository;
     }
 
     void show(Player player, ParcelSize size) {
@@ -59,7 +67,12 @@ public class ParcelItemStorageGUI {
         this.gui.setItem(this.gui.getRows(), 2, cancelItem);
         this.gui.setCloseGuiAction(event -> {
             if (this.confirmed) {
-                 return;
+                List<String> serialized = new ArrayList<>();
+                for (ItemStack item : this.gui.getInventory().getContents()) {
+                    serialized.add(ItemUtil.itemStackToString(item));
+                }
+                this.itemStorageRepository.save(new ItemStorage(player.getUniqueId(), serialized));
+                return;
             }
             
             if (this.gui.getInventory().getContents() == null) {
@@ -67,7 +80,7 @@ public class ParcelItemStorageGUI {
             }
                 
             for (ItemStack item : this.gui.getInventory().getContents()) {
-                if (item == null) {
+                if (item == null || ItemUtil.compareMeta(confirmItem.getItemStack(), item) || ItemUtil.compareMeta(cancelItem.getItemStack(), item)) {
                     continue;
                 }
                     

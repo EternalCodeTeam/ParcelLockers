@@ -1,13 +1,11 @@
 package com.eternalcode.parcellockers.parcel.repository;
 
 import com.eternalcode.parcellockers.database.AbstractDatabaseService;
-import com.eternalcode.parcellockers.exception.ParcelLockersException;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.shared.Page;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -32,27 +30,18 @@ public class ParcelRepositoryImpl extends AbstractDatabaseService implements Par
     }
 
     private void initTable() {
-        try (Connection connection = this.dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement(
-                     "CREATE TABLE IF NOT EXISTS `parcels`(" +
-                             "`uuid` VARCHAR(36) NOT NULL, " +
-                             "`name` VARCHAR(24) NOT NULL, " +
-                             "`description` VARCHAR(64), " +
-                             "`priority` BOOLEAN NOT NULL, " +
-                             "`receiver` VARCHAR(36) NOT NULL, " +
-                             "`size` VARCHAR(10) NOT NULL, " +
-                             "`entryLocker` VARCHAR(36) NOT NULL, " +
-                             "`destinationLocker` VARCHAR(36) NOT NULL, " +
-                             "`sender` VARCHAR(36) NOT NULL, " +
-                             "PRIMARY KEY (uuid) " +
-                             ");"
-             )
-        ) {
-            statement.execute();
-        }
-        catch (SQLException e) {
-            throw new ParcelLockersException(e);
-        }
+        this.executeSync("CREATE TABLE IF NOT EXISTS `parcels`(" +
+            "`uuid` VARCHAR(36) NOT NULL, " +
+            "`name` VARCHAR(24) NOT NULL, " +
+            "`description` VARCHAR(64), " +
+            "`priority` BOOLEAN NOT NULL, " +
+            "`receiver` VARCHAR(36) NOT NULL, " +
+            "`size` VARCHAR(10) NOT NULL, " +
+            "`entryLocker` VARCHAR(36) NOT NULL, " +
+            "`destinationLocker` VARCHAR(36) NOT NULL, " +
+            "`sender` VARCHAR(36) NOT NULL, " +
+            "PRIMARY KEY (uuid) " +
+            ");", PreparedStatement::execute);
     }
 
     @Override
