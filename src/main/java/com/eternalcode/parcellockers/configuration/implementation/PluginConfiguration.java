@@ -38,7 +38,7 @@ public class PluginConfiguration implements ReloadableConfig {
         public boolean receiveUpdates = true;
 
         @Description({" ", "# The database type. (MYSQL, SQLITE)"})
-        public DatabaseType databaseType = DatabaseType.MYSQL;
+        public DatabaseType databaseType = DatabaseType.SQLITE;
 
         @Description({" ", "# The URL to the database."})
         public String host = "localhost";
