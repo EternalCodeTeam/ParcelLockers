@@ -1,19 +1,18 @@
 package com.eternalcode.parcellockers.command.argument;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
-import dev.rollczi.litecommands.argument.ArgumentName;
-import dev.rollczi.litecommands.argument.simple.OneArgument;
-import dev.rollczi.litecommands.command.LiteInvocation;
-import dev.rollczi.litecommands.suggestion.Suggestion;
+import dev.rollczi.litecommands.argument.Argument;
+import dev.rollczi.litecommands.argument.parser.ParseResult;
+import dev.rollczi.litecommands.argument.resolver.ArgumentResolver;
+import dev.rollczi.litecommands.invocation.Invocation;
+import dev.rollczi.litecommands.suggestion.SuggestionContext;
+import dev.rollczi.litecommands.suggestion.SuggestionResult;
 import org.bukkit.Server;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
-import panda.std.Result;
 
-import java.util.List;
-
-@ArgumentName("player")
-public class PlayerArgument implements OneArgument<Player> {
+public class PlayerArgument extends ArgumentResolver<CommandSender, Player> {
 
     private final Server server;
     private final PluginConfiguration config;
@@ -24,20 +23,21 @@ public class PlayerArgument implements OneArgument<Player> {
     }
 
     @Override
-    public Result<Player, ?> parse(LiteInvocation invocation, String argument) {
+    protected ParseResult<Player> parse(Invocation<CommandSender> invocation, Argument<Player> context, String argument) {
         Player player = this.server.getPlayer(argument);
 
         if (player == null) {
-            return Result.error(this.config.messages.cantFindPlayer);
+            return ParseResult.failure(this.config.messages.cantFindPlayer);
         }
-        return Result.ok(player);
+
+        return ParseResult.success(player);
     }
 
     @Override
-    public List<Suggestion> suggest(LiteInvocation invocation) {
+    public SuggestionResult suggest(Invocation<CommandSender> invocation, Argument<Player> argument, SuggestionContext context) {
         return this.server.getOnlinePlayers().stream()
                 .map(HumanEntity::getName)
-                .map(Suggestion::of)
-                .toList();
+                .collect(SuggestionResult.collector());
     }
+
 }

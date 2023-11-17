@@ -1,6 +1,7 @@
 package com.eternalcode.parcellockers.locker.gui;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.feature.itemstorage.repository.ItemStorageRepository;
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.parcel.gui.ParcelSendingGUI;
 import dev.triumphteam.gui.guis.Gui;
@@ -15,10 +16,12 @@ public class LockerMainGUI extends GuiView {
 
     private final MiniMessage miniMessage;
     private final PluginConfiguration config;
+    private final ItemStorageRepository itemStorageRepository;
 
-    public LockerMainGUI(MiniMessage miniMessage, PluginConfiguration config) {
+    public LockerMainGUI(MiniMessage miniMessage, PluginConfiguration config, ItemStorageRepository itemStorageRepository) {
         this.miniMessage = miniMessage;
         this.config = config;
+        this.itemStorageRepository = itemStorageRepository;
     }
 
     @Override
@@ -46,7 +49,7 @@ public class LockerMainGUI extends GuiView {
         }
 
         gui.setItem(20, this.config.guiSettings.parcelLockerCollectItem.toGuiItem(this.miniMessage, event -> event.setCancelled(true)));
-        gui.setItem(22, this.config.guiSettings.parcelLockerSendItem.toGuiItem(this.miniMessage, event -> new ParcelSendingGUI(this.config, this.miniMessage).show(player)));
+        gui.setItem(22, this.config.guiSettings.parcelLockerSendItem.toGuiItem(this.miniMessage, event -> new ParcelSendingGUI(this.config, this.miniMessage, itemStorageRepository).show(player)));
         gui.setItem(24, this.config.guiSettings.parcelLockerStatusItem.toGuiItem(this.miniMessage));
         gui.setItem(49, closeItem);
 

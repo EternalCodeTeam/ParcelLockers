@@ -2,6 +2,7 @@ package com.eternalcode.parcellockers.parcel.gui;
 
 import com.eternalcode.parcellockers.configuration.implementation.ConfigItem;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.feature.itemstorage.repository.ItemStorageRepository;
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.locker.gui.LockerMainGUI;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
@@ -17,12 +18,14 @@ public class ParcelSendingGUI extends GuiView {
 
     private final PluginConfiguration config;
     private final MiniMessage miniMessage;
+    private final ItemStorageRepository itemStorageRepository;
     private ParcelSize size;
     private boolean priority;
 
-    public ParcelSendingGUI(PluginConfiguration config, MiniMessage miniMessage) {
+    public ParcelSendingGUI(PluginConfiguration config, MiniMessage miniMessage, ItemStorageRepository itemStorageRepository) {
         this.config = config;
         this.miniMessage = miniMessage;
+        this.itemStorageRepository = itemStorageRepository;
     }
 
     @Override
@@ -37,9 +40,12 @@ public class ParcelSendingGUI extends GuiView {
 
         GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
         GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem(this.miniMessage);
-        GuiItem storageItem = this.config.guiSettings.parcelStorageItem.toGuiItem(this.miniMessage, event -> new ParcelItemStorageGUI(this.config, this.miniMessage).show(player, this.size));
+        GuiItem storageItem = this.config.guiSettings.parcelStorageItem.toGuiItem(this.miniMessage, event -> {
+            ParcelItemStorageGUI storageGUI = new ParcelItemStorageGUI(this.config, this.miniMessage, itemStorageRepository);
+            storageGUI.show(player, this.size);
+        });
 
-        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage, event -> new LockerMainGUI(this.miniMessage, this.config).show(player));
+        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage, event -> new LockerMainGUI(this.miniMessage, this.config, itemStorageRepository).show(player));
 
         ConfigItem smallButton = this.config.guiSettings.smallParcelSizeItem;
         ConfigItem mediumButton = this.config.guiSettings.mediumParcelSizeItem;

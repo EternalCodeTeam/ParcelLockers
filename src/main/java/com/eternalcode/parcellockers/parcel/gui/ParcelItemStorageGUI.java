@@ -2,7 +2,7 @@ package com.eternalcode.parcellockers.parcel.gui;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.feature.itemstorage.ItemStorage;
-import com.eternalcode.parcellockers.feature.itemstorage.repository.ItemStorageRepositoryImpl;
+import com.eternalcode.parcellockers.feature.itemstorage.repository.ItemStorageRepository;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.util.ItemUtil;
 import dev.triumphteam.gui.guis.Gui;
@@ -19,12 +19,12 @@ public class ParcelItemStorageGUI {
 
     private final PluginConfiguration config;
     private final MiniMessage miniMessage;
-    private final ItemStorageRepositoryImpl itemStorageRepository;
+    private final ItemStorageRepository itemStorageRepository;
 
     private StorageGui gui;
     private boolean confirmed;
 
-    public ParcelItemStorageGUI(PluginConfiguration config, MiniMessage miniMessage, ItemStorageRepositoryImpl itemStorageRepository) {
+    public ParcelItemStorageGUI(PluginConfiguration config, MiniMessage miniMessage, ItemStorageRepository itemStorageRepository) {
         this.config = config;
         this.miniMessage = miniMessage;
         this.itemStorageRepository = itemStorageRepository;
@@ -36,11 +36,11 @@ public class ParcelItemStorageGUI {
         GuiItem backgroundItem = guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
         GuiItem confirmItem = guiSettings.confirmItemsItem.toGuiItem(this.miniMessage, event -> {
             this.confirmed = true;
-            new ParcelSendingGUI(this.config, this.miniMessage).show(player);
+            new ParcelSendingGUI(this.config, this.miniMessage, itemStorageRepository).show(player);
         });
         GuiItem cancelItem = guiSettings.cancelItemsItem.toGuiItem(this.miniMessage, event -> {
             this.confirmed = false;
-            new ParcelSendingGUI(this.config, this.miniMessage).show(player);
+            new ParcelSendingGUI(this.config, this.miniMessage, itemStorageRepository).show(player);
         });
 
         switch (size) {
