@@ -24,6 +24,7 @@ repositories {
     maven { url = uri("https://oss.sonatype.org/content/repositories/central") }
     maven { url = uri("https://papermc.io/repo/repository/maven-public/") }
     maven { url = uri("https://repo.eternalcode.pl/releases") }
+    maven { url = uri("https://repo.eternalcode.pl/snapshots") }
     maven { url = uri("https://repository.minecodes.pl/releases") }
 }
 
@@ -32,7 +33,8 @@ dependencies {
     compileOnly("org.spigotmc:spigot-api:1.20.1-R0.1-SNAPSHOT")
     implementation("net.kyori:adventure-platform-bukkit:4.3.0")
     implementation("net.kyori:adventure-text-minimessage:4.14.0")
-    implementation("dev.rollczi.litecommands:bukkit-adventure:2.8.8")
+    implementation("dev.rollczi:litecommands-bukkit:3.1.0-SNAPSHOT")
+    implementation("dev.rollczi:litecommands-adventure:3.1.0-SNAPSHOT")
 
     // skull api
     implementation("dev.rollczi:liteskullapi:1.3.0")
@@ -112,6 +114,7 @@ bukkit {
 tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
     options.setIncremental(true)
+    options.compilerArgs.add("-parameters")
 }
 
 tasks.withType<ShadowJar> {

@@ -3,7 +3,7 @@ package com.eternalcode.parcellockers;
 import com.eternalcode.parcellockers.command.ParcelCommand;
 import com.eternalcode.parcellockers.command.argument.ParcelArgument;
 import com.eternalcode.parcellockers.command.argument.PlayerArgument;
-import com.eternalcode.parcellockers.command.handler.InvalidUsage;
+import com.eternalcode.parcellockers.command.handler.InvalidUsageImpl;
 import com.eternalcode.parcellockers.command.handler.PermissionMessage;
 import com.eternalcode.parcellockers.configuration.ConfigurationManager;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
@@ -24,8 +24,9 @@ import com.eternalcode.parcellockers.util.legacy.LegacyColorProcessor;
 import com.google.common.base.Stopwatch;
 import com.zaxxer.hikari.HikariDataSource;
 import dev.rollczi.litecommands.LiteCommands;
-import dev.rollczi.litecommands.bukkit.adventure.platform.LiteBukkitAdventurePlatformFactory;
-import dev.rollczi.litecommands.bukkit.tools.BukkitOnlyPlayerContextual;
+import dev.rollczi.litecommands.annotations.LiteCommandsAnnotations;
+import dev.rollczi.litecommands.bukkit.LiteBukkitMessages;
+import dev.rollczi.litecommands.bukkit.LiteCommandsBukkit;
 import io.papermc.lib.PaperLib;
 import io.papermc.lib.environments.Environment;
 import io.sentry.Sentry;
@@ -88,17 +89,17 @@ public final class ParcelLockers extends JavaPlugin {
 
         MainGUI mainGUI = new MainGUI(this, this.getServer(), miniMessage, config, parcelRepository, parcelLockerDatabaseService);
         ParcelListGUI parcelListGUI = new ParcelListGUI(this, miniMessage, config, parcelRepository, parcelLockerDatabaseService, mainGUI);
-        this.liteCommands = LiteBukkitAdventurePlatformFactory.builder(this.getServer(), "parcellockers", false, this.audiences, true)
+        this.liteCommands = LiteCommandsBukkit.builder("parcellockers", this)
                 .argument(Parcel.class, new ParcelArgument(parcelRepository))
                 .argument(Player.class, new PlayerArgument(this.getServer(), config))
-                .contextualBind(Player.class, new BukkitOnlyPlayerContextual<>(config.messages.onlyForPlayers))
-                .commandInstance(
-                        new ParcelCommand(this.getServer(), parcelLockerDatabaseService, announcer, config, mainGUI, parcelListGUI, parcelManager),
-                        new ParcelLockerCommand(configManager, config, announcer, miniMessage)
-                )
-                .invalidUsageHandler(new InvalidUsage(announcer, config))
-                .permissionHandler(new PermissionMessage(announcer, config))
-                .register();
+                .message(LiteBukkitMessages.PLAYER_ONLY, config.messages.onlyForPlayers)
+                .commands(LiteCommandsAnnotations.of(
+                    new ParcelCommand(this.getServer(), parcelLockerDatabaseService, announcer, config, mainGUI, parcelListGUI, parcelManager),
+                    new ParcelLockerCommand(configManager, config, announcer, miniMessage)
+                ))
+                .invalidUsage(new InvalidUsageImpl(announcer, config))
+                .missingPermission(new PermissionMessage(announcer, config))
+                .build();
 
 //        if (!this.setupEconomy()) {
 //            this.getLogger().severe("Disabling due to no Vault dependency found!");
@@ -123,7 +124,7 @@ public final class ParcelLockers extends JavaPlugin {
     @Override
     public void onDisable() {
         if (this.liteCommands != null) {
-            this.liteCommands.getPlatform().unregisterAll();
+            this.liteCommands.unregister();
         }
 
         if (this.audiences != null) {

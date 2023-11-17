@@ -3,16 +3,17 @@ package com.eternalcode.parcellockers;
 import com.eternalcode.parcellockers.configuration.ConfigurationManager;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
-import dev.rollczi.litecommands.command.async.Async;
-import dev.rollczi.litecommands.command.execute.Execute;
-import dev.rollczi.litecommands.command.permission.Permission;
-import dev.rollczi.litecommands.command.route.Route;
+import dev.rollczi.litecommands.annotations.async.Async;
+import dev.rollczi.litecommands.annotations.command.Command;
+import dev.rollczi.litecommands.annotations.context.Context;
+import dev.rollczi.litecommands.annotations.execute.Execute;
+import dev.rollczi.litecommands.annotations.permission.Permission;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-@Route(name = "parcellockers", aliases = {"parcellocker"})
+@Command(name = "parcellockers", aliases = {"parcellocker"})
 @Permission("parcellockers.admin")
 public class ParcelLockerCommand {
 
@@ -29,14 +30,14 @@ public class ParcelLockerCommand {
     }
     
     @Async
-    @Execute(route = "reload", aliases = {"rl"})
-    void reload(CommandSender sender) {
+    @Execute(name = "reload", aliases = {"rl"})
+    void reload(@Context CommandSender sender) {
         this.configManager.reload();
         this.announcer.sendMessage(sender, this.config.messages.reload);
     }
 
-    @Execute(route = "give")
-    void give(Player player) {
+    @Execute(name = "give")
+    void give(@Context Player player) {
         ItemStack parcelItem = this.config.settings.parcelLockerItem.toGuiItem(this.miniMessage).getItemStack();
         player.getInventory().addItem(parcelItem);
     }
