@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-@Command(name = "parcel", aliases = { "parcellockers" })
+@Command(name = "parcel")
 @Permission("parcellockers.command.parcel")
 public class ParcelCommand {
 
