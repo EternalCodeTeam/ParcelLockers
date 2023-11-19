@@ -8,10 +8,12 @@ import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelManager;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.gui.ParcelListGUI;
-import dev.rollczi.litecommands.argument.Arg;
-import dev.rollczi.litecommands.command.execute.Execute;
-import dev.rollczi.litecommands.command.permission.Permission;
-import dev.rollczi.litecommands.command.route.Route;
+
+import dev.rollczi.litecommands.annotations.argument.Arg;
+import dev.rollczi.litecommands.annotations.command.Command;
+import dev.rollczi.litecommands.annotations.context.Context;
+import dev.rollczi.litecommands.annotations.execute.Execute;
+import dev.rollczi.litecommands.annotations.permission.Permission;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import panda.utilities.text.Formatter;
@@ -22,7 +24,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-@Route(name = "parcel")
+@Command(name = "parcel")
 @Permission("parcellockers.command.parcel")
 public class ParcelCommand {
 
@@ -44,26 +46,26 @@ public class ParcelCommand {
         this.parcelManager = parcelManager;
     }
 
-    @Execute(route = "list")
-    void list(Player player) {
+    @Execute(name = "list")
+    void list(@Context Player player) {
         this.parcelListGUI.show(player);
     }
 
-    @Execute(route = "info")
-    void info(Player player, @Arg Parcel parcel) {
+    @Execute(name = "info")
+    void info(@Context Player player, @Arg Parcel parcel) {
         List<String> messagesToSend = this.replaceParcelPlaceholders(parcel, this.config.messages.parcelInfoMessages);
         messagesToSend.forEach(message -> this.announcer.sendMessage(player, message));
     }
 
-    @Execute(route = "create", aliases = { "add", "send" })
-    void create(Player player, @Arg String name, @Arg boolean priority, @Arg String size, @Arg String entryLocker, @Arg String destinationLocker) {
+    @Execute(name = "create", aliases = { "add", "send" })
+    void create(@Context Player player, @Arg String name, @Arg boolean priority, @Arg ParcelSize size, @Arg String entryLocker, @Arg String destinationLocker) {
         Parcel parcel = Parcel.builder()
             .uuid(UUID.randomUUID())
             .name(name)
             .sender(player.getUniqueId())
             .receiver(player.getUniqueId())
             .priority(priority)
-            .size(ParcelSize.valueOf(size.toUpperCase()))
+            .size(size)
             .entryLocker(UUID.fromString(entryLocker))
             .destinationLocker(UUID.fromString(destinationLocker))
             .build();
@@ -71,13 +73,13 @@ public class ParcelCommand {
         this.parcelManager.createParcel(player, parcel);
     }
 
-    @Execute(route = "delete", aliases = { "remove", "cancel" })
-    void delete(Player player, @Arg Parcel parcel) {
+    @Execute(name = "delete", aliases = { "remove", "cancel" })
+    void delete(@Context Player player, @Arg Parcel parcel) {
         this.parcelManager.deleteParcel(player, parcel);
     }
 
-    @Execute(route = "gui")
-    void gui(Player player) {
+    @Execute(name = "gui")
+    void gui(@Context Player player) {
         this.mainGUI.show(player);
     }
 

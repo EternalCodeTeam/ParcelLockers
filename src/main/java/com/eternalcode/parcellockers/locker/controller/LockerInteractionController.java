@@ -1,6 +1,7 @@
 package com.eternalcode.parcellockers.locker.controller;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.feature.itemstorage.repository.ItemStorageRepository;
 import com.eternalcode.parcellockers.locker.gui.LockerMainGUI;
 import com.eternalcode.parcellockers.locker.repository.LockerRepositoryImpl;
 import com.eternalcode.parcellockers.shared.Position;
@@ -18,11 +19,13 @@ import java.util.Set;
 public class LockerInteractionController implements Listener {
 
     private final LockerRepositoryImpl parcelLockerRepositoryImpl;
+    private final ItemStorageRepository itemStorageRepository;
     private final MiniMessage miniMessage;
     private final PluginConfiguration config;
 
-    public LockerInteractionController(LockerRepositoryImpl parcelLockerRepositoryImpl, MiniMessage miniMessage, PluginConfiguration config) {
+    public LockerInteractionController(LockerRepositoryImpl parcelLockerRepositoryImpl, ItemStorageRepository itemStorageRepository, MiniMessage miniMessage, PluginConfiguration config) {
         this.parcelLockerRepositoryImpl = parcelLockerRepositoryImpl;
+        this.itemStorageRepository = itemStorageRepository;
         this.miniMessage = miniMessage;
         this.config = config;
     }
@@ -42,7 +45,7 @@ public class LockerInteractionController implements Listener {
          
         if (this.parcelLockerRepositoryImpl.isInCache(blockPos)) {
             event.setCancelled(true);
-            new LockerMainGUI(this.miniMessage, this.config).show(player);
+            new LockerMainGUI(this.miniMessage, this.config, itemStorageRepository).show(player);
         }
     }
 }
