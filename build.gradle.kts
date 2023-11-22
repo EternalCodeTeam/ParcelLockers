@@ -2,7 +2,7 @@ plugins {
     `java-library`
     checkstyle
     id("net.minecrell.plugin-yml.bukkit") version "0.6.0"
-    id("xyz.jpenilla.run-paper") version "2.2.0"
+    id("xyz.jpenilla.run-paper") version "2.2.2"
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
@@ -26,7 +26,7 @@ repositories {
 
 dependencies {
     // minecraft development api
-    compileOnly("org.spigotmc:spigot-api:1.20.2-R0.1-SNAPSHOT")
+    compileOnly("org.spigotmc:spigot-api:1.20.2-experimental-SNAPSHOT")
     implementation("net.kyori:adventure-platform-bukkit:4.3.1")
     implementation("net.kyori:adventure-text-minimessage:4.14.0")
     implementation("dev.rollczi.litecommands:bukkit-adventure:2.8.9")
@@ -35,7 +35,7 @@ dependencies {
     implementation("dev.rollczi:liteskullapi:1.3.0")
 
     // gui library
-    implementation("dev.triumphteam:triumph-gui:3.1.6")
+    implementation("dev.triumphteam:triumph-gui:3.1.7")
 
     // economy
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
@@ -51,17 +51,17 @@ dependencies {
 
     // metrics and sentry
     implementation("org.bstats:bstats-bukkit:3.0.2")
-    implementation("io.sentry:sentry:6.31.0")
+    implementation("io.sentry:sentry:6.34.0")
 
     // database
-    implementation("com.zaxxer:HikariCP:5.0.1")
+    implementation("com.zaxxer:HikariCP:5.1.0")
 
     // lombok
     compileOnly("org.projectlombok:lombok:1.18.30")
     annotationProcessor("org.projectlombok:lombok:1.18.30")
 
     // jetbrains annotations
-    api("org.jetbrains:annotations:24.0.1")
+    api("org.jetbrains:annotations:24.1.0")
 
     // paperlib
     implementation("io.papermc:paperlib:1.0.8")
@@ -69,12 +69,12 @@ dependencies {
     // panda-utilities
     implementation("org.panda-lang:panda-utilities:0.5.2-alpha")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.0")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.1")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.1")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.1")
 
-    testImplementation("org.testcontainers:junit-jupiter:1.19.1")
-    testImplementation("org.testcontainers:mysql:1.19.1")
+    testImplementation("org.testcontainers:junit-jupiter:1.19.3")
+    testImplementation("org.testcontainers:mysql:1.19.3")
     testImplementation("mysql:mysql-connector-java:8.0.33")
 }
 
@@ -83,7 +83,7 @@ java {
 }
 
 checkstyle {
-    toolVersion = "10.12.4"
+    toolVersion = "10.12.5"
 
     configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
 
