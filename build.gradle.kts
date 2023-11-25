@@ -30,8 +30,8 @@ dependencies {
     compileOnly("org.spigotmc:spigot-api:1.20.2-R0.1-SNAPSHOT")
     implementation("net.kyori:adventure-platform-bukkit:4.3.1")
     implementation("net.kyori:adventure-text-minimessage:4.14.0")
-    implementation("dev.rollczi:litecommands-bukkit:3.1.0-SNAPSHOT")
-    implementation("dev.rollczi:litecommands-adventure:3.1.0-SNAPSHOT")
+    implementation("dev.rollczi:litecommands-bukkit:3.0.3")
+    implementation("dev.rollczi:litecommands-adventure:3.0.3")
 
     // skull api
     implementation("dev.rollczi:liteskullapi:1.3.0")
@@ -116,6 +116,7 @@ tasks {
     runServer {
         minecraftVersion("1.20.2")
         downloadPlugins.url("https://github.com/MilkBowl/Vault/releases/download/1.7.3/Vault.jar")
+        downloadPlugins.url("https://ci.ender.zone/job/EssentialsX/lastSuccessfulBuild/artifact/jars/EssentialsX-2.21.0-dev+21-c68b277.jar")
     }
 
     test {
