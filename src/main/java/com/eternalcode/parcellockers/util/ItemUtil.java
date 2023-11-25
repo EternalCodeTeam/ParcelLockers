@@ -1,12 +1,16 @@
 package com.eternalcode.parcellockers.util;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import java.util.Optional;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 public class ItemUtil {
 
-    private static final Gson GSON = new Gson();
+    private static final Gson GSON = new GsonBuilder()
+        .registerTypeAdapter(Optional.class, new GsonOptionalDeserializer<>())
+        .create();
 
     private ItemUtil() {
         throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");

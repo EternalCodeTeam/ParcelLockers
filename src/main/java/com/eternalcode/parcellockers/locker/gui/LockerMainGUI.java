@@ -34,9 +34,9 @@ public class LockerMainGUI extends GuiView {
             .disableAllInteractions()
             .create();
 
-        GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
-        GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem(this.miniMessage);
-        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage, event -> gui.close(player));
+        GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem();
+        GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem();
+        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(event -> gui.close(player));
 
         gui.setDefaultClickAction(event -> event.setCancelled(true));
 
@@ -48,9 +48,9 @@ public class LockerMainGUI extends GuiView {
             gui.setItem(slot, backgroundItem);
         }
 
-        gui.setItem(20, this.config.guiSettings.parcelLockerCollectItem.toGuiItem(this.miniMessage, event -> event.setCancelled(true)));
-        gui.setItem(22, this.config.guiSettings.parcelLockerSendItem.toGuiItem(this.miniMessage, event -> new ParcelSendingGUI(this.config, this.miniMessage, itemStorageRepository).show(player)));
-        gui.setItem(24, this.config.guiSettings.parcelLockerStatusItem.toGuiItem(this.miniMessage));
+        gui.setItem(20, this.config.guiSettings.parcelLockerCollectItem.toGuiItem(event -> event.setCancelled(true)));
+        gui.setItem(22, this.config.guiSettings.parcelLockerSendItem.toGuiItem(event -> new ParcelSendingGUI(this.config, this.miniMessage, itemStorageRepository).show(player)));
+        gui.setItem(24, this.config.guiSettings.parcelLockerStatusItem.toGuiItem());
         gui.setItem(49, closeItem);
 
         gui.open(player);

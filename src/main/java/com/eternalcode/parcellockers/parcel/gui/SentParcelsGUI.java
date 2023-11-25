@@ -48,10 +48,10 @@ public class SentParcelsGUI extends GuiView {
             .disableAllInteractions()
             .create();
 
-        GuiItem parcelItem = this.config.guiSettings.parcelItem.toGuiItem(this.miniMessage);
-        GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem(this.miniMessage);
-        GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
-        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage, event -> this.mainGUI.show(player));
+        GuiItem parcelItem = this.config.guiSettings.parcelItem.toGuiItem();
+        GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem();
+        GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem();
+        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(event -> this.mainGUI.show(player));
 
         for (int slot : CORNER_SLOTS) {
             gui.setItem(slot, cornerItem);

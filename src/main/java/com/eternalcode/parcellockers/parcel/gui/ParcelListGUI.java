@@ -59,12 +59,12 @@ public class ParcelListGUI extends GuiView {
             .rows(6)
             .create();
             
-        GuiItem parcelItem = this.config.guiSettings.parcelItem.toGuiItem(this.miniMessage);
-        GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
-        GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem(this.miniMessage);
-        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage, event -> this.mainGUI.show(player));
-        GuiItem previousPageItem = this.config.guiSettings.previousPageItem.toGuiItem(this.miniMessage, event -> this.show(player, page.previous()));
-        GuiItem nextPageItem = this.config.guiSettings.nextPageItem.toGuiItem(this.miniMessage, event -> this.show(player, page.next()));
+        GuiItem parcelItem = this.config.guiSettings.parcelItem.toGuiItem();
+        GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem();
+        GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem();
+        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(event -> this.mainGUI.show(player));
+        GuiItem previousPageItem = this.config.guiSettings.previousPageItem.toGuiItem(event -> this.show(player, page.previous()));
+        GuiItem nextPageItem = this.config.guiSettings.nextPageItem.toGuiItem(event -> this.show(player, page.next()));
 
         for (int slot : CORNER_SLOTS) {
             gui.setItem(slot, cornerItem);

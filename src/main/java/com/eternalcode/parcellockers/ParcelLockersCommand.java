@@ -38,7 +38,7 @@ public class ParcelLockersCommand {
 
     @Execute(name = "give")
     void give(@Context Player player) {
-        ItemStack parcelItem = this.config.settings.parcelLockerItem.toGuiItem(this.miniMessage).getItemStack();
+        ItemStack parcelItem = this.config.settings.parcelLockerItem.toGuiItem().getItemStack();
         player.getInventory().addItem(parcelItem);
     }
 

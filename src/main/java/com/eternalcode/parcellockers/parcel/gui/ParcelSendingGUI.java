@@ -9,6 +9,7 @@ import com.eternalcode.parcellockers.parcel.ParcelSize;
 import dev.triumphteam.gui.components.GuiAction;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
+import java.util.List;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
@@ -30,7 +31,9 @@ public class ParcelSendingGUI extends GuiView {
 
     @Override
     public void show(Player player) {
-        Component guiTitle = this.miniMessage.deserialize(this.config.guiSettings.parcelLockerSendingGuiTitle);
+        PluginConfiguration.GuiSettings settings = this.config.guiSettings;
+
+        Component guiTitle = this.miniMessage.deserialize(settings.parcelLockerSendingGuiTitle);
 
         Gui gui = Gui.gui()
             .rows(6)
@@ -38,32 +41,24 @@ public class ParcelSendingGUI extends GuiView {
             .title(guiTitle)
             .create();
 
-        GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
-        GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem(this.miniMessage);
-        GuiItem storageItem = this.config.guiSettings.parcelStorageItem.toGuiItem(this.miniMessage, event -> {
+        GuiItem backgroundItem = settings.mainGuiBackgroundItem.toGuiItem();
+        GuiItem cornerItem = settings.cornerItem.toGuiItem();
+        GuiItem storageItem = settings.parcelStorageItem.toGuiItem(event -> {
             ParcelItemStorageGUI storageGUI = new ParcelItemStorageGUI(this.config, this.miniMessage, itemStorageRepository);
             storageGUI.show(player, this.size);
         });
 
-        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage, event -> new LockerMainGUI(this.miniMessage, this.config, itemStorageRepository).show(player));
+        GuiItem closeItem = settings.closeItem.toGuiItem(event -> new LockerMainGUI(this.miniMessage, this.config, itemStorageRepository).show(player));
 
-        ConfigItem smallButton = this.config.guiSettings.smallParcelSizeItem;
-        ConfigItem mediumButton = this.config.guiSettings.mediumParcelSizeItem;
-        ConfigItem largeButton = this.config.guiSettings.largeParcelSizeItem;
-        ConfigItem priorityItem = this.config.guiSettings.priorityItem;
+        ConfigItem smallButton = settings.smallParcelSizeItem;
+        ConfigItem mediumButton = settings.mediumParcelSizeItem;
+        ConfigItem largeButton = settings.largeParcelSizeItem;
+        ConfigItem priorityItem = settings.priorityItem;
 
-        GuiAction<InventoryClickEvent> smallButtonAction = event -> {
-            this.size = ParcelSize.SMALL;
-            gui.updateItem(20, smallButton.setGlow(true).toGuiItem(this.miniMessage));
-            gui.updateItem(22, mediumButton.setGlow(false).toGuiItem(this.miniMessage));
-            gui.updateItem(24, largeButton.setGlow(false).toGuiItem(this.miniMessage));
+        GuiAction<InventoryClickEvent> priorityItemAction = event -> {
+            this.priority = !this.priority;
+            gui.updateItem(31, priorityItem.toBuilder().glow(this.priority).build());
         };
-
-        GuiAction<InventoryClickEvent> mediumButtonAction = event -> this.updateMediumButton(gui, smallButton, mediumButton, largeButton);
-
-        GuiAction<InventoryClickEvent> largeButtonAction = event -> this.updateSmallButton(gui, smallButton, mediumButton, largeButton);
-
-        GuiAction<InventoryClickEvent> priorityItemAction = event -> this.updatePriorityButton(gui, priorityItem);
 
         for (int slot : CORNER_SLOTS) {
             gui.setItem(slot, cornerItem);
@@ -73,45 +68,30 @@ public class ParcelSendingGUI extends GuiView {
             gui.setItem(slot, backgroundItem);
         }
 
-        this.size = ParcelSize.SMALL;
+        this.setSelected(gui, ParcelSize.SMALL);
         this.priority = false;
 
-        gui.setItem(20, smallButton.setGlow(true).toGuiItem(this.miniMessage, smallButtonAction));
-        gui.setItem(22, mediumButton.toGuiItem(this.miniMessage, mediumButtonAction));
-        gui.setItem(24, largeButton.toGuiItem(this.miniMessage, largeButtonAction));
-        gui.setItem(31, priorityItem.toGuiItem(this.miniMessage, priorityItemAction));
+        gui.setItem(20, smallButton.toGuiItem(event -> setSelected(gui, ParcelSize.SMALL)));
+        gui.setItem(22, mediumButton.toGuiItem(event -> setSelected(gui, ParcelSize.MEDIUM)));
+        gui.setItem(24, largeButton.toGuiItem(event -> setSelected(gui, ParcelSize.LARGE)));
+        gui.setItem(31, priorityItem.toGuiItem(priorityItemAction));
         gui.setItem(37, storageItem);
         gui.setItem(40, closeItem);
 
         gui.open(player);
     }
 
-    private void updateSmallButton(Gui gui, ConfigItem smallButton, ConfigItem mediumButton, ConfigItem largeButton) {
-        this.size = ParcelSize.SMALL;
-        
-        gui.updateItem(20, smallButton.setGlow(true).toGuiItem(this.miniMessage));
-        gui.updateItem(22, mediumButton.setGlow(false).toGuiItem(this.miniMessage, e -> this.updateMediumButton(gui, smallButton, mediumButton, largeButton)));
-        gui.updateItem(24, largeButton.setGlow(false).toGuiItem(this.miniMessage, e -> this.updateLargeButton(gui, smallButton, mediumButton, largeButton)));
+    private void setSelected(Gui gui, ParcelSize size) {
+        PluginConfiguration.GuiSettings settings = config.guiSettings;
+        this.size = size;
+
+        ConfigItem smallButton = size == ParcelSize.SMALL ? settings.selectedParcelSizeItem : settings.smallParcelSizeItem;
+        ConfigItem mediumButton = size == ParcelSize.MEDIUM ? settings.selectedParcelSizeItem : settings.mediumParcelSizeItem;
+        ConfigItem largeButton = size == ParcelSize.LARGE ? settings.selectedParcelSizeItem : settings.largeParcelSizeItem;
+
+        gui.updateItem(20, smallButton.toItemStack());
+        gui.updateItem(22, mediumButton.toItemStack());
+        gui.updateItem(24, largeButton.toItemStack());
     }
 
-    private void updateMediumButton(Gui gui, ConfigItem smallButton, ConfigItem mediumButton, ConfigItem largeButton) {
-        this.size = ParcelSize.MEDIUM;
-        
-        gui.updateItem(20, smallButton.setGlow(false).toGuiItem(this.miniMessage, e -> this.updateSmallButton(gui, smallButton, mediumButton, largeButton)));
-        gui.updateItem(22, mediumButton.setGlow(true).toGuiItem(this.miniMessage));
-        gui.updateItem(24, largeButton.setGlow(false).toGuiItem(this.miniMessage, e -> this.updateLargeButton(gui, smallButton, mediumButton, largeButton)));
-    }
-
-    private void updateLargeButton(Gui gui, ConfigItem smallButton, ConfigItem mediumButton, ConfigItem largeButton) {
-        this.size = ParcelSize.LARGE;
-        
-        gui.updateItem(20, smallButton.setGlow(false).toGuiItem(this.miniMessage, e -> this.updateSmallButton(gui, smallButton, mediumButton, largeButton)));
-        gui.updateItem(22, mediumButton.setGlow(false).toGuiItem(this.miniMessage, e -> this.updateMediumButton(gui, smallButton, mediumButton, largeButton)));
-        gui.updateItem(24, largeButton.setGlow(true).toGuiItem(this.miniMessage));
-    }
-
-    private void updatePriorityButton(Gui gui, ConfigItem priorityItem) {
-        this.priority = !this.priority;
-        gui.updateItem(31, priorityItem.setGlow(this.priority).toGuiItem(this.miniMessage));
-    }
 }

@@ -8,6 +8,7 @@ import com.eternalcode.parcellockers.util.ItemUtil;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.StorageGui;
+import java.util.stream.IntStream;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -33,12 +34,13 @@ public class ParcelItemStorageGUI {
     void show(Player player, ParcelSize size) {
         PluginConfiguration.GuiSettings guiSettings = this.config.guiSettings;
         
-        GuiItem backgroundItem = guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
-        GuiItem confirmItem = guiSettings.confirmItemsItem.toGuiItem(this.miniMessage, event -> {
+        GuiItem backgroundItem = guiSettings.mainGuiBackgroundItem.toGuiItem(event -> event.setCancelled(true));
+
+        GuiItem confirmItem = guiSettings.confirmItemsItem.toGuiItem(event -> {
             this.confirmed = true;
             new ParcelSendingGUI(this.config, this.miniMessage, itemStorageRepository).show(player);
         });
-        GuiItem cancelItem = guiSettings.cancelItemsItem.toGuiItem(this.miniMessage, event -> {
+        GuiItem cancelItem = guiSettings.cancelItemsItem.toGuiItem(event -> {
             this.confirmed = false;
             new ParcelSendingGUI(this.config, this.miniMessage, itemStorageRepository).show(player);
         });
@@ -59,32 +61,38 @@ public class ParcelItemStorageGUI {
             default -> throw new IllegalStateException("Unexpected value: " + size);
         }
 
-        for (int i = 0; i < 8; i++) {
-            this.gui.setItem(this.gui.getRows(), i, backgroundItem);
-        }
+        IntStream.rangeClosed(3, 9).forEach(i -> this.gui.setItem(this.gui.getRows(), i, backgroundItem));
 
         this.gui.setItem(this.gui.getRows(), 1, confirmItem);
         this.gui.setItem(this.gui.getRows(), 2, cancelItem);
+
         this.gui.setCloseGuiAction(event -> {
+            ItemStack[] contents = this.gui.getInventory().getContents();
+
             if (this.confirmed) {
                 List<String> serialized = new ArrayList<>();
-                for (ItemStack item : this.gui.getInventory().getContents()) {
+
+                for (int i = 0; i < contents.length - 9; i++) {
+                    ItemStack item = contents[i];
+
+                    if (item == null) {
+                        continue;
+                    }
+
                     serialized.add(ItemUtil.itemStackToString(item));
                 }
+
                 this.itemStorageRepository.save(new ItemStorage(player.getUniqueId(), serialized));
                 return;
             }
-            
-            if (this.gui.getInventory().getContents() == null) {
-                return;
-            }
-                
-            for (ItemStack item : this.gui.getInventory().getContents()) {
-                if (item == null || ItemUtil.compareMeta(confirmItem.getItemStack(), item) || ItemUtil.compareMeta(cancelItem.getItemStack(), item)) {
+
+            for (int i = 0; i < contents.length - 9; i++) {
+                ItemStack item = contents[i];
+                if (item == null) {
                     continue;
                 }
-                    
-                player.getInventory().addItem(item);
+
+                player.getInventory().addItem(item); // TODO: zrobić metodę (InventoryUtil) która będzie dodawać itemy do inventory gracza i jeśli nie będzie mieć miejsca to wywalić itemy na ziemię
                 this.gui.removeItem(item);
             }
         });

@@ -45,12 +45,12 @@ public class MainGUI extends GuiView {
             .rows(6)
             .create();
 
-        GuiItem backgroundItem = guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
-        GuiItem myParcelsItem = guiSettings.myParcelsItem.toGuiItem(this.miniMessage);
-        GuiItem sentParcelsItem = guiSettings.sentParcelsItem.toGuiItem(this.miniMessage);
-        GuiItem parcelArchiveItem = guiSettings.parcelArchiveItem.toGuiItem(this.miniMessage);
-        GuiItem closeItem = guiSettings.closeItem.toGuiItem(this.miniMessage, event -> gui.close(player));
-        GuiItem cornerItem = guiSettings.cornerItem.toGuiItem(this.miniMessage);
+        GuiItem backgroundItem = guiSettings.mainGuiBackgroundItem.toGuiItem();
+        GuiItem myParcelsItem = guiSettings.myParcelsItem.toGuiItem();
+        GuiItem sentParcelsItem = guiSettings.sentParcelsItem.toGuiItem();
+        GuiItem parcelArchiveItem = guiSettings.parcelArchiveItem.toGuiItem();
+        GuiItem closeItem = guiSettings.closeItem.toGuiItem(event -> gui.close(player));
+        GuiItem cornerItem = guiSettings.cornerItem.toGuiItem();
 
 
         int size = gui.getRows() * 9;
