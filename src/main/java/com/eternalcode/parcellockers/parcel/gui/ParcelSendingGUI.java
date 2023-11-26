@@ -85,9 +85,9 @@ public class ParcelSendingGUI extends GuiView {
         PluginConfiguration.GuiSettings settings = config.guiSettings;
         this.size = size;
 
-        ConfigItem smallButton = size == ParcelSize.SMALL ? settings.selectedParcelSizeItem : settings.smallParcelSizeItem;
-        ConfigItem mediumButton = size == ParcelSize.MEDIUM ? settings.selectedParcelSizeItem : settings.mediumParcelSizeItem;
-        ConfigItem largeButton = size == ParcelSize.LARGE ? settings.selectedParcelSizeItem : settings.largeParcelSizeItem;
+        ConfigItem smallButton = size == ParcelSize.SMALL ? settings.selectedSmallParcelSizeItem : settings.smallParcelSizeItem;
+        ConfigItem mediumButton = size == ParcelSize.MEDIUM ? settings.selectedMediumParcelSizeItem : settings.mediumParcelSizeItem;
+        ConfigItem largeButton = size == ParcelSize.LARGE ? settings.selectedLargeParcelSizeItem : settings.largeParcelSizeItem;
 
         gui.updateItem(20, smallButton.toItemStack());
         gui.updateItem(22, mediumButton.toItemStack());

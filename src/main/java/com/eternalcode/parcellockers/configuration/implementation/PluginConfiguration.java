@@ -94,15 +94,15 @@ public class PluginConfiguration implements ReloadableConfig {
         public String broadcastParcelLockerRemoved = "&7» &a&lWARNING! &r&4The parcel locker at &c{X} {Y} {Z} in world {WORLD} &4has been removed by &4{PLAYER}!";
         @Description({" ", "# The parcel info message."})
         public List<String> parcelInfoMessages = List.of(
-            "&7» &6Parcel info:",
-            "&6UUID: &e{UUID}",
-            "&6Sender: &e{SENDER}",
-            "&6Receiver: &e{RECEIVER}",
-            "&6Size: &e{SIZE}",
-            "&6Position: &6X: &e{POSITION_X}, &6Y: &e{POSITION_Y}, &6Z: &e{POSITION_Z}",
-            "&6Priority: &e{PRIORITY}",
-            "&6Description: &e{DESCRIPTION}",
-            "&6Recipients: &e{RECIPIENTS}"
+                "&7» &6Parcel info:",
+                "&6UUID: &e{UUID}",
+                "&6Sender: &e{SENDER}",
+                "&6Receiver: &e{RECEIVER}",
+                "&6Size: &e{SIZE}",
+                "&6Position: &6X: &e{POSITION_X}, &6Y: &e{POSITION_Y}, &6Z: &e{POSITION_Z}",
+                "&6Priority: &e{PRIORITY}",
+                "&6Description: &e{DESCRIPTION}",
+                "&6Recipients: &e{RECIPIENTS}"
         );
     }
 
@@ -128,24 +128,40 @@ public class PluginConfiguration implements ReloadableConfig {
         public ConfigItem smallParcelSizeItem = new ConfigItem()
                 .setName("&aSmall")
                 .setLore(List.of("&bClick to select the small parcel size."))
-                .setType(Material.LIME_STAINED_GLASS_PANE);
+                .setType(Material.LIME_WOOL);
 
         @Description({" ", "# The item of the medium parcel size button"})
         public ConfigItem mediumParcelSizeItem = new ConfigItem()
                 .setName("&eMedium")
                 .setLore(List.of("&bClick to select the medium parcel size."))
-                .setType(Material.YELLOW_STAINED_GLASS_PANE);
+                .setType(Material.YELLOW_WOOL);
 
         @Description({" ", "# The item of the large parcel size button"})
         public ConfigItem largeParcelSizeItem = new ConfigItem()
                 .setName("&cLarge")
                 .setLore(List.of("&bClick to select the large parcel size."))
-                .setType(Material.RED_STAINED_GLASS_PANE);
+                .setType(Material.RED_WOOL);
 
-        @Description({" ", "# The item represents selected parcel size."})
-        public ConfigItem selectedParcelSizeItem = new ConfigItem()
-            .setLore(List.of("&4&lSelected"))
-            .setGlow(true);
+        @Description({" ", "# The item represents selected small parcel size."})
+        public ConfigItem selectedSmallParcelSizeItem = new ConfigItem()
+                .setName("&aSmall")
+                .setLore(List.of("&4&lSelected"))
+                .setGlow(true)
+                .setType(Material.LIME_WOOL);
+
+        @Description({" ", "# The item represents selected medium parcel size."})
+        public ConfigItem selectedMediumParcelSizeItem = new ConfigItem()
+                .setName("&eMedium")
+                .setLore(List.of("&4&lSelected"))
+                .setGlow(true)
+                .setType(Material.YELLOW_WOOL);
+
+        @Description({" ", "# The item represents selected large parcel size."})
+        public ConfigItem selectedLargeParcelSizeItem = new ConfigItem()
+                .setName("&cLarge")
+                .setLore(List.of("&4&lSelected"))
+                .setGlow(true)
+                .setType(Material.RED_WOOL);
 
         @Description({" ", "# The item of the priority button"})
         public ConfigItem priorityItem = new ConfigItem()
@@ -215,23 +231,23 @@ public class PluginConfiguration implements ReloadableConfig {
         public ConfigItem parcelItem = new ConfigItem()
                 .setName("&6{NAME}")
                 .setLore(List.of(
-                        "&6UUID: &e{UUID}",
-                        "&Sender: &e{SENDER}",
-                        "&6Receiver: &e{RECEIVER}",
-                        "&6Size: &e{SIZE}",
-                        "&6Position: &6X: &e{POSITION_X}, &6Y: &e{POSITION_Y}, &6Z: &e{POSITION_Z}",
-                        "&6Priority: &e{PRIORITY}",
-                        "&6Description: &e{DESCRIPTION}",
-                        "&6Recipients: &e{RECIPIENTS}"
+                                "&6UUID: &e{UUID}",
+                                "&Sender: &e{SENDER}",
+                                "&6Receiver: &e{RECEIVER}",
+                                "&6Size: &e{SIZE}",
+                                "&6Position: &6X: &e{POSITION_X}, &6Y: &e{POSITION_Y}, &6Z: &e{POSITION_Z}",
+                                "&6Priority: &e{PRIORITY}",
+                                "&6Description: &e{DESCRIPTION}",
+                                "&6Recipients: &e{RECIPIENTS}"
                         )
                 )
                 .setType(Material.CHEST_MINECART);
 
         @Description({" ", "# The item of the parcel item storage button"})
         public ConfigItem parcelStorageItem = new ConfigItem()
-            .setName("&6Parcel storage")
-            .setLore(List.of("&eClick to edit the parcel content."))
-            .setType(Material.CHEST);
+                .setName("&6Parcel storage")
+                .setLore(List.of("&eClick to edit the parcel content."))
+                .setType(Material.CHEST);
 
         @Description({" ", "# The item of the previous page button"})
         public ConfigItem previousPageItem = new ConfigItem()
