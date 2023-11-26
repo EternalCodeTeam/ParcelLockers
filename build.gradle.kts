@@ -30,8 +30,8 @@ dependencies {
     compileOnly("org.spigotmc:spigot-api:1.20.2-R0.1-SNAPSHOT")
     implementation("net.kyori:adventure-platform-bukkit:4.3.1")
     implementation("net.kyori:adventure-text-minimessage:4.14.0")
-    implementation("dev.rollczi:litecommands-bukkit:3.0.3")
-    implementation("dev.rollczi:litecommands-adventure:3.0.3")
+    implementation("dev.rollczi:litecommands-bukkit:3.1.0")
+    implementation("dev.rollczi:litecommands-adventure:3.1.0")
 
     // skull api
     implementation("dev.rollczi:liteskullapi:1.3.0")
