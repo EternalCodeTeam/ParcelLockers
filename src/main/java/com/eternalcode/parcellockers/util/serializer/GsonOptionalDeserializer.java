@@ -1,4 +1,4 @@
-package com.eternalcode.parcellockers.util;
+package com.eternalcode.parcellockers.util.serializer;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;

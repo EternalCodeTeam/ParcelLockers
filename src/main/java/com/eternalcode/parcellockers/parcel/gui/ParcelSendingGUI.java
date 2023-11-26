@@ -13,16 +13,19 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.plugin.Plugin;
 
 public class ParcelSendingGUI extends GuiView {
 
+    private final Plugin plugin;
     private final PluginConfiguration config;
     private final MiniMessage miniMessage;
     private final ItemStorageRepository itemStorageRepository;
     private ParcelSize size;
     private boolean priority;
 
-    public ParcelSendingGUI(PluginConfiguration config, MiniMessage miniMessage, ItemStorageRepository itemStorageRepository) {
+    public ParcelSendingGUI(Plugin plugin, PluginConfiguration config, MiniMessage miniMessage, ItemStorageRepository itemStorageRepository) {
+        this.plugin = plugin;
         this.config = config;
         this.miniMessage = miniMessage;
         this.itemStorageRepository = itemStorageRepository;
@@ -43,11 +46,11 @@ public class ParcelSendingGUI extends GuiView {
         GuiItem backgroundItem = settings.mainGuiBackgroundItem.toGuiItem();
         GuiItem cornerItem = settings.cornerItem.toGuiItem();
         GuiItem storageItem = settings.parcelStorageItem.toGuiItem(event -> {
-            ParcelItemStorageGUI storageGUI = new ParcelItemStorageGUI(this.config, this.miniMessage, itemStorageRepository);
+            ParcelItemStorageGUI storageGUI = new ParcelItemStorageGUI(plugin, this.config, this.miniMessage, itemStorageRepository);
             storageGUI.show(player, this.size);
         });
 
-        GuiItem closeItem = settings.closeItem.toGuiItem(event -> new LockerMainGUI(this.miniMessage, this.config, itemStorageRepository).show(player));
+        GuiItem closeItem = settings.closeItem.toGuiItem(event -> new LockerMainGUI(plugin, this.miniMessage, this.config, itemStorageRepository).show(player));
 
         ConfigItem smallButton = settings.smallParcelSizeItem;
         ConfigItem mediumButton = settings.mediumParcelSizeItem;

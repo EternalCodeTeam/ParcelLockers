@@ -9,16 +9,19 @@ import dev.triumphteam.gui.guis.GuiItem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 
 import static com.eternalcode.parcellockers.util.AdventureUtil.RESET_ITEM;
 
 public class LockerMainGUI extends GuiView {
 
+    private final Plugin plugin;
     private final MiniMessage miniMessage;
     private final PluginConfiguration config;
     private final ItemStorageRepository itemStorageRepository;
 
-    public LockerMainGUI(MiniMessage miniMessage, PluginConfiguration config, ItemStorageRepository itemStorageRepository) {
+    public LockerMainGUI(Plugin plugin, MiniMessage miniMessage, PluginConfiguration config, ItemStorageRepository itemStorageRepository) {
+        this.plugin = plugin;
         this.miniMessage = miniMessage;
         this.config = config;
         this.itemStorageRepository = itemStorageRepository;
@@ -49,7 +52,7 @@ public class LockerMainGUI extends GuiView {
         }
 
         gui.setItem(20, this.config.guiSettings.parcelLockerCollectItem.toGuiItem(event -> event.setCancelled(true)));
-        gui.setItem(22, this.config.guiSettings.parcelLockerSendItem.toGuiItem(event -> new ParcelSendingGUI(this.config, this.miniMessage, itemStorageRepository).show(player)));
+        gui.setItem(22, this.config.guiSettings.parcelLockerSendItem.toGuiItem(event -> new ParcelSendingGUI(plugin, this.config, this.miniMessage, itemStorageRepository).show(player)));
         gui.setItem(24, this.config.guiSettings.parcelLockerStatusItem.toGuiItem());
         gui.setItem(49, closeItem);
 

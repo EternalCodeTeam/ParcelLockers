@@ -13,17 +13,20 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.plugin.Plugin;
 
 import java.util.Set;
 
 public class LockerInteractionController implements Listener {
 
+    private final Plugin plugin;
     private final LockerRepositoryImpl parcelLockerRepositoryImpl;
     private final ItemStorageRepository itemStorageRepository;
     private final MiniMessage miniMessage;
     private final PluginConfiguration config;
 
-    public LockerInteractionController(LockerRepositoryImpl parcelLockerRepositoryImpl, ItemStorageRepository itemStorageRepository, MiniMessage miniMessage, PluginConfiguration config) {
+    public LockerInteractionController(Plugin plugin, LockerRepositoryImpl parcelLockerRepositoryImpl, ItemStorageRepository itemStorageRepository, MiniMessage miniMessage, PluginConfiguration config) {
+        this.plugin = plugin;
         this.parcelLockerRepositoryImpl = parcelLockerRepositoryImpl;
         this.itemStorageRepository = itemStorageRepository;
         this.miniMessage = miniMessage;
@@ -45,7 +48,7 @@ public class LockerInteractionController implements Listener {
          
         if (this.parcelLockerRepositoryImpl.isInCache(blockPos)) {
             event.setCancelled(true);
-            new LockerMainGUI(this.miniMessage, this.config, itemStorageRepository).show(player);
+            new LockerMainGUI(plugin, this.miniMessage, this.config, itemStorageRepository).show(player);
         }
     }
 }
