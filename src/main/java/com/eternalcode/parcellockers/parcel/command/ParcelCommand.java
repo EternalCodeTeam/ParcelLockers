@@ -57,7 +57,7 @@ public class ParcelCommand {
         messagesToSend.forEach(message -> this.announcer.sendMessage(player, message));
     }
 
-    @Execute(name = "create", aliases = { "add", "send" })
+    @Execute(name = "send") // similar create, add
     void create(@Context Player player, @Arg String name, @Arg boolean priority, @Arg ParcelSize size, @Arg String entryLocker, @Arg String destinationLocker) {
         Parcel parcel = Parcel.builder()
             .uuid(UUID.randomUUID())
@@ -73,7 +73,7 @@ public class ParcelCommand {
         this.parcelManager.createParcel(player, parcel);
     }
 
-    @Execute(name = "delete", aliases = { "remove", "cancel" })
+    @Execute(name = "cancel") // similar remove, delete
     void delete(@Context Player player, @Arg Parcel parcel) {
         this.parcelManager.deleteParcel(player, parcel);
     }
