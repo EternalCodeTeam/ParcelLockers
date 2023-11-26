@@ -1,4 +1,4 @@
-package com.eternalcode.parcellockers.feature.itemstorage;
+package com.eternalcode.parcellockers.itemstorage;
 
 import java.util.List;
 import java.util.UUID;

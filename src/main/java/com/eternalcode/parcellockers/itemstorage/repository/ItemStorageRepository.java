@@ -1,6 +1,6 @@
-package com.eternalcode.parcellockers.feature.itemstorage.repository;
+package com.eternalcode.parcellockers.itemstorage.repository;
 
-import com.eternalcode.parcellockers.feature.itemstorage.ItemStorage;
+import com.eternalcode.parcellockers.itemstorage.ItemStorage;
 
 import java.util.Optional;
 import java.util.UUID;
