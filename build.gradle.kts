@@ -116,7 +116,7 @@ tasks {
     runServer {
         minecraftVersion("1.20.2")
         downloadPlugins.url("https://github.com/MilkBowl/Vault/releases/download/1.7.3/Vault.jar")
-        downloadPlugins.url("https://ci.ender.zone/job/EssentialsX/lastSuccessfulBuild/artifact/jars/EssentialsX-2.21.0-dev+21-c68b277.jar")
+        downloadPlugins.url("https://ci.ender.zone/job/EssentialsX/lastSuccessfulBuild/artifact/jars/EssentialsX-2.21.0-dev+22-bb7b334.jar")
     }
 
     test {

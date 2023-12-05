@@ -5,7 +5,7 @@ import com.eternalcode.parcellockers.itemstorage.ItemStorage;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.util.InventoryUtil;
-import com.eternalcode.parcellockers.util.ItemUtil;
+import com.eternalcode.parcellockers.util.serializer.ItemBase64Serializer;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.StorageGui;
@@ -83,7 +83,7 @@ public class ParcelItemStorageGUI {
                         continue;
                     }
 
-                    serialized.add(ItemUtil.itemStackToString(item));
+                    serialized.add(ItemBase64Serializer.serialize(item));
                 }
 
                 this.itemStorageRepository.save(new ItemStorage(player.getUniqueId(), serialized));
@@ -102,17 +102,16 @@ public class ParcelItemStorageGUI {
         }); // TODO: fix serialization
 
         this.itemStorageRepository.find(player.getUniqueId()).whenComplete((optional, throwable) -> {
-            if (optional.isEmpty()) {
-                return;
+            if (optional.isPresent()) {
+                ItemStorage itemStorage = optional.get();
+
+                for (String serializedItemStack : itemStorage.serializedItemStacks()) {
+                    ItemStack itemStack = ItemBase64Serializer.deserialize(serializedItemStack);
+
+                    gui.addItem(itemStack);
+                }
             }
 
-            ItemStorage itemStorage = optional.get();
-
-            for (String serializedItemStack : itemStorage.serializedItemStacks()) {
-                ItemStack itemStack = ItemUtil.stringToItemStack(serializedItemStack);
-
-                gui.addItem(itemStack);
-            }
             this.plugin.getServer().getScheduler().runTask(this.plugin, () -> gui.open(player));
         });
     }

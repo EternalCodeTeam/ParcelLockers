@@ -7,10 +7,10 @@ import org.bukkit.inventory.ItemStack;
 public class InventoryUtil {
 
     public static void addItem(Player player, ItemStack itemStack) {
-        Inventory inv = player.getInventory();
-        for (ItemStack item : inv.getStorageContents()) {
+        Inventory inventory = player.getInventory();
+        for (ItemStack item : inventory.getStorageContents()) {
             if (item == null) {
-                inv.addItem(itemStack);
+                inventory.addItem(itemStack);
                 return;
             }
             player.getWorld().dropItem(player.getLocation(), itemStack);

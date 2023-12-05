@@ -1,7 +1,7 @@
 package com.eternalcode.parcellockers.util;
 
 import com.eternalcode.parcellockers.util.serializer.GsonItemSerializer;
-import com.eternalcode.parcellockers.util.serializer.GsonOptionalDeserializer;
+import com.eternalcode.parcellockers.util.serializer.GsonOptionalSerializer;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.bukkit.inventory.ItemStack;
@@ -12,7 +12,7 @@ import java.util.Optional;
 public class ItemUtil {
 
     private static final Gson GSON = new GsonBuilder()
-        .registerTypeAdapter(Optional.class, new GsonOptionalDeserializer<>())
+        .registerTypeAdapter(Optional.class, new GsonOptionalSerializer<>())
         .registerTypeAdapter(ItemStack.class, new GsonItemSerializer())
         .create();
 
