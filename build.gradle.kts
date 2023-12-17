@@ -71,6 +71,9 @@ dependencies {
     // panda-utilities
     implementation("org.panda-lang:panda-utilities:0.5.2-alpha")
 
+    // jackson-bukkit
+    implementation("de.eldoria.jacksonbukkit:paper:1.2.0")
+
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.1")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.1")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.1")
@@ -114,9 +117,9 @@ tasks.withType<JavaCompile> {
 
 tasks {
     runServer {
-        minecraftVersion("1.20.2")
+        minecraftVersion("1.20.4")
         downloadPlugins.url("https://github.com/MilkBowl/Vault/releases/download/1.7.3/Vault.jar")
-        downloadPlugins.url("https://ci.ender.zone/job/EssentialsX/lastSuccessfulBuild/artifact/jars/EssentialsX-2.21.0-dev+22-bb7b334.jar")
+        downloadPlugins.url("https://github.com/EssentialsX/Essentials/releases/download/2.20.1/EssentialsX-2.20.1.jar")
     }
 
     test {

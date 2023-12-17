@@ -1,7 +1,7 @@
 package com.eternalcode.parcellockers.locker.controller;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
-import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
+import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepositoryImpl;
 import com.eternalcode.parcellockers.locker.gui.LockerMainGUI;
 import com.eternalcode.parcellockers.locker.repository.LockerRepositoryImpl;
 import com.eternalcode.parcellockers.shared.Position;
@@ -21,11 +21,11 @@ public class LockerInteractionController implements Listener {
 
     private final Plugin plugin;
     private final LockerRepositoryImpl parcelLockerRepositoryImpl;
-    private final ItemStorageRepository itemStorageRepository;
+    private final ItemStorageRepositoryImpl itemStorageRepository;
     private final MiniMessage miniMessage;
     private final PluginConfiguration config;
 
-    public LockerInteractionController(Plugin plugin, LockerRepositoryImpl parcelLockerRepositoryImpl, ItemStorageRepository itemStorageRepository, MiniMessage miniMessage, PluginConfiguration config) {
+    public LockerInteractionController(Plugin plugin, LockerRepositoryImpl parcelLockerRepositoryImpl, ItemStorageRepositoryImpl itemStorageRepository, MiniMessage miniMessage, PluginConfiguration config) {
         this.plugin = plugin;
         this.parcelLockerRepositoryImpl = parcelLockerRepositoryImpl;
         this.itemStorageRepository = itemStorageRepository;

@@ -3,7 +3,7 @@ package com.eternalcode.parcellockers.parcel.gui;
 import com.eternalcode.parcellockers.configuration.implementation.ConfigItem;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.gui.GuiView;
-import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
+import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepositoryImpl;
 import com.eternalcode.parcellockers.locker.gui.LockerMainGUI;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import dev.triumphteam.gui.components.GuiAction;
@@ -20,11 +20,11 @@ public class ParcelSendingGUI extends GuiView {
     private final Plugin plugin;
     private final PluginConfiguration config;
     private final MiniMessage miniMessage;
-    private final ItemStorageRepository itemStorageRepository;
+    private final ItemStorageRepositoryImpl itemStorageRepository;
     private ParcelSize size;
     private boolean priority;
 
-    public ParcelSendingGUI(Plugin plugin, PluginConfiguration config, MiniMessage miniMessage, ItemStorageRepository itemStorageRepository) {
+    public ParcelSendingGUI(Plugin plugin, PluginConfiguration config, MiniMessage miniMessage, ItemStorageRepositoryImpl itemStorageRepository) {
         this.plugin = plugin;
         this.config = config;
         this.miniMessage = miniMessage;

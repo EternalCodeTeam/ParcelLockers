@@ -2,7 +2,7 @@ package com.eternalcode.parcellockers.locker.gui;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.gui.GuiView;
-import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
+import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepositoryImpl;
 import com.eternalcode.parcellockers.parcel.gui.ParcelSendingGUI;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
@@ -18,9 +18,9 @@ public class LockerMainGUI extends GuiView {
     private final Plugin plugin;
     private final MiniMessage miniMessage;
     private final PluginConfiguration config;
-    private final ItemStorageRepository itemStorageRepository;
+    private final ItemStorageRepositoryImpl itemStorageRepository;
 
-    public LockerMainGUI(Plugin plugin, MiniMessage miniMessage, PluginConfiguration config, ItemStorageRepository itemStorageRepository) {
+    public LockerMainGUI(Plugin plugin, MiniMessage miniMessage, PluginConfiguration config, ItemStorageRepositoryImpl itemStorageRepository) {
         this.plugin = plugin;
         this.miniMessage = miniMessage;
         this.config = config;

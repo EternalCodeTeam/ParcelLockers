@@ -2,10 +2,10 @@ package com.eternalcode.parcellockers.parcel.gui;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.itemstorage.ItemStorage;
-import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
+import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepositoryImpl;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.util.InventoryUtil;
-import com.eternalcode.parcellockers.util.serializer.ItemBase64Serializer;
+import com.eternalcode.parcellockers.util.ItemUtil;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.StorageGui;
@@ -23,11 +23,11 @@ public class ParcelItemStorageGUI {
     private final Plugin plugin;
     private final PluginConfiguration config;
     private final MiniMessage miniMessage;
-    private final ItemStorageRepository itemStorageRepository;
+    private final ItemStorageRepositoryImpl itemStorageRepository;
 
     private boolean confirmed;
 
-    public ParcelItemStorageGUI(Plugin plugin, PluginConfiguration config, MiniMessage miniMessage, ItemStorageRepository itemStorageRepository) {
+    public ParcelItemStorageGUI(Plugin plugin, PluginConfiguration config, MiniMessage miniMessage, ItemStorageRepositoryImpl itemStorageRepository) {
         this.plugin = plugin;
         this.config = config;
         this.miniMessage = miniMessage;
@@ -83,7 +83,7 @@ public class ParcelItemStorageGUI {
                         continue;
                     }
 
-                    serialized.add(ItemBase64Serializer.serialize(item));
+                    serialized.add(ItemUtil.serialize(item));
                 }
 
                 this.itemStorageRepository.save(new ItemStorage(player.getUniqueId(), serialized));
@@ -99,14 +99,14 @@ public class ParcelItemStorageGUI {
                 InventoryUtil.addItem(player, item);
                 gui.removeItem(item);
             }
-        }); // TODO: fix serialization
+        });
 
         this.itemStorageRepository.find(player.getUniqueId()).whenComplete((optional, throwable) -> {
             if (optional.isPresent()) {
                 ItemStorage itemStorage = optional.get();
 
                 for (String serializedItemStack : itemStorage.serializedItemStacks()) {
-                    ItemStack itemStack = ItemBase64Serializer.deserialize(serializedItemStack);
+                    ItemStack itemStack = ItemUtil.deserialize(serializedItemStack);
 
                     gui.addItem(itemStack);
                 }

@@ -1,20 +1,24 @@
 package com.eternalcode.parcellockers.util;
 
-import com.eternalcode.parcellockers.util.serializer.GsonItemSerializer;
-import com.eternalcode.parcellockers.util.serializer.GsonOptionalSerializer;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.eternalcode.parcellockers.exception.ParcelLockersException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import de.eldoria.jacksonbukkit.JacksonPaper;
+import io.sentry.Sentry;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.Optional;
+import java.util.HashSet;
 
 public class ItemUtil {
 
-    private static final Gson GSON = new GsonBuilder()
-        .registerTypeAdapter(Optional.class, new GsonOptionalSerializer<>())
-        .registerTypeAdapter(ItemStack.class, new GsonItemSerializer())
-        .create();
+    private static final ObjectMapper JSON = JsonMapper.builder()
+        .addModule(JacksonPaper.builder()
+            .useLegacyItemStackSerialization()
+            .build()
+        )
+        .build();
 
     private ItemUtil() {
         throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -35,16 +39,26 @@ public class ItemUtil {
             return false;
         }
         
-        return firstMeta.getLore().containsAll(secondMeta.getLore())
+        return new HashSet<>(firstMeta.getLore()).containsAll(secondMeta.getLore())
             && firstMeta.getDisplayName().equals(secondMeta.getDisplayName());
     }
 
-    public static String itemStackToString(ItemStack stack) {
-        return GSON.toJson(stack);
+    public static String serialize(ItemStack stack) {
+        try {
+            return JSON.writeValueAsString(stack);
+        } catch (JsonProcessingException e) {
+            Sentry.captureException(e);
+            throw new ParcelLockersException("Failed to serialize itemstack", e);
+        }
     }
 
-    public static ItemStack stringToItemStack(String string) {
-        return GSON.fromJson(string, ItemStack.class);
+    public static ItemStack deserialize(String string) {
+        try {
+            return JSON.readValue(string, ItemStack.class);
+        } catch (JsonProcessingException e) {
+            Sentry.captureException(e);
+            throw new ParcelLockersException("Failed to deserialize itemstack", e);
+        }
     }
 
 }

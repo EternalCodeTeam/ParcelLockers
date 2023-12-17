@@ -103,7 +103,7 @@ public final class ParcelLockers extends JavaPlugin {
                 .message(LiteBukkitMessages.PLAYER_ONLY, config.messages.onlyForPlayers)
                 .commands(LiteCommandsAnnotations.of(
                     new ParcelCommand(server, parcelLockerRepositoryImpl, announcer, config, mainGUI, parcelListGUI, parcelManager),
-                    new ParcelLockersCommand(configManager, config, announcer, miniMessage)
+                    new ParcelLockersCommand(configManager, config, announcer, miniMessage, itemStorageRepository)
                 ))
                 .invalidUsage(new InvalidUsageImpl(announcer, config))
                 .missingPermission(new PermissionMessage(announcer, config))

@@ -22,7 +22,7 @@ public class ItemStorageRepositoryImpl extends AbstractDatabaseService implement
     }
 
     private void initTable() {
-        this.executeSync("CREATE TABLE IF NOT EXISTS `item_storage`(`uuid` VARCHAR(36) NOT NULL, `items` BLOB(16383) NOT NULL, PRIMARY KEY (uuid));", PreparedStatement::execute);
+        this.executeSync("CREATE TABLE IF NOT EXISTS `item_storage`(`uuid` VARCHAR(36) NOT NULL, `items` TEXT(16000) NOT NULL, PRIMARY KEY (uuid));", PreparedStatement::execute);
     }
 
     @Override
@@ -30,6 +30,7 @@ public class ItemStorageRepositoryImpl extends AbstractDatabaseService implement
         return this.execute("INSERT INTO `item_storage`(`uuid`, `items`) VALUES (?, ?)", statement -> {
             statement.setString(1, itemStorage.owner().toString());
             statement.setString(2, itemStorage.serializedItemStacks().toString());
+            statement.execute();
         });
     }
 
