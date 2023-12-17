@@ -5,7 +5,6 @@ import com.eternalcode.parcellockers.itemstorage.ItemStorage;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepositoryImpl;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.util.InventoryUtil;
-import com.eternalcode.parcellockers.util.ItemUtil;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.StorageGui;
@@ -74,7 +73,7 @@ public class ParcelItemStorageGUI {
             ItemStack[] contents = gui.getInventory().getContents();
 
             if (this.confirmed) {
-                List<String> serialized = new ArrayList<>();
+                List<ItemStack> items = new ArrayList<>();
 
                 for (int i = 0; i < contents.length - 9; i++) {
                     ItemStack item = contents[i];
@@ -83,10 +82,10 @@ public class ParcelItemStorageGUI {
                         continue;
                     }
 
-                    serialized.add(ItemUtil.serialize(item));
+                    items.add(item);
                 }
 
-                this.itemStorageRepository.save(new ItemStorage(player.getUniqueId(), serialized));
+                this.itemStorageRepository.save(new ItemStorage(player.getUniqueId(), items));
                 return;
             }
 
@@ -105,10 +104,9 @@ public class ParcelItemStorageGUI {
             if (optional.isPresent()) {
                 ItemStorage itemStorage = optional.get();
 
-                for (String serializedItemStack : itemStorage.serializedItemStacks()) {
-                    ItemStack itemStack = ItemUtil.deserialize(serializedItemStack);
+                for (ItemStack item : itemStorage.items()) {
+                    gui.addItem(item);
 
-                    gui.addItem(itemStack);
                 }
             }
 

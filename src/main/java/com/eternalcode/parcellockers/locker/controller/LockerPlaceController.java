@@ -6,7 +6,6 @@ import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.locker.repository.LockerRepositoryImpl;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.shared.PositionAdapter;
-import com.eternalcode.parcellockers.util.ItemUtil;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Location;
 import org.bukkit.conversations.ConversationFactory;
@@ -17,8 +16,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 
+import java.util.HashSet;
 import java.util.UUID;
 
 public class LockerPlaceController implements Listener {
@@ -47,7 +48,7 @@ public class LockerPlaceController implements Listener {
 
         ItemStack parcelLockerItem = this.config.settings.parcelLockerItem.toGuiItem().getItemStack();
 
-        if (!ItemUtil.compareMeta(itemInMainHand, parcelLockerItem) && !ItemUtil.compareMeta(itemInOffHand, parcelLockerItem)) {
+        if (!compareMeta(itemInMainHand, parcelLockerItem) && !compareMeta(itemInOffHand, parcelLockerItem)) {
             return;
         }
 
@@ -78,4 +79,25 @@ public class LockerPlaceController implements Listener {
 
         player.beginConversation(conversationFactory.buildConversation(player));
     }
+
+    private static boolean compareMeta(ItemStack first, ItemStack second) {
+        ItemMeta firstMeta = first.getItemMeta();
+        if (firstMeta == null) {
+            return false;
+        }
+
+        ItemMeta secondMeta = second.getItemMeta();
+
+        if (secondMeta == null) {
+            return false;
+        }
+
+        if (first.getType() != second.getType()) {
+            return false;
+        }
+
+        return new HashSet<>(firstMeta.getLore()).containsAll(secondMeta.getLore())
+            && firstMeta.getDisplayName().equals(secondMeta.getDisplayName());
+    }
+
 }

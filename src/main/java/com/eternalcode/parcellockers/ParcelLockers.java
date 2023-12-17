@@ -7,7 +7,6 @@ import com.eternalcode.parcellockers.configuration.ConfigurationManager;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.database.DataSourceFactory;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepositoryImpl;
-import com.eternalcode.parcellockers.locker.LockerManager;
 import com.eternalcode.parcellockers.locker.controller.LockerBreakController;
 import com.eternalcode.parcellockers.locker.controller.LockerInteractionController;
 import com.eternalcode.parcellockers.locker.controller.LockerPlaceController;
@@ -93,7 +92,6 @@ public final class ParcelLockers extends JavaPlugin {
         ParcelRepositoryImpl parcelRepository = new ParcelRepositoryImpl(dataSource);
 
         ParcelManager parcelManager = new ParcelManager(config, announcer, parcelRepository);
-        LockerManager lockerManager = new LockerManager(parcelLockerRepositoryImpl);
 
         MainGUI mainGUI = new MainGUI(this, server, miniMessage, config, parcelRepository, parcelLockerRepositoryImpl);
         ParcelListGUI parcelListGUI = new ParcelListGUI(this, server, miniMessage, config, parcelRepository, parcelLockerRepositoryImpl, mainGUI);
@@ -103,7 +101,7 @@ public final class ParcelLockers extends JavaPlugin {
                 .message(LiteBukkitMessages.PLAYER_ONLY, config.messages.onlyForPlayers)
                 .commands(LiteCommandsAnnotations.of(
                     new ParcelCommand(server, parcelLockerRepositoryImpl, announcer, config, mainGUI, parcelListGUI, parcelManager),
-                    new ParcelLockersCommand(configManager, config, announcer, miniMessage, itemStorageRepository)
+                    new ParcelLockersCommand(configManager, config, announcer, miniMessage)
                 ))
                 .invalidUsage(new InvalidUsageImpl(announcer, config))
                 .missingPermission(new PermissionMessage(announcer, config))

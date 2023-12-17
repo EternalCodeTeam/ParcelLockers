@@ -12,4 +12,6 @@ public interface ItemStorageRepository {
 
     CompletableFuture<Optional<ItemStorage>> find(UUID uuid);
 
+    CompletableFuture<Void> remove(UUID uuid);
+
 }

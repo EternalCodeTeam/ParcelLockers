@@ -6,7 +6,6 @@ import com.eternalcode.parcellockers.itemstorage.ItemStorage;
 import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -27,7 +26,7 @@ public class ItemStorageRepositoryImpl extends AbstractDatabaseService implement
     public CompletableFuture<Void> save(ItemStorage itemStorage) {
         return this.execute("INSERT INTO `item_storage`(`uuid`, `items`) VALUES (?, ?)", statement -> {
             statement.setString(1, itemStorage.owner().toString());
-            statement.setString(2, itemStorage.serializedItemStacks().toString());
+            statement.setString(2, ItemUtil.serializeItems(itemStorage.items()));
             statement.execute();
         });
     }
@@ -44,11 +43,16 @@ public class ItemStorageRepositoryImpl extends AbstractDatabaseService implement
             return Optional.of(
                 new ItemStorage(
                     UUID.fromString(resultSet.getString("uuid")),
-                    List.of(resultSet.getString("items")
-                        .substring(1)
-                        .substring(0, resultSet.getString("items").length() - 1)
-                        .split(","))
+                    ItemUtil.deserializeItems(resultSet.getString("items"))
             ));
+        });
+    }
+
+    @Override
+    public CompletableFuture<Void> remove(UUID uuid) {
+        return this.execute("DELETE FROM `item_storage` WHERE `uuid` = ?", statement -> {
+            statement.setString(1, uuid.toString());
+            statement.execute();
         });
     }
 }

@@ -2,7 +2,6 @@ package com.eternalcode.parcellockers;
 
 import com.eternalcode.parcellockers.configuration.ConfigurationManager;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
-import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepositoryImpl;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import dev.rollczi.litecommands.annotations.async.Async;
 import dev.rollczi.litecommands.annotations.command.Command;
@@ -22,14 +21,12 @@ public class ParcelLockersCommand {
     private final PluginConfiguration config;
     private final NotificationAnnouncer announcer;
     private final MiniMessage miniMessage;
-    private final ItemStorageRepositoryImpl itemStorageRepository;
 
-    public ParcelLockersCommand(ConfigurationManager configManager, PluginConfiguration config, NotificationAnnouncer announcer, MiniMessage miniMessage, ItemStorageRepositoryImpl itemStorageRepository) {
+    public ParcelLockersCommand(ConfigurationManager configManager, PluginConfiguration config, NotificationAnnouncer announcer, MiniMessage miniMessage) {
         this.configManager = configManager;
         this.config = config;
         this.announcer = announcer;
         this.miniMessage = miniMessage;
-        this.itemStorageRepository = itemStorageRepository;
     }
     
     @Async
@@ -43,15 +40,6 @@ public class ParcelLockersCommand {
     void give(@Context Player player) {
         ItemStack parcelItem = this.config.settings.parcelLockerItem.toGuiItem().getItemStack();
         player.getInventory().addItem(parcelItem);
-    }
-
-    @Execute(name = "dumpserialization")
-    void dump(@Context Player sender) {
-        this.itemStorageRepository.find(sender.getUniqueId()).thenAccept(itemStorage -> {
-            sender.sendMessage(itemStorage.get()
-                .serializedItemStacks()
-                .toString());
-        });
     }
 
 }
