@@ -281,6 +281,21 @@ public class PluginConfiguration implements ReloadableConfig {
 
         @Description({" ", "# The name of the parcel large content GUI"})
         public String parcelLargeContentGuiTitle = "&cLarge parcel content";
+
+        @Description({" ", "# Illegal items list, that cannot be stored in the parcel."})
+        public List<Material> illegalItems = List.of(
+                Material.BARRIER,
+                Material.COMMAND_BLOCK,
+                Material.COMMAND_BLOCK_MINECART,
+                Material.CHAIN_COMMAND_BLOCK,
+                Material.REPEATING_COMMAND_BLOCK,
+                Material.STRUCTURE_BLOCK,
+                Material.STRUCTURE_VOID,
+                Material.JIGSAW,
+                Material.DEBUG_STICK,
+                Material.SPAWNER,
+                Material.BEDROCK
+        );
     }
 
     @Override
