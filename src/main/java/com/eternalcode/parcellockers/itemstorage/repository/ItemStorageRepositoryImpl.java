@@ -6,8 +6,6 @@ import com.eternalcode.parcellockers.itemstorage.ItemStorage;
 import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -43,24 +41,14 @@ public class ItemStorageRepositoryImpl extends AbstractDatabaseService implement
                 return Optional.empty();
             }
 
-            return Optional.of(new ItemStorage(
+            return Optional.of(
+                new ItemStorage(
                     UUID.fromString(resultSet.getString("uuid")),
-                    this.parseStringList(resultSet)
+                    List.of(resultSet.getString("items")
+                        .substring(1)
+                        .substring(0, resultSet.getString("items").length() - 1)
+                        .split(","))
             ));
         });
     }
-
-    private List<String> parseStringList(ResultSet rs) throws SQLException {
-        List<String> result = new ArrayList<>();
-        while (rs.next()) {
-            String listString = rs.getString("items");
-
-            String[] elements = listString.split(",");
-            for (String element : elements) {
-                result.add(element.trim());
-            }
-        }
-        return result;
-    }
-
 }
