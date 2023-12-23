@@ -55,7 +55,6 @@ public abstract class AbstractDatabaseService {
         }, this.executorService).orTimeout(5, TimeUnit.SECONDS);
     }
 
-                return function.apply(resultSet);
     protected <T> T executeSync(String sql, ThrowingFunction<PreparedStatement, T, SQLException> function) {
         try (Connection connection = this.dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)
