@@ -145,21 +145,21 @@ public class PluginConfiguration implements ReloadableConfig {
         @Description({" ", "# The item represents selected small parcel size."})
         public ConfigItem selectedSmallParcelSizeItem = new ConfigItem()
                 .setName("&aSmall")
-                .setLore(List.of("&4&lSelected"))
+                .setLore(List.of("&aCurrently selected!"))
                 .setGlow(true)
                 .setType(Material.LIME_WOOL);
 
         @Description({" ", "# The item represents selected medium parcel size."})
         public ConfigItem selectedMediumParcelSizeItem = new ConfigItem()
                 .setName("&eMedium")
-                .setLore(List.of("&4&lSelected"))
+            .setLore(List.of("&aCurrently selected!"))
                 .setGlow(true)
                 .setType(Material.YELLOW_WOOL);
 
         @Description({" ", "# The item represents selected large parcel size."})
         public ConfigItem selectedLargeParcelSizeItem = new ConfigItem()
                 .setName("&cLarge")
-                .setLore(List.of("&4&lSelected"))
+            .setLore(List.of("&aCurrently selected!"))
                 .setGlow(true)
                 .setType(Material.RED_WOOL);
 
@@ -167,6 +167,13 @@ public class PluginConfiguration implements ReloadableConfig {
         public ConfigItem priorityItem = new ConfigItem()
                 .setName("&aPriority")
                 .setLore(List.of("&bClick to select the priority."))
+                .setType(Material.REDSTONE_BLOCK);
+
+        @Description({" ", "# The item of the selected priority button"})
+        public ConfigItem selectedPriorityItem = new ConfigItem()
+                .setName("&aPriority")
+                .setLore(List.of("&aCurrently selected!", "&c&oClick to unselect."))
+                .setGlow(true)
                 .setType(Material.REDSTONE_BLOCK);
 
         @Description({" ", "# The close button item"})

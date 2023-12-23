@@ -90,10 +90,12 @@ public class ParcelSendingGUI extends GuiView {
         ConfigItem smallButton = size == ParcelSize.SMALL ? settings.selectedSmallParcelSizeItem : settings.smallParcelSizeItem;
         ConfigItem mediumButton = size == ParcelSize.MEDIUM ? settings.selectedMediumParcelSizeItem : settings.mediumParcelSizeItem;
         ConfigItem largeButton = size == ParcelSize.LARGE ? settings.selectedLargeParcelSizeItem : settings.largeParcelSizeItem;
+        ConfigItem priorityButton = priority ? settings.selectedPriorityItem : settings.priorityItem;
 
         gui.updateItem(20, smallButton.toItemStack());
         gui.updateItem(22, mediumButton.toItemStack());
         gui.updateItem(24, largeButton.toItemStack());
+        gui.updateItem(31, priorityButton.toItemStack());
     }
 
 }
