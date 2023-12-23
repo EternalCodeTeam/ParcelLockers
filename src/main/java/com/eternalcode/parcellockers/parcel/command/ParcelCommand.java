@@ -57,7 +57,7 @@ public class ParcelCommand {
         messagesToSend.forEach(message -> this.announcer.sendMessage(player, message));
     }
 
-    @Execute(name = "send") // similar create, add
+    @Execute(name = "send", aliases = "create") // similar create, add
     void create(@Context Player player, @Arg String name, @Arg boolean priority, @Arg ParcelSize size, @Arg String entryLocker, @Arg String destinationLocker) {
         Parcel parcel = Parcel.builder()
             .uuid(UUID.randomUUID())

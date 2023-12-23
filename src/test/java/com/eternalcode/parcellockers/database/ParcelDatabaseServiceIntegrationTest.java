@@ -12,6 +12,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -54,11 +55,11 @@ class ParcelDatabaseServiceIntegrationTest extends ParcelLockerIntegrationSpec {
         assertTrue(parcel.isPresent());
         assertEquals(uuid, parcel.get().uuid());
 
-        List<Parcel> byReceiver = await(parcelRepositoryImpl.findByReceiver(receiver));
+        List<Parcel> byReceiver = await(parcelRepositoryImpl.findByReceiver(receiver)).orElse(Collections.emptyList());
         assertEquals(1, byReceiver.size());
         assertEquals(uuid, byReceiver.iterator().next().uuid());
 
-        List<Parcel> bySender = await(parcelRepositoryImpl.findBySender(sender));
+        List<Parcel> bySender = await(parcelRepositoryImpl.findBySender(sender)).orElse(Collections.emptyList());
         assertEquals(1, bySender.size());
         assertEquals(uuid, bySender.iterator().next().uuid());
 

@@ -13,7 +13,7 @@ import java.util.function.BiConsumer;
 
 public class NotificationAnnouncer {
 
-    private final static Map<NotificationType, BiConsumer<Audience, Component>> NOTIFICATION_HANDLERS = Map.of(
+    private static final Map<NotificationType, BiConsumer<Audience, Component>> NOTIFICATION_HANDLERS = Map.of(
             NotificationType.CHAT, Audience::sendMessage,
             NotificationType.ACTION_BAR, Audience::sendActionBar,
             NotificationType.TITLE, (audience, component) -> audience.showTitle(Title.title(component, Component.empty())),

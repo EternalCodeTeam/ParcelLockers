@@ -63,7 +63,9 @@ public class SentParcelsGUI extends GuiView {
 
         gui.setItem(49, closeItem);
 
-        this.parcelRepository.findBySender(player.getUniqueId()).whenComplete((parcels, throwable) -> {
+        this.parcelRepository.findBySender(player.getUniqueId()).whenComplete((optionalParcels, throwable) -> {
+            List<Parcel> parcels = optionalParcels.orElse(Collections.emptyList());
+            
             for (Parcel parcel : parcels) {
                 List<String> newLore = this.replaceParcelPlaceholders(parcel, parcelItem.getItemStack().getItemMeta().getLore());
                 parcelItem.getItemStack().getItemMeta().setLore(newLore);

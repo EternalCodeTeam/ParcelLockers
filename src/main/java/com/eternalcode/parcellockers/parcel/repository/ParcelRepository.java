@@ -16,9 +16,9 @@ public interface ParcelRepository {
 
     CompletableFuture<Optional<Parcel>> findByUUID(UUID uuid);
 
-    CompletableFuture<List<Parcel>> findBySender(UUID sender);
+    CompletableFuture<Optional<List<Parcel>>> findBySender(UUID sender);
 
-    CompletableFuture<List<Parcel>> findByReceiver(UUID receiver);
+    CompletableFuture<Optional<List<Parcel>>> findByReceiver(UUID receiver);
 
     CompletableFuture<Void> remove(Parcel parcel);
 

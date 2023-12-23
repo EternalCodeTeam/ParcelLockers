@@ -22,7 +22,10 @@ public abstract class AbstractDatabaseService {
         Thread thread = new Thread(runnable);
         thread.setName("DATABASE-EXECUTOR-" + EXECUTOR_COUNT.incrementAndGet());
         thread.setDaemon(true);
-        thread.setUncaughtExceptionHandler((t, e) -> e.printStackTrace());
+        thread.setUncaughtExceptionHandler((t, e) -> {
+            e.printStackTrace();
+            Sentry.captureException(e);
+        });
         return thread;
     });
     protected final DataSource dataSource;
@@ -52,6 +55,7 @@ public abstract class AbstractDatabaseService {
         }, this.executorService).orTimeout(5, TimeUnit.SECONDS);
     }
 
+                return function.apply(resultSet);
     protected <T> T executeSync(String sql, ThrowingFunction<PreparedStatement, T, SQLException> function) {
         try (Connection connection = this.dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)

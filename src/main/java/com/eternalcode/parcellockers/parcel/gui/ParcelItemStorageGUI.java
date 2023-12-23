@@ -8,6 +8,7 @@ import com.eternalcode.parcellockers.util.InventoryUtil;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.StorageGui;
+import io.sentry.Sentry;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -17,7 +18,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.IntStream;
 
 public class ParcelItemStorageGUI {
@@ -26,6 +30,7 @@ public class ParcelItemStorageGUI {
     private final PluginConfiguration config;
     private final MiniMessage miniMessage;
     private final ItemStorageRepositoryImpl itemStorageRepository;
+    private final Map<UUID, List<ItemStack>> lastInserted = new HashMap<>();
 
     private boolean confirmed;
 
@@ -46,10 +51,6 @@ public class ParcelItemStorageGUI {
             this.confirmed = true;
             new ParcelSendingGUI(plugin, this.config, this.miniMessage, itemStorageRepository).show(player);
         });
-        GuiItem cancelItem = guiSettings.cancelItemsItem.toGuiItem(event -> {
-            this.confirmed = false;
-            new ParcelSendingGUI(plugin, this.config, this.miniMessage, itemStorageRepository).show(player);
-        });
 
         switch (size) {
             case SMALL -> gui = Gui.storage()
@@ -68,57 +69,55 @@ public class ParcelItemStorageGUI {
         }
 
         // Set background items and confirm/cancel items + close gui action
-        IntStream.rangeClosed(3, 9).forEach(i -> gui.setItem(gui.getRows(), i, backgroundItem));
+        IntStream.rangeClosed(2, 9).forEach(i -> gui.setItem(gui.getRows(), i, backgroundItem));
         gui.setItem(gui.getRows(), 1, confirmItem);
-        gui.setItem(gui.getRows(), 2, cancelItem);
 
         gui.setCloseGuiAction(event -> {
             ItemStack[] contents = gui.getInventory().getContents();
 
-            if (this.confirmed) {
-                List<ItemStack> items = new ArrayList<>();
-
-                for (int i = 0; i < contents.length - 9; i++) {
-                    ItemStack item = contents[i];
-
-                    if (item == null) {
-                        continue;
-                    }
-
-                    for (Material type : this.config.guiSettings.illegalItems) {
-                        if (item.getType() == type) {
-                            InventoryUtil.addItem(player, item);
-                            gui.removeItem(item);
-                            player.playSound(player.getLocation(), Sound.ENTITY_ENDERMAN_AMBIENT, 1, 1);
-                            player.sendMessage(ChatColor.RED + "This item is illegal and cannot be send!");
-                        }
-                    }
-
-                    items.add(item);
-                }
-
-                this.itemStorageRepository.save(new ItemStorage(player.getUniqueId(), items));
-                return;
-            }
+            List<ItemStack> items = new ArrayList<>();
 
             for (int i = 0; i < contents.length - 9; i++) {
                 ItemStack item = contents[i];
+
                 if (item == null) {
                     continue;
                 }
 
-                InventoryUtil.addItem(player, item);
-                gui.removeItem(item);
+                for (Material type : this.config.guiSettings.illegalItems) {
+                    if (item.getType() == type) {
+                        InventoryUtil.addItem(player, item);
+                        gui.removeItem(item);
+                        player.playSound(player.getLocation(), Sound.ENTITY_ENDERMAN_AMBIENT, 1, 1);
+                        player.sendMessage(ChatColor.RED + "This item is illegal and cannot be send!");
+                    }
+                }
+
+                items.add(item);
+                this.lastInserted.put(player.getUniqueId(), items);
             }
+
+            this.itemStorageRepository.remove(player.getUniqueId()).whenComplete((unused, throwable) -> {
+                if (throwable != null) {
+                    Sentry.captureException(throwable);
+                    throwable.printStackTrace();
+                }
+
+                this.itemStorageRepository.save(new ItemStorage(player.getUniqueId(), items));
+            });
         });
 
         this.itemStorageRepository.find(player.getUniqueId()).whenComplete((optional, throwable) -> {
+            if (throwable != null) {
+                Sentry.captureException(throwable);
+                throwable.printStackTrace();
+            }
+
             if (optional.isPresent()) {
                 ItemStorage itemStorage = optional.get();
 
                 for (ItemStack item : itemStorage.items()) {
                     gui.addItem(item);
-
                 }
             }
 

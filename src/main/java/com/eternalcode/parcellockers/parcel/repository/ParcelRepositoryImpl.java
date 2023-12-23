@@ -114,37 +114,13 @@ public class ParcelRepositoryImpl extends AbstractDatabaseService implements Par
     }
 
     @Override
-    public CompletableFuture<List<Parcel>> findBySender(UUID sender) {
-        return this.supplyExecute("SELECT * FROM `parcels` WHERE `sender` = ?", statement -> {
-            statement.setString(1, sender.toString());
-            ResultSet rs = statement.executeQuery();
-            
-            List<Parcel> parcels = new ArrayList<>();
-            while (rs.next()) {
-                Parcel parcel = this.createParcel(rs);
-                
-                this.addParcelToCache(parcel);
-                parcels.add(parcel);
-            }
-            return parcels;
-        });
+    public CompletableFuture<Optional<List<Parcel>>> findBySender(UUID sender) {
+        return this.findByMultiple("sender", sender.toString());
     }
 
     @Override
-    public CompletableFuture<List<Parcel>> findByReceiver(UUID receiver) {
-        return this.supplyExecute("SELECT * FROM `parcels` WHERE `receiver` = ?", statement -> {
-            statement.setString(1, receiver.toString());
-            ResultSet rs = statement.executeQuery();
-            
-            List<Parcel> parcels = new ArrayList<>();
-            while (rs.next()) {
-                Parcel parcel = this.createParcel(rs);
-
-                this.addParcelToCache(parcel);
-                parcels.add(parcel);
-            }
-            return parcels;
-        });
+    public CompletableFuture<Optional<List<Parcel>>> findByReceiver(UUID receiver) {
+        return this.findByMultiple("receiver", receiver.toString());
     }
 
     @Override
@@ -209,6 +185,27 @@ public class ParcelRepositoryImpl extends AbstractDatabaseService implements Par
                 this.addParcelToCache(parcel);
                 return Optional.of(parcel);
             }
+            return Optional.empty();
+        });
+    }
+
+    private CompletableFuture<Optional<List<Parcel>>> findByMultiple(String column, String value) {
+        return this.supplyExecute("SELECT * FROM `parcels` WHERE `" + column + "` = ?;", statement -> {
+            statement.setString(1, value);
+            ResultSet rs = statement.executeQuery();
+            List<Parcel> parcels = new ArrayList<>();
+
+            while (rs.next()) {
+                Parcel parcel = this.createParcel(rs);
+                this.addParcelToCache(parcel);
+
+                parcels.add(parcel);
+            }
+
+            if (!parcels.isEmpty()) {
+                return Optional.of(parcels);
+            }
+
             return Optional.empty();
         });
     }

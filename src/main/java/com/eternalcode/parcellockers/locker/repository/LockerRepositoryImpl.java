@@ -147,8 +147,8 @@ public class LockerRepositoryImpl extends AbstractDatabaseService implements Loc
     }
 
     private void removeFromCache(UUID uuid) {
-        this.cache.remove(uuid);
         this.positionCache.remove(this.cache.get(uuid).position());
+        this.cache.remove(uuid);
     }
 
     public Map<Position, UUID> positionCache() {

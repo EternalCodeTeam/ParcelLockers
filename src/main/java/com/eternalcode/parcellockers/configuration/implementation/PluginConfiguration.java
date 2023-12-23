@@ -274,12 +274,6 @@ public class PluginConfiguration implements ReloadableConfig {
                 .setLore(List.of("&aClick to confirm the items."))
                 .setType(Material.LIME_WOOL);
 
-        @Description({" ", "# The item of the cancel items button"})
-        public ConfigItem cancelItemsItem = new ConfigItem()
-                .setName("&cCancel items")
-                .setLore(List.of("&cClick to cancel the items."))
-                .setType(Material.RED_WOOL);
-
         @Description({" ", "# The name of the parcel small content GUI"})
         public String parcelSmallContentGuiTitle = "&aSmall parcel content";
 

@@ -37,15 +37,15 @@ public class LockerInteractionController implements Listener {
     public void onInventoryOpen(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         Position blockPos = PositionAdapter.convert(player.getTargetBlock(Set.of(Material.AIR), 4).getLocation());
-        
+
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
             return;
-         }
-         
-         if (event.getClickedBlock().getType() != Material.CHEST) {
-             return;
-         }
-         
+        }
+
+        if (event.getClickedBlock().getType() != Material.CHEST) {
+            return;
+        }
+
         if (this.parcelLockerRepositoryImpl.isInCache(blockPos)) {
             event.setCancelled(true);
             new LockerMainGUI(plugin, this.miniMessage, this.config, itemStorageRepository).show(player);

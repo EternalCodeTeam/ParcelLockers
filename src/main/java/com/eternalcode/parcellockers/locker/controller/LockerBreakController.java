@@ -49,16 +49,16 @@ public class LockerBreakController implements Listener {
 
             UUID toRemove = this.parcelLockerRepositoryImpl.positionCache().get(position);
             this.parcelLockerRepositoryImpl.remove(toRemove);
-            
+
             this.announcer.sendMessage(player, this.messages.parcelLockerSuccessfullyDeleted);
-            
+
             Formatter formatter = new Formatter()
                 .register("{X}", position.x())
                 .register("{Y}", position.y())
                 .register("{Z}", position.z())
                 .register("{WORLD}", position.world())
                 .register("{PLAYER}", player.getName());
-                
+
             this.announcer.broadcast(formatter.format(this.messages.broadcastParcelLockerRemoved));
         }
 
