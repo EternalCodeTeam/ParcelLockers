@@ -8,7 +8,6 @@ import dev.rollczi.litecommands.annotations.command.Command;
 import dev.rollczi.litecommands.annotations.context.Context;
 import dev.rollczi.litecommands.annotations.execute.Execute;
 import dev.rollczi.litecommands.annotations.permission.Permission;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -20,13 +19,11 @@ public class ParcelLockersCommand {
     private final ConfigurationManager configManager;
     private final PluginConfiguration config;
     private final NotificationAnnouncer announcer;
-    private final MiniMessage miniMessage;
 
-    public ParcelLockersCommand(ConfigurationManager configManager, PluginConfiguration config, NotificationAnnouncer announcer, MiniMessage miniMessage) {
+    public ParcelLockersCommand(ConfigurationManager configManager, PluginConfiguration config, NotificationAnnouncer announcer) {
         this.configManager = configManager;
         this.config = config;
         this.announcer = announcer;
-        this.miniMessage = miniMessage;
     }
     
     @Async

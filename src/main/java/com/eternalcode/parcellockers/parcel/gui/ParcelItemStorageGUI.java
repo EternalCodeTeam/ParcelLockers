@@ -18,10 +18,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import java.util.stream.IntStream;
 
 public class ParcelItemStorageGUI {
@@ -30,9 +27,6 @@ public class ParcelItemStorageGUI {
     private final PluginConfiguration config;
     private final MiniMessage miniMessage;
     private final ItemStorageRepositoryImpl itemStorageRepository;
-    private final Map<UUID, List<ItemStack>> lastInserted = new HashMap<>();
-
-    private boolean confirmed;
 
     public ParcelItemStorageGUI(Plugin plugin, PluginConfiguration config, MiniMessage miniMessage, ItemStorageRepositoryImpl itemStorageRepository) {
         this.plugin = plugin;
@@ -48,7 +42,6 @@ public class ParcelItemStorageGUI {
         GuiItem backgroundItem = guiSettings.mainGuiBackgroundItem.toGuiItem(event -> event.setCancelled(true));
 
         GuiItem confirmItem = guiSettings.confirmItemsItem.toGuiItem(event -> {
-            this.confirmed = true;
             new ParcelSendingGUI(plugin, this.config, this.miniMessage, itemStorageRepository).show(player);
         });
 
@@ -94,7 +87,6 @@ public class ParcelItemStorageGUI {
                 }
 
                 items.add(item);
-                this.lastInserted.put(player.getUniqueId(), items);
             }
 
             this.itemStorageRepository.remove(player.getUniqueId()).whenComplete((unused, throwable) -> {

@@ -7,7 +7,6 @@ import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.Prompt;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import panda.utilities.StringUtils;
 
 public class ParcelLockerPlacePrompt implements Prompt {
 
@@ -29,7 +28,7 @@ public class ParcelLockerPlacePrompt implements Prompt {
     @Override
     public String getPromptText(@NotNull ConversationContext context) {
         this.announcer.sendMessage((CommandSender) context.getForWhom(), this.config.messages.enterDescriptionPrompt);
-        return StringUtils.EMPTY;
+        return null;
     }
 
     @Override

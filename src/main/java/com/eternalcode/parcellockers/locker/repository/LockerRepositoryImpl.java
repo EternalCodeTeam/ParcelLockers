@@ -70,7 +70,7 @@ public class LockerRepositoryImpl extends AbstractDatabaseService implements Loc
 
     @Override
     public CompletableFuture<List<Locker>> findAll() {
-        return this.supplyExecute("SELECT * FROM `lockers`;", this::extractParcelLockers);
+        return this.supplyExecute("SELECT * FROM `lockers`;", this::extractLockers);
     }
 
 
@@ -105,7 +105,7 @@ public class LockerRepositoryImpl extends AbstractDatabaseService implements Loc
             statement.setInt(1, page.getLimit() + 1);
             statement.setInt(2, page.getOffset());
             
-            List<Locker> lockers = this.extractParcelLockers(statement);
+            List<Locker> lockers = this.extractLockers(statement);
 
             boolean hasNext = lockers.size() > page.getLimit();
             if (hasNext) {
@@ -115,7 +115,7 @@ public class LockerRepositoryImpl extends AbstractDatabaseService implements Loc
         });
     }
 
-    private List<Locker> extractParcelLockers(PreparedStatement statement) throws SQLException {
+    private List<Locker> extractLockers(PreparedStatement statement) throws SQLException {
         List<Locker> list = new ArrayList<>();
         ResultSet rs = statement.executeQuery();
 
@@ -138,7 +138,7 @@ public class LockerRepositoryImpl extends AbstractDatabaseService implements Loc
         if (this.isInCache(uuid)) {
             return Optional.ofNullable(this.cache.get(uuid));
         }
-        return this.findByUUID(uuid).join();
+        return this.findByUUID(uuid).orTimeout(2, TimeUnit.SECONDS).join();
     }
 
     private void addToCache(Locker locker) {

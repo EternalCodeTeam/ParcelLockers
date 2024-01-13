@@ -6,13 +6,11 @@ import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepositoryImpl;
 import com.eternalcode.parcellockers.locker.gui.LockerMainGUI;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
-import dev.triumphteam.gui.components.GuiAction;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.plugin.Plugin;
 
 public class ParcelSendingGUI extends GuiView {
@@ -57,11 +55,6 @@ public class ParcelSendingGUI extends GuiView {
         ConfigItem largeButton = settings.largeParcelSizeItem;
         ConfigItem priorityItem = settings.priorityItem;
 
-        GuiAction<InventoryClickEvent> priorityItemAction = event -> {
-            this.priority = !this.priority;
-            gui.updateItem(31, priorityItem.toBuilder().glow(this.priority).build());
-        };
-
         for (int slot : CORNER_SLOTS) {
             gui.setItem(slot, cornerItem);
         }
@@ -73,10 +66,10 @@ public class ParcelSendingGUI extends GuiView {
         this.setSelected(gui, ParcelSize.SMALL);
         this.priority = false;
 
-        gui.setItem(20, smallButton.toGuiItem(event -> setSelected(gui, ParcelSize.SMALL)));
-        gui.setItem(22, mediumButton.toGuiItem(event -> setSelected(gui, ParcelSize.MEDIUM)));
-        gui.setItem(24, largeButton.toGuiItem(event -> setSelected(gui, ParcelSize.LARGE)));
-        gui.setItem(31, priorityItem.toGuiItem(priorityItemAction));
+        gui.setItem(20, smallButton.toGuiItem(event -> this.setSelected(gui, ParcelSize.SMALL)));
+        gui.setItem(22, mediumButton.toGuiItem(event -> this.setSelected(gui, ParcelSize.MEDIUM)));
+        gui.setItem(24, largeButton.toGuiItem(event -> this.setSelected(gui, ParcelSize.LARGE)));
+        gui.setItem(31, priorityItem.toGuiItem(event -> this.setSelected(gui, !this.priority)));
         gui.setItem(37, storageItem);
         gui.setItem(40, closeItem);
 
@@ -95,6 +88,15 @@ public class ParcelSendingGUI extends GuiView {
         gui.updateItem(20, smallButton.toItemStack());
         gui.updateItem(22, mediumButton.toItemStack());
         gui.updateItem(24, largeButton.toItemStack());
+        gui.updateItem(31, priorityButton.toItemStack());
+    }
+
+    private void setSelected(Gui gui, boolean priority) {
+        PluginConfiguration.GuiSettings settings = config.guiSettings;
+        this.priority = priority;
+
+        ConfigItem priorityButton = priority ? settings.selectedPriorityItem : settings.priorityItem;
+
         gui.updateItem(31, priorityButton.toItemStack());
     }
 

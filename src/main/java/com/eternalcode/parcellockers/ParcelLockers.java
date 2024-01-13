@@ -1,6 +1,7 @@
 package com.eternalcode.parcellockers;
 
 import com.eternalcode.parcellockers.command.argument.PlayerArgument;
+import com.eternalcode.parcellockers.command.argument.UUIDArgument;
 import com.eternalcode.parcellockers.command.handler.InvalidUsageImpl;
 import com.eternalcode.parcellockers.command.handler.PermissionMessage;
 import com.eternalcode.parcellockers.configuration.ConfigurationManager;
@@ -24,6 +25,7 @@ import com.eternalcode.parcellockers.util.legacy.LegacyColorProcessor;
 import com.google.common.base.Stopwatch;
 import com.zaxxer.hikari.HikariDataSource;
 import dev.rollczi.litecommands.LiteCommands;
+import dev.rollczi.litecommands.adventure.LiteAdventureExtension;
 import dev.rollczi.litecommands.annotations.LiteCommandsAnnotations;
 import dev.rollczi.litecommands.bukkit.LiteBukkitMessages;
 import dev.rollczi.litecommands.bukkit.LiteCommandsBukkit;
@@ -41,6 +43,7 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Arrays;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -95,27 +98,30 @@ public final class ParcelLockers extends JavaPlugin {
 
         MainGUI mainGUI = new MainGUI(this, server, miniMessage, config, parcelRepository, parcelLockerRepositoryImpl);
         ParcelListGUI parcelListGUI = new ParcelListGUI(this, server, miniMessage, config, parcelRepository, parcelLockerRepositoryImpl, mainGUI);
+
         this.liteCommands = LiteCommandsBukkit.builder("parcellockers", this)
-                .argument(Parcel.class, new ParcelArgument(parcelRepository))
-                .argument(Player.class, new PlayerArgument(server, config))
-                .message(LiteBukkitMessages.PLAYER_ONLY, config.messages.onlyForPlayers)
-                .commands(LiteCommandsAnnotations.of(
-                    new ParcelCommand(server, parcelLockerRepositoryImpl, announcer, config, mainGUI, parcelListGUI, parcelManager),
-                    new ParcelLockersCommand(configManager, config, announcer, miniMessage)
-                ))
-                .invalidUsage(new InvalidUsageImpl(announcer, config))
-                .missingPermission(new PermissionMessage(announcer, config))
-                .build();
+            .argument(Parcel.class, new ParcelArgument(parcelRepository))
+            .argument(Player.class, new PlayerArgument(server, config))
+            .argument(UUID.class, new UUIDArgument(parcelRepository))
+            .extension(new LiteAdventureExtension<>())
+            .message(LiteBukkitMessages.PLAYER_ONLY, config.messages.onlyForPlayers)
+            .commands(LiteCommandsAnnotations.of(
+                new ParcelCommand(server, parcelLockerRepositoryImpl, announcer, config, mainGUI, parcelListGUI, parcelManager),
+                new ParcelLockersCommand(configManager, config, announcer)
+            ))
+            .invalidUsage(new InvalidUsageImpl(announcer, config))
+            .missingPermission(new PermissionMessage(announcer, config))
+            .build();
 
         if (!this.setupEconomy()) {
-            this.getLogger().severe("Disabling due to no Vault dependency found!");
+            this.getLogger().severe("Disabling due to no Vault dependency or its implementator(s) found!");
             server.getPluginManager().disablePlugin(this);
             return;
         }
 
         Stream.of(
             new LockerInteractionController(this, parcelLockerRepositoryImpl, itemStorageRepository, miniMessage, config),
-            new LockerPlaceController(config, miniMessage, this, parcelLockerRepositoryImpl, announcer),
+            new LockerPlaceController(config, this, parcelLockerRepositoryImpl, announcer),
             new LockerBreakController(parcelLockerRepositoryImpl, announcer, config.messages)
         ).forEach(controller -> server.getPluginManager().registerEvents(controller, this));
 
@@ -164,7 +170,7 @@ public final class ParcelLockers extends JavaPlugin {
 
         RegisteredServiceProvider<Economy> rsp = this.getServer().getServicesManager().getRegistration(Economy.class);
         if (rsp == null) {
-            return false; // !!!MAJK!!! Vault is installed but no economy plugin is registered (e.g. EssentialsX)
+            return false; // Vault is installed but no economy plugin is registered (e.g. EssentialsX) - majk
         }
 
         this.economy = rsp.getProvider();

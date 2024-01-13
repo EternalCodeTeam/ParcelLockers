@@ -6,7 +6,6 @@ import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.locker.repository.LockerRepositoryImpl;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.shared.PositionAdapter;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Location;
 import org.bukkit.conversations.ConversationFactory;
 import org.bukkit.conversations.NullConversationPrefix;
@@ -25,14 +24,12 @@ import java.util.UUID;
 public class LockerPlaceController implements Listener {
 
     private final PluginConfiguration config;
-    private final MiniMessage miniMessage;
     private final Plugin plugin;
     private final LockerRepositoryImpl databaseService;
     private final NotificationAnnouncer announcer;
 
-    public LockerPlaceController(PluginConfiguration config, MiniMessage miniMessage, Plugin plugin, LockerRepositoryImpl databaseService, NotificationAnnouncer announcer) {
+    public LockerPlaceController(PluginConfiguration config, Plugin plugin, LockerRepositoryImpl databaseService, NotificationAnnouncer announcer) {
         this.config = config;
-        this.miniMessage = miniMessage;
         this.plugin = plugin;
         this.databaseService = databaseService;
         this.announcer = announcer;

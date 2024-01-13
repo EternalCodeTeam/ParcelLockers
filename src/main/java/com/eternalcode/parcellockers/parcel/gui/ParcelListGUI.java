@@ -10,6 +10,7 @@ import com.eternalcode.parcellockers.shared.Page;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
+import io.sentry.Sentry;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
@@ -74,31 +75,29 @@ public class ParcelListGUI extends GuiView {
         }
 
         this.parcelRepository.findPage(page).whenComplete((result, throwable) -> {
+            if (throwable != null) {
+                Sentry.captureException(throwable);
+                throwable.printStackTrace();
+                return;
+            }
+
             if (result.parcels().isEmpty() && page.hasPrevious()) {
                 this.show(player, page.previous());
                 return;
             }
 
             for (Parcel parcel : result.parcels()) {
-                if (!player.hasPermission("parcellockers.admin.debug.seeOthersParcels")) {
-                   continue;
-                }
-                
-                if (!parcel.sender().equals(player.getUniqueId())) {
+                /*if (!parcel.recipients().contains(player.getUniqueId())) {
                     continue;
-                }
-                
-                if (!parcel.recipients().contains(player.getUniqueId())) {
-                    continue;
-                }
+                }*/
 
                 ItemMeta parcelItemMeta = parcelItem.getItemStack().getItemMeta();
-                
-                List<String> newLore = this.replaceParcelPlaceholders(parcel, parcelItemMeta.getLore());
 
-                parcelItemMeta.setLore(newLore);
+                if (parcelItemMeta != null) {
+                    List<String> newLore = this.replaceParcelPlaceholders(parcel, parcelItemMeta.getLore());
+                    parcelItemMeta.setLore(newLore);
+                }
                 gui.addItem(parcelItem);
-
             }
 
             gui.setItem(49, closeItem);
@@ -112,6 +111,11 @@ public class ParcelListGUI extends GuiView {
             }
 
             this.server.getScheduler().runTask(this.plugin, () -> gui.open(player));
+        }).whenComplete((unused, throwable) -> {
+            if (throwable != null) {
+                Sentry.captureException(throwable);
+                throwable.printStackTrace();
+            }
         });
 
     }
@@ -128,7 +132,7 @@ public class ParcelListGUI extends GuiView {
             .register("{RECEIVER}", this.server.getPlayer(parcel.receiver()).getName())
             .register("{SIZE}", parcel.size().toString())
             .register("{PRIORITY}", parcel.priority() ? this.miniMessage.deserialize("&aYes") : this.miniMessage.deserialize("&cNo"))
-            .register("{DESCRIPTION}", parcel.description())
+            //.register("{DESCRIPTION}", parcel.description())
             .register("{RECIPIENTS}", parcel.recipients().stream()
                 .map(this.server::getPlayer)
                 .filter(Objects::nonNull)

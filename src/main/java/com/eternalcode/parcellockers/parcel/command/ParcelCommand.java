@@ -58,7 +58,7 @@ public class ParcelCommand {
     }
 
     @Execute(name = "send", aliases = "create") // similar create, add
-    void create(@Context Player player, @Arg String name, @Arg boolean priority, @Arg ParcelSize size, @Arg String entryLocker, @Arg String destinationLocker) {
+    void create(@Context Player player, @Arg String name, @Arg boolean priority, @Arg ParcelSize size, @Arg UUID entryLocker, @Arg UUID destinationLocker) {
         Parcel parcel = Parcel.builder()
             .uuid(UUID.randomUUID())
             .name(name)
@@ -66,8 +66,8 @@ public class ParcelCommand {
             .receiver(player.getUniqueId())
             .priority(priority)
             .size(size)
-            .entryLocker(UUID.fromString(entryLocker))
-            .destinationLocker(UUID.fromString(destinationLocker))
+            .entryLocker(entryLocker)
+            .destinationLocker(destinationLocker)
             .build();
 
         this.parcelManager.createParcel(player, parcel);

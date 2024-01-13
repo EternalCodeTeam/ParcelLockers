@@ -79,7 +79,7 @@ public class PluginConfiguration implements ReloadableConfig {
         public String onlyForPlayers = "&7» &cThis command is only available to players!";
         public String noPermission = "&7» &cYou don't have permission to perform this command! &c(&7{PERMISSION}&c)";
         public String cantFindPlayer = "&7» &cThe specified player could not be found!";
-        public String invalidUsage = "&7» &bCorrect usage: &e{USAGE}";
+        public String invalidUsage = "&7» &3Correct usage: &b{USAGE}";
         public String reload = "&7» &bConfiguration has been successfully reloaded!";
         public String parcelCommandUsage = "&7» &3/parcel &b<list|info|send|cancel> [parcel]";
         public String parcelSuccessfullyCreated = "&7» &aParcel created successfully.";
@@ -91,7 +91,7 @@ public class PluginConfiguration implements ReloadableConfig {
         public String enterDescriptionPrompt = "&7» &6Enter a description for the parcel locker:";
         public String cannotBreakParcelLocker = "&7» &cYou have no permission to break the parcel locker.";
         public String parcelLockerSuccessfullyDeleted = "&7» &aParcel locker deleted successfully.";
-        public String broadcastParcelLockerRemoved = "&7» &a&lWARNING! &r&4The parcel locker at &c{X} {Y} {Z} in world {WORLD} &4has been removed by &4{PLAYER}!";
+        public String broadcastParcelLockerRemoved = "&7» &cThe parcel locker at &6{X} {Y} {Z} in world {WORLD} &chas been removed by &c{PLAYER}!";
         @Description({" ", "# The parcel info message."})
         public List<String> parcelInfoMessages = List.of(
                 "&7» &6Parcel info:",
@@ -117,9 +117,6 @@ public class PluginConfiguration implements ReloadableConfig {
 
         @Description({" ", "# The item of the sent parcels GUI"})
         public String sentParcelsTitle = "&6Sent parcels";
-
-        @Description({" ", "# The item of the parcel locker main GUI"})
-        public String parcelLockerMainGuiTitle = "&3Parcel locker";
 
         @Description({" ", "# The item of the parcel locker sending GUI"})
         public String parcelLockerSendingGuiTitle = "&3Parcel sending";
@@ -171,10 +168,10 @@ public class PluginConfiguration implements ReloadableConfig {
 
         @Description({" ", "# The item of the selected priority button"})
         public ConfigItem selectedPriorityItem = new ConfigItem()
-                .setName("&aPriority")
-                .setLore(List.of("&aCurrently selected!", "&c&oClick to unselect."))
-                .setGlow(true)
-                .setType(Material.REDSTONE_BLOCK);
+            .setName("&aPriority")
+            .setLore(List.of("&aCurrently selected!", "&c&oClick to unselect."))
+            .setType(Material.REDSTONE_BLOCK)
+            .setGlow(true);
 
         @Description({" ", "# The close button item"})
         public ConfigItem closeItem = new ConfigItem()
