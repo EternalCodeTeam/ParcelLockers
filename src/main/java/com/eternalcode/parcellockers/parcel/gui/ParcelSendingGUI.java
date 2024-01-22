@@ -12,10 +12,14 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitScheduler;
+
+import java.util.concurrent.TimeUnit;
 
 public class ParcelSendingGUI extends GuiView {
 
     private final Plugin plugin;
+    private final BukkitScheduler scheduler;
     private final PluginConfiguration config;
     private final MiniMessage miniMessage;
     private final ItemStorageRepositoryImpl itemStorageRepository;
@@ -27,6 +31,7 @@ public class ParcelSendingGUI extends GuiView {
         this.config = config;
         this.miniMessage = miniMessage;
         this.itemStorageRepository = itemStorageRepository;
+        this.scheduler = this.plugin.getServer().getScheduler();
     }
 
     @Override
@@ -44,8 +49,19 @@ public class ParcelSendingGUI extends GuiView {
         GuiItem backgroundItem = settings.mainGuiBackgroundItem.toGuiItem();
         GuiItem cornerItem = settings.cornerItem.toGuiItem();
         GuiItem storageItem = settings.parcelStorageItem.toGuiItem(event -> {
-            ParcelItemStorageGUI storageGUI = new ParcelItemStorageGUI(plugin, this.config, this.miniMessage, itemStorageRepository);
-            storageGUI.show(player, this.size);
+            ParcelItemStorageGUI storageGUI = new ParcelItemStorageGUI(plugin, this.config, this.miniMessage, itemStorageRepository, this.size);
+            itemStorageRepository.find(player.getUniqueId()).whenComplete((result, error) -> {
+                if (result.isPresent()) {
+                    int slotsSize = result.get().items().size();
+                    if (slotsSize <= 9) {
+                        scheduler.runTask(this.plugin, () -> storageGUI.show(player, this.size));
+                    } else if (slotsSize <= 18 && this.size == ParcelSize.SMALL) {
+                        scheduler.runTask(this.plugin, () -> storageGUI.show(player, ParcelSize.MEDIUM));
+                    } else {
+                        scheduler.runTask(this.plugin, () -> storageGUI.show(player, ParcelSize.LARGE));
+                    }
+                }
+            }).orTimeout(2 , TimeUnit.SECONDS);
         });
 
         GuiItem closeItem = settings.closeItem.toGuiItem(event -> new LockerMainGUI(plugin, this.miniMessage, this.config, itemStorageRepository).show(player));

@@ -27,12 +27,14 @@ public class ParcelItemStorageGUI {
     private final PluginConfiguration config;
     private final MiniMessage miniMessage;
     private final ItemStorageRepositoryImpl itemStorageRepository;
+    private final ParcelSize size;
 
-    public ParcelItemStorageGUI(Plugin plugin, PluginConfiguration config, MiniMessage miniMessage, ItemStorageRepositoryImpl itemStorageRepository) {
+    public ParcelItemStorageGUI(Plugin plugin, PluginConfiguration config, MiniMessage miniMessage, ItemStorageRepositoryImpl itemStorageRepository, ParcelSize size) {
         this.plugin = plugin;
         this.config = config;
         this.miniMessage = miniMessage;
         this.itemStorageRepository = itemStorageRepository;
+        this.size = size;
     }
 
     void show(Player player, ParcelSize size) {
