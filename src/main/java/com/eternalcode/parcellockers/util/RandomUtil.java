@@ -16,4 +16,9 @@ public class RandomUtil {
         return String.format("%06d", randomCode);
     }
 
+    public static <T> T randomEnum(Class<T> clazz){
+        int x = RANDOM.nextInt(clazz.getEnumConstants().length);
+        return clazz.getEnumConstants()[x];
+    }
+
 }

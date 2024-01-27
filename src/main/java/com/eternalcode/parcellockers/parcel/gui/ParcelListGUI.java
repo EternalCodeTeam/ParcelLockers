@@ -1,5 +1,6 @@
 package com.eternalcode.parcellockers.parcel.gui;
 
+import com.eternalcode.parcellockers.configuration.implementation.ConfigItem;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.locker.gui.MainGUI;
@@ -12,9 +13,9 @@ import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
 import io.sentry.Sentry;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.ChatColor;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 import panda.utilities.text.Formatter;
 
@@ -59,8 +60,8 @@ public class ParcelListGUI extends GuiView {
             .disableAllInteractions()
             .rows(6)
             .create();
-            
-        GuiItem parcelItem = this.config.guiSettings.parcelItem.toGuiItem();
+
+        ConfigItem parcelItem = this.config.guiSettings.parcelItem;
         GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem();
         GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem();
         GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(event -> this.mainGUI.show(player));
@@ -91,13 +92,11 @@ public class ParcelListGUI extends GuiView {
                     continue;
                 }*/
 
-                ItemMeta parcelItemMeta = parcelItem.getItemStack().getItemMeta();
+                List<String> newLore = this.replaceParcelPlaceholders(parcel, parcelItem.lore);
+                parcelItem.setLore(newLore);
+                parcelItem.setName(parcelItem.name.replace("{NAME}", parcel.name()));
 
-                if (parcelItemMeta != null) {
-                    List<String> newLore = this.replaceParcelPlaceholders(parcel, parcelItemMeta.getLore());
-                    parcelItemMeta.setLore(newLore);
-                }
-                gui.addItem(parcelItem);
+                gui.addItem(parcelItem.toGuiItem());
             }
 
             gui.setItem(49, closeItem);
@@ -131,7 +130,7 @@ public class ParcelListGUI extends GuiView {
             .register("{SENDER}", this.server.getPlayer(parcel.sender()).getName())
             .register("{RECEIVER}", this.server.getPlayer(parcel.receiver()).getName())
             .register("{SIZE}", parcel.size().toString())
-            .register("{PRIORITY}", parcel.priority() ? this.miniMessage.deserialize("&aYes") : this.miniMessage.deserialize("&cNo"))
+            .register("{PRIORITY}", parcel.priority() ? ChatColor.GREEN + "Yes" : ChatColor.RED + "No")
             //.register("{DESCRIPTION}", parcel.description())
             .register("{RECIPIENTS}", parcel.recipients().stream()
                 .map(this.server::getPlayer)

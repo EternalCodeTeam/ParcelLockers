@@ -1,6 +1,7 @@
 package com.eternalcode.parcellockers.parcel.command;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.locker.gui.MainGUI;
 import com.eternalcode.parcellockers.locker.repository.LockerRepositoryImpl;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
@@ -8,7 +9,7 @@ import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelManager;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.gui.ParcelListGUI;
-
+import com.eternalcode.parcellockers.util.RandomUtil;
 import dev.rollczi.litecommands.annotations.argument.Arg;
 import dev.rollczi.litecommands.annotations.command.Command;
 import dev.rollczi.litecommands.annotations.context.Context;
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 @Command(name = "parcel")
@@ -57,8 +59,27 @@ public class ParcelCommand {
         messagesToSend.forEach(message -> this.announcer.sendMessage(player, message));
     }
 
+    // create random
+    @Execute(name = "createrandom")
+    void createRandomParcel(@Context Player player) {
+        Parcel parcel = Parcel.builder()
+            .uuid(UUID.randomUUID())
+            .name("Random Parcel")
+            .sender(player.getUniqueId())
+            .receiver(player.getUniqueId())
+            .priority(false)
+            .size(RandomUtil.randomEnum(ParcelSize.class))
+            .entryLocker(UUID.randomUUID())
+            .destinationLocker(UUID.randomUUID())
+            .description("o ten tramwaj co nie chodzi")
+            .recipients(Set.of(player.getUniqueId()))
+            .build();
+
+        this.parcelManager.createParcel(player, parcel);
+    }
+
     @Execute(name = "send", aliases = "create") // similar create, add
-    void create(@Context Player player, @Arg String name, @Arg boolean priority, @Arg ParcelSize size, @Arg UUID entryLocker, @Arg UUID destinationLocker) {
+    void create(@Context Player player, @Arg String name, @Arg boolean priority, @Arg ParcelSize size, @Arg Locker entryLocker, @Arg Locker destinationLocker) {
         Parcel parcel = Parcel.builder()
             .uuid(UUID.randomUUID())
             .name(name)
@@ -66,8 +87,8 @@ public class ParcelCommand {
             .receiver(player.getUniqueId())
             .priority(priority)
             .size(size)
-            .entryLocker(entryLocker)
-            .destinationLocker(destinationLocker)
+            .entryLocker(entryLocker.uuid())
+            .destinationLocker(destinationLocker.uuid())
             .build();
 
         this.parcelManager.createParcel(player, parcel);
