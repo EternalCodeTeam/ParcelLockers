@@ -8,6 +8,7 @@ import com.eternalcode.parcellockers.configuration.ConfigurationManager;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.database.DataSourceFactory;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepositoryImpl;
+import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.locker.controller.LockerBreakController;
 import com.eternalcode.parcellockers.locker.controller.LockerInteractionController;
 import com.eternalcode.parcellockers.locker.controller.LockerPlaceController;
@@ -18,6 +19,7 @@ import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelManager;
 import com.eternalcode.parcellockers.parcel.command.ParcelCommand;
 import com.eternalcode.parcellockers.parcel.command.argument.ParcelArgument;
+import com.eternalcode.parcellockers.parcel.command.argument.ParcelLockerArgument;
 import com.eternalcode.parcellockers.parcel.gui.ParcelListGUI;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryImpl;
 import com.eternalcode.parcellockers.updater.UpdaterService;
@@ -89,7 +91,7 @@ public final class ParcelLockers extends JavaPlugin {
         HikariDataSource dataSource = DataSourceFactory.buildHikariDataSource(config, this.getDataFolder());
 
         LockerRepositoryImpl parcelLockerRepositoryImpl = new LockerRepositoryImpl(dataSource);
-        parcelLockerRepositoryImpl.updatePositionCache();
+        parcelLockerRepositoryImpl.updateCaches();
         ItemStorageRepositoryImpl itemStorageRepository = new ItemStorageRepositoryImpl(dataSource);
 
         ParcelRepositoryImpl parcelRepository = new ParcelRepositoryImpl(dataSource);
@@ -102,6 +104,7 @@ public final class ParcelLockers extends JavaPlugin {
         this.liteCommands = LiteCommandsBukkit.builder("parcellockers", this)
             .argument(Parcel.class, new ParcelArgument(parcelRepository))
             .argument(Player.class, new PlayerArgument(server, config))
+            .argument(Locker.class, new ParcelLockerArgument(parcelLockerRepositoryImpl))
             .argument(UUID.class, new UUIDArgument(parcelRepository))
             .extension(new LiteAdventureExtension<>())
             .message(LiteBukkitMessages.PLAYER_ONLY, config.messages.onlyForPlayers)

@@ -17,12 +17,14 @@ import dev.rollczi.litecommands.annotations.execute.Execute;
 import dev.rollczi.litecommands.annotations.permission.Permission;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.TestOnly;
 import panda.utilities.text.Formatter;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -59,7 +61,7 @@ public class ParcelCommand {
         messagesToSend.forEach(message -> this.announcer.sendMessage(player, message));
     }
 
-    // create random
+    @TestOnly
     @Execute(name = "createrandom")
     void createRandomParcel(@Context Player player) {
         Parcel parcel = Parcel.builder()
@@ -71,7 +73,7 @@ public class ParcelCommand {
             .size(RandomUtil.randomEnum(ParcelSize.class))
             .entryLocker(UUID.randomUUID())
             .destinationLocker(UUID.randomUUID())
-            .description("o ten tramwaj co nie chodzi")
+            .description(RandomUtil.randomParcelDescription())
             .recipients(Set.of(player.getUniqueId()))
             .build();
 
@@ -125,11 +127,18 @@ public class ParcelCommand {
                 .toString()
             );
 
-        this.lockerRepository.findByUUID(parcel.destinationLocker()).join().ifPresent(locker -> formatter
-            .register("{POSITION_X}", locker.position().x())
-            .register("{POSITION_Y}", locker.position().y())
-            .register("{POSITION_Z}", locker.position().z())
-        );
+        Optional<Locker> lockerOptional = this.lockerRepository.findByUUID(parcel.destinationLocker()).join();
+
+        if (lockerOptional.isPresent()) {
+            Locker locker = lockerOptional.get();
+            formatter.register("{POSITION_X}", locker.position().x())
+                .register("{POSITION_Y}", locker.position().y())
+                .register("{POSITION_Z}", locker.position().z());
+        } else {
+            formatter.register("{POSITION_X}", "-")
+                .register("{POSITION_Y}", "-")
+                .register("{POSITION_Z}", "-");
+        }
 
         List<String> newLore = new ArrayList<>();
 

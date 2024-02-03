@@ -167,17 +167,19 @@ public class LockerRepositoryImpl extends AbstractDatabaseService implements Loc
         return this.cache.containsKey(uuid);
     }
 
-    public CompletableFuture<Void> updatePositionCache() {
+    public CompletableFuture<Void> updateCaches() {
         return this.execute("SELECT * FROM `lockers` WHERE `position` IS NOT NULL;", statement -> {
             ResultSet rs = statement.executeQuery();
 
             this.positionCache.clear();
+            this.cache.clear();
 
             while (rs.next()) {
                 Position position = Position.parse(rs.getString("position"));
                 UUID uuid = UUID.fromString(rs.getString("uuid"));
 
                 this.positionCache.put(position, uuid);
+                this.cache.put(uuid, new Locker(uuid, rs.getString("description"), position));
             }
         });
     }

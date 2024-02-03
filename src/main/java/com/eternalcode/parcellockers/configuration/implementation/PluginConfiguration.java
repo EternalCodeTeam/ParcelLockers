@@ -91,7 +91,7 @@ public class PluginConfiguration implements ReloadableConfig {
         public String enterDescriptionPrompt = "&7» &6Enter a description for the parcel locker:";
         public String cannotBreakParcelLocker = "&7» &cYou have no permission to break the parcel locker.";
         public String parcelLockerSuccessfullyDeleted = "&7» &aParcel locker deleted successfully.";
-        public String broadcastParcelLockerRemoved = "&7» &cThe parcel locker at &6{X} {Y} {Z} in world {WORLD} &chas been removed by &c{PLAYER}!";
+        public String broadcastParcelLockerRemoved = "&7» &cThe parcel locker at &6{X} {Y} {Z} &cin &6{WORLD} &chas been removed by &c{PLAYER}!";
         @Description({" ", "# The parcel info message."})
         public List<String> parcelInfoMessages = List.of(
                 "&7» &6Parcel info:",

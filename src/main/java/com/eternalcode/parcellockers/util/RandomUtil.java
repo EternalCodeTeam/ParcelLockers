@@ -1,5 +1,7 @@
 package com.eternalcode.parcellockers.util;
 
+import org.jetbrains.annotations.TestOnly;
+
 import java.util.Random;
 
 public class RandomUtil {
@@ -16,9 +18,22 @@ public class RandomUtil {
         return String.format("%06d", randomCode);
     }
 
+    @TestOnly
     public static <T> T randomEnum(Class<T> clazz){
         int x = RANDOM.nextInt(clazz.getEnumConstants().length);
         return clazz.getEnumConstants()[x];
+    }
+
+    @TestOnly
+    public static String randomParcelDescription() {
+        int leftLimit = 97; // letter 'a'
+        int rightLimit = 122; // letter 'z'
+        int targetStringLength = 16;
+
+       return RANDOM.ints(leftLimit, rightLimit + 1)
+            .limit(targetStringLength)
+            .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+            .toString();
     }
 
 }
