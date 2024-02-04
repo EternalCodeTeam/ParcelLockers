@@ -3,17 +3,19 @@ package com.eternalcode.parcellockers.parcel.gui;
 import com.eternalcode.parcellockers.configuration.implementation.ConfigItem;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.gui.GuiView;
+import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.locker.gui.MainGUI;
 import com.eternalcode.parcellockers.locker.repository.LockerRepositoryImpl;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryImpl;
 import com.eternalcode.parcellockers.shared.Page;
+import dev.triumphteam.gui.builder.item.ItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
 import io.sentry.Sentry;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.ChatColor;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -23,7 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
+import java.util.Optional;
 
 public class ParcelListGUI extends GuiView {
 
@@ -61,7 +63,6 @@ public class ParcelListGUI extends GuiView {
             .rows(6)
             .create();
 
-        ConfigItem parcelItem = this.config.guiSettings.parcelItem;
         GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem();
         GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem();
         GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(event -> this.mainGUI.show(player));
@@ -87,16 +88,21 @@ public class ParcelListGUI extends GuiView {
                 return;
             }
 
+            ConfigItem item = this.config.guiSettings.parcelItem;
+
             for (Parcel parcel : result.parcels()) {
+                ItemBuilder parcelItem = item.toBuilder();
                 /*if (!parcel.recipients().contains(player.getUniqueId())) {
                     continue;
                 }*/
 
-                List<String> newLore = this.replaceParcelPlaceholders(parcel, parcelItem.lore);
-                parcelItem.setLore(newLore);
-                parcelItem.setName(parcelItem.name.replace("{NAME}", parcel.name()));
+                List<Component> newLore = this.replaceParcelPlaceholders(parcel, item.lore).stream()
+                    .map(line -> this.miniMessage.deserialize(line))
+                    .toList();
+                parcelItem.lore(newLore);
+                parcelItem.name(this.miniMessage.deserialize(item.name.replace("{NAME}", parcel.name())));
 
-                gui.addItem(parcelItem.toGuiItem());
+                gui.addItem(parcelItem.asGuiItem());
             }
 
             gui.setItem(49, closeItem);
@@ -130,8 +136,8 @@ public class ParcelListGUI extends GuiView {
             .register("{SENDER}", this.server.getPlayer(parcel.sender()).getName())
             .register("{RECEIVER}", this.server.getPlayer(parcel.receiver()).getName())
             .register("{SIZE}", parcel.size().toString())
-            .register("{PRIORITY}", parcel.priority() ? ChatColor.GREEN + "Yes" : ChatColor.RED + "No")
-            //.register("{DESCRIPTION}", parcel.description())
+            .register("{PRIORITY}", parcel.priority() ? "&aYes" : "&cNo")
+            .register("{DESCRIPTION}", parcel.description())
             .register("{RECIPIENTS}", parcel.recipients().stream()
                 .map(this.server::getPlayer)
                 .filter(Objects::nonNull)
@@ -140,13 +146,18 @@ public class ParcelListGUI extends GuiView {
                 .toString()
             );
 
-        UUID destinationLocker = parcel.destinationLocker();
+        Optional<Locker> lockerOptional = this.lockerRepository.findByUUID(parcel.destinationLocker()).join();
 
-        this.lockerRepository.findLocker(destinationLocker).ifPresent(locker -> formatter
-            .register("{POSITION_X}", locker.position().x())
-            .register("{POSITION_Y}", locker.position().y())
-            .register("{POSITION_Z}", locker.position().z())
-        );
+        if (lockerOptional.isPresent()) {
+            Locker locker = lockerOptional.get();
+            formatter.register("{POSITION_X}", locker.position().x())
+                .register("{POSITION_Y}", locker.position().y())
+                .register("{POSITION_Z}", locker.position().z());
+        } else {
+            formatter.register("{POSITION_X}", "-")
+                .register("{POSITION_Y}", "-")
+                .register("{POSITION_Z}", "-");
+        }
 
         List<String> newLore = new ArrayList<>();
 

@@ -5,7 +5,10 @@ import com.eternalcode.parcellockers.configuration.implementation.PluginConfigur
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepositoryImpl;
 import com.eternalcode.parcellockers.locker.gui.LockerMainGUI;
+import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
+import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
+import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryImpl;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import net.kyori.adventure.text.Component;
@@ -14,6 +17,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitScheduler;
 
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 public class ParcelSendingGUI extends GuiView {
@@ -23,22 +27,27 @@ public class ParcelSendingGUI extends GuiView {
     private final PluginConfiguration config;
     private final MiniMessage miniMessage;
     private final ItemStorageRepositoryImpl itemStorageRepository;
+    private final ParcelRepositoryImpl parcelRepository;
+    private final NotificationAnnouncer announcer;
     private ParcelSize size;
     private boolean priority;
 
-    public ParcelSendingGUI(Plugin plugin, PluginConfiguration config, MiniMessage miniMessage, ItemStorageRepositoryImpl itemStorageRepository) {
+    public ParcelSendingGUI(Plugin plugin, PluginConfiguration config, MiniMessage miniMessage, ItemStorageRepositoryImpl itemStorageRepository, ParcelRepositoryImpl parcelRepository, NotificationAnnouncer announcer) {
         this.plugin = plugin;
         this.config = config;
         this.miniMessage = miniMessage;
         this.itemStorageRepository = itemStorageRepository;
+        this.parcelRepository = parcelRepository;
+        this.announcer = announcer;
         this.scheduler = this.plugin.getServer().getScheduler();
     }
 
     @Override
     public void show(Player player) {
-        PluginConfiguration.GuiSettings settings = this.config.guiSettings;
+        PluginConfiguration settings = this.config;
+        PluginConfiguration.GuiSettings guiSettings = settings.guiSettings;
 
-        Component guiTitle = this.miniMessage.deserialize(settings.parcelLockerSendingGuiTitle);
+        Component guiTitle = this.miniMessage.deserialize(guiSettings.parcelLockerSendingGuiTitle);
 
         Gui gui = Gui.gui()
             .rows(6)
@@ -46,10 +55,10 @@ public class ParcelSendingGUI extends GuiView {
             .title(guiTitle)
             .create();
 
-        GuiItem backgroundItem = settings.mainGuiBackgroundItem.toGuiItem();
-        GuiItem cornerItem = settings.cornerItem.toGuiItem();
-        GuiItem storageItem = settings.parcelStorageItem.toGuiItem(event -> {
-            ParcelItemStorageGUI storageGUI = new ParcelItemStorageGUI(plugin, this.config, this.miniMessage, itemStorageRepository, this.size);
+        GuiItem backgroundItem = guiSettings.mainGuiBackgroundItem.toGuiItem();
+        GuiItem cornerItem = guiSettings.cornerItem.toGuiItem();
+        GuiItem storageItem = guiSettings.parcelStorageItem.toGuiItem(event -> {
+            ParcelItemStorageGUI storageGUI = new ParcelItemStorageGUI(plugin, this.config, this.miniMessage, itemStorageRepository, parcelRepository, this.size, announcer);
             itemStorageRepository.find(player.getUniqueId()).whenComplete((result, error) -> {
                 if (result.isPresent()) {
                     int slotsSize = result.get().items().size();
@@ -60,16 +69,36 @@ public class ParcelSendingGUI extends GuiView {
                     } else {
                         scheduler.runTask(this.plugin, () -> storageGUI.show(player, ParcelSize.LARGE));
                     }
+                } else {
+                    scheduler.runTask(this.plugin, () -> storageGUI.show(player, this.size));
                 }
             }).orTimeout(2 , TimeUnit.SECONDS);
         });
+        GuiItem submitItem = guiSettings.submitParcelItem.toGuiItem(event -> this.parcelRepository.save(Parcel.builder()
+                .size(this.size)
+                .priority(this.priority)
+                .sender(player.getUniqueId())
+                .uuid(UUID.randomUUID())
+                .name(player.getName() + "'s Parcel")
+                .description("None")
+                .destinationLocker(UUID.randomUUID())
+                .entryLocker(UUID.randomUUID())
+                .receiver(player.getUniqueId())
+                .sender(player.getUniqueId())
+                .build()
+            ).whenComplete((unused, throwable) -> {
+                if (throwable != null) {
+                    announcer.sendMessage(player, settings.messages.parcelFailedToSend);
+                    throwable.printStackTrace();
+                }
+            }).orTimeout(2, TimeUnit.SECONDS));
 
-        GuiItem closeItem = settings.closeItem.toGuiItem(event -> new LockerMainGUI(plugin, this.miniMessage, this.config, itemStorageRepository).show(player));
+        GuiItem closeItem = guiSettings.closeItem.toGuiItem(event -> new LockerMainGUI(plugin, this.miniMessage, this.config, itemStorageRepository, parcelRepository, announcer).show(player));
 
-        ConfigItem smallButton = settings.smallParcelSizeItem;
-        ConfigItem mediumButton = settings.mediumParcelSizeItem;
-        ConfigItem largeButton = settings.largeParcelSizeItem;
-        ConfigItem priorityItem = settings.priorityItem;
+        ConfigItem smallButton = guiSettings.smallParcelSizeItem;
+        ConfigItem mediumButton = guiSettings.mediumParcelSizeItem;
+        ConfigItem largeButton = guiSettings.largeParcelSizeItem;
+        ConfigItem priorityItem = guiSettings.priorityItem;
 
         for (int slot : CORNER_SLOTS) {
             gui.setItem(slot, cornerItem);
@@ -88,6 +117,7 @@ public class ParcelSendingGUI extends GuiView {
         gui.setItem(31, priorityItem.toGuiItem(event -> this.setSelected(gui, !this.priority)));
         gui.setItem(37, storageItem);
         gui.setItem(40, closeItem);
+        gui.setItem(43, submitItem);
 
         gui.open(player);
     }

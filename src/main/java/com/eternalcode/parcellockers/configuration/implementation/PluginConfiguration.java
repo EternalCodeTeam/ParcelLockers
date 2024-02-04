@@ -38,7 +38,7 @@ public class PluginConfiguration implements ReloadableConfig {
         public boolean receiveUpdates = true;
 
         @Description({" ", "# The database type. (MYSQL, SQLITE)"})
-        public DatabaseType databaseType = DatabaseType.SQLITE;
+        public DatabaseType databaseType = DatabaseType.MYSQL;
 
         @Description({" ", "# The URL to the database."})
         public String host = "localhost";
@@ -92,6 +92,8 @@ public class PluginConfiguration implements ReloadableConfig {
         public String cannotBreakParcelLocker = "&7» &cYou have no permission to break the parcel locker.";
         public String parcelLockerSuccessfullyDeleted = "&7» &aParcel locker deleted successfully.";
         public String broadcastParcelLockerRemoved = "&7» &cThe parcel locker at &6{X} {Y} {Z} &cin &6{WORLD} &chas been removed by &c{PLAYER}!";
+        public String parcelSent = "&7» &aParcel sent successfully.";
+        public String parcelFailedToSend = "&7» &cAn error occurred while sending the parcel. Check the console for more information.";
         @Description({" ", "# The parcel info message."})
         public List<String> parcelInfoMessages = List.of(
                 "&7» &6Parcel info:",
@@ -190,6 +192,14 @@ public class PluginConfiguration implements ReloadableConfig {
                 .setName("")
                 .setLore(Collections.emptyList())
                 .setType(Material.BLUE_STAINED_GLASS_PANE);
+
+        // parcel submit item
+        @Description({" ", "# The item of the parcel submit button"})
+        public ConfigItem submitParcelItem = new ConfigItem()
+                .setName("&aSubmit parcel")
+                .setLore(List.of("&aClick to submit the parcel.", "&cProceed with caution! This action is final and cannot be undone."))
+                .setType(Material.WRITABLE_BOOK)
+                .setGlow(true);
 
         @Description({" ", "# The item of the parcel list button"})
         public ConfigItem myParcelsItem = new ConfigItem()

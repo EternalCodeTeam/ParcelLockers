@@ -3,7 +3,9 @@ package com.eternalcode.parcellockers.locker.gui;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepositoryImpl;
+import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.gui.ParcelSendingGUI;
+import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryImpl;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import net.kyori.adventure.text.Component;
@@ -19,12 +21,16 @@ public class LockerMainGUI extends GuiView {
     private final MiniMessage miniMessage;
     private final PluginConfiguration config;
     private final ItemStorageRepositoryImpl itemStorageRepository;
+    private final ParcelRepositoryImpl parcelRepository;
+    private final NotificationAnnouncer announcer;
 
-    public LockerMainGUI(Plugin plugin, MiniMessage miniMessage, PluginConfiguration config, ItemStorageRepositoryImpl itemStorageRepository) {
+    public LockerMainGUI(Plugin plugin, MiniMessage miniMessage, PluginConfiguration config, ItemStorageRepositoryImpl itemStorageRepository, ParcelRepositoryImpl parcelRepository, NotificationAnnouncer announcer) {
         this.plugin = plugin;
         this.miniMessage = miniMessage;
         this.config = config;
         this.itemStorageRepository = itemStorageRepository;
+        this.parcelRepository = parcelRepository;
+        this.announcer = announcer;
     }
 
     @Override
@@ -52,7 +58,7 @@ public class LockerMainGUI extends GuiView {
         }
 
         gui.setItem(20, this.config.guiSettings.parcelLockerCollectItem.toGuiItem(event -> event.setCancelled(true)));
-        gui.setItem(22, this.config.guiSettings.parcelLockerSendItem.toGuiItem(event -> new ParcelSendingGUI(plugin, this.config, this.miniMessage, itemStorageRepository).show(player)));
+        gui.setItem(22, this.config.guiSettings.parcelLockerSendItem.toGuiItem(event -> new ParcelSendingGUI(plugin, this.config, this.miniMessage, itemStorageRepository, parcelRepository, announcer).show(player)));
         gui.setItem(24, this.config.guiSettings.parcelLockerStatusItem.toGuiItem());
         gui.setItem(49, closeItem);
 
