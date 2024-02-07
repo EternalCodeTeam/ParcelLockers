@@ -2,7 +2,7 @@ package com.eternalcode.parcellockers.locker.controller;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepositoryImpl;
-import com.eternalcode.parcellockers.locker.gui.LockerMainGUI;
+import com.eternalcode.parcellockers.gui.implementation.locker.LockerMainGUI;
 import com.eternalcode.parcellockers.locker.repository.LockerRepositoryImpl;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryImpl;
@@ -55,7 +55,6 @@ public class LockerInteractionController implements Listener {
         if (this.parcelLockerRepositoryImpl.isInCache(blockPos)) {
             event.setCancelled(true);
             new LockerMainGUI(plugin, this.miniMessage, this.config, itemStorageRepository, parcelRepository, announcer).show(player);
-            // TODO: Fix LockerMainGUI constructor
         }
     }
 }

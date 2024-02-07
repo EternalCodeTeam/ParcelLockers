@@ -1,8 +1,7 @@
-package com.eternalcode.parcellockers.parcel.gui;
+package com.eternalcode.parcellockers.gui.implementation.remote;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.gui.GuiView;
-import com.eternalcode.parcellockers.locker.gui.MainGUI;
 import com.eternalcode.parcellockers.locker.repository.LockerRepositoryImpl;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryImpl;

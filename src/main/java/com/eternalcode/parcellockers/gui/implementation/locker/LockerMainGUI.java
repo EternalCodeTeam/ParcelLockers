@@ -1,10 +1,9 @@
-package com.eternalcode.parcellockers.locker.gui;
+package com.eternalcode.parcellockers.gui.implementation.locker;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepositoryImpl;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
-import com.eternalcode.parcellockers.parcel.gui.ParcelSendingGUI;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryImpl;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;

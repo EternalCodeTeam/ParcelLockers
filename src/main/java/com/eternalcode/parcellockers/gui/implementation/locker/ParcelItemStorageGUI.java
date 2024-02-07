@@ -1,4 +1,4 @@
-package com.eternalcode.parcellockers.parcel.gui;
+package com.eternalcode.parcellockers.gui.implementation.locker;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.itemstorage.ItemStorage;

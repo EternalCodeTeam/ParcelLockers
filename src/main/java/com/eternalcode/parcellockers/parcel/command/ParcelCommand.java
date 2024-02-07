@@ -2,13 +2,13 @@ package com.eternalcode.parcellockers.parcel.command;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.locker.Locker;
-import com.eternalcode.parcellockers.locker.gui.MainGUI;
+import com.eternalcode.parcellockers.gui.implementation.remote.MainGUI;
 import com.eternalcode.parcellockers.locker.repository.LockerRepositoryImpl;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelManager;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
-import com.eternalcode.parcellockers.parcel.gui.ParcelListGUI;
+import com.eternalcode.parcellockers.gui.implementation.remote.ParcelListGUI;
 import com.eternalcode.parcellockers.util.RandomUtil;
 import dev.rollczi.litecommands.annotations.argument.Arg;
 import dev.rollczi.litecommands.annotations.command.Command;
