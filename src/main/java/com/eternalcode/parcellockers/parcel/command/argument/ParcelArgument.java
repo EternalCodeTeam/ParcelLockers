@@ -1,7 +1,7 @@
 package com.eternalcode.parcellockers.parcel.command.argument;
 
 import com.eternalcode.parcellockers.parcel.Parcel;
-import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryImpl;
+import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import dev.rollczi.litecommands.argument.Argument;
 import dev.rollczi.litecommands.argument.parser.ParseResult;
 import dev.rollczi.litecommands.argument.resolver.ArgumentResolver;
@@ -15,9 +15,9 @@ import java.util.UUID;
 
 public class ParcelArgument extends ArgumentResolver<CommandSender, Parcel> {
 
-    private final ParcelRepositoryImpl databaseService;
+    private final ParcelRepository databaseService;
 
-    public ParcelArgument(ParcelRepositoryImpl cache) {
+    public ParcelArgument(ParcelRepository cache) {
         this.databaseService = cache;
     }
 

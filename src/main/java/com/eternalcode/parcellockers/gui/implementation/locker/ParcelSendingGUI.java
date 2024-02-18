@@ -3,11 +3,11 @@ package com.eternalcode.parcellockers.gui.implementation.locker;
 import com.eternalcode.parcellockers.configuration.implementation.ConfigItem;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.gui.GuiView;
-import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepositoryImpl;
+import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
-import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryImpl;
+import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import net.kyori.adventure.text.Component;
@@ -25,13 +25,13 @@ public class ParcelSendingGUI extends GuiView {
     private final BukkitScheduler scheduler;
     private final PluginConfiguration config;
     private final MiniMessage miniMessage;
-    private final ItemStorageRepositoryImpl itemStorageRepository;
-    private final ParcelRepositoryImpl parcelRepository;
+    private final ItemStorageRepository itemStorageRepository;
+    private final ParcelRepository parcelRepository;
     private final NotificationAnnouncer announcer;
     private ParcelSize size;
     private boolean priority;
 
-    public ParcelSendingGUI(Plugin plugin, PluginConfiguration config, MiniMessage miniMessage, ItemStorageRepositoryImpl itemStorageRepository, ParcelRepositoryImpl parcelRepository, NotificationAnnouncer announcer) {
+    public ParcelSendingGUI(Plugin plugin, PluginConfiguration config, MiniMessage miniMessage, ItemStorageRepository itemStorageRepository, ParcelRepository parcelRepository, NotificationAnnouncer announcer) {
         this.plugin = plugin;
         this.config = config;
         this.miniMessage = miniMessage;
@@ -89,7 +89,9 @@ public class ParcelSendingGUI extends GuiView {
                 if (throwable != null) {
                     announcer.sendMessage(player, settings.messages.parcelFailedToSend);
                     throwable.printStackTrace();
+                    return;
                 }
+                announcer.sendMessage(player, settings.messages.parcelSent);
             }).orTimeout(2, TimeUnit.SECONDS));
 
         GuiItem closeItem = guiSettings.closeItem.toGuiItem(event -> new LockerMainGUI(plugin, this.miniMessage, this.config, itemStorageRepository, parcelRepository, announcer).show(player));

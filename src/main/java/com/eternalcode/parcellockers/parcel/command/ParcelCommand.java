@@ -1,14 +1,14 @@
 package com.eternalcode.parcellockers.parcel.command;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
-import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.gui.implementation.remote.MainGUI;
-import com.eternalcode.parcellockers.locker.repository.LockerRepositoryImpl;
+import com.eternalcode.parcellockers.gui.implementation.remote.ParcelListGUI;
+import com.eternalcode.parcellockers.locker.Locker;
+import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelManager;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
-import com.eternalcode.parcellockers.gui.implementation.remote.ParcelListGUI;
 import com.eternalcode.parcellockers.util.RandomUtil;
 import dev.rollczi.litecommands.annotations.argument.Arg;
 import dev.rollczi.litecommands.annotations.command.Command;
@@ -33,14 +33,14 @@ import java.util.UUID;
 public class ParcelCommand {
 
     private final Server server;
-    private final LockerRepositoryImpl lockerRepository;
+    private final LockerRepository lockerRepository;
     private final NotificationAnnouncer announcer;
     private final PluginConfiguration config;
     private final MainGUI mainGUI;
     private final ParcelListGUI parcelListGUI;
     private final ParcelManager parcelManager;
 
-    public ParcelCommand(Server server, LockerRepositoryImpl lockerRepository, NotificationAnnouncer announcer, PluginConfiguration config, MainGUI mainGUI, ParcelListGUI parcelListGUI, ParcelManager parcelManager) {
+    public ParcelCommand(Server server, LockerRepository lockerRepository, NotificationAnnouncer announcer, PluginConfiguration config, MainGUI mainGUI, ParcelListGUI parcelListGUI, ParcelManager parcelManager) {
         this.server = server;
         this.lockerRepository = lockerRepository;
         this.announcer = announcer;

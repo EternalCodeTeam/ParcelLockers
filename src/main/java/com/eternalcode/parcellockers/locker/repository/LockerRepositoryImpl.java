@@ -134,6 +134,7 @@ public class LockerRepositoryImpl extends AbstractDatabaseService implements Loc
         return list;
     }
 
+    @Override
     public Optional<Locker> findLocker(UUID uuid) {
         if (this.isInCache(uuid)) {
             return Optional.ofNullable(this.cache.get(uuid));
@@ -151,18 +152,22 @@ public class LockerRepositoryImpl extends AbstractDatabaseService implements Loc
         this.cache.remove(uuid);
     }
 
+    @Override
     public Map<UUID, Locker> cache() {
         return cache;
     }
 
+    @Override
     public Map<Position, UUID> positionCache() {
         return Collections.unmodifiableMap(this.positionCache);
     }
 
+    @Override
     public boolean isInCache(Position position) {
         return this.positionCache().containsKey(position);
     }
 
+    @Override
     public boolean isInCache(UUID uuid) {
         return this.cache.containsKey(uuid);
     }

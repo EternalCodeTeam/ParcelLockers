@@ -2,9 +2,9 @@ package com.eternalcode.parcellockers.gui.implementation.locker;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.gui.GuiView;
-import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepositoryImpl;
+import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
-import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryImpl;
+import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import net.kyori.adventure.text.Component;
@@ -19,11 +19,11 @@ public class LockerMainGUI extends GuiView {
     private final Plugin plugin;
     private final MiniMessage miniMessage;
     private final PluginConfiguration config;
-    private final ItemStorageRepositoryImpl itemStorageRepository;
-    private final ParcelRepositoryImpl parcelRepository;
+    private final ItemStorageRepository itemStorageRepository;
+    private final ParcelRepository parcelRepository;
     private final NotificationAnnouncer announcer;
 
-    public LockerMainGUI(Plugin plugin, MiniMessage miniMessage, PluginConfiguration config, ItemStorageRepositoryImpl itemStorageRepository, ParcelRepositoryImpl parcelRepository, NotificationAnnouncer announcer) {
+    public LockerMainGUI(Plugin plugin, MiniMessage miniMessage, PluginConfiguration config, ItemStorageRepository itemStorageRepository, ParcelRepository parcelRepository, NotificationAnnouncer announcer) {
         this.plugin = plugin;
         this.miniMessage = miniMessage;
         this.config = config;

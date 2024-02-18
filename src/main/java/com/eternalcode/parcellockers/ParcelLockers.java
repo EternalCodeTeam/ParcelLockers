@@ -1,18 +1,18 @@
 package com.eternalcode.parcellockers;
 
-import com.eternalcode.parcellockers.command.argument.PlayerArgument;
-import com.eternalcode.parcellockers.command.argument.UUIDArgument;
 import com.eternalcode.parcellockers.command.handler.InvalidUsageImpl;
 import com.eternalcode.parcellockers.command.handler.PermissionMessage;
 import com.eternalcode.parcellockers.configuration.ConfigurationManager;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.database.DataSourceFactory;
+import com.eternalcode.parcellockers.gui.implementation.remote.MainGUI;
+import com.eternalcode.parcellockers.gui.implementation.remote.ParcelListGUI;
+import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepositoryImpl;
 import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.locker.controller.LockerBreakController;
 import com.eternalcode.parcellockers.locker.controller.LockerInteractionController;
 import com.eternalcode.parcellockers.locker.controller.LockerPlaceController;
-import com.eternalcode.parcellockers.gui.implementation.remote.MainGUI;
 import com.eternalcode.parcellockers.locker.repository.LockerRepositoryImpl;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.Parcel;
@@ -20,9 +20,14 @@ import com.eternalcode.parcellockers.parcel.ParcelManager;
 import com.eternalcode.parcellockers.parcel.command.ParcelCommand;
 import com.eternalcode.parcellockers.parcel.command.argument.ParcelArgument;
 import com.eternalcode.parcellockers.parcel.command.argument.ParcelLockerArgument;
-import com.eternalcode.parcellockers.gui.implementation.remote.ParcelListGUI;
+import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryImpl;
 import com.eternalcode.parcellockers.updater.UpdaterService;
+import com.eternalcode.parcellockers.user.LoadUserController;
+import com.eternalcode.parcellockers.user.PrepareUserController;
+import com.eternalcode.parcellockers.user.UserManager;
+import com.eternalcode.parcellockers.user.UserRepository;
+import com.eternalcode.parcellockers.user.UserRepositoryImpl;
 import com.eternalcode.parcellockers.util.legacy.LegacyColorProcessor;
 import com.google.common.base.Stopwatch;
 import com.zaxxer.hikari.HikariDataSource;
@@ -40,12 +45,10 @@ import net.milkbowl.vault.economy.Economy;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Arrays;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -92,20 +95,21 @@ public final class ParcelLockers extends JavaPlugin {
 
         LockerRepositoryImpl parcelLockerRepositoryImpl = new LockerRepositoryImpl(dataSource);
         parcelLockerRepositoryImpl.updateCaches();
-        ItemStorageRepositoryImpl itemStorageRepository = new ItemStorageRepositoryImpl(dataSource);
+        ItemStorageRepository itemStorageRepository = new ItemStorageRepositoryImpl(dataSource);
 
-        ParcelRepositoryImpl parcelRepository = new ParcelRepositoryImpl(dataSource);
+        ParcelRepository parcelRepository = new ParcelRepositoryImpl(dataSource);
 
         ParcelManager parcelManager = new ParcelManager(config, announcer, parcelRepository);
 
-        MainGUI mainGUI = new MainGUI(this, server, miniMessage, config, parcelRepository, parcelLockerRepositoryImpl);
-        ParcelListGUI parcelListGUI = new ParcelListGUI(this, server, miniMessage, config, parcelRepository, parcelLockerRepositoryImpl, mainGUI);
+        UserRepository userRepository = new UserRepositoryImpl(dataSource);
+        UserManager userManager = new UserManager(userRepository);
+
+        MainGUI mainGUI = new MainGUI(this, server, miniMessage, config, parcelRepository, parcelLockerRepositoryImpl, userManager);
+        ParcelListGUI parcelListGUI = new ParcelListGUI(this, server, miniMessage, config, parcelRepository, parcelLockerRepositoryImpl, userManager, mainGUI);
 
         this.liteCommands = LiteCommandsBukkit.builder("parcellockers", this)
             .argument(Parcel.class, new ParcelArgument(parcelRepository))
-            .argument(Player.class, new PlayerArgument(server, config))
             .argument(Locker.class, new ParcelLockerArgument(parcelLockerRepositoryImpl))
-            .argument(UUID.class, new UUIDArgument(parcelRepository))
             .extension(new LiteAdventureExtension<>())
             .message(LiteBukkitMessages.PLAYER_ONLY, config.messages.onlyForPlayers)
             .commands(LiteCommandsAnnotations.of(
@@ -125,13 +129,15 @@ public final class ParcelLockers extends JavaPlugin {
         Stream.of(
             new LockerInteractionController(this, parcelRepository, parcelLockerRepositoryImpl, itemStorageRepository, miniMessage, config, announcer),
             new LockerPlaceController(config, this, parcelLockerRepositoryImpl, announcer),
-            new LockerBreakController(parcelLockerRepositoryImpl, announcer, config.messages)
+            new LockerBreakController(parcelLockerRepositoryImpl, announcer, config.messages),
+            new PrepareUserController(userManager),
+            new LoadUserController(userManager, server)
         ).forEach(controller -> server.getPluginManager().registerEvents(controller, this));
 
         new Metrics(this, 17677);
         new UpdaterService(this.getDescription());
 
-        long millis = started.stop().elapsed(TimeUnit.MILLISECONDS);
+        long millis = started.elapsed(TimeUnit.MILLISECONDS);
         this.getLogger().log(Level.INFO, "Successfully enabled ParcelLockers in {0}ms", millis);
     }
 

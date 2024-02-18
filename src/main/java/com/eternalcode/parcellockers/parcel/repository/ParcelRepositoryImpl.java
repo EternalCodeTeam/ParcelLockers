@@ -71,33 +71,6 @@ public class ParcelRepositoryImpl extends AbstractDatabaseService implements Par
     }
 
     @Override
-    public CompletableFuture<Void> update(Parcel newParcel) {
-        return this.execute("UPDATE `parcels` SET " +
-            "`name` = ?, " +
-            "`description` = ?, " +
-            "`priority` = ?, " +
-            "`receiver` = ?, " +
-            "`size` = ?, " +
-            "`entryLocker` = ?, " +
-            "`destinationLocker` = ?, " +
-            "`sender` = ? " +
-            "WHERE `uuid` = ?", statement -> {
-            statement.setString(1, newParcel.name());
-            statement.setString(2, newParcel.description());
-            statement.setBoolean(3, newParcel.priority());
-            statement.setString(4, newParcel.receiver().toString());
-            statement.setString(5, newParcel.size().name());
-            statement.setString(6, newParcel.entryLocker().toString());
-            statement.setString(7, newParcel.destinationLocker().toString());
-            statement.setString(8, newParcel.sender().toString());
-            statement.setString(9, newParcel.uuid().toString());
-            statement.execute();
-            
-            this.addParcelToCache(newParcel);
-        });
-    }
-
-    @Override
     public CompletableFuture<Optional<Parcel>> findByUUID(UUID uuid) {
         return this.supplyExecute("SELECT * FROM `parcels` WHERE `uuid` = ?", statement -> {
             statement.setString(1, uuid.toString());

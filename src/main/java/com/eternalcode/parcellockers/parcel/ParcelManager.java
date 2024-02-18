@@ -2,16 +2,16 @@ package com.eternalcode.parcellockers.parcel;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
-import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryImpl;
+import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import org.bukkit.command.CommandSender;
 
 public class ParcelManager {
 
     private final PluginConfiguration config;
     private final NotificationAnnouncer announcer;
-    private final ParcelRepositoryImpl parcelRepository;
+    private final ParcelRepository parcelRepository;
 
-    public ParcelManager(PluginConfiguration config, NotificationAnnouncer announcer, ParcelRepositoryImpl parcelRepository) {
+    public ParcelManager(PluginConfiguration config, NotificationAnnouncer announcer, ParcelRepository parcelRepository) {
         this.config = config;
         this.announcer = announcer;
         this.parcelRepository = parcelRepository;

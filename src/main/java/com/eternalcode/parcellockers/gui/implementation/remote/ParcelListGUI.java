@@ -4,10 +4,12 @@ import com.eternalcode.parcellockers.configuration.implementation.ConfigItem;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.locker.Locker;
-import com.eternalcode.parcellockers.locker.repository.LockerRepositoryImpl;
+import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.parcel.Parcel;
-import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryImpl;
+import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.shared.Page;
+import com.eternalcode.parcellockers.user.UserManager;
+import com.spotify.futures.CompletableFutures;
 import dev.triumphteam.gui.builder.item.ItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
@@ -18,13 +20,15 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.Blocking;
 import panda.utilities.text.Formatter;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public class ParcelListGUI extends GuiView {
 
@@ -32,21 +36,23 @@ public class ParcelListGUI extends GuiView {
     private final Server server;
     private final MiniMessage miniMessage;
     private final PluginConfiguration config;
-    private final ParcelRepositoryImpl parcelRepository;
-    private final LockerRepositoryImpl lockerRepository;
+    private final ParcelRepository parcelRepository;
+    private final LockerRepository lockerRepository;
+    private final UserManager userManager;
     private final MainGUI mainGUI;
 
     private static final int WIDTH = 7;
     private static final int HEIGHT = 4;
     private static final Page FIRST_PAGE = new Page(0, WIDTH * HEIGHT);
 
-    public ParcelListGUI(Plugin plugin, Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelRepositoryImpl parcelRepository, LockerRepositoryImpl lockerRepository, MainGUI mainGUI) {
+    public ParcelListGUI(Plugin plugin, Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelRepository parcelRepository, LockerRepository lockerRepository, UserManager userManager, MainGUI mainGUI) {
         this.plugin = plugin;
         this.server = server;
         this.miniMessage = miniMessage;
         this.config = config;
         this.parcelRepository = parcelRepository;
         this.lockerRepository = lockerRepository;
+        this.userManager = userManager;
         this.mainGUI = mainGUI;
     }
 
@@ -91,13 +97,10 @@ public class ParcelListGUI extends GuiView {
 
             for (Parcel parcel : result.parcels()) {
                 ItemBuilder parcelItem = item.toBuilder();
-                /*if (!parcel.recipients().contains(player.getUniqueId())) {
-                    continue;
-                }*/
 
                 List<Component> newLore = this.replaceParcelPlaceholders(parcel, item.lore).stream()
                     .map(line -> this.miniMessage.deserialize(line))
-                    .toList();
+                    .toList(); // TODO: Fix NPE here
                 parcelItem.lore(newLore);
                 parcelItem.name(this.miniMessage.deserialize(item.name.replace("{NAME}", parcel.name())));
 
@@ -124,26 +127,29 @@ public class ParcelListGUI extends GuiView {
 
     }
 
+    @Blocking
     private List<String> replaceParcelPlaceholders(Parcel parcel, List<String> lore) {
         if (lore == null || lore.isEmpty()) {
             return Collections.emptyList();
         }
 
+        String senderName = this.getName(parcel.sender()).join();
+        String receiver = this.getName(parcel.receiver()).join();
+
+        List<String> recipients = parcel.recipients().stream()
+            .map(uuid -> this.getName(uuid))
+            .collect(CompletableFutures.joinList())
+            .join();
+
         Formatter formatter = new Formatter()
             .register("{UUID}", parcel.uuid().toString())
             .register("{NAME}", parcel.name())
-            .register("{SENDER}", this.server.getPlayer(parcel.sender()).getName())
-            .register("{RECEIVER}", this.server.getPlayer(parcel.receiver()).getName())
+            .register("{SENDER}", senderName)
+            .register("{RECEIVER}", receiver)
             .register("{SIZE}", parcel.size().toString())
             .register("{PRIORITY}", parcel.priority() ? "&aYes" : "&cNo")
             .register("{DESCRIPTION}", parcel.description())
-            .register("{RECIPIENTS}", parcel.recipients().stream()
-                .map(this.server::getPlayer)
-                .filter(Objects::nonNull)
-                .map(Player::getName)
-                .toList()
-                .toString()
-            );
+            .register("{RECIPIENTS}", recipients.toString());
 
         Optional<Locker> lockerOptional = this.lockerRepository.findByUUID(parcel.destinationLocker()).join();
 
@@ -165,6 +171,13 @@ public class ParcelListGUI extends GuiView {
         }
 
         return newLore;
+    }
+
+    private CompletableFuture<String> getName(UUID userUuid) {
+        return this.userManager.getUser(userUuid).thenApply(userOptional -> userOptional
+                .map(user -> user.name())
+                .orElse("Unknown")
+            );
     }
 
 }

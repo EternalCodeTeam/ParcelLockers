@@ -1,7 +1,7 @@
 package com.eternalcode.parcellockers.parcel.command.argument;
 
 import com.eternalcode.parcellockers.locker.Locker;
-import com.eternalcode.parcellockers.locker.repository.LockerRepositoryImpl;
+import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import dev.rollczi.litecommands.argument.Argument;
 import dev.rollczi.litecommands.argument.parser.ParseResult;
 import dev.rollczi.litecommands.argument.resolver.ArgumentResolver;
@@ -12,9 +12,9 @@ import org.bukkit.command.CommandSender;
 
 public class ParcelLockerArgument extends ArgumentResolver<CommandSender, Locker> {
 
-    private final LockerRepositoryImpl lockerRepository;
+    private final LockerRepository lockerRepository;
 
-    public ParcelLockerArgument(LockerRepositoryImpl lockerRepository) {
+    public ParcelLockerArgument(LockerRepository lockerRepository) {
         this.lockerRepository = lockerRepository;
     }
 

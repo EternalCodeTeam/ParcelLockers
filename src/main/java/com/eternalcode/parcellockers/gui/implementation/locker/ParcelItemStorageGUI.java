@@ -2,10 +2,10 @@ package com.eternalcode.parcellockers.gui.implementation.locker;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.itemstorage.ItemStorage;
-import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepositoryImpl;
+import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
-import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryImpl;
+import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.util.InventoryUtil;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
@@ -28,12 +28,12 @@ public class ParcelItemStorageGUI {
     private final Plugin plugin;
     private final PluginConfiguration config;
     private final MiniMessage miniMessage;
-    private final ItemStorageRepositoryImpl itemStorageRepository;
-    private final ParcelRepositoryImpl parcelRepository;
+    private final ItemStorageRepository itemStorageRepository;
+    private final ParcelRepository parcelRepository;
     private final ParcelSize size;
     private final NotificationAnnouncer announcer;
 
-    public ParcelItemStorageGUI(Plugin plugin, PluginConfiguration config, MiniMessage miniMessage, ItemStorageRepositoryImpl itemStorageRepository, ParcelRepositoryImpl parcelRepository, ParcelSize size, NotificationAnnouncer announcer) {
+    public ParcelItemStorageGUI(Plugin plugin, PluginConfiguration config, MiniMessage miniMessage, ItemStorageRepository itemStorageRepository, ParcelRepository parcelRepository, ParcelSize size, NotificationAnnouncer announcer) {
         this.plugin = plugin;
         this.config = config;
         this.miniMessage = miniMessage;
