@@ -32,7 +32,7 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew clean shadowJar
       - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v4.2.0
+        uses: actions/upload-artifact@v4.3.1
         with:
           name: 'ParcelLockers (MC 1.8.8 - 1.20.x)'
           path: build/libs/ParcelLockers*
