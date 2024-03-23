@@ -26,8 +26,6 @@ public class UserManager {
             return CompletableFuture.completedFuture(Optional.of(user));
         }
 
-        // TODO fetch from database
-
         return CompletableFuture.completedFuture(Optional.empty());
     }
 
@@ -37,8 +35,6 @@ public class UserManager {
         if (user != null) {
             return CompletableFuture.completedFuture(Optional.of(user));
         }
-
-        // TODO fetch from database
 
         return CompletableFuture.completedFuture(Optional.empty());
     }

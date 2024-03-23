@@ -92,6 +92,7 @@ public class ParcelSendingGUI extends GuiView {
                     return;
                 }
                 announcer.sendMessage(player, settings.messages.parcelSent);
+                gui.close(player);
             }).orTimeout(2, TimeUnit.SECONDS));
 
         GuiItem closeItem = guiSettings.closeItem.toGuiItem(event -> new LockerMainGUI(plugin, this.miniMessage, this.config, itemStorageRepository, parcelRepository, announcer).show(player));

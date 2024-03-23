@@ -12,6 +12,7 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
+// TODO: Beautify this file
 public class PluginConfiguration implements ReloadableConfig {
 
     @Description({" ", "# Parcel Lockers plugin configuration file."})
@@ -125,7 +126,7 @@ public class PluginConfiguration implements ReloadableConfig {
 
         @Description({" ", "# The item of the small parcel size button"})
         public ConfigItem smallParcelSizeItem = new ConfigItem()
-                .setName("&aSmall")
+                .setName("&a✧ Small")
                 .setLore(List.of("&bClick to select the small parcel size."))
                 .setType(Material.LIME_WOOL);
 
@@ -143,24 +144,24 @@ public class PluginConfiguration implements ReloadableConfig {
 
         @Description({" ", "# The item represents selected small parcel size."})
         public ConfigItem selectedSmallParcelSizeItem = new ConfigItem()
-                .setName("&aSmall")
-                .setLore(List.of("&aCurrently selected!"))
+                .setName("&a✧ Small")
+                .setLore(List.of("&a✧ Currently selected!"))
                 .setGlow(true)
-                .setType(Material.LIME_WOOL);
+                .setType(Material.OAK_CHEST_BOAT);
 
         @Description({" ", "# The item represents selected medium parcel size."})
         public ConfigItem selectedMediumParcelSizeItem = new ConfigItem()
                 .setName("&eMedium")
             .setLore(List.of("&aCurrently selected!"))
                 .setGlow(true)
-                .setType(Material.YELLOW_WOOL);
+                .setType(Material.CRYING_OBSIDIAN);
 
         @Description({" ", "# The item represents selected large parcel size."})
         public ConfigItem selectedLargeParcelSizeItem = new ConfigItem()
                 .setName("&cLarge")
             .setLore(List.of("&aCurrently selected!"))
                 .setGlow(true)
-                .setType(Material.RED_WOOL);
+                .setType(Material.RESPAWN_ANCHOR);
 
         @Description({" ", "# The item of the priority button"})
         public ConfigItem priorityItem = new ConfigItem()
@@ -198,7 +199,7 @@ public class PluginConfiguration implements ReloadableConfig {
         public ConfigItem submitParcelItem = new ConfigItem()
                 .setName("&aSubmit parcel")
                 .setLore(List.of("&aClick to submit the parcel.", "&cProceed with caution! This action is final and cannot be undone."))
-                .setType(Material.WRITABLE_BOOK)
+                .setType(Material.BARREL)
                 .setGlow(true);
 
         @Description({" ", "# The item of the parcel list button"})

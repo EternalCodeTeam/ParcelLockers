@@ -72,7 +72,7 @@ public class SentParcelsGUI extends GuiView {
 
                 gui.addItem(parcelItem);
             }
-            this.server.getScheduler().runTask(this.plugin, () -> gui.open(player)); // TODO: Code doesn't execute here
+            this.server.getScheduler().runTask(this.plugin, () -> gui.open(player));
         }).whenComplete(new LastExceptionHandler());
     }
 
