@@ -12,4 +12,6 @@ public final class AdventureUtil {
     private AdventureUtil() {
         throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
     }
+
+
 }

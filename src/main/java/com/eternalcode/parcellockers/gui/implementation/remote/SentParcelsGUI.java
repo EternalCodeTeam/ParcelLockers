@@ -1,11 +1,11 @@
-package com.eternalcode.parcellockers.parcel.gui;
+package com.eternalcode.parcellockers.gui.implementation.remote;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.gui.GuiView;
-import com.eternalcode.parcellockers.locker.gui.MainGUI;
-import com.eternalcode.parcellockers.locker.repository.LockerRepositoryImpl;
+import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.parcel.Parcel;
-import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryImpl;
+import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
+import com.eternalcode.parcellockers.shared.LastExceptionHandler;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
@@ -26,11 +26,11 @@ public class SentParcelsGUI extends GuiView {
     private final Server server;
     private final MiniMessage miniMessage;
     private final PluginConfiguration config;
-    private final ParcelRepositoryImpl parcelRepository;
-    private final LockerRepositoryImpl lockerRepository;
+    private final ParcelRepository parcelRepository;
+    private final LockerRepository lockerRepository;
     private final MainGUI mainGUI;
 
-    public SentParcelsGUI(Plugin plugin, Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelRepositoryImpl parcelRepository, LockerRepositoryImpl lockerRepository, MainGUI mainGUI) {
+    public SentParcelsGUI(Plugin plugin, Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelRepository parcelRepository, LockerRepository lockerRepository, MainGUI mainGUI) {
         this.plugin = plugin;
         this.server = server;
         this.miniMessage = miniMessage;
@@ -48,10 +48,10 @@ public class SentParcelsGUI extends GuiView {
             .disableAllInteractions()
             .create();
 
-        GuiItem parcelItem = this.config.guiSettings.parcelItem.toGuiItem(this.miniMessage);
-        GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem(this.miniMessage);
-        GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem(this.miniMessage);
-        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(this.miniMessage, event -> this.mainGUI.show(player));
+        GuiItem parcelItem = this.config.guiSettings.parcelItem.toGuiItem();
+        GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem();
+        GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem();
+        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(event -> this.mainGUI.show(player));
 
         for (int slot : CORNER_SLOTS) {
             gui.setItem(slot, cornerItem);
@@ -63,7 +63,9 @@ public class SentParcelsGUI extends GuiView {
 
         gui.setItem(49, closeItem);
 
-        this.parcelRepository.findBySender(player.getUniqueId()).whenComplete((parcels, throwable) -> {
+        this.parcelRepository.findBySender(player.getUniqueId()).whenComplete((optionalParcels, throwable) -> {
+            List<Parcel> parcels = optionalParcels.orElse(Collections.emptyList());
+            
             for (Parcel parcel : parcels) {
                 List<String> newLore = this.replaceParcelPlaceholders(parcel, parcelItem.getItemStack().getItemMeta().getLore());
                 parcelItem.getItemStack().getItemMeta().setLore(newLore);
@@ -71,7 +73,7 @@ public class SentParcelsGUI extends GuiView {
                 gui.addItem(parcelItem);
             }
             this.server.getScheduler().runTask(this.plugin, () -> gui.open(player));
-        });
+        }).whenComplete(new LastExceptionHandler());
     }
 
     public List<String> replaceParcelPlaceholders(Parcel parcel, List<String> lore) {
@@ -89,7 +91,7 @@ public class SentParcelsGUI extends GuiView {
             .register("{DESCRIPTION}", parcel.description())
             .register("{RECIPIENTS}", parcel.recipients().stream()
                 .map(Bukkit::getPlayer)
-                .map(Player::getName)
+                .map(player -> player != null ? player.getName() : null)
                 .toList()
                 .toString());
 
@@ -107,4 +109,5 @@ public class SentParcelsGUI extends GuiView {
         }
         return newLore;
     }
+
 }

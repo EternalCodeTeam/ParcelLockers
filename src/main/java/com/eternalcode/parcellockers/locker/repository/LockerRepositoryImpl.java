@@ -70,7 +70,7 @@ public class LockerRepositoryImpl extends AbstractDatabaseService implements Loc
 
     @Override
     public CompletableFuture<List<Locker>> findAll() {
-        return this.supplyExecute("SELECT * FROM `lockers`;", this::extractParcelLockers);
+        return this.supplyExecute("SELECT * FROM `lockers`;", this::extractLockers);
     }
 
 
@@ -105,7 +105,7 @@ public class LockerRepositoryImpl extends AbstractDatabaseService implements Loc
             statement.setInt(1, page.getLimit() + 1);
             statement.setInt(2, page.getOffset());
             
-            List<Locker> lockers = this.extractParcelLockers(statement);
+            List<Locker> lockers = this.extractLockers(statement);
 
             boolean hasNext = lockers.size() > page.getLimit();
             if (hasNext) {
@@ -115,7 +115,7 @@ public class LockerRepositoryImpl extends AbstractDatabaseService implements Loc
         });
     }
 
-    private List<Locker> extractParcelLockers(PreparedStatement statement) throws SQLException {
+    private List<Locker> extractLockers(PreparedStatement statement) throws SQLException {
         List<Locker> list = new ArrayList<>();
         ResultSet rs = statement.executeQuery();
 
@@ -134,11 +134,12 @@ public class LockerRepositoryImpl extends AbstractDatabaseService implements Loc
         return list;
     }
 
+    @Override
     public Optional<Locker> findLocker(UUID uuid) {
         if (this.isInCache(uuid)) {
             return Optional.ofNullable(this.cache.get(uuid));
         }
-        return this.findByUUID(uuid).join();
+        return this.findByUUID(uuid).orTimeout(2, TimeUnit.SECONDS).join();
     }
 
     private void addToCache(Locker locker) {
@@ -147,33 +148,43 @@ public class LockerRepositoryImpl extends AbstractDatabaseService implements Loc
     }
 
     private void removeFromCache(UUID uuid) {
-        this.cache.remove(uuid);
         this.positionCache.remove(this.cache.get(uuid).position());
+        this.cache.remove(uuid);
     }
 
+    @Override
+    public Map<UUID, Locker> cache() {
+        return cache;
+    }
+
+    @Override
     public Map<Position, UUID> positionCache() {
         return Collections.unmodifiableMap(this.positionCache);
     }
 
+    @Override
     public boolean isInCache(Position position) {
         return this.positionCache().containsKey(position);
     }
 
+    @Override
     public boolean isInCache(UUID uuid) {
         return this.cache.containsKey(uuid);
     }
 
-    public CompletableFuture<Void> updatePositionCache() {
+    public CompletableFuture<Void> updateCaches() {
         return this.execute("SELECT * FROM `lockers` WHERE `position` IS NOT NULL;", statement -> {
             ResultSet rs = statement.executeQuery();
 
             this.positionCache.clear();
+            this.cache.clear();
 
             while (rs.next()) {
                 Position position = Position.parse(rs.getString("position"));
                 UUID uuid = UUID.fromString(rs.getString("uuid"));
 
                 this.positionCache.put(position, uuid);
+                this.cache.put(uuid, new Locker(uuid, rs.getString("description"), position));
             }
         });
     }

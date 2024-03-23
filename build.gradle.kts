@@ -21,6 +21,7 @@ repositories {
     maven { url = uri("https://oss.sonatype.org/content/repositories/central") }
     maven { url = uri("https://papermc.io/repo/repository/maven-public/") }
     maven { url = uri("https://repo.eternalcode.pl/releases") }
+    maven { url = uri("https://repo.eternalcode.pl/snapshots") }
     maven { url = uri("https://repository.minecodes.pl/releases") }
 }
 
@@ -29,7 +30,8 @@ dependencies {
     compileOnly("org.spigotmc:spigot-api:1.20.4-R0.1-SNAPSHOT")
     implementation("net.kyori:adventure-platform-bukkit:4.3.2")
     implementation("net.kyori:adventure-text-minimessage:4.16.0")
-    implementation("dev.rollczi.litecommands:bukkit-adventure:2.8.9")
+    implementation("dev.rollczi:litecommands-bukkit:3.1.0")
+    implementation("dev.rollczi:litecommands-adventure:3.1.0")
 
     // skull api
     implementation("dev.rollczi:liteskullapi:1.3.0")
@@ -69,6 +71,12 @@ dependencies {
     // panda-utilities
     implementation("org.panda-lang:panda-utilities:0.5.2-alpha")
 
+    // jackson-bukkit
+    implementation("de.eldoria.jacksonbukkit:paper:1.2.0")
+
+    // completable-futures
+    implementation("com.spotify:completable-futures:0.3.6")
+
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.2")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
@@ -107,11 +115,14 @@ bukkit {
 tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
     options.setIncremental(true)
+    options.compilerArgs.add("-parameters")
 }
 
 tasks {
     runServer {
-        minecraftVersion("1.20.2")
+        minecraftVersion("1.20.4")
+        downloadPlugins.url("https://github.com/MilkBowl/Vault/releases/download/1.7.3/Vault.jar")
+        downloadPlugins.url("https://github.com/EssentialsX/Essentials/releases/download/2.20.1/EssentialsX-2.20.1.jar")
     }
 
     test {

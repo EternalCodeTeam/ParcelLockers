@@ -1,10 +1,12 @@
 package com.eternalcode.parcellockers.configuration.implementation;
 
 
+import com.eternalcode.parcellockers.util.legacy.LegacyColorProcessor;
 import dev.triumphteam.gui.builder.item.ItemBuilder;
 import dev.triumphteam.gui.components.GuiAction;
 import dev.triumphteam.gui.guis.GuiItem;
 import net.dzikoysk.cdn.entity.Contextual;
+import net.dzikoysk.cdn.entity.Exclude;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -13,27 +15,47 @@ import org.bukkit.inventory.ItemFlag;
 import java.util.List;
 
 import static com.eternalcode.parcellockers.util.AdventureUtil.RESET_ITEM;
+import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 @Contextual
 public class ConfigItem {
+
+    @Exclude
+    private static final MiniMessage MINI_MESSAGE = MiniMessage.builder()
+        .postProcessor(new LegacyColorProcessor())
+        .build();
 
     public Material type = Material.STONE;
     public String name = "&fItem name";
     public List<String> lore = List.of("&fFirst line of lore", "&9Second line of lore");
     public boolean glow = false;
 
-    public GuiItem toGuiItem(MiniMessage miniMessage, GuiAction<InventoryClickEvent> action) {
+    public GuiItem toGuiItem(GuiAction<InventoryClickEvent> action) {
         return ItemBuilder.from(this.type)
-            .name(RESET_ITEM.append(miniMessage.deserialize(this.name)))
-            .lore(this.lore.stream().map(element -> RESET_ITEM.append(miniMessage.deserialize(element))).toList())
+            .name(RESET_ITEM.append(MINI_MESSAGE.deserialize(this.name)))
+            .lore(this.lore.stream().map(element -> RESET_ITEM.append(MINI_MESSAGE.deserialize(element))).toList())
             .flags(ItemFlag.HIDE_ATTRIBUTES)
             .flags(ItemFlag.HIDE_ENCHANTS)
             .glow(this.glow)
             .asGuiItem(action);
     }
 
-    public GuiItem toGuiItem(MiniMessage miniMessage) {
-        return this.toGuiItem(miniMessage, event -> {});
+    public @NotNull ItemBuilder toBuilder() {
+        return ItemBuilder.from(this.type)
+            .name(RESET_ITEM.append(MINI_MESSAGE.deserialize(this.name)))
+            .lore(this.lore.stream().map(element -> RESET_ITEM.append(MINI_MESSAGE.deserialize(element))).toList())
+            .flags(ItemFlag.HIDE_ATTRIBUTES)
+            .flags(ItemFlag.HIDE_ENCHANTS)
+            .glow(this.glow);
+    }
+
+    public GuiItem toGuiItem() {
+        return this.toGuiItem(event -> {});
+    }
+
+    public ItemStack toItemStack() {
+        return this.toBuilder().build();
     }
 
     public ConfigItem setType(Material type) {

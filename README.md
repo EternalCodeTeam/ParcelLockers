@@ -47,7 +47,7 @@ more.
 - [ ] Add delivery time, so the parcel can be picked up only in a specific time
 - [ ] Parcel permissions for user
 - [ ] Parcel return logic
-- [ ] Banned parcel items (configurable)
+- [x] Banned parcel items (configurable)
 - [ ] Parcel fee
 - [ ] Rewrite database to ORMLite (far in future)
 - [x] Add "business" logic
@@ -91,6 +91,7 @@ more.
 - [Errorprone](https://github.com/google/error-prone)
 - [TriumphGUI](https://github.com/TriumphTeam/triumph-gui)
 - [bStats](https://bstats.org/)
+- [jackson-bukkit](https://github.com/eldoriarpg/jackson-bukkit)
 
 ParcelLockers is a advanced user delivery plugin, dedicated for Spigot-based servers.
 
