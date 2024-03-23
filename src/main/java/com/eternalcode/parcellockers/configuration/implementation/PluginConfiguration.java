@@ -246,7 +246,7 @@ public class PluginConfiguration implements ReloadableConfig {
                 .setName("&6{NAME}")
                 .setLore(List.of(
                                 "&6UUID: &e{UUID}",
-                                "&Sender: &e{SENDER}",
+                                "&6Sender: &e{SENDER}",
                                 "&6Receiver: &e{RECEIVER}",
                                 "&6Size: &e{SIZE}",
                                 "&6Position: &6X: &e{POSITION_X}, &6Y: &e{POSITION_Y}, &6Z: &e{POSITION_Z}",
