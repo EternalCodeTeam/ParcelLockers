@@ -14,70 +14,76 @@ import java.util.List;
 
 public class PluginConfiguration implements ReloadableConfig {
 
-    @Description({" ", "# Parcel Lockers plugin configuration file."})
+    @Description({ " ", "# Parcel Lockers plugin configuration file." })
     public Settings settings = new Settings();
 
-    @Description({" ", "# The plugin messages."})
+    @Description({ " ", "# The plugin messages." })
     public Messages messages = new Messages();
 
-    @Description({" ", "# The plugin GUI settings."})
+    @Description({ " ", "# The plugin GUI settings." })
     public GuiSettings guiSettings = new GuiSettings();
+
+    @Override
+    public Resource resource(File folder) {
+        return Source.of(folder, "config.yml");
+    }
 
     @Contextual
     public static class Settings {
 
-        @Description({" ",
-                "# Should we enable Sentry integration?",
-                "# Sentry is a service that collects errors and other information about the plugin.",
-                "# It is used to improve the plugin and fix bugs.",
-                "# It is also strongly recommended to enable this option.",
-                "# You can learn more about Sentry here: https://sentry.io/"})
+        @Description({ " ",
+            "# Should we enable Sentry integration?",
+            "# Sentry is a service that collects errors and other information about the plugin.",
+            "# It is used to improve the plugin and fix bugs.",
+            "# It is also strongly recommended to enable this option.",
+            "# You can learn more about Sentry here: https://sentry.io/" })
         public boolean enableSentry = true;
 
-        @Description({" ", "# Whether the player after entering the server should receive information about the new version of the plugin?"})
+        @Description({ " ", "# Whether the player after entering the server should receive information about the new version of the plugin?" })
         public boolean receiveUpdates = true;
 
-        @Description({" ", "# The database type. (MYSQL, SQLITE)"})
+        @Description({ " ", "# The database type. (MYSQL, SQLITE)" })
         public DatabaseType databaseType = DatabaseType.MYSQL;
 
-        @Description({" ", "# The URL to the database."})
+        @Description({ " ", "# The URL to the database." })
         public String host = "localhost";
 
-        @Description({" ", "# The database name."})
+        @Description({ " ", "# The database name." })
         public String databaseName = "parcellockers";
 
-        @Description({" ", "# The database user."})
+        @Description({ " ", "# The database user." })
         public String user = "root";
 
-        @Description({" ", "# The database port."})
+        @Description({ " ", "# The database port." })
         public String port = "3306";
 
-        @Description({" ", "# Turn this on to enable SSL (Secure Sockets Layer)"})
+        @Description({ " ", "# Turn this on to enable SSL (Secure Sockets Layer)" })
         public boolean useSSL = false;
 
-        @Description({" ", "# The database password."})
+        @Description({ " ", "# The database password." })
         public String password = "";
 
-        @Description({" ", "# The parcel locker item."})
+        @Description({ " ", "# The parcel locker item." })
         public ConfigItem parcelLockerItem = new ConfigItem()
-                .setName("&3Parcel locker")
-                .setType(Material.CHEST)
-                .setLore(List.of("&bPlace to create a parcel locker."));
+            .setName("&3Parcel locker")
+            .setType(Material.CHEST)
+            .setLore(List.of("&bPlace to create a parcel locker."));
 
-        @Description({" ", "# Small parcel cost."})
+        @Description({ " ", "# Small parcel cost." })
         public double smallParcelCost = 5.0;
 
-        @Description({" ", "# Medium parcel cost."})
+        @Description({ " ", "# Medium parcel cost." })
         public double mediumParcelCost = 10.0;
 
-        @Description({" ", "# Large parcel cost."})
+        @Description({ " ", "# Large parcel cost." })
         public double largeParcelCost = 15.0;
     }
 
     @Contextual
     public static class Messages {
+
         public String onlyForPlayers = "&4✘ &cThis command is only available to players!";
-        public String noPermission = "&4✘ &cYou don't have permission to perform this command! &c(&e{PERMISSION}&c)";
+        public String noPermission = "&4✘ &cYou don't have permission to perform this command! &6(&c{PERMISSION}&6)";
         public String cantFindPlayer = "&4✘ &cThe specified player could not be found!";
         public String invalidUsage = "&3❣ &bCorrect usage: &b{USAGE}";
         public String reload = "&3❣ &bConfiguration has been successfully reloaded!";
@@ -94,220 +100,215 @@ public class PluginConfiguration implements ReloadableConfig {
         public String broadcastParcelLockerRemoved = "&3❣ &bThe parcel locker at &b{X} {Y} {Z} &3in &b{WORLD} &chas been removed by &b{PLAYER}!";
         public String parcelSent = "&2✔ &aParcel sent successfully.";
         public String parcelFailedToSend = "&4✘ &cAn error occurred while sending the parcel. Check the console for more information.";
-        @Description({" ", "# The parcel info message."})
+        @Description({ " ", "# The parcel info message." })
         public List<String> parcelInfoMessages = List.of(
-                "&7» &6Parcel info:",
-                "&6UUID: &e{UUID}",
-                "&6Sender: &e{SENDER}",
-                "&6Receiver: &e{RECEIVER}",
-                "&6Size: &e{SIZE}",
-                "&6Position: &6X: &e{POSITION_X}, &6Y: &e{POSITION_Y}, &6Z: &e{POSITION_Z}",
-                "&6Priority: &e{PRIORITY}",
-                "&6Description: &e{DESCRIPTION}",
-                "&6Recipients: &e{RECIPIENTS}"
+            "&7» &6Parcel info:",
+            "&6UUID: &e{UUID}",
+            "&6Sender: &e{SENDER}",
+            "&6Receiver: &e{RECEIVER}",
+            "&6Size: &e{SIZE}",
+            "&6Position: &6X: &e{POSITION_X}, &6Y: &e{POSITION_Y}, &6Z: &e{POSITION_Z}",
+            "&6Priority: &e{PRIORITY}",
+            "&6Description: &e{DESCRIPTION}",
+            "&6Recipients: &e{RECIPIENTS}"
         );
     }
 
     @Contextual
     public static class GuiSettings {
 
-        @Description({" ", "# The title of the main GUI"})
+        @Description({ " ", "# The title of the main GUI" })
         public String mainGuiTitle = "&3Main menu";
 
-        @Description({" ", "# The title of the parcel list GUI"})
+        @Description({ " ", "# The title of the parcel list GUI" })
         public String parcelListGuiTitle = "&aMy parcels";
 
-        @Description({" ", "# The item of the sent parcels GUI"})
+        @Description({ " ", "# The item of the sent parcels GUI" })
         public String sentParcelsTitle = "&6Sent parcels";
 
-        @Description({" ", "# The item of the parcel locker sending GUI"})
+        @Description({ " ", "# The item of the parcel locker sending GUI" })
         public String parcelLockerSendingGuiTitle = "&3Parcel sending";
 
-        @Description({" ", "# The item of the small parcel size button"})
+        @Description({ " ", "# The item of the small parcel size button" })
         public ConfigItem smallParcelSizeItem = new ConfigItem()
-                .setName("&a✧ Small")
-                .setLore(List.of("&bClick to select the small parcel size."))
-                .setType(Material.LIME_WOOL);
+            .setName("&a✧ Small")
+            .setLore(List.of("&bClick to select the small parcel size."))
+            .setType(Material.LIME_WOOL);
 
-        @Description({" ", "# The item of the medium parcel size button"})
+        @Description({ " ", "# The item of the medium parcel size button" })
         public ConfigItem mediumParcelSizeItem = new ConfigItem()
-                .setName("&e✧ Medium")
-                .setLore(List.of("&bClick to select the medium parcel size."))
-                .setType(Material.YELLOW_WOOL);
+            .setName("&e✧ Medium")
+            .setLore(List.of("&bClick to select the medium parcel size."))
+            .setType(Material.YELLOW_WOOL);
 
-        @Description({" ", "# The item of the large parcel size button"})
+        @Description({ " ", "# The item of the large parcel size button" })
         public ConfigItem largeParcelSizeItem = new ConfigItem()
-                .setName("&c✧ Large")
-                .setLore(List.of("&bClick to select the large parcel size."))
-                .setType(Material.RED_WOOL);
+            .setName("&c✧ Large")
+            .setLore(List.of("&bClick to select the large parcel size."))
+            .setType(Material.RED_WOOL);
 
-        @Description({" ", "# The item represents selected small parcel size."})
+        @Description({ " ", "# The item represents selected small parcel size." })
         public ConfigItem selectedSmallParcelSizeItem = new ConfigItem()
-                .setName("&a✧ Small")
-                .setLore(List.of("&a✧ Currently selected!"))
-                .setGlow(true)
-                .setType(Material.OAK_CHEST_BOAT);
+            .setName("&a✧ Small")
+            .setLore(List.of("&a✧ Currently selected!"))
+            .setGlow(true)
+            .setType(Material.OAK_CHEST_BOAT);
 
-        @Description({" ", "# The item represents selected medium parcel size."})
+        @Description({ " ", "# The item represents selected medium parcel size." })
         public ConfigItem selectedMediumParcelSizeItem = new ConfigItem()
-                .setName("&e✧ Medium")
+            .setName("&e✧ Medium")
             .setLore(List.of("&aCurrently selected!"))
-                .setGlow(true)
-                .setType(Material.CRYING_OBSIDIAN);
+            .setGlow(true)
+            .setType(Material.CRYING_OBSIDIAN);
 
-        @Description({" ", "# The item represents selected large parcel size."})
+        @Description({ " ", "# The item represents selected large parcel size." })
         public ConfigItem selectedLargeParcelSizeItem = new ConfigItem()
-                .setName("&c✧ Large")
+            .setName("&c✧ Large")
             .setLore(List.of("&aCurrently selected!"))
-                .setGlow(true)
-                .setType(Material.RESPAWN_ANCHOR);
+            .setGlow(true)
+            .setType(Material.RESPAWN_ANCHOR);
 
-        @Description({" ", "# The item of the priority button"})
+        @Description({ " ", "# The item of the priority button" })
         public ConfigItem priorityItem = new ConfigItem()
-                .setName("&a✧ Priority")
-                .setLore(List.of("&bClick to select the priority."))
-                .setType(Material.REDSTONE_BLOCK);
+            .setName("&a✧ Priority")
+            .setLore(List.of("&bClick to select the priority."))
+            .setType(Material.REDSTONE_BLOCK);
 
-        @Description({" ", "# The item of the selected priority button"})
+        @Description({ " ", "# The item of the selected priority button" })
         public ConfigItem selectedPriorityItem = new ConfigItem()
             .setName("&a✧ Priority")
             .setLore(List.of("&aCurrently selected!", "&c&oClick to unselect."))
             .setType(Material.REDSTONE_BLOCK)
             .setGlow(true);
 
-        @Description({" ", "# The close button item"})
+        @Description({ " ", "# The close button item" })
         public ConfigItem closeItem = new ConfigItem()
-                .setName("&c☓ Close")
-                .setLore(List.of("&cClick to close the GUI."))
-                .setType(Material.BARRIER);
+            .setName("&c☓ Close")
+            .setLore(List.of("&cClick to close the GUI."))
+            .setType(Material.BARRIER);
 
-        @Description({" ", "# The item of the main GUI"})
+        @Description({ " ", "# The item of the main GUI" })
         public ConfigItem mainGuiBackgroundItem = new ConfigItem()
-                .setName("")
-                .setLore(Collections.emptyList())
-                .setType(Material.GRAY_STAINED_GLASS_PANE);
+            .setName("")
+            .setLore(Collections.emptyList())
+            .setType(Material.GRAY_STAINED_GLASS_PANE);
 
-        @Description({" ", "# The item of the corner GUI item.", "# Purely for decoration purposes."})
+        @Description({ " ", "# The item of the corner GUI item.", "# Purely for decoration purposes." })
         public ConfigItem cornerItem = new ConfigItem()
-                .setName("")
-                .setLore(Collections.emptyList())
-                .setType(Material.BLUE_STAINED_GLASS_PANE);
+            .setName("")
+            .setLore(Collections.emptyList())
+            .setType(Material.BLUE_STAINED_GLASS_PANE);
 
         // parcel submit item
-        @Description({" ", "# The item of the parcel submit button"})
+        @Description({ " ", "# The item of the parcel submit button" })
         public ConfigItem submitParcelItem = new ConfigItem()
-                .setName("&a✔ Submit parcel")
-                .setLore(List.of("&aClick to submit the parcel.", "&cProceed with caution! This action is final and cannot be undone."))
-                .setType(Material.BARREL)
-                .setGlow(true);
+            .setName("&a✔ Submit parcel")
+            .setLore(List.of("&aClick to submit the parcel.", "&cProceed with caution! This action is final and cannot be undone."))
+            .setType(Material.BARREL)
+            .setGlow(true);
 
-        @Description({" ", "# The item of the parcel list button"})
+        @Description({ " ", "# The item of the parcel list button" })
         public ConfigItem myParcelsItem = new ConfigItem()
-                .setName("&3♪ My parcels")
-                .setLore(List.of("&bClick to open your parcels."))
-                .setType(Material.ENDER_CHEST);
+            .setName("&3♪ My parcels")
+            .setLore(List.of("&bClick to open your parcels."))
+            .setType(Material.ENDER_CHEST);
 
-        @Description({" ", "# The item of the sent parcels button"})
+        @Description({ " ", "# The item of the sent parcels button" })
         public ConfigItem sentParcelsItem = new ConfigItem()
-                .setName("&6♚ Sent parcels")
-                .setLore(List.of("&eClick to show parcels, which you sent.", "&eYou can also cancel them here, if you want to."))
-                .setType(Material.FILLED_MAP)
-                .setGlow(true);
+            .setName("&6♚ Sent parcels")
+            .setLore(List.of("&eClick to show parcels, which you sent.", "&eYou can also cancel them here, if you want to."))
+            .setType(Material.FILLED_MAP)
+            .setGlow(true);
 
-        @Description({" ", "# The parcel archive item button."})
+        @Description({ " ", "# The parcel archive item button." })
         public ConfigItem parcelArchiveItem = new ConfigItem()
-                .setName("&5❄ Parcel archive")
-                .setLore(List.of("&eClick to show all parcels, which you sent or received in the past."))
-                .setType(Material.WRITTEN_BOOK);
+            .setName("&5❄ Parcel archive")
+            .setLore(List.of("&eClick to show all parcels, which you sent or received in the past."))
+            .setType(Material.WRITTEN_BOOK);
 
-        @Description({" ", "# The item of the parcel locker collect button"})
+        @Description({ " ", "# The item of the parcel locker collect button" })
         public ConfigItem parcelLockerCollectItem = new ConfigItem()
-                .setName("&a✔ Collect parcels")
-                .setLore(List.of("&aClick to collect your parcels."))
-                .setType(Material.HOPPER)
-                .setGlow(true);
+            .setName("&a✔ Collect parcels")
+            .setLore(List.of("&aClick to collect your parcels."))
+            .setType(Material.HOPPER)
+            .setGlow(true);
 
-        @Description({" ", "# The item of the parcel locker send button"})
+        @Description({ " ", "# The item of the parcel locker send button" })
         public ConfigItem parcelLockerSendItem = new ConfigItem()
-                .setName("&b☴ Send parcels")
-                .setLore(List.of("&bClick to send parcels."))
-                .setType(Material.SCULK_SHRIEKER)
-                .setGlow(true);
+            .setName("&b☴ Send parcels")
+            .setLore(List.of("&bClick to send parcels."))
+            .setType(Material.SCULK_SHRIEKER)
+            .setGlow(true);
 
-        @Description({" ", "# The item of the parcel locker status button"})
+        @Description({ " ", "# The item of the parcel locker status button" })
         public ConfigItem parcelLockerStatusItem = new ConfigItem()
-                .setName("&3♖ Parcel locker status")
-                .setLore(List.of("&bClick to show the status of your parcel locker."))
-                .setType(Material.END_PORTAL_FRAME)
-                .setGlow(true);
+            .setName("&3♖ Parcel locker status")
+            .setLore(List.of("&bClick to show the status of your parcel locker."))
+            .setType(Material.END_PORTAL_FRAME)
+            .setGlow(true);
 
-        @Description({" ", "# The item of the parcel"})
+        @Description({ " ", "# The item of the parcel" })
         public ConfigItem parcelItem = new ConfigItem()
-                .setName("&6{NAME}")
-                .setLore(List.of(
-                                "&6UUID: &e{UUID}",
-                                "&6Sender: &e{SENDER}",
-                                "&6Receiver: &e{RECEIVER}",
-                                "&6Size: &e{SIZE}",
-                                "&6Position: &6X: &e{POSITION_X}, &6Y: &e{POSITION_Y}, &6Z: &e{POSITION_Z}",
-                                "&6Priority: &e{PRIORITY}",
-                                "&6Description: &e{DESCRIPTION}",
-                                "&6Recipients: &e{RECIPIENTS}"
-                        )
+            .setName("&6{NAME}")
+            .setLore(List.of(
+                    "&6UUID: &e{UUID}",
+                    "&6Sender: &e{SENDER}",
+                    "&6Receiver: &e{RECEIVER}",
+                    "&6Size: &e{SIZE}",
+                    "&6Position: &6X: &e{POSITION_X}, &6Y: &e{POSITION_Y}, &6Z: &e{POSITION_Z}",
+                    "&6Priority: &e{PRIORITY}",
+                    "&6Description: &e{DESCRIPTION}",
+                    "&6Recipients: &e{RECIPIENTS}"
                 )
-                .setType(Material.CHEST_MINECART);
+            )
+            .setType(Material.CHEST_MINECART);
 
-        @Description({" ", "# The item of the parcel item storage button"})
+        @Description({ " ", "# The item of the parcel item storage button" })
         public ConfigItem parcelStorageItem = new ConfigItem()
-                .setName("&6✉ Parcel storage")
-                .setLore(List.of("&eClick to edit the parcel content."))
-                .setType(Material.CHEST);
+            .setName("&6✉ Parcel storage")
+            .setLore(List.of("&eClick to edit the parcel content."))
+            .setType(Material.CHEST);
 
-        @Description({" ", "# The item of the previous page button"})
+        @Description({ " ", "# The item of the previous page button" })
         public ConfigItem previousPageItem = new ConfigItem()
-                .setName("&b✐ Previous page")
-                .setLore(List.of("&bClick to go to the previous page."))
-                .setType(Material.ARROW);
+            .setName("&b✐ Previous page")
+            .setLore(List.of("&bClick to go to the previous page."))
+            .setType(Material.ARROW);
 
-        @Description({" ", "# The item of the next page button"})
+        @Description({ " ", "# The item of the next page button" })
         public ConfigItem nextPageItem = new ConfigItem()
-                .setName("&b✐ Next page")
-                .setLore(List.of("&bClick to go to the next page."))
-                .setType(Material.ARROW);
+            .setName("&b✐ Next page")
+            .setLore(List.of("&bClick to go to the next page."))
+            .setType(Material.ARROW);
 
-        @Description({" ", "# The item of the confirm items button"})
+        @Description({ " ", "# The item of the confirm items button" })
         public ConfigItem confirmItemsItem = new ConfigItem()
-                .setName("&a✉ Confirm items")
-                .setLore(List.of("&aClick to confirm the items."))
-                .setType(Material.LIME_WOOL);
+            .setName("&a✉ Confirm items")
+            .setLore(List.of("&aClick to confirm the items."))
+            .setType(Material.LIME_WOOL);
 
-        @Description({" ", "# The name of the parcel small content GUI"})
+        @Description({ " ", "# The name of the parcel small content GUI" })
         public String parcelSmallContentGuiTitle = "&aSmall parcel content";
 
-        @Description({" ", "# The name of the parcel medium content GUI"})
+        @Description({ " ", "# The name of the parcel medium content GUI" })
         public String parcelMediumContentGuiTitle = "&eMedium parcel content";
 
-        @Description({" ", "# The name of the parcel large content GUI"})
+        @Description({ " ", "# The name of the parcel large content GUI" })
         public String parcelLargeContentGuiTitle = "&cLarge parcel content";
 
-        @Description({" ", "# Illegal items list, that cannot be stored in the parcel."})
+        @Description({ " ", "# Illegal items list, that cannot be stored in the parcel." })
         public List<Material> illegalItems = List.of(
-                Material.BARRIER,
-                Material.COMMAND_BLOCK,
-                Material.COMMAND_BLOCK_MINECART,
-                Material.CHAIN_COMMAND_BLOCK,
-                Material.REPEATING_COMMAND_BLOCK,
-                Material.STRUCTURE_BLOCK,
-                Material.STRUCTURE_VOID,
-                Material.JIGSAW,
-                Material.DEBUG_STICK,
-                Material.SPAWNER,
-                Material.BEDROCK
+            Material.BARRIER,
+            Material.COMMAND_BLOCK,
+            Material.COMMAND_BLOCK_MINECART,
+            Material.CHAIN_COMMAND_BLOCK,
+            Material.REPEATING_COMMAND_BLOCK,
+            Material.STRUCTURE_BLOCK,
+            Material.STRUCTURE_VOID,
+            Material.JIGSAW,
+            Material.DEBUG_STICK,
+            Material.SPAWNER,
+            Material.BEDROCK
         );
-    }
-
-    @Override
-    public Resource resource(File folder) {
-        return Source.of(folder, "config.yml");
     }
 }
