@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+// TODO: Make this class less cache-dependent
 public class UserRepositoryImpl extends AbstractDatabaseService implements UserRepository {
 
     private final Map<UUID, User> usersByUUID = new HashMap<>();

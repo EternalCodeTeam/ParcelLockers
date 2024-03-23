@@ -27,6 +27,7 @@ public class UserManager {
         }
 
         return CompletableFuture.completedFuture(Optional.empty());
+        //return this.userRepository.getUser(uuid).;
     }
 
     public CompletableFuture<Optional<User>> getUser(String name) {
@@ -63,6 +64,7 @@ public class UserManager {
         User user = new User(uuid, name);
         this.usersByUUID.put(uuid, user);
         this.usersByName.put(name, user);
+        this.userRepository.save(user);
 
         return user;
     }
