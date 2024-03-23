@@ -12,7 +12,6 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
-// TODO: Beautify this file
 public class PluginConfiguration implements ReloadableConfig {
 
     @Description({" ", "# Parcel Lockers plugin configuration file."})
@@ -77,24 +76,24 @@ public class PluginConfiguration implements ReloadableConfig {
 
     @Contextual
     public static class Messages {
-        public String onlyForPlayers = "&7» &cThis command is only available to players!";
-        public String noPermission = "&7» &cYou don't have permission to perform this command! &c(&7{PERMISSION}&c)";
-        public String cantFindPlayer = "&7» &cThe specified player could not be found!";
-        public String invalidUsage = "&7» &3Correct usage: &b{USAGE}";
-        public String reload = "&7» &bConfiguration has been successfully reloaded!";
-        public String parcelCommandUsage = "&7» &3/parcel &b<list|info|send|cancel> [parcel]";
-        public String parcelSuccessfullyCreated = "&7» &aParcel created successfully.";
-        public String failedToCreateParcel = "&7» &cAn error occurred while creating the parcel.";
-        public String parcelSuccessfullyDeleted = "&7» &aParcel deleted successfully.";
-        public String failedToDeleteParcel = "&7» &cAn error occurred while deleting the parcel.";
-        public String failedToCreateParcelLocker = "&7» &cCould not create the parcel locker.";
+        public String onlyForPlayers = "&4✘ &cThis command is only available to players!";
+        public String noPermission = "&4✘ &cYou don't have permission to perform this command! &c(&e{PERMISSION}&c)";
+        public String cantFindPlayer = "&4✘ &cThe specified player could not be found!";
+        public String invalidUsage = "&3❣ &bCorrect usage: &b{USAGE}";
+        public String reload = "&3❣ &bConfiguration has been successfully reloaded!";
+        public String parcelCommandUsage = "&3❣ &b/parcel &b<list|info|send|cancel> &b[parcel]";
+        public String parcelSuccessfullyCreated = "&2✔ &aParcel created successfully.";
+        public String failedToCreateParcel = "&4✘ &cAn error occurred while creating the parcel.";
+        public String parcelSuccessfullyDeleted = "&2✔ &aParcel deleted successfully.";
+        public String failedToDeleteParcel = "&4✘ &cAn error occurred while deleting the parcel.";
+        public String failedToCreateParcelLocker = "&4✘ &cCould not create the parcel locker.";
         public String parcelLockerSuccessfullyCreated = "&7» &aParcel locker created successfully.";
-        public String enterDescriptionPrompt = "&7» &6Enter a description for the parcel locker:";
-        public String cannotBreakParcelLocker = "&7» &cYou have no permission to break the parcel locker.";
-        public String parcelLockerSuccessfullyDeleted = "&7» &aParcel locker deleted successfully.";
-        public String broadcastParcelLockerRemoved = "&7» &cThe parcel locker at &6{X} {Y} {Z} &cin &6{WORLD} &chas been removed by &c{PLAYER}!";
-        public String parcelSent = "&7» &aParcel sent successfully.";
-        public String parcelFailedToSend = "&7» &cAn error occurred while sending the parcel. Check the console for more information.";
+        public String enterDescriptionPrompt = "&6❀ &eEnter a description for the parcel locker:";
+        public String cannotBreakParcelLocker = "&4✘ &cYou have no permission to break the parcel locker.";
+        public String parcelLockerSuccessfullyDeleted = "&2✔ &aParcel locker deleted successfully.";
+        public String broadcastParcelLockerRemoved = "&3❣ &bThe parcel locker at &b{X} {Y} {Z} &3in &b{WORLD} &chas been removed by &b{PLAYER}!";
+        public String parcelSent = "&2✔ &aParcel sent successfully.";
+        public String parcelFailedToSend = "&4✘ &cAn error occurred while sending the parcel. Check the console for more information.";
         @Description({" ", "# The parcel info message."})
         public List<String> parcelInfoMessages = List.of(
                 "&7» &6Parcel info:",
@@ -132,13 +131,13 @@ public class PluginConfiguration implements ReloadableConfig {
 
         @Description({" ", "# The item of the medium parcel size button"})
         public ConfigItem mediumParcelSizeItem = new ConfigItem()
-                .setName("&eMedium")
+                .setName("&e✧ Medium")
                 .setLore(List.of("&bClick to select the medium parcel size."))
                 .setType(Material.YELLOW_WOOL);
 
         @Description({" ", "# The item of the large parcel size button"})
         public ConfigItem largeParcelSizeItem = new ConfigItem()
-                .setName("&cLarge")
+                .setName("&c✧ Large")
                 .setLore(List.of("&bClick to select the large parcel size."))
                 .setType(Material.RED_WOOL);
 
@@ -151,34 +150,34 @@ public class PluginConfiguration implements ReloadableConfig {
 
         @Description({" ", "# The item represents selected medium parcel size."})
         public ConfigItem selectedMediumParcelSizeItem = new ConfigItem()
-                .setName("&eMedium")
+                .setName("&e✧ Medium")
             .setLore(List.of("&aCurrently selected!"))
                 .setGlow(true)
                 .setType(Material.CRYING_OBSIDIAN);
 
         @Description({" ", "# The item represents selected large parcel size."})
         public ConfigItem selectedLargeParcelSizeItem = new ConfigItem()
-                .setName("&cLarge")
+                .setName("&c✧ Large")
             .setLore(List.of("&aCurrently selected!"))
                 .setGlow(true)
                 .setType(Material.RESPAWN_ANCHOR);
 
         @Description({" ", "# The item of the priority button"})
         public ConfigItem priorityItem = new ConfigItem()
-                .setName("&aPriority")
+                .setName("&a✧ Priority")
                 .setLore(List.of("&bClick to select the priority."))
                 .setType(Material.REDSTONE_BLOCK);
 
         @Description({" ", "# The item of the selected priority button"})
         public ConfigItem selectedPriorityItem = new ConfigItem()
-            .setName("&aPriority")
+            .setName("&a✧ Priority")
             .setLore(List.of("&aCurrently selected!", "&c&oClick to unselect."))
             .setType(Material.REDSTONE_BLOCK)
             .setGlow(true);
 
         @Description({" ", "# The close button item"})
         public ConfigItem closeItem = new ConfigItem()
-                .setName("&cClose")
+                .setName("&c☓ Close")
                 .setLore(List.of("&cClick to close the GUI."))
                 .setType(Material.BARRIER);
 
@@ -197,47 +196,47 @@ public class PluginConfiguration implements ReloadableConfig {
         // parcel submit item
         @Description({" ", "# The item of the parcel submit button"})
         public ConfigItem submitParcelItem = new ConfigItem()
-                .setName("&aSubmit parcel")
+                .setName("&a✔ Submit parcel")
                 .setLore(List.of("&aClick to submit the parcel.", "&cProceed with caution! This action is final and cannot be undone."))
                 .setType(Material.BARREL)
                 .setGlow(true);
 
         @Description({" ", "# The item of the parcel list button"})
         public ConfigItem myParcelsItem = new ConfigItem()
-                .setName("&3My parcels")
+                .setName("&3♪ My parcels")
                 .setLore(List.of("&bClick to open your parcels."))
                 .setType(Material.ENDER_CHEST);
 
         @Description({" ", "# The item of the sent parcels button"})
         public ConfigItem sentParcelsItem = new ConfigItem()
-                .setName("&6Sent parcels")
+                .setName("&6♚ Sent parcels")
                 .setLore(List.of("&eClick to show parcels, which you sent.", "&eYou can also cancel them here, if you want to."))
                 .setType(Material.FILLED_MAP)
                 .setGlow(true);
 
         @Description({" ", "# The parcel archive item button."})
         public ConfigItem parcelArchiveItem = new ConfigItem()
-                .setName("&5Parcel archive")
+                .setName("&5❄ Parcel archive")
                 .setLore(List.of("&eClick to show all parcels, which you sent or received in the past."))
                 .setType(Material.WRITTEN_BOOK);
 
         @Description({" ", "# The item of the parcel locker collect button"})
         public ConfigItem parcelLockerCollectItem = new ConfigItem()
-                .setName("&aCollect parcels")
+                .setName("&a✔ Collect parcels")
                 .setLore(List.of("&aClick to collect your parcels."))
                 .setType(Material.HOPPER)
                 .setGlow(true);
 
         @Description({" ", "# The item of the parcel locker send button"})
         public ConfigItem parcelLockerSendItem = new ConfigItem()
-                .setName("&bSend parcels")
+                .setName("&b☴ Send parcels")
                 .setLore(List.of("&bClick to send parcels."))
                 .setType(Material.SCULK_SHRIEKER)
                 .setGlow(true);
 
         @Description({" ", "# The item of the parcel locker status button"})
         public ConfigItem parcelLockerStatusItem = new ConfigItem()
-                .setName("&3Parcel locker status")
+                .setName("&3♖ Parcel locker status")
                 .setLore(List.of("&bClick to show the status of your parcel locker."))
                 .setType(Material.END_PORTAL_FRAME)
                 .setGlow(true);
@@ -260,25 +259,25 @@ public class PluginConfiguration implements ReloadableConfig {
 
         @Description({" ", "# The item of the parcel item storage button"})
         public ConfigItem parcelStorageItem = new ConfigItem()
-                .setName("&6Parcel storage")
+                .setName("&6✉ Parcel storage")
                 .setLore(List.of("&eClick to edit the parcel content."))
                 .setType(Material.CHEST);
 
         @Description({" ", "# The item of the previous page button"})
         public ConfigItem previousPageItem = new ConfigItem()
-                .setName("&bPrevious page")
+                .setName("&b✐ Previous page")
                 .setLore(List.of("&bClick to go to the previous page."))
                 .setType(Material.ARROW);
 
         @Description({" ", "# The item of the next page button"})
         public ConfigItem nextPageItem = new ConfigItem()
-                .setName("&bNext page")
+                .setName("&b✐ Next page")
                 .setLore(List.of("&bClick to go to the next page."))
                 .setType(Material.ARROW);
 
         @Description({" ", "# The item of the confirm items button"})
         public ConfigItem confirmItemsItem = new ConfigItem()
-                .setName("&aConfirm items")
+                .setName("&a✉ Confirm items")
                 .setLore(List.of("&aClick to confirm the items."))
                 .setType(Material.LIME_WOOL);
 

@@ -3,6 +3,7 @@ package com.eternalcode.parcellockers.user;
 import com.eternalcode.parcellockers.database.AbstractDatabaseService;
 
 import javax.sql.DataSource;
+import java.sql.PreparedStatement;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -16,6 +17,17 @@ public class UserRepositoryImpl extends AbstractDatabaseService implements UserR
 
     public UserRepositoryImpl(DataSource dataSource) {
         super(dataSource);
+
+        this.initTable();
+    }
+
+    private void initTable() {
+        this.executeSync("CREATE TABLE IF NOT EXISTS `users`(" +
+            "uuid VARCHAR(36) NOT NULL, " +
+            "name VARCHAR(16) NOT NULL, " +
+            "parcels VARCHAR(255) NOT NULL, " + // TODO: Change the size to fit as many parcels as possible
+            "PRIMARY KEY (uuid)" +
+            ");", PreparedStatement::execute);
     }
 
     @Override
