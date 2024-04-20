@@ -51,7 +51,7 @@ dependencies {
 
     // metrics and sentry
     implementation("org.bstats:bstats-bukkit:3.0.2")
-    implementation("io.sentry:sentry:7.6.0")
+    implementation("io.sentry:sentry:7.8.0")
 
     // database
     implementation("com.zaxxer:HikariCP:5.1.0")
@@ -83,7 +83,7 @@ java {
 }
 
 checkstyle {
-    toolVersion = "10.14.2"
+    toolVersion = "10.15.0"
 
     configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
 
