@@ -9,7 +9,9 @@ import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelManager;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
+import com.eternalcode.parcellockers.user.UserManager;
 import com.eternalcode.parcellockers.util.RandomUtil;
+import com.spotify.futures.CompletableFutures;
 import dev.rollczi.litecommands.annotations.argument.Arg;
 import dev.rollczi.litecommands.annotations.command.Command;
 import dev.rollczi.litecommands.annotations.context.Context;
@@ -17,16 +19,17 @@ import dev.rollczi.litecommands.annotations.execute.Execute;
 import dev.rollczi.litecommands.annotations.permission.Permission;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Blocking;
 import org.jetbrains.annotations.TestOnly;
 import panda.utilities.text.Formatter;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Command(name = "parcel")
 @Permission("parcellockers.command.parcel")
@@ -39,8 +42,9 @@ public class ParcelCommand {
     private final MainGUI mainGUI;
     private final ParcelListGUI parcelListGUI;
     private final ParcelManager parcelManager;
+    private final UserManager userManager;
 
-    public ParcelCommand(Server server, LockerRepository lockerRepository, NotificationAnnouncer announcer, PluginConfiguration config, MainGUI mainGUI, ParcelListGUI parcelListGUI, ParcelManager parcelManager) {
+    public ParcelCommand(Server server, LockerRepository lockerRepository, NotificationAnnouncer announcer, PluginConfiguration config, MainGUI mainGUI, ParcelListGUI parcelListGUI, ParcelManager parcelManager, UserManager userManager) {
         this.server = server;
         this.lockerRepository = lockerRepository;
         this.announcer = announcer;
@@ -48,6 +52,7 @@ public class ParcelCommand {
         this.mainGUI = mainGUI;
         this.parcelListGUI = parcelListGUI;
         this.parcelManager = parcelManager;
+        this.userManager = userManager;
     }
 
     @Execute(name = "list")
@@ -80,7 +85,8 @@ public class ParcelCommand {
         this.parcelManager.createParcel(player, parcel);
     }
 
-    @Execute(name = "send", aliases = "create") // similar create, add
+    @Execute(name = "send", aliases = "create")
+        // similar create, add
     void create(@Context Player player, @Arg String name, @Arg boolean priority, @Arg ParcelSize size, @Arg Locker entryLocker, @Arg Locker destinationLocker) {
         Parcel parcel = Parcel.builder()
             .uuid(UUID.randomUUID())
@@ -96,7 +102,8 @@ public class ParcelCommand {
         this.parcelManager.createParcel(player, parcel);
     }
 
-    @Execute(name = "cancel") // similar remove, delete
+    @Execute(name = "cancel")
+        // similar remove, delete
     void delete(@Context Player player, @Arg Parcel parcel) {
         this.parcelManager.deleteParcel(player, parcel);
     }
@@ -106,26 +113,29 @@ public class ParcelCommand {
         this.mainGUI.show(player);
     }
 
-    public List<String> replaceParcelPlaceholders(Parcel parcel, List<String> lore) {
+    @Blocking
+    private List<String> replaceParcelPlaceholders(Parcel parcel, List<String> lore) {
         if (lore == null || lore.isEmpty()) {
             return Collections.emptyList();
         }
 
+        String senderName = this.getName(parcel.sender()).join();
+        String receiver = this.getName(parcel.receiver()).join();
+
+        List<String> recipients = parcel.recipients().stream()
+            .map(uuid -> this.getName(uuid))
+            .collect(CompletableFutures.joinList())
+            .join();
+
         Formatter formatter = new Formatter()
             .register("{UUID}", parcel.uuid().toString())
             .register("{NAME}", parcel.name())
-            .register("{SENDER}", this.server.getPlayer(parcel.sender()).getName())
-            .register("{RECEIVER}", this.server.getPlayer(parcel.receiver()).getName())
+            .register("{SENDER}", senderName)
+            .register("{RECEIVER}", receiver)
             .register("{SIZE}", parcel.size().toString())
             .register("{PRIORITY}", parcel.priority() ? "&aYes" : "&cNo")
             .register("{DESCRIPTION}", parcel.description())
-            .register("{RECIPIENTS}", parcel.recipients().stream()
-                .map(this.server::getPlayer)
-                .filter(Objects::nonNull)
-                .map(Player::getName)
-                .toList()
-                .toString()
-            );
+            .register("{RECIPIENTS}", recipients.toString());
 
         Optional<Locker> lockerOptional = this.lockerRepository.findByUUID(parcel.destinationLocker()).join();
 
@@ -143,10 +153,16 @@ public class ParcelCommand {
         List<String> newLore = new ArrayList<>();
 
         for (String line : lore) {
-            formatter.format(line);
-            newLore.add(line);
+            newLore.add(formatter.format(line));
         }
 
         return newLore;
+    }
+
+    private CompletableFuture<String> getName(UUID userUuid) {
+        return this.userManager.getUser(userUuid).thenApply(userOptional -> userOptional
+            .map(user -> user.name())
+            .orElse("Unknown")
+        );
     }
 }

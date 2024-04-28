@@ -32,6 +32,9 @@ import java.util.concurrent.CompletableFuture;
 
 public class ParcelListGUI extends GuiView {
 
+    private static final int WIDTH = 7;
+    private static final int HEIGHT = 4;
+    private static final Page FIRST_PAGE = new Page(0, WIDTH * HEIGHT);
     private final Plugin plugin;
     private final Server server;
     private final MiniMessage miniMessage;
@@ -40,10 +43,6 @@ public class ParcelListGUI extends GuiView {
     private final LockerRepository lockerRepository;
     private final UserManager userManager;
     private final MainGUI mainGUI;
-
-    private static final int WIDTH = 7;
-    private static final int HEIGHT = 4;
-    private static final Page FIRST_PAGE = new Page(0, WIDTH * HEIGHT);
 
     public ParcelListGUI(Plugin plugin, Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelRepository parcelRepository, LockerRepository lockerRepository, UserManager userManager, MainGUI mainGUI) {
         this.plugin = plugin;
@@ -100,7 +99,7 @@ public class ParcelListGUI extends GuiView {
 
                 List<Component> newLore = this.replaceParcelPlaceholders(parcel, item.lore).stream()
                     .map(line -> this.miniMessage.deserialize(line))
-                    .toList(); // TODO: Fix NPE here
+                    .toList();
                 parcelItem.lore(newLore);
                 parcelItem.name(this.miniMessage.deserialize(item.name.replace("{NAME}", parcel.name())));
 
@@ -175,9 +174,9 @@ public class ParcelListGUI extends GuiView {
 
     private CompletableFuture<String> getName(UUID userUuid) {
         return this.userManager.getUser(userUuid).thenApply(userOptional -> userOptional
-                .map(user -> user.name())
-                .orElse("Unknown")
-            );
+            .map(user -> user.name())
+            .orElse("Unknown")
+        );
     }
 
 }
