@@ -2,7 +2,7 @@ plugins {
     `java-library`
     checkstyle
     id("net.minecrell.plugin-yml.bukkit") version "0.6.0"
-    id("xyz.jpenilla.run-paper") version "2.2.3"
+    id("xyz.jpenilla.run-paper") version "2.2.4"
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
@@ -26,7 +26,7 @@ repositories {
 
 dependencies {
     // minecraft development api
-    compileOnly("org.spigotmc:spigot-api:1.20.4-R0.1-SNAPSHOT")
+    compileOnly("org.spigotmc:spigot-api:1.20.5-R0.1-SNAPSHOT")
     implementation("net.kyori:adventure-platform-bukkit:4.3.2")
     implementation("net.kyori:adventure-text-minimessage:4.16.0")
     implementation("dev.rollczi.litecommands:bukkit-adventure:2.8.9")
