@@ -2,7 +2,7 @@ plugins {
     `java-library`
     checkstyle
     id("net.minecrell.plugin-yml.bukkit") version "0.6.0"
-    id("xyz.jpenilla.run-paper") version "2.2.4"
+    id("xyz.jpenilla.run-paper") version "2.3.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
@@ -27,15 +27,15 @@ repositories {
 dependencies {
     // minecraft development api
     compileOnly("org.spigotmc:spigot-api:1.20.5-R0.1-SNAPSHOT")
-    implementation("net.kyori:adventure-platform-bukkit:4.3.2")
-    implementation("net.kyori:adventure-text-minimessage:4.16.0")
+    implementation("net.kyori:adventure-platform-bukkit:4.3.3")
+    implementation("net.kyori:adventure-text-minimessage:4.17.0")
     implementation("dev.rollczi.litecommands:bukkit-adventure:2.8.9")
 
     // skull api
     implementation("dev.rollczi:liteskullapi:1.3.0")
 
     // gui library
-    implementation("dev.triumphteam:triumph-gui:3.1.7")
+    implementation("dev.triumphteam:triumph-gui:3.1.10")
 
     // economy
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
@@ -51,7 +51,7 @@ dependencies {
 
     // metrics and sentry
     implementation("org.bstats:bstats-bukkit:3.0.2")
-    implementation("io.sentry:sentry:7.8.0")
+    implementation("io.sentry:sentry:7.10.0")
 
     // database
     implementation("com.zaxxer:HikariCP:5.1.0")
@@ -73,8 +73,8 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
 
-    testImplementation("org.testcontainers:junit-jupiter:1.19.7")
-    testImplementation("org.testcontainers:mysql:1.19.7")
+    testImplementation("org.testcontainers:junit-jupiter:1.19.8")
+    testImplementation("org.testcontainers:mysql:1.19.8")
     testImplementation("mysql:mysql-connector-java:8.0.33")
 }
 
@@ -83,7 +83,7 @@ java {
 }
 
 checkstyle {
-    toolVersion = "10.15.0"
+    toolVersion = "10.17.0"
 
     configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
 
