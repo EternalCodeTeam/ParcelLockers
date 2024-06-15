@@ -43,12 +43,12 @@ To build ParcelLockers, follow these steps (Make sure you have **JDK 17 or highe
 - The output file will be located at `build/libs`.
 - When you build the plugin for the first time, it might take a while to download all the dependencies.
 
-# 🛠️ Development builds
+## 🛠️ Development builds
 
 🤫 Want to be a few steps ahead of others? You can gather our freshly squeezed builds from GitHub
 Actions [here](https://github.com/EternalCodeTeam/ParcelLockers/actions).
 
-# :octocat: Contributing
+## :octocat: Contributing
 
 🧩 Are you a developer and want to add something?
 
@@ -67,7 +67,7 @@ Additionally, if you enable automatic Sentry bug
 reporting in your config.yml file (we strongly advise to do so), errors will be automatically sent to us, which will
 greatly accelerate the bug fixing process 🥳
 
-## TODO
+## 📝 TODO
 
 - [ ] Add support for more databases (H2, PostgreSQL, MongoDB?)
 - [ ] Add translation system, more languages
