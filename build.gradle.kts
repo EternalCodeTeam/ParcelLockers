@@ -41,7 +41,7 @@ dependencies {
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
 
     // CDN
-    implementation("net.dzikoysk:cdn:1.14.4")
+    implementation("net.dzikoysk:cdn:1.14.5")
 
     // expressible
     implementation("org.panda-lang:expressible:1.3.6")
@@ -69,9 +69,9 @@ dependencies {
     // panda-utilities
     implementation("org.panda-lang:panda-utilities:0.5.2-alpha")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.2")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.3")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.3")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.3")
 
     testImplementation("org.testcontainers:junit-jupiter:1.19.8")
     testImplementation("org.testcontainers:mysql:1.19.8")
