@@ -2,6 +2,7 @@ package com.eternalcode.parcellockers.itemstorage.repository;
 
 import com.eternalcode.parcellockers.database.AbstractDatabaseService;
 import com.eternalcode.parcellockers.itemstorage.ItemStorage;
+import com.eternalcode.parcellockers.util.ItemUtil;
 
 import javax.sql.DataSource;
 import java.sql.PreparedStatement;
@@ -19,7 +20,7 @@ public class ItemStorageRepositoryImpl extends AbstractDatabaseService implement
     }
 
     private void initTable() {
-        this.executeSync("CREATE TABLE IF NOT EXISTS `item_storage`(`uuid` VARCHAR(36) NOT NULL, `items` TEXT(16000) NOT NULL, PRIMARY KEY (uuid));", PreparedStatement::execute);
+        this.executeSync("CREATE TABLE IF NOT EXISTS `item_storage`(`uuid` VARCHAR(36) NOT NULL, `items` BLOB NULL, PRIMARY KEY (uuid));", PreparedStatement::execute);
     }
 
     @Override
@@ -27,6 +28,15 @@ public class ItemStorageRepositoryImpl extends AbstractDatabaseService implement
         return this.execute("INSERT INTO `item_storage`(`uuid`, `items`) VALUES (?, ?)", statement -> {
             statement.setString(1, itemStorage.owner().toString());
             statement.setString(2, ItemUtil.serializeItems(itemStorage.items()));
+            statement.execute();
+        });
+    }
+
+    @Override
+    public CompletableFuture<Void> update(ItemStorage itemStorage) {
+        return this.execute("UPDATE `item_storage` SET `items` = ? WHERE `uuid` = ?", statement -> {
+            statement.setString(1, ItemUtil.serializeItems(itemStorage.items()));
+            statement.setString(2, itemStorage.owner().toString());
             statement.execute();
         });
     }
@@ -44,7 +54,7 @@ public class ItemStorageRepositoryImpl extends AbstractDatabaseService implement
                 new ItemStorage(
                     UUID.fromString(resultSet.getString("uuid")),
                     ItemUtil.deserializeItems(resultSet.getString("items"))
-            ));
+                ));
         });
     }
 

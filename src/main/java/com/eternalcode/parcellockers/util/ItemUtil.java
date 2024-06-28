@@ -1,4 +1,4 @@
-package com.eternalcode.parcellockers.itemstorage.repository;
+package com.eternalcode.parcellockers.util;
 
 import com.eternalcode.parcellockers.exception.ParcelLockersException;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -10,7 +10,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
 
-class ItemUtil {
+public class ItemUtil {
 
     private static final ObjectMapper JSON = JsonMapper.builder()
         .addModule(JacksonPaper.builder()

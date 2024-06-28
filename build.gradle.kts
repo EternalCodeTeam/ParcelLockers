@@ -86,7 +86,7 @@ dependencies {
 }
 
 java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+    toolchain.languageVersion.set(JavaLanguageVersion.of(21))
 }
 
 checkstyle {
@@ -115,6 +115,7 @@ tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
     options.setIncremental(true)
     options.compilerArgs.add("-parameters")
+    options.release = 17
 }
 
 tasks {

@@ -4,6 +4,8 @@ import com.eternalcode.parcellockers.command.handler.InvalidUsageImpl;
 import com.eternalcode.parcellockers.command.handler.PermissionMessage;
 import com.eternalcode.parcellockers.configuration.ConfigurationManager;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
+import com.eternalcode.parcellockers.content.repository.ParcelContentRepositoryImpl;
 import com.eternalcode.parcellockers.database.DataSourceFactory;
 import com.eternalcode.parcellockers.gui.implementation.remote.MainGUI;
 import com.eternalcode.parcellockers.gui.implementation.remote.ParcelListGUI;
@@ -103,6 +105,8 @@ public final class ParcelLockers extends JavaPlugin {
 
         UserRepository userRepository = new UserRepositoryImpl(dataSource);
         UserManager userManager = new UserManager(userRepository);
+
+        ParcelContentRepository parcelContentRepository = new ParcelContentRepositoryImpl(dataSource);
 
         MainGUI mainGUI = new MainGUI(this, server, miniMessage, config, parcelRepository, parcelLockerRepositoryImpl, userManager);
         ParcelListGUI parcelListGUI = new ParcelListGUI(this, server, miniMessage, config, parcelRepository, parcelLockerRepositoryImpl, userManager, mainGUI);

@@ -14,6 +14,8 @@ public interface LockerRepository {
 
     CompletableFuture<Void> save(Locker locker);
 
+    CompletableFuture<Void> update(Locker locker);
+
     CompletableFuture<List<Locker>> findAll();
 
     CompletableFuture<Optional<Locker>> findByUUID(UUID uuid);

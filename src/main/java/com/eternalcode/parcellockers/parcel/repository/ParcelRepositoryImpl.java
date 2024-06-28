@@ -65,8 +65,33 @@ public class ParcelRepositoryImpl extends AbstractDatabaseService implements Par
             statement.setString(8, parcel.destinationLocker().toString());
             statement.setString(9, parcel.sender().toString());
             statement.execute();
-            
+
             this.addParcelToCache(parcel);
+        });
+    }
+
+    @Override
+    public CompletableFuture<Void> update(Parcel parcel) {
+        return this.execute("UPDATE `parcels` SET " +
+            "`name` = ?, " +
+            "`description` = ?, " +
+            "`priority` = ?, " +
+            "`receiver` = ?, " +
+            "`size` = ?, " +
+            "`entryLocker` = ?, " +
+            "`destinationLocker` = ?, " +
+            "`sender` = ? " +
+            "WHERE `uuid` = ?", statement -> {
+            statement.setString(1, parcel.name());
+            statement.setString(2, parcel.description());
+            statement.setBoolean(3, parcel.priority());
+            statement.setString(4, parcel.receiver().toString());
+            statement.setString(5, parcel.size().name());
+            statement.setString(6, parcel.entryLocker().toString());
+            statement.setString(7, parcel.destinationLocker().toString());
+            statement.setString(8, parcel.sender().toString());
+            statement.setString(9, parcel.uuid().toString());
+            statement.execute();
         });
     }
 
@@ -77,9 +102,9 @@ public class ParcelRepositoryImpl extends AbstractDatabaseService implements Par
             ResultSet rs = statement.executeQuery();
             if (rs.next()) {
                 Parcel parcel = this.createParcel(rs);
-                
+
                 this.addParcelToCache(parcel);
-                
+
                 return Optional.of(parcel);
             }
             return Optional.empty();
@@ -106,7 +131,7 @@ public class ParcelRepositoryImpl extends AbstractDatabaseService implements Par
         return this.supplyExecute("DELETE FROM `parcels` WHERE `uuid` = ?", statement -> {
             statement.setString(1, uuid.toString());
             statement.execute();
-            
+
             this.removeParcelFromCache(uuid);
             return null;
         });
@@ -118,7 +143,7 @@ public class ParcelRepositoryImpl extends AbstractDatabaseService implements Par
             statement.setInt(1, page.getLimit() + 1);
             statement.setInt(2, page.getOffset());
             ResultSet rs = statement.executeQuery();
-            
+
             List<Parcel> parcels = new ArrayList<>();
             while (rs.next()) {
                 Parcel parcel = this.createParcel(rs);
@@ -136,16 +161,16 @@ public class ParcelRepositoryImpl extends AbstractDatabaseService implements Par
 
     private Parcel createParcel(ResultSet rs) throws SQLException {
         return new Parcel(
-                UUID.fromString(rs.getString("uuid")),
-                UUID.fromString(rs.getString("sender")),
-                rs.getString("name"),
-                rs.getString("description"),
-                rs.getBoolean("priority"),
-                new HashSet<>(),
-                UUID.fromString(rs.getString("receiver")),
-                ParcelSize.valueOf(rs.getString("size")),
-                UUID.fromString(rs.getString("entryLocker")),
-                UUID.fromString(rs.getString("destinationLocker"))
+            UUID.fromString(rs.getString("uuid")),
+            UUID.fromString(rs.getString("sender")),
+            rs.getString("name"),
+            rs.getString("description"),
+            rs.getBoolean("priority"),
+            new HashSet<>(),
+            UUID.fromString(rs.getString("receiver")),
+            ParcelSize.valueOf(rs.getString("size")),
+            UUID.fromString(rs.getString("entryLocker")),
+            UUID.fromString(rs.getString("destinationLocker"))
         );
     }
 

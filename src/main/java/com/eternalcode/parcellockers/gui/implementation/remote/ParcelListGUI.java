@@ -30,6 +30,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+import static com.eternalcode.parcellockers.util.AdventureUtil.RESET_ITEM;
+
 public class ParcelListGUI extends GuiView {
 
     private static final int WIDTH = 7;
@@ -62,7 +64,7 @@ public class ParcelListGUI extends GuiView {
 
     private void show(Player player, Page page) {
         PaginatedGui gui = Gui.paginated()
-            .title(this.miniMessage.deserialize(this.config.guiSettings.parcelListGuiTitle))
+            .title(RESET_ITEM.append(this.miniMessage.deserialize(this.config.guiSettings.parcelListGuiTitle)))
             .disableAllInteractions()
             .rows(6)
             .create();
@@ -98,7 +100,7 @@ public class ParcelListGUI extends GuiView {
                 ItemBuilder parcelItem = item.toBuilder();
 
                 List<Component> newLore = this.replaceParcelPlaceholders(parcel, item.lore).stream()
-                    .map(line -> this.miniMessage.deserialize(line))
+                    .map(line -> RESET_ITEM.append(this.miniMessage.deserialize(line)))
                     .toList();
                 parcelItem.lore(newLore);
                 parcelItem.name(this.miniMessage.deserialize(item.name.replace("{NAME}", parcel.name())));

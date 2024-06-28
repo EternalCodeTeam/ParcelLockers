@@ -71,29 +71,29 @@ public class ParcelSendingGUI extends GuiView {
                 } else {
                     scheduler.runTask(this.plugin, () -> storageGUI.show(player, this.size));
                 }
-            }).orTimeout(2 , TimeUnit.SECONDS);
+            }).orTimeout(2, TimeUnit.SECONDS);
         });
         GuiItem submitItem = guiSettings.submitParcelItem.toGuiItem(event -> this.parcelRepository.save(Parcel.builder()
-                .size(this.size)
-                .priority(this.priority)
-                .sender(player.getUniqueId())
-                .uuid(UUID.randomUUID())
-                .name(player.getName() + "'s Parcel")
-                .description("None")
-                .destinationLocker(UUID.randomUUID())
-                .entryLocker(UUID.randomUUID())
-                .receiver(player.getUniqueId())
-                .sender(player.getUniqueId())
-                .build()
-            ).whenComplete((unused, throwable) -> {
-                if (throwable != null) {
-                    announcer.sendMessage(player, settings.messages.parcelFailedToSend);
-                    throwable.printStackTrace();
-                    return;
-                }
-                announcer.sendMessage(player, settings.messages.parcelSent);
-                gui.close(player);
-            }).orTimeout(2, TimeUnit.SECONDS));
+            .size(this.size)
+            .priority(this.priority)
+            .sender(player.getUniqueId())
+            .uuid(UUID.randomUUID())
+            .name(player.getName() + "'s Parcel")
+            .description("None")
+            .destinationLocker(UUID.randomUUID())
+            .entryLocker(UUID.randomUUID())
+            .receiver(player.getUniqueId())
+            .sender(player.getUniqueId())
+            .build()
+        ).whenComplete((unused, throwable) -> {
+            if (throwable != null) {
+                announcer.sendMessage(player, settings.messages.parcelFailedToSend);
+                throwable.printStackTrace();
+                return;
+            }
+            announcer.sendMessage(player, settings.messages.parcelSent);
+            gui.close(player);
+        }).orTimeout(2, TimeUnit.SECONDS));
 
         GuiItem closeItem = guiSettings.closeItem.toGuiItem(event -> new LockerMainGUI(plugin, this.miniMessage, this.config, itemStorageRepository, parcelRepository, announcer).show(player));
 

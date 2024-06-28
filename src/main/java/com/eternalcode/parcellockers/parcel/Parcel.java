@@ -4,7 +4,16 @@ import java.util.Set;
 import java.util.UUID;
 
 
-public record Parcel(UUID uuid, UUID sender, String name, String description, boolean priority, Set<UUID> recipients, UUID receiver, ParcelSize size, UUID entryLocker, UUID destinationLocker) {
+public record Parcel(UUID uuid,
+                     UUID sender,
+                     String name,
+                     String description,
+                     boolean priority,
+                     Set<UUID> recipients,
+                     UUID receiver,
+                     ParcelSize size,
+                     UUID entryLocker,
+                     UUID destinationLocker) {
 
     public static Builder builder() {
         return new Builder();
