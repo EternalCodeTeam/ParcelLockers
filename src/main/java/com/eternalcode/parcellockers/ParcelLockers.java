@@ -7,6 +7,7 @@ import com.eternalcode.parcellockers.configuration.implementation.PluginConfigur
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepositoryImpl;
 import com.eternalcode.parcellockers.database.DataSourceFactory;
+import com.eternalcode.parcellockers.gui.implementation.locker.LockerMainGUI;
 import com.eternalcode.parcellockers.gui.implementation.remote.MainGUI;
 import com.eternalcode.parcellockers.gui.implementation.remote.ParcelListGUI;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
@@ -38,6 +39,8 @@ import dev.rollczi.litecommands.adventure.LiteAdventureExtension;
 import dev.rollczi.litecommands.annotations.LiteCommandsAnnotations;
 import dev.rollczi.litecommands.bukkit.LiteBukkitMessages;
 import dev.rollczi.litecommands.bukkit.LiteCommandsBukkit;
+import dev.rollczi.liteskullapi.LiteSkullFactory;
+import dev.rollczi.liteskullapi.SkullAPI;
 import io.papermc.lib.PaperLib;
 import io.papermc.lib.environments.Environment;
 import io.sentry.Sentry;
@@ -50,6 +53,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -61,6 +65,8 @@ public final class ParcelLockers extends JavaPlugin {
     private LiteCommands<CommandSender> liteCommands;
 
     private BukkitAudiences audiences;
+
+    private SkullAPI skullAPI;
 
     private Economy economy;
 
@@ -94,6 +100,11 @@ public final class ParcelLockers extends JavaPlugin {
         }
 
         HikariDataSource dataSource = DataSourceFactory.buildHikariDataSource(config, this.getDataFolder());
+
+        this.skullAPI = LiteSkullFactory.builder()
+            .cacheExpireAfterWrite(Duration.ofMinutes(45L))
+            .bukkitScheduler(this)
+            .build();
 
         LockerRepositoryImpl parcelLockerRepositoryImpl = new LockerRepositoryImpl(dataSource);
         parcelLockerRepositoryImpl.updateCaches();
@@ -130,8 +141,12 @@ public final class ParcelLockers extends JavaPlugin {
             return;
         }
 
+        // TODO: Create all GUIs here and pass it through constructors
+
+        LockerMainGUI lockerMainGUI = new LockerMainGUI(this, miniMessage, config, itemStorageRepository, parcelRepository, announcer, parcelContentRepository);
+
         Stream.of(
-            new LockerInteractionController(this, parcelRepository, parcelLockerRepositoryImpl, itemStorageRepository, miniMessage, config, announcer, parcelContentRepository),
+            new LockerInteractionController(parcelLockerRepositoryImpl, lockerMainGUI),
             new LockerPlaceController(config, this, parcelLockerRepositoryImpl, announcer),
             new LockerBreakController(parcelLockerRepositoryImpl, announcer, config.messages),
             new PrepareUserController(userManager),
@@ -154,6 +169,8 @@ public final class ParcelLockers extends JavaPlugin {
         if (this.audiences != null) {
             this.audiences.close();
         }
+
+        this.skullAPI.shutdown();
     }
 
     private void softwareCheck() {

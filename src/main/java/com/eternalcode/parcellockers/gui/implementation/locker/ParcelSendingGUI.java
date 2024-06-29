@@ -11,6 +11,7 @@ import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import de.rapha149.signgui.SignGUI;
+import de.rapha149.signgui.SignGUIAction;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import net.kyori.adventure.text.Component;
@@ -18,7 +19,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 
 import java.util.Collections;
@@ -30,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 
 public class ParcelSendingGUI extends GuiView {
 
-    private final Plugin plugin;
+    private final JavaPlugin plugin;
     private final BukkitScheduler scheduler;
     private final PluginConfiguration config;
     private final MiniMessage miniMessage;
@@ -41,9 +42,9 @@ public class ParcelSendingGUI extends GuiView {
     private final Map<UUID, String> parcelNames = new HashMap<>();
     private final Map<UUID, String> parcelDescriptions = new HashMap<>();
     private ParcelSize size;
-    private boolean priority;
+    private boolean priority = false;
 
-    public ParcelSendingGUI(Plugin plugin,
+    public ParcelSendingGUI(JavaPlugin plugin,
                             PluginConfiguration config,
                             MiniMessage miniMessage,
                             ItemStorageRepository itemStorageRepository,
@@ -80,7 +81,7 @@ public class ParcelSendingGUI extends GuiView {
             SignGUI nameSignGui = SignGUI.builder()
                 .setColor(DyeColor.BLACK)
                 .setType(Material.OAK_SIGN)
-                .setLine(0, "Enter the parcel name:")
+                .setLine(0, "Enter parcel name:")
                 .setHandler((p, result) -> {
 
                     String name = result.getLineWithoutColor(1);
@@ -99,7 +100,7 @@ public class ParcelSendingGUI extends GuiView {
                     gui.updateItem(21, nameItem
                         .setLore(lore)
                         .toItemStack());
-                    return Collections.emptyList();
+                    return List.of(SignGUIAction.runSync(this.plugin, () -> gui.open(player)));
 
                 })
                 .build();
@@ -111,9 +112,11 @@ public class ParcelSendingGUI extends GuiView {
             SignGUI descriptionSignGui = SignGUI.builder()
                 .setColor(DyeColor.BLACK)
                 .setType(Material.OAK_SIGN)
-                .setLine(0, "Enter the parcel description:")
+                .setLine(0, "Enter parcel description:")
                 .setHandler((p, result) -> {
                     String description = result.getLineWithoutColor(1);
+
+                    this.parcelDescriptions.put(player.getUniqueId(), description);
                     announcer.sendMessage(player, settings.messages.parcelDescriptionSet);
 
                     List<String> lore = descriptionItem.lore;
@@ -122,7 +125,7 @@ public class ParcelSendingGUI extends GuiView {
                     gui.updateItem(22, descriptionItem
                         .setLore(lore)
                         .toItemStack());
-                    return Collections.emptyList();
+                    return List.of(SignGUIAction.runSync(this.plugin, () -> gui.open(player)));
                 })
                 .build();
             descriptionSignGui.open(player);
@@ -216,8 +219,8 @@ public class ParcelSendingGUI extends GuiView {
             gui.setItem(slot, backgroundItem);
         }
 
-        this.setSelected(gui, ParcelSize.SMALL);
-        this.priority = false;
+        // TODO: size buttons not persisiting after actions/closing GUI
+        // easy fix - cache the selected size and priority in the ParcelSendingGUI class
 
         gui.setItem(12, smallButton.toGuiItem(event -> this.setSelected(gui, ParcelSize.SMALL)));
         gui.setItem(13, mediumButton.toGuiItem(event -> this.setSelected(gui, ParcelSize.MEDIUM)));
@@ -228,6 +231,8 @@ public class ParcelSendingGUI extends GuiView {
         gui.setItem(43, submitItem);
         gui.setItem(42, priorityItem.toGuiItem(event -> this.setSelected(gui, !this.priority)));
         gui.setItem(49, closeItem);
+
+        this.setSelected(gui, this.size == null ? ParcelSize.SMALL : this.size);
 
         gui.open(player);
     }

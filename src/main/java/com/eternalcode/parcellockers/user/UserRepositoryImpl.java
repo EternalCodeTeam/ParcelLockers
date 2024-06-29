@@ -1,6 +1,7 @@
 package com.eternalcode.parcellockers.user;
 
 import com.eternalcode.parcellockers.database.AbstractDatabaseService;
+import com.eternalcode.parcellockers.shared.Page;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
@@ -8,7 +9,9 @@ import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -93,6 +96,30 @@ public class UserRepositoryImpl extends AbstractDatabaseService implements UserR
         });
     }
 
+    @Override
+    public CompletableFuture<UserPageResult> findPage(Page page) {
+        return this.supplyExecute("SELECT * FROM `users` LIMIT ?, ?;", statement -> {
+            statement.setInt(1, page.getOffset());
+            statement.setInt(2, page.getLimit());
+            ResultSet resultSet = statement.executeQuery();
+
+            List<User> users = new ArrayList<>();
+
+            while (resultSet.next()) {
+                User user = new User(UUID.fromString(resultSet.getString("uuid")), resultSet.getString("name"));
+                this.usersByUUID.put(user.uuid(), user);
+                this.usersByName.put(user.name(), user);
+                users.add(user);
+            }
+
+            boolean hasNext = users.size() > page.getLimit();
+            if (hasNext) {
+                users.remove(users.size() - 1);
+            }
+            
+            return new UserPageResult(users, hasNext);
+        });
+    }
 
     @ApiStatus.Internal
     @NotNull

@@ -6,7 +6,9 @@ import org.bukkit.World;
 
 public final class PositionAdapter {
 
-    private PositionAdapter() {}
+    private PositionAdapter() {
+        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+    }
 
     public static Position convert(Location location) {
         if (location.getWorld() == null) {

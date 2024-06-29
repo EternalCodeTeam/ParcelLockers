@@ -19,6 +19,7 @@ import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +51,7 @@ public class ParcelItemStorageGUI {
 
         GuiItem backgroundItem = guiSettings.mainGuiBackgroundItem.toGuiItem(event -> event.setCancelled(true));
 
-        GuiItem confirmItem = guiSettings.confirmItemsItem.toGuiItem(event -> new ParcelSendingGUI(plugin, this.config, this.miniMessage, this.itemStorageRepository, this.parcelRepository, this.announcer, this.parcelContentRepository).show(player));
+        GuiItem confirmItem = guiSettings.confirmItemsItem.toGuiItem(event -> new ParcelSendingGUI((JavaPlugin) plugin, this.config, this.miniMessage, this.itemStorageRepository, this.parcelRepository, this.announcer, this.parcelContentRepository).show(player));
 
         switch (size) {
             case SMALL -> gui = Gui.storage()

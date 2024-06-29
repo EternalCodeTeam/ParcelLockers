@@ -143,7 +143,9 @@ tasks {
         )
 
         mergeServiceFiles()
-        minimize()
+        minimize {
+            exclude(dependency("de\\.rapha149\\.signgui:signgui:.*")) // https://github.com/Rapha149/SignGUI/issues/15
+        }
 
         val prefix = "com.eternalcode.parcellockers.libs"
         listOf(

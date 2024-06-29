@@ -135,6 +135,9 @@ public class PluginConfiguration implements ReloadableConfig {
         @Description({ " ", "# The item of the parcel locker sending GUI" })
         public String parcelLockerSendingGuiTitle = "&3Parcel sending";
 
+        @Description({ " ", "# The item of the parcel recipient pick GUI" })
+        public String parcelReceiverSelectionGuiTitle = "&5Select recipient";
+
         @Description({ " ", "# The item of the small parcel size button" })
         public ConfigItem smallParcelSizeItem = new ConfigItem()
             .setName("&a✧ Small")
@@ -165,20 +168,20 @@ public class PluginConfiguration implements ReloadableConfig {
             .setName("&e✧ Medium")
             .setLore(List.of("&aCurrently selected!"))
             .setGlow(true)
-            .setType(Material.CRYING_OBSIDIAN);
+            .setType(Material.CHEST_MINECART);
 
         @Description({ " ", "# The item represents selected large parcel size." })
         public ConfigItem selectedLargeParcelSizeItem = new ConfigItem()
             .setName("&c✧ Large")
             .setLore(List.of("&aCurrently selected!"))
             .setGlow(true)
-            .setType(Material.RESPAWN_ANCHOR);
+            .setType(Material.TNT_MINECART);
 
         @Description({ " ", "# The item of the priority button" })
         public ConfigItem priorityItem = new ConfigItem()
             .setName("&a✧ Priority")
             .setLore(List.of("&bClick to select the priority."))
-            .setType(Material.REDSTONE_BLOCK);
+            .setType(Material.REDSTONE);
 
         @Description({ " ", "# The item of the selected priority button" })
         public ConfigItem selectedPriorityItem = new ConfigItem()
@@ -296,6 +299,15 @@ public class PluginConfiguration implements ReloadableConfig {
             .setName("&5✧ &dParcel receiver")
             .setLore(List.of("&dClick to edit the parcel receiver."))
             .setType(Material.PLAYER_HEAD);
+
+        @Description({ " ", "# The value of the GUI line, when parcel name is set" })
+        public String parcelReceiverSetLine = "&5> &dCurrent parcel receiver: &5{RECEIVER}";
+
+        @Description({ " ", "# The value of the player itemlore line, when parcel receiver is not set" })
+        public String parcelReceiverNotSetLine = "&9ⓘ &bClick to select.";
+
+        @Description({ " ", "# The value of the player item lore line, when parcel receiver is set" })
+        public String parcelReceiverSetLine = "&2✔ &aSelected!";
 
         @Description({ " ", "# The item of the parcel destination locker button" })
         public ConfigItem parcelDestinationLockerItem = new ConfigItem()
