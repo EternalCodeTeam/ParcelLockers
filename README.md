@@ -67,29 +67,6 @@ Additionally, if you enable automatic Sentry bug
 reporting in your config.yml file (we strongly advise to do so), errors will be automatically sent to us, which will
 greatly accelerate the bug fixing process 🥳
 
-## 📝 TODO
-
-- [ ] Add support for more databases (H2, PostgreSQL, MongoDB?)
-- [ ] Add translation system, more languages
-- [ ] Add delivery codes, so any person knowing the code can pick up the parcel
-- [ ] Add delivery time, so the parcel can be picked up only in a specific time
-- [ ] Parcel permissions for user
-- [ ] Parcel return logic
-- [x] Banned parcel items (configurable)
-- [ ] Parcel fee
-- [ ] Rewrite database to ORMLite (far in future)
-- [x] Add "business" logic
-- [ ] Add more parcel types (fragile, etc...)
-- [ ] Add option to config for parcel locker space (e.g. max parcels within a locker)
-- [x] Rewrite Position class to use Integers instead of Doubles
-- [ ] Finish GUIs
-- [ ] Add more GUIs (admin GUI, parcel create GUI, etc.)
-- [ ] Add Discord integration (bot, webhooks, etc...)
-- [ ] Add more commands
-- [x] Isolate cache into separate classes
-- [x] Extract database service methods into repositories (interfaces)
-- [x] Delete cyclic dependency (Parcel <-> ParcelLocker), switch to UUID instead of object references
-
 ## 📜 License
 
 ### ParcelLockers is published under the GNU GPL-v3 license. In particular, the developer:

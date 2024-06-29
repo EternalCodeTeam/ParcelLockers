@@ -43,7 +43,7 @@ public class PluginConfiguration implements ReloadableConfig {
         public boolean receiveUpdates = true;
 
         @Description({ " ", "# The database type. (MYSQL, SQLITE)" })
-        public DatabaseType databaseType = DatabaseType.MYSQL;
+        public DatabaseType databaseType = DatabaseType.SQLITE;
 
         @Description({ " ", "# The URL to the database." })
         public String host = "localhost";
@@ -85,9 +85,9 @@ public class PluginConfiguration implements ReloadableConfig {
         public String onlyForPlayers = "&4✘ &cThis command is only available to players!";
         public String noPermission = "&4✘ &cYou don't have permission to perform this command! &6(&c{PERMISSION}&6)";
         public String cantFindPlayer = "&4✘ &cThe specified player could not be found!";
-        public String invalidUsage = "&3❣ &bCorrect usage: &b{USAGE}";
+        public String invalidUsage = "&4❣ &cCorrect usage: &6{USAGE}";
         public String reload = "&3❣ &bConfiguration has been successfully reloaded!";
-        public String parcelCommandUsage = "&3❣ Correct usage: &b/parcel &b<list|info|send|cancel> &b[parcel]";
+        public String parcelCommandUsage = "&9ⓘ Correct usage: &3/parcel &b<list|info|send|cancel> &3[parcel]";
         public String parcelSuccessfullyCreated = "&2✔ &aParcel created successfully.";
         public String failedToCreateParcel = "&4✘ &cAn error occurred while creating the parcel.";
         public String parcelSuccessfullyDeleted = "&2✔ &aParcel deleted successfully.";
@@ -97,9 +97,13 @@ public class PluginConfiguration implements ReloadableConfig {
         public String enterDescriptionPrompt = "&6❀ &eEnter a description for the parcel locker:";
         public String cannotBreakParcelLocker = "&4✘ &cYou have no permission to break the parcel locker.";
         public String parcelLockerSuccessfullyDeleted = "&2✔ &aParcel locker deleted successfully.";
-        public String broadcastParcelLockerRemoved = "&3❣ &bThe parcel locker at &b{X} {Y} {Z} &3in &b{WORLD} &chas been removed by &b{PLAYER}!";
+        public String broadcastParcelLockerRemoved = "&4❣ &cThe parcel locker at &4{X} {Y} {Z} &cin &4{WORLD} &chas been removed by &4{PLAYER}!";
         public String parcelSent = "&2✔ &aParcel sent successfully.";
         public String parcelFailedToSend = "&4✘ &cAn error occurred while sending the parcel. Check the console for more information.";
+        public String parcelCannotBeEmpty = "&4✘ &cThe parcel cannot be empty!";
+        public String parcelNameCannotBeEmpty = "&4✘ &cThe parcel name cannot be empty!";
+        public String parcelNameSet = "&2✔ &aParcel name set successfully.";
+        public String alreadyCreatingLocker = "&4✘ &cYou are already creating a parcel locker!";
         @Description({ " ", "# The parcel info message." })
         public List<String> parcelInfoMessages = List.of(
             "&7» &6Parcel info:",
@@ -199,12 +203,11 @@ public class PluginConfiguration implements ReloadableConfig {
             .setLore(Collections.emptyList())
             .setType(Material.BLUE_STAINED_GLASS_PANE);
 
-        // parcel submit item
         @Description({ " ", "# The item of the parcel submit button" })
         public ConfigItem submitParcelItem = new ConfigItem()
             .setName("&a✔ Submit parcel")
             .setLore(List.of("&aClick to submit the parcel.", "&cProceed with caution! This action is final and cannot be undone."))
-            .setType(Material.BARREL)
+            .setType(Material.WAXED_OXIDIZED_COPPER)
             .setGlow(true);
 
         @Description({ " ", "# The item of the parcel list button" })
@@ -268,6 +271,33 @@ public class PluginConfiguration implements ReloadableConfig {
             .setName("&6✉ Parcel storage")
             .setLore(List.of("&eClick to edit the parcel content."))
             .setType(Material.CHEST);
+
+        @Description({ " ", "# The item of the parcel name button" })
+        public ConfigItem parcelNameItem = new ConfigItem()
+            .setName("&4❁ &cParcel name")
+            .setLore(List.of("&cClick to edit the parcel name."))
+            .setType(Material.NAME_TAG);
+
+        @Description({ " ", "# The value of the GUI line, when parcel name is set" })
+        public String parcelNameSetLine = "&6> Current parcel name: &e{NAME}";
+
+        @Description({ " ", "# The item of the parcel description button" })
+        public ConfigItem parcelDescriptionItem = new ConfigItem()
+            .setName("&2︙ &aParcel description")
+            .setLore(List.of("&aClick to edit the parcel description."))
+            .setType(Material.PAPER);
+
+        @Description({ " ", "# The item of the parcel receiver button" })
+        public ConfigItem parcelReceiverItem = new ConfigItem()
+            .setName("&5✧ &dParcel receiver")
+            .setLore(List.of("&dClick to edit the parcel receiver."))
+            .setType(Material.PLAYER_HEAD);
+
+        @Description({ " ", "# The item of the parcel destination locker button" })
+        public ConfigItem parcelDestinationLockerItem = new ConfigItem()
+            .setName("&3➣ &bDestination locker")
+            .setLore(List.of("&bClick to edit the parcel destination locker."))
+            .setType(Material.VAULT);
 
         @Description({ " ", "# The item of the previous page button" })
         public ConfigItem previousPageItem = new ConfigItem()

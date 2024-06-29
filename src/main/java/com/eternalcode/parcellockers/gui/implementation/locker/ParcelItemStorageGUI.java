@@ -1,6 +1,7 @@
 package com.eternalcode.parcellockers.gui.implementation.locker;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.itemstorage.ItemStorage;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
@@ -30,26 +31,26 @@ public class ParcelItemStorageGUI {
     private final MiniMessage miniMessage;
     private final ItemStorageRepository itemStorageRepository;
     private final ParcelRepository parcelRepository;
-    private final ParcelSize size;
     private final NotificationAnnouncer announcer;
+    private final ParcelContentRepository parcelContentRepository;
 
-    public ParcelItemStorageGUI(Plugin plugin, PluginConfiguration config, MiniMessage miniMessage, ItemStorageRepository itemStorageRepository, ParcelRepository parcelRepository, ParcelSize size, NotificationAnnouncer announcer) {
+    public ParcelItemStorageGUI(Plugin plugin, PluginConfiguration config, MiniMessage miniMessage, ItemStorageRepository itemStorageRepository, ParcelRepository parcelRepository, NotificationAnnouncer announcer, ParcelContentRepository parcelContentRepository) {
         this.plugin = plugin;
         this.config = config;
         this.miniMessage = miniMessage;
         this.itemStorageRepository = itemStorageRepository;
         this.parcelRepository = parcelRepository;
-        this.size = size;
         this.announcer = announcer;
+        this.parcelContentRepository = parcelContentRepository;
     }
 
     void show(Player player, ParcelSize size) {
         StorageGui gui;
         PluginConfiguration.GuiSettings guiSettings = this.config.guiSettings;
-        
+
         GuiItem backgroundItem = guiSettings.mainGuiBackgroundItem.toGuiItem(event -> event.setCancelled(true));
 
-        GuiItem confirmItem = guiSettings.confirmItemsItem.toGuiItem(event -> new ParcelSendingGUI(plugin, this.config, this.miniMessage, this.itemStorageRepository, this.parcelRepository, this.announcer).show(player));
+        GuiItem confirmItem = guiSettings.confirmItemsItem.toGuiItem(event -> new ParcelSendingGUI(plugin, this.config, this.miniMessage, this.itemStorageRepository, this.parcelRepository, this.announcer, this.parcelContentRepository).show(player));
 
         switch (size) {
             case SMALL -> gui = Gui.storage()

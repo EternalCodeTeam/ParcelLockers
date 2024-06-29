@@ -3,7 +3,7 @@ plugins {
     checkstyle
     id("net.minecrell.plugin-yml.bukkit") version "0.6.0"
     id("xyz.jpenilla.run-paper") version "2.3.0"
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("io.github.goooler.shadow") version "8.1.8"
 }
 
 group = "com.eternalcode"
@@ -67,6 +67,9 @@ dependencies {
     // paperlib
     implementation("io.papermc:paperlib:1.0.8")
 
+    // signgui
+    implementation("de.rapha149.signgui:signgui:2.3.5")
+
     // panda-utilities
     implementation("org.panda-lang:panda-utilities:0.5.2-alpha")
 
@@ -102,7 +105,7 @@ bukkit {
     main = "com.eternalcode.parcellockers.ParcelLockers"
     apiVersion = "1.13"
     prefix = "ParcelLockers"
-    author = "Jakubk15"
+    author = "EternalCodeTeam"
     name = "ParcelLockers"
     description =
         "Plugin that provides functionality of parcel lockers in Minecraft, allowing players to send and receive parcels safely."

@@ -17,7 +17,6 @@ public class ParcelContentRepositoryImpl extends AbstractDatabaseService impleme
         super(dataSource);
 
         this.initTable();
-
     }
 
     private void initTable() {

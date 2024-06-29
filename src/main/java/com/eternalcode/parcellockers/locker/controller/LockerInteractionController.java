@@ -1,6 +1,7 @@
 package com.eternalcode.parcellockers.locker.controller;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.gui.implementation.locker.LockerMainGUI;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
@@ -28,8 +29,9 @@ public class LockerInteractionController implements Listener {
     private final MiniMessage miniMessage;
     private final PluginConfiguration config;
     private final NotificationAnnouncer announcer;
+    private final ParcelContentRepository parcelContentRepository;
 
-    public LockerInteractionController(Plugin plugin, ParcelRepository parcelRepository, LockerRepository parcelLockerRepository, ItemStorageRepository itemStorageRepository, MiniMessage miniMessage, PluginConfiguration config, NotificationAnnouncer announcer) {
+    public LockerInteractionController(Plugin plugin, ParcelRepository parcelRepository, LockerRepository parcelLockerRepository, ItemStorageRepository itemStorageRepository, MiniMessage miniMessage, PluginConfiguration config, NotificationAnnouncer announcer, ParcelContentRepository parcelContentRepository) {
         this.plugin = plugin;
         this.parcelRepository = parcelRepository;
         this.parcelLockerRepository = parcelLockerRepository;
@@ -37,6 +39,7 @@ public class LockerInteractionController implements Listener {
         this.miniMessage = miniMessage;
         this.config = config;
         this.announcer = announcer;
+        this.parcelContentRepository = parcelContentRepository;
     }
 
     @EventHandler
@@ -54,7 +57,7 @@ public class LockerInteractionController implements Listener {
 
         if (this.parcelLockerRepository.isInCache(blockPos)) {
             event.setCancelled(true);
-            new LockerMainGUI(plugin, this.miniMessage, this.config, itemStorageRepository, parcelRepository, announcer).show(player);
+            new LockerMainGUI(plugin, this.miniMessage, this.config, itemStorageRepository, parcelRepository, announcer, parcelContentRepository).show(player);
         }
     }
 }

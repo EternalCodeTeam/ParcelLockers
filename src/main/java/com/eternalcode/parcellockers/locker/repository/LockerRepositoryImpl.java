@@ -41,7 +41,7 @@ public class LockerRepositoryImpl extends AbstractDatabaseService implements Loc
 
     @Override
     public CompletableFuture<Void> save(Locker locker) {
-        return this.execute("INSERT INTO `lockers`(`uuid`, `description`, `position` VALUES (?, ?, ?) ", statement -> {
+        return this.execute("INSERT INTO `lockers`(`uuid`, `description`, `position`) VALUES (?, ?, ?) ", statement -> {
             statement.setString(1, locker.uuid().toString());
             statement.setString(2, locker.description());
             statement.setString(3, locker.position().toString());

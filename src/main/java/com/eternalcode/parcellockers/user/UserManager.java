@@ -26,8 +26,7 @@ public class UserManager {
             return CompletableFuture.completedFuture(Optional.of(user));
         }
 
-        return CompletableFuture.completedFuture(Optional.empty());
-        //return this.userRepository.getUser(uuid).;
+        return this.userRepository.getUser(uuid);
     }
 
     public CompletableFuture<Optional<User>> getUser(String name) {
@@ -37,7 +36,7 @@ public class UserManager {
             return CompletableFuture.completedFuture(Optional.of(user));
         }
 
-        return CompletableFuture.completedFuture(Optional.empty());
+        return this.userRepository.getUser(name);
     }
 
     public User getOrCreate(UUID uuid, String name) {
