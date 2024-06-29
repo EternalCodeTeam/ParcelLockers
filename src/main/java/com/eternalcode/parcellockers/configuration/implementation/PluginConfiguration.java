@@ -103,6 +103,8 @@ public class PluginConfiguration implements ReloadableConfig {
         public String parcelCannotBeEmpty = "&4✘ &cThe parcel cannot be empty!";
         public String parcelNameCannotBeEmpty = "&4✘ &cThe parcel name cannot be empty!";
         public String parcelNameSet = "&2✔ &aParcel name set successfully.";
+        public String parcelDescriptionSet = "&2✔ &aParcel description set successfully.";
+        public String parcelReceiverSet = "&2✔ &aParcel receiver set successfully.";
         public String alreadyCreatingLocker = "&4✘ &cYou are already creating a parcel locker!";
         @Description({ " ", "# The parcel info message." })
         public List<String> parcelInfoMessages = List.of(
@@ -286,6 +288,8 @@ public class PluginConfiguration implements ReloadableConfig {
             .setName("&2︙ &aParcel description")
             .setLore(List.of("&aClick to edit the parcel description."))
             .setType(Material.PAPER);
+
+        public String parcelDescriptionSetLine = "&2> &aCurrent parcel description: &2{DESCRIPTION}";
 
         @Description({ " ", "# The item of the parcel receiver button" })
         public ConfigItem parcelReceiverItem = new ConfigItem()

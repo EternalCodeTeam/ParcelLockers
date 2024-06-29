@@ -155,7 +155,8 @@ tasks {
             "dev.rollczi",
             "net.kyori",
             "org.json",
-            "com.fasterxml"
+            "com.fasterxml",
+            "de.rapha149"
         ).forEach { relocate(it, prefix) }
     }
 }

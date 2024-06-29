@@ -39,6 +39,7 @@ public class ParcelSendingGUI extends GuiView {
     private final NotificationAnnouncer announcer;
     private final ParcelContentRepository parcelContentRepository;
     private final Map<UUID, String> parcelNames = new HashMap<>();
+    private final Map<UUID, String> parcelDescriptions = new HashMap<>();
     private ParcelSize size;
     private boolean priority;
 
@@ -74,8 +75,8 @@ public class ParcelSendingGUI extends GuiView {
 
         GuiItem backgroundItem = guiSettings.mainGuiBackgroundItem.toGuiItem();
         GuiItem cornerItem = guiSettings.cornerItem.toGuiItem();
-        ConfigItem parcelNameItem = guiSettings.parcelNameItem;
-        GuiItem nameItem = parcelNameItem.toGuiItem(event -> {
+        ConfigItem nameItem = guiSettings.parcelNameItem;
+        GuiItem nameGuiItem = nameItem.toGuiItem(event -> {
             SignGUI nameSignGui = SignGUI.builder()
                 .setColor(DyeColor.BLACK)
                 .setType(Material.OAK_SIGN)
@@ -92,10 +93,10 @@ public class ParcelSendingGUI extends GuiView {
                     parcelNames.put(player.getUniqueId(), name);
                     announcer.sendMessage(player, settings.messages.parcelNameSet);
 
-                    List<String> lore = parcelNameItem.lore;
+                    List<String> lore = nameItem.lore;
                     lore.add(this.config.guiSettings.parcelNameSetLine.replace("{NAME}", this.parcelNames.getOrDefault(player.getUniqueId(), "")));
 
-                    gui.updateItem(21, parcelNameItem
+                    gui.updateItem(21, nameItem
                         .setLore(lore)
                         .toItemStack());
                     return Collections.emptyList();
@@ -105,8 +106,29 @@ public class ParcelSendingGUI extends GuiView {
             nameSignGui.open(player);
         });
 
-        GuiItem descriptionItem = guiSettings.parcelDescriptionItem.toGuiItem();
-        GuiItem receiverItem = guiSettings.parcelReceiverItem.toGuiItem();
+        ConfigItem descriptionItem = guiSettings.parcelDescriptionItem;
+        GuiItem descriptionGuiItem = descriptionItem.toGuiItem(event -> {
+            SignGUI descriptionSignGui = SignGUI.builder()
+                .setColor(DyeColor.BLACK)
+                .setType(Material.OAK_SIGN)
+                .setLine(0, "Enter the parcel description:")
+                .setHandler((p, result) -> {
+                    String description = result.getLineWithoutColor(1);
+                    announcer.sendMessage(player, settings.messages.parcelDescriptionSet);
+
+                    List<String> lore = descriptionItem.lore;
+                    lore.add(this.config.guiSettings.parcelDescriptionSetLine.replace("{DESCRIPTION}", description));
+
+                    gui.updateItem(22, descriptionItem
+                        .setLore(lore)
+                        .toItemStack());
+                    return Collections.emptyList();
+                })
+                .build();
+            descriptionSignGui.open(player);
+        });
+
+        ConfigItem receiverItem = guiSettings.parcelReceiverItem;
         GuiItem destinationItem = guiSettings.parcelDestinationLockerItem.toGuiItem();
 
         GuiItem storageItem = guiSettings.parcelStorageItem.toGuiItem(event -> {
@@ -200,10 +222,11 @@ public class ParcelSendingGUI extends GuiView {
         gui.setItem(12, smallButton.toGuiItem(event -> this.setSelected(gui, ParcelSize.SMALL)));
         gui.setItem(13, mediumButton.toGuiItem(event -> this.setSelected(gui, ParcelSize.MEDIUM)));
         gui.setItem(14, largeButton.toGuiItem(event -> this.setSelected(gui, ParcelSize.LARGE)));
-        gui.setItem(21, nameItem);
+        gui.setItem(21, nameGuiItem);
+        gui.setItem(22, descriptionGuiItem);
         gui.setItem(37, storageItem);
         gui.setItem(43, submitItem);
-        gui.setItem(48, priorityItem.toGuiItem(event -> this.setSelected(gui, !this.priority)));
+        gui.setItem(42, priorityItem.toGuiItem(event -> this.setSelected(gui, !this.priority)));
         gui.setItem(49, closeItem);
 
         gui.open(player);
@@ -221,7 +244,7 @@ public class ParcelSendingGUI extends GuiView {
         gui.updateItem(12, smallButton.toItemStack());
         gui.updateItem(13, mediumButton.toItemStack());
         gui.updateItem(14, largeButton.toItemStack());
-        gui.updateItem(48, priorityButton.toItemStack());
+        gui.updateItem(42, priorityButton.toItemStack());
     }
 
     private void setSelected(Gui gui, boolean priority) {
@@ -230,6 +253,6 @@ public class ParcelSendingGUI extends GuiView {
 
         ConfigItem priorityButton = priority ? settings.selectedPriorityItem : settings.priorityItem;
 
-        gui.updateItem(48, priorityButton.toItemStack());
+        gui.updateItem(42, priorityButton.toItemStack());
     }
 }
