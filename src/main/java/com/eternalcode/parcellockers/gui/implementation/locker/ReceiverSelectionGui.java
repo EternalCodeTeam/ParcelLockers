@@ -1,27 +1,32 @@
 package com.eternalcode.parcellockers.gui.implementation.locker;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.gui.GuiRefresher;
 import com.eternalcode.parcellockers.gui.GuiView;
+import com.eternalcode.parcellockers.shared.ExceptionHandler;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.user.User;
+import com.eternalcode.parcellockers.user.UserPageResult;
 import com.eternalcode.parcellockers.user.UserRepository;
 import com.spotify.futures.CompletableFutures;
 import dev.rollczi.liteskullapi.SkullAPI;
+import dev.rollczi.liteskullapi.SkullData;
 import dev.triumphteam.gui.builder.item.ItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
-import io.sentry.Sentry;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemFlag;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitScheduler;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
+
+// TODO: Maybe in future cache this globally, so props wont change after gui exit, because new instance is created.
 
 public class ReceiverSelectionGui extends GuiView {
 
@@ -29,15 +34,19 @@ public class ReceiverSelectionGui extends GuiView {
     private static final int HEIGHT = 4;
     private static final Page FIRST_PAGE = new Page(0, WIDTH * HEIGHT);
 
+    private final Plugin plugin;
+    private final BukkitScheduler scheduler;
     private final PluginConfiguration config;
     private final MiniMessage miniMessage;
     private final UserRepository userRepository;
     private final ParcelSendingGUI sendingGUI;
     private final SkullAPI skullAPI;
 
-    private final Map<UUID, UUID> setReceivers = new HashMap<>();
+    private @Nullable UUID receiver;
 
-    public ReceiverSelectionGui(PluginConfiguration config, MiniMessage miniMessage, UserRepository userRepository, ParcelSendingGUI sendingGUI, SkullAPI skullAPI) {
+    public ReceiverSelectionGui(Plugin plugin, BukkitScheduler scheduler, PluginConfiguration config, MiniMessage miniMessage, UserRepository userRepository, ParcelSendingGUI sendingGUI, SkullAPI skullAPI) {
+        this.plugin = plugin;
+        this.scheduler = scheduler;
         this.config = config;
         this.miniMessage = miniMessage;
         this.userRepository = userRepository;
@@ -63,7 +72,6 @@ public class ReceiverSelectionGui extends GuiView {
         GuiItem previousPageItem = this.config.guiSettings.previousPageItem.toGuiItem(event -> this.show(player, page.previous()));
         GuiItem nextPageItem = this.config.guiSettings.nextPageItem.toGuiItem(event -> this.show(player, page.next()));
 
-
         gui.setItem(49, closeItem);
 
         for (int slot : CORNER_SLOTS) {
@@ -73,13 +81,7 @@ public class ReceiverSelectionGui extends GuiView {
             gui.setItem(slot, backgroundItem);
         }
 
-        this.userRepository.findPage(page).whenComplete((result, throwable) -> {
-            if (throwable != null) {
-                Sentry.captureException(throwable);
-                throwable.printStackTrace();
-                return;
-            }
-
+        this.userRepository.findPage(page).thenAccept(result -> {
             if (result.hasNextPage()) {
                 gui.setItem(51, nextPageItem);
             }
@@ -88,65 +90,43 @@ public class ReceiverSelectionGui extends GuiView {
                 gui.setItem(47, previousPageItem);
             }
 
-            List<CompletableFuture<ItemStack>> skullFutures = result.users().stream()
-                .map(user -> this.skullAPI.getSkull(user.uuid()))
-                .toList();
+            GuiRefresher refresh = new GuiRefresher(gui);
 
-            CompletableFutures.allAsList(skullFutures).whenComplete((skulls, throwable1) -> {
-                if (throwable1 != null) {
-                    Sentry.captureException(throwable1);
-                    throwable1.printStackTrace();
+            this.loadSkulls(player, result, refresh).thenAccept(items -> {
+                for (Supplier<GuiItem> item : items) {
+                    refresh.addItem(item);
+                }
+
+                this.scheduler.runTask(this.plugin, () -> gui.open(player));
+            }).whenComplete(ExceptionHandler.handler());
+        }).whenComplete(ExceptionHandler.handler());
+    }
+
+    private CompletableFuture<List<Supplier<GuiItem>>> loadSkulls(Player player, UserPageResult result, GuiRefresher refresh) {
+        return result.users().stream()
+            //.filter(user -> !user.uuid().equals(player.getUniqueId()))
+            .map(user -> this.skullAPI.getSkullData(user.uuid()).thenApply(skullData -> this.toItem(player, user, skullData, refresh)))
+            .collect(CompletableFutures.joinList());
+    }
+
+    private Supplier<GuiItem> toItem(Player player, User user, SkullData skullData, GuiRefresher refresh) {
+        UUID uuid = user.uuid();
+
+        return () -> ItemBuilder.skull()
+            .texture(skullData.getValue())
+            .name(this.miniMessage.deserialize(user.name()))
+            .lore(uuid.equals(receiver) ? this.miniMessage.deserialize(this.config.guiSettings.parcelReceiverSetLine) : this.miniMessage.deserialize(this.config.guiSettings.parcelReceiverNotSetLine))
+            .glow(uuid.equals(receiver))
+            .asGuiItem(event -> {
+                if (uuid.equals(receiver)) {
+                    this.receiver = null;
+                    refresh.refresh();
                     return;
                 }
 
-                for (int i = 0; i < skulls.size(); i++) {
-                    User user = result.users().get(i);
-                    UUID receiver = user.uuid();
-                    ItemStack skull = skulls.get(i);
-
-                    /*if (receiver.equals(player.getUniqueId())) {
-                        continue;
-                    }*/
-
-
-                    GuiItem item = ItemBuilder.from(skull)
-                        .name(this.miniMessage.deserialize(user.name()))
-                        .lore(this.miniMessage.deserialize(this.config.guiSettings.parcelReceiverNotSetLine))
-                        .glow(false)
-                        .flags(ItemFlag.HIDE_ATTRIBUTES)
-                        .asGuiItem(event -> {
-                            this.setReceivers.put(player.getUniqueId(), receiver);
-                            this.sendingGUI.show(player);
-                        });
-
-                    gui.addItem(item);
-                }
-
-                gui.open(player);
+                this.receiver = uuid;
+                refresh.refresh();
             });
-
-            /*for (User user : result.users()) {
-                if (user.uuid().equals(player.getUniqueId())) {
-                    continue;
-                }
-
-                this.skullAPI.acceptAsyncSkullData(user.uuid(), skull -> {
-                    GuiItem item = GuiItem.from(skull)
-                        .setName(name.replaceText(user.name()))
-                        .setLore(lore)
-                        .setClick(event -> {
-                            this.setReceivers.put(player.getUniqueId(), user.uuid());
-                            this.sendingGUI.show(player);
-                        });
-
-                    gui.addItem(item);
-                }
-
-
-            }
-            gui.open(player);*/
-        });
-
-
     }
+
 }

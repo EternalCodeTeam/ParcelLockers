@@ -8,6 +8,7 @@ import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.shared.Page;
+import com.eternalcode.parcellockers.user.User;
 import com.eternalcode.parcellockers.user.UserManager;
 import com.spotify.futures.CompletableFutures;
 import dev.triumphteam.gui.builder.item.ItemBuilder;
@@ -138,7 +139,6 @@ public class ParcelListGUI extends GuiView {
         String receiver = this.getName(parcel.receiver()).join();
 
         List<String> recipients = parcel.recipients().stream()
-            .map(uuid -> this.getName(uuid))
             .map(this::getName)
             .collect(CompletableFutures.joinList())
             .join();
@@ -177,7 +177,6 @@ public class ParcelListGUI extends GuiView {
 
     private CompletableFuture<String> getName(UUID userUuid) {
         return this.userManager.getUser(userUuid).thenApply(userOptional -> userOptional
-            .map(user -> user.name())
             .map(User::name)
             .orElse("Unknown")
         );

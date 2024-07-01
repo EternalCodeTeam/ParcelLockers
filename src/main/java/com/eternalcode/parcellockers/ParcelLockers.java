@@ -104,6 +104,7 @@ public final class ParcelLockers extends JavaPlugin {
         this.skullAPI = LiteSkullFactory.builder()
             .cacheExpireAfterWrite(Duration.ofMinutes(45L))
             .bukkitScheduler(this)
+            .threadPool(20)
             .build();
 
         LockerRepositoryImpl parcelLockerRepositoryImpl = new LockerRepositoryImpl(dataSource);
@@ -141,9 +142,7 @@ public final class ParcelLockers extends JavaPlugin {
             return;
         }
 
-        // TODO: Create all GUIs here and pass it through constructors
-
-        LockerMainGUI lockerMainGUI = new LockerMainGUI(this, miniMessage, config, itemStorageRepository, parcelRepository, announcer, parcelContentRepository);
+        LockerMainGUI lockerMainGUI = new LockerMainGUI(this, miniMessage, config, itemStorageRepository, parcelRepository, announcer, parcelContentRepository, userRepository, skullAPI);
 
         Stream.of(
             new LockerInteractionController(parcelLockerRepositoryImpl, lockerMainGUI),

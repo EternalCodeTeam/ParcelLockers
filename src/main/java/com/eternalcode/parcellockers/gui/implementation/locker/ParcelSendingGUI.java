@@ -10,8 +10,10 @@ import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
+import com.eternalcode.parcellockers.user.UserRepository;
 import de.rapha149.signgui.SignGUI;
 import de.rapha149.signgui.SignGUIAction;
+import dev.rollczi.liteskullapi.SkullAPI;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import net.kyori.adventure.text.Component;
@@ -19,6 +21,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 
@@ -31,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 
 public class ParcelSendingGUI extends GuiView {
 
-    private final JavaPlugin plugin;
+    private final Plugin plugin;
     private final BukkitScheduler scheduler;
     private final PluginConfiguration config;
     private final MiniMessage miniMessage;
@@ -39,18 +42,21 @@ public class ParcelSendingGUI extends GuiView {
     private final ParcelRepository parcelRepository;
     private final NotificationAnnouncer announcer;
     private final ParcelContentRepository parcelContentRepository;
+    private final UserRepository userRepository;
+    private final SkullAPI skullAPI;
+
     private final Map<UUID, String> parcelNames = new HashMap<>();
     private final Map<UUID, String> parcelDescriptions = new HashMap<>();
     private ParcelSize size;
     private boolean priority = false;
 
-    public ParcelSendingGUI(JavaPlugin plugin,
+    public ParcelSendingGUI(Plugin plugin,
                             PluginConfiguration config,
                             MiniMessage miniMessage,
                             ItemStorageRepository itemStorageRepository,
                             ParcelRepository parcelRepository,
                             NotificationAnnouncer announcer,
-                            ParcelContentRepository parcelContentRepository) {
+                            ParcelContentRepository parcelContentRepository, UserRepository userRepository, SkullAPI skullAPI) {
         this.plugin = plugin;
         this.config = config;
         this.miniMessage = miniMessage;
@@ -58,6 +64,8 @@ public class ParcelSendingGUI extends GuiView {
         this.parcelRepository = parcelRepository;
         this.announcer = announcer;
         this.parcelContentRepository = parcelContentRepository;
+        this.userRepository = userRepository;
+        this.skullAPI = skullAPI;
         this.scheduler = this.plugin.getServer().getScheduler();
     }
 
@@ -100,7 +108,7 @@ public class ParcelSendingGUI extends GuiView {
                     gui.updateItem(21, nameItem
                         .setLore(lore)
                         .toItemStack());
-                    return List.of(SignGUIAction.runSync(this.plugin, () -> gui.open(player)));
+                    return List.of(SignGUIAction.runSync((JavaPlugin) this.plugin, () -> gui.open(player)));
 
                 })
                 .build();
@@ -125,7 +133,7 @@ public class ParcelSendingGUI extends GuiView {
                     gui.updateItem(22, descriptionItem
                         .setLore(lore)
                         .toItemStack());
-                    return List.of(SignGUIAction.runSync(this.plugin, () -> gui.open(player)));
+                    return List.of(SignGUIAction.runSync((JavaPlugin) this.plugin, () -> gui.open(player)));
                 })
                 .build();
             descriptionSignGui.open(player);
@@ -142,7 +150,9 @@ public class ParcelSendingGUI extends GuiView {
                 itemStorageRepository,
                 parcelRepository,
                 announcer,
-                this.parcelContentRepository
+                this.parcelContentRepository,
+                userRepository,
+                skullAPI
             );
             itemStorageRepository.find(player.getUniqueId()).whenComplete((result, error) -> {
                     if (result.isPresent()) {
@@ -173,8 +183,8 @@ public class ParcelSendingGUI extends GuiView {
                     .priority(this.priority)
                     .sender(player.getUniqueId())
                     .uuid(UUID.randomUUID())
-                    .name(player.getName() + "'s Parcel")
-                    .description("None")
+                    .name(this.parcelNames.getOrDefault(player.getUniqueId(), "None"))
+                    .description(this.parcelDescriptions.getOrDefault(player.getUniqueId(), "None"))
                     .destinationLocker(UUID.randomUUID())
                     .entryLocker(UUID.randomUUID())
                     .receiver(player.getUniqueId())
@@ -203,8 +213,12 @@ public class ParcelSendingGUI extends GuiView {
                 itemStorageRepository,
                 parcelRepository,
                 announcer,
-                parcelContentRepository
+                parcelContentRepository,
+                userRepository,
+                skullAPI
             ).show(player));
+
+        // TODO use GuiRefresher
 
         ConfigItem smallButton = guiSettings.smallParcelSizeItem;
         ConfigItem mediumButton = guiSettings.mediumParcelSizeItem;
@@ -227,6 +241,15 @@ public class ParcelSendingGUI extends GuiView {
         gui.setItem(14, largeButton.toGuiItem(event -> this.setSelected(gui, ParcelSize.LARGE)));
         gui.setItem(21, nameGuiItem);
         gui.setItem(22, descriptionGuiItem);
+        gui.setItem(23, receiverItem.toGuiItem(event -> new ReceiverSelectionGui(
+            this.plugin,
+            this.scheduler,
+            this.config,
+            this.miniMessage,
+            this.userRepository,
+            this,
+            this.skullAPI
+        ).show(player)));
         gui.setItem(37, storageItem);
         gui.setItem(43, submitItem);
         gui.setItem(42, priorityItem.toGuiItem(event -> this.setSelected(gui, !this.priority)));

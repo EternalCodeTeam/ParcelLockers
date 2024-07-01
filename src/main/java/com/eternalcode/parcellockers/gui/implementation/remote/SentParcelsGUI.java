@@ -7,7 +7,7 @@ import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
-import com.eternalcode.parcellockers.shared.LastExceptionHandler;
+import com.eternalcode.parcellockers.shared.ExceptionHandler;
 import com.eternalcode.parcellockers.user.UserManager;
 import com.spotify.futures.CompletableFutures;
 import dev.triumphteam.gui.builder.item.ItemBuilder;
@@ -75,7 +75,7 @@ public class SentParcelsGUI extends GuiView {
         gui.setItem(49, closeItem);
 
 
-        this.parcelRepository.findBySender(player.getUniqueId()).whenComplete((optionalParcels, throwable) -> {
+        this.parcelRepository.findBySender(player.getUniqueId()).thenAccept(optionalParcels -> {
             List<Parcel> parcels = optionalParcels.orElse(Collections.emptyList());
 
             for (Parcel parcel : parcels) {
@@ -91,7 +91,7 @@ public class SentParcelsGUI extends GuiView {
                 gui.addItem(item.asGuiItem());
             }
             this.server.getScheduler().runTask(this.plugin, () -> gui.open(player));
-        }).whenComplete(new LastExceptionHandler(true));
+        }).whenComplete(new ExceptionHandler<>());
     }
 
     @Blocking

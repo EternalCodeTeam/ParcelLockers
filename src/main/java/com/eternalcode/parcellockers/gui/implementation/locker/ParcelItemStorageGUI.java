@@ -7,7 +7,9 @@ import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepositor
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
+import com.eternalcode.parcellockers.user.UserRepository;
 import com.eternalcode.parcellockers.util.InventoryUtil;
+import dev.rollczi.liteskullapi.SkullAPI;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.StorageGui;
@@ -19,7 +21,6 @@ import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,8 +35,10 @@ public class ParcelItemStorageGUI {
     private final ParcelRepository parcelRepository;
     private final NotificationAnnouncer announcer;
     private final ParcelContentRepository parcelContentRepository;
+    private final UserRepository userRepository;
+    private final SkullAPI skullAPI;
 
-    public ParcelItemStorageGUI(Plugin plugin, PluginConfiguration config, MiniMessage miniMessage, ItemStorageRepository itemStorageRepository, ParcelRepository parcelRepository, NotificationAnnouncer announcer, ParcelContentRepository parcelContentRepository) {
+    public ParcelItemStorageGUI(Plugin plugin, PluginConfiguration config, MiniMessage miniMessage, ItemStorageRepository itemStorageRepository, ParcelRepository parcelRepository, NotificationAnnouncer announcer, ParcelContentRepository parcelContentRepository, UserRepository userRepository, SkullAPI skullAPI) {
         this.plugin = plugin;
         this.config = config;
         this.miniMessage = miniMessage;
@@ -43,6 +46,8 @@ public class ParcelItemStorageGUI {
         this.parcelRepository = parcelRepository;
         this.announcer = announcer;
         this.parcelContentRepository = parcelContentRepository;
+        this.userRepository = userRepository;
+        this.skullAPI = skullAPI;
     }
 
     void show(Player player, ParcelSize size) {
@@ -51,7 +56,16 @@ public class ParcelItemStorageGUI {
 
         GuiItem backgroundItem = guiSettings.mainGuiBackgroundItem.toGuiItem(event -> event.setCancelled(true));
 
-        GuiItem confirmItem = guiSettings.confirmItemsItem.toGuiItem(event -> new ParcelSendingGUI((JavaPlugin) plugin, this.config, this.miniMessage, this.itemStorageRepository, this.parcelRepository, this.announcer, this.parcelContentRepository).show(player));
+        GuiItem confirmItem = guiSettings.confirmItemsItem.toGuiItem(event -> new ParcelSendingGUI(
+            plugin,
+            this.config,
+            this.miniMessage,
+            this.itemStorageRepository,
+            this.parcelRepository,
+            this.announcer,
+            this.parcelContentRepository,
+            userRepository,
+            skullAPI).show(player));
 
         switch (size) {
             case SMALL -> gui = Gui.storage()

@@ -18,6 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public abstract class AbstractDatabaseService {
 
     private static final AtomicInteger EXECUTOR_COUNT = new AtomicInteger();
+    protected final DataSource dataSource;
     private final ExecutorService executorService = Executors.newCachedThreadPool(runnable -> {
         Thread thread = new Thread(runnable);
         thread.setName("DATABASE-EXECUTOR-" + EXECUTOR_COUNT.incrementAndGet());
@@ -28,7 +29,6 @@ public abstract class AbstractDatabaseService {
         });
         return thread;
     });
-    protected final DataSource dataSource;
 
     protected AbstractDatabaseService(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -47,9 +47,7 @@ public abstract class AbstractDatabaseService {
                  PreparedStatement statement = connection.prepareStatement(sql)
             ) {
                 return function.apply(statement);
-            }
-            catch (SQLException e) {
-                Sentry.captureException(e);
+            } catch (SQLException e) {
                 throw new ParcelLockersException(e);
             }
         }, this.executorService).orTimeout(5, TimeUnit.SECONDS);
@@ -60,9 +58,7 @@ public abstract class AbstractDatabaseService {
              PreparedStatement statement = connection.prepareStatement(sql)
         ) {
             return function.apply(statement);
-        }
-        catch (SQLException e) {
-            Sentry.captureException(e);
+        } catch (SQLException e) {
             throw new ParcelLockersException(e);
         }
     }
