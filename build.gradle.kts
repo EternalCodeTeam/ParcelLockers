@@ -3,7 +3,7 @@ plugins {
     checkstyle
     id("net.minecrell.plugin-yml.bukkit") version "0.6.0"
     id("xyz.jpenilla.run-paper") version "2.3.0"
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("io.github.goooler.shadow") version "8.1.8"
 }
 
 group = "com.eternalcode"
@@ -26,10 +26,11 @@ repositories {
 
 dependencies {
     // minecraft development api
-    compileOnly("org.spigotmc:spigot-api:1.20.5-R0.1-SNAPSHOT")
+    compileOnly("org.spigotmc:spigot-api:1.20.6-R0.1-SNAPSHOT")
     implementation("net.kyori:adventure-platform-bukkit:4.3.3")
     implementation("net.kyori:adventure-text-minimessage:4.17.0")
-    implementation("dev.rollczi.litecommands:bukkit-adventure:2.8.9")
+    implementation("dev.rollczi:litecommands-bukkit:3.1.0")
+    implementation("dev.rollczi:litecommands-adventure:3.1.0")
 
     // skull api
     implementation("dev.rollczi:liteskullapi:1.3.0")
@@ -41,7 +42,7 @@ dependencies {
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
 
     // CDN
-    implementation("net.dzikoysk:cdn:1.14.5")
+    implementation("net.dzikoysk:cdn:1.14.4")
 
     // expressible
     implementation("org.panda-lang:expressible:1.3.6")
@@ -66,12 +67,21 @@ dependencies {
     // paperlib
     implementation("io.papermc:paperlib:1.0.8")
 
+    // signgui
+    implementation("de.rapha149.signgui:signgui:2.3.5")
+
     // panda-utilities
     implementation("org.panda-lang:panda-utilities:0.5.2-alpha")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.3")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.3")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.3")
+    // jackson-bukkit
+    implementation("de.eldoria.jacksonbukkit:paper:1.2.0")
+
+    // completable-futures
+    implementation("com.spotify:completable-futures:0.3.6")
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
 
     testImplementation("org.testcontainers:junit-jupiter:1.19.8")
     testImplementation("org.testcontainers:mysql:1.19.8")
@@ -79,7 +89,7 @@ dependencies {
 }
 
 java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+    toolchain.languageVersion.set(JavaLanguageVersion.of(21))
 }
 
 checkstyle {
@@ -95,7 +105,7 @@ bukkit {
     main = "com.eternalcode.parcellockers.ParcelLockers"
     apiVersion = "1.13"
     prefix = "ParcelLockers"
-    author = "Jakubk15"
+    author = "EternalCodeTeam"
     name = "ParcelLockers"
     description =
         "Plugin that provides functionality of parcel lockers in Minecraft, allowing players to send and receive parcels safely."
@@ -107,11 +117,15 @@ bukkit {
 tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
     options.setIncremental(true)
+    options.compilerArgs.add("-parameters")
+    options.release = 17
 }
 
 tasks {
     runServer {
-        minecraftVersion("1.20.2")
+        minecraftVersion("1.20.6")
+        downloadPlugins.url("https://github.com/MilkBowl/Vault/releases/download/1.7.3/Vault.jar")
+        downloadPlugins.url("https://github.com/EssentialsX/Essentials/releases/download/2.20.1/EssentialsX-2.20.1.jar")
     }
 
     test {
@@ -129,7 +143,9 @@ tasks {
         )
 
         mergeServiceFiles()
-        minimize()
+        minimize {
+            exclude(dependency("de\\.rapha149\\.signgui:signgui:.*")) // https://github.com/Rapha149/SignGUI/issues/15
+        }
 
         val prefix = "com.eternalcode.parcellockers.libs"
         listOf(
@@ -141,7 +157,8 @@ tasks {
             "dev.rollczi",
             "net.kyori",
             "org.json",
-            "com.fasterxml"
+            "com.fasterxml",
+            "de.rapha149"
         ).forEach { relocate(it, prefix) }
     }
 }
