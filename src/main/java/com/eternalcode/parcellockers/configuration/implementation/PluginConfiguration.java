@@ -301,7 +301,7 @@ public class PluginConfiguration implements ReloadableConfig {
             .setType(Material.PLAYER_HEAD);
 
         @Description({ " ", "# The value of the GUI line, when parcel name is set" })
-        public String parcelReceiverSetLine = "&5> &dCurrent parcel receiver: &5{RECEIVER}";
+        public String parcelReceiverGuiSetLine = "&5> &dCurrent parcel receiver: &5{RECEIVER}";
 
         @Description({ " ", "# The value of the player itemlore line, when parcel receiver is not set" })
         public String parcelReceiverNotSetLine = "&9ⓘ &bClick to select.";

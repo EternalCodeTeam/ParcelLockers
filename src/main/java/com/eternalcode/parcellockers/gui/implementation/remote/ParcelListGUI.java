@@ -139,6 +139,7 @@ public class ParcelListGUI extends GuiView {
 
         List<String> recipients = parcel.recipients().stream()
             .map(uuid -> this.getName(uuid))
+            .map(this::getName)
             .collect(CompletableFutures.joinList())
             .join();
 
@@ -177,6 +178,7 @@ public class ParcelListGUI extends GuiView {
     private CompletableFuture<String> getName(UUID userUuid) {
         return this.userManager.getUser(userUuid).thenApply(userOptional -> userOptional
             .map(user -> user.name())
+            .map(User::name)
             .orElse("Unknown")
         );
     }
