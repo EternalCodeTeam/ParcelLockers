@@ -4,6 +4,7 @@ import com.eternalcode.parcellockers.configuration.implementation.ConfigItem;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.content.ParcelContent;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
+import com.eternalcode.parcellockers.gui.GuiRefresher;
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
@@ -31,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 public class ParcelSendingGUI extends GuiView {
 
@@ -282,5 +284,11 @@ public class ParcelSendingGUI extends GuiView {
         ConfigItem priorityButton = priority ? settings.selectedPriorityItem : settings.priorityItem;
 
         gui.updateItem(42, priorityButton.toItemStack());
+    }
+
+    // TODO: modify appropriate props in GuiItem
+
+    private Supplier<GuiItem> toItem(ConfigItem item, GuiRefresher refresher) {
+        return () -> item.toGuiItem(event -> refresher.refresh());
     }
 }

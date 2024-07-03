@@ -1,18 +1,18 @@
 package com.eternalcode.parcellockers.gui;
 
+import dev.triumphteam.gui.guis.BaseGui;
 import dev.triumphteam.gui.guis.GuiItem;
-import dev.triumphteam.gui.guis.PaginatedGui;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class GuiRefresher {
+public class GuiRefresher<T extends BaseGui> {
 
-    private final PaginatedGui gui;
+    private final T gui;
     private final List<Supplier<GuiItem>> items = new ArrayList<>();
 
-    public GuiRefresher(PaginatedGui gui) {
+    public GuiRefresher(T gui) {
         this.gui = gui;
     }
 
@@ -22,7 +22,9 @@ public class GuiRefresher {
     }
 
     public void refresh() {
-        this.gui.clearPageItems(false);
+        for (GuiItem item : this.gui.getGuiItems().values()) {
+            this.gui.removeItem(item);
+        }
 
         for (Supplier<GuiItem> item : this.items) {
             this.gui.addItem(item.get());

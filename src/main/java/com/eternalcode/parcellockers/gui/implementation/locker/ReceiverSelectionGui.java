@@ -109,7 +109,7 @@ public class ReceiverSelectionGui extends GuiView {
             .collect(CompletableFutures.joinList());
     }
 
-    private Supplier<GuiItem> toItem(Player player, User user, SkullData skullData, GuiRefresher refresh) {
+    private Supplier<GuiItem> toItem(Player player, User user, SkullData skullData, GuiRefresher refresher) {
         UUID uuid = user.uuid();
 
         return () -> ItemBuilder.skull()
@@ -120,12 +120,12 @@ public class ReceiverSelectionGui extends GuiView {
             .asGuiItem(event -> {
                 if (uuid.equals(receiver)) {
                     this.receiver = null;
-                    refresh.refresh();
+                    refresher.refresh();
                     return;
                 }
 
                 this.receiver = uuid;
-                refresh.refresh();
+                refresher.refresh();
             });
     }
 
