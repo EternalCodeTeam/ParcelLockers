@@ -51,14 +51,14 @@ dependencies {
 
     // metrics and sentry
     implementation("org.bstats:bstats-bukkit:3.0.2")
-    implementation("io.sentry:sentry:7.10.0")
+    implementation("io.sentry:sentry:7.11.0")
 
     // database
     implementation("com.zaxxer:HikariCP:5.1.0")
 
     // lombok
-    compileOnly("org.projectlombok:lombok:1.18.32")
-    annotationProcessor("org.projectlombok:lombok:1.18.32")
+    compileOnly("org.projectlombok:lombok:1.18.34")
+    annotationProcessor("org.projectlombok:lombok:1.18.34")
 
     // jetbrains annotations
     api("org.jetbrains:annotations:24.1.0")
