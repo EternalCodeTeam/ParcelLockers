@@ -47,7 +47,8 @@ public abstract class AbstractDatabaseService {
                  PreparedStatement statement = connection.prepareStatement(sql)
             ) {
                 return function.apply(statement);
-            } catch (SQLException e) {
+            }
+            catch (SQLException e) {
                 throw new ParcelLockersException(e);
             }
         }, this.executorService).orTimeout(5, TimeUnit.SECONDS);
@@ -58,7 +59,8 @@ public abstract class AbstractDatabaseService {
              PreparedStatement statement = connection.prepareStatement(sql)
         ) {
             return function.apply(statement);
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             throw new ParcelLockersException(e);
         }
     }

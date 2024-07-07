@@ -39,7 +39,8 @@ public class ItemUtil {
     public static String serialize(ItemStack stack) {
         try {
             return JSON.writeValueAsString(stack);
-        } catch (JsonProcessingException e) {
+        }
+        catch (JsonProcessingException e) {
             Sentry.captureException(e);
             throw new ParcelLockersException("Failed to serialize itemstack", e);
         }
@@ -48,7 +49,8 @@ public class ItemUtil {
     public static String serializeItems(List<ItemStack> stack) {
         try {
             return JSON.writeValueAsString(stack);
-        } catch (JsonProcessingException e) {
+        }
+        catch (JsonProcessingException e) {
             Sentry.captureException(e);
             throw new ParcelLockersException("Failed to serialize itemstack", e);
         }
@@ -57,7 +59,8 @@ public class ItemUtil {
     public static ItemStack deserialize(String string) {
         try {
             return JSON.readValue(string, ItemStack.class);
-        } catch (JsonProcessingException e) {
+        }
+        catch (JsonProcessingException e) {
             Sentry.captureException(e);
             throw new ParcelLockersException("Failed to deserialize itemstack", e);
         }
@@ -66,7 +69,8 @@ public class ItemUtil {
     public static List<ItemStack> deserializeItems(String string) {
         try {
             return JSON.readValue(string, JSON.getTypeFactory().constructCollectionType(List.class, ItemStack.class));
-        } catch (JsonProcessingException e) {
+        }
+        catch (JsonProcessingException e) {
             Sentry.captureException(e);
             throw new ParcelLockersException("Failed to deserialize itemstack", e);
         }
@@ -103,7 +107,8 @@ public class ItemUtil {
             formatter.register("{POSITION_X}", locker.position().x())
                 .register("{POSITION_Y}", locker.position().y())
                 .register("{POSITION_Z}", locker.position().z());
-        } else {
+        }
+        else {
             formatter.register("{POSITION_X}", "-")
                 .register("{POSITION_Y}", "-")
                 .register("{POSITION_Z}", "-");

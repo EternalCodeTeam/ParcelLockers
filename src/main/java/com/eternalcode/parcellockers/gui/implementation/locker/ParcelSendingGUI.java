@@ -161,12 +161,15 @@ public class ParcelSendingGUI extends GuiView {
                         int slotsSize = result.get().items().size();
                         if (slotsSize <= 9) {
                             this.scheduler.runTask(this.plugin, () -> storageGUI.show(player, this.size));
-                        } else if (slotsSize <= 18 && this.size == ParcelSize.SMALL) {
+                        }
+                        else if (slotsSize <= 18 && this.size == ParcelSize.SMALL) {
                             this.scheduler.runTask(this.plugin, () -> storageGUI.show(player, ParcelSize.MEDIUM));
-                        } else {
+                        }
+                        else {
                             this.scheduler.runTask(this.plugin, () -> storageGUI.show(player, ParcelSize.LARGE));
                         }
-                    } else {
+                    }
+                    else {
                         this.scheduler.runTask(this.plugin, () -> storageGUI.show(player, this.size));
                     }
                 })

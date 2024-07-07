@@ -32,9 +32,9 @@ public record Position(int x, int y, int z, String world) {
     /**
      * Returns the distance between two positions.
      *
-     * @param a
-     * @param b
-     * @return the distance between two positions
+     * @param a the first position
+     * @param b the second position
+     * @return  the distance between two positions
      */
 
     public static int distance(Position a, Position b) {

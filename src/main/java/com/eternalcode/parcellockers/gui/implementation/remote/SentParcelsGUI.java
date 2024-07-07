@@ -125,7 +125,8 @@ public class SentParcelsGUI extends GuiView {
             formatter.register("{POSITION_X}", locker.position().x())
                 .register("{POSITION_Y}", locker.position().y())
                 .register("{POSITION_Z}", locker.position().z());
-        } else {
+        }
+        else {
             formatter.register("{POSITION_X}", "-")
                 .register("{POSITION_Y}", "-")
                 .register("{POSITION_Z}", "-");

@@ -93,7 +93,8 @@ public class LockerPlaceController implements Listener {
                         }
                         this.announcer.sendMessage(player, this.config.messages.parcelLockerSuccessfullyCreated);
                     });
-                } else {
+                }
+                else {
                     event.setCancelled(true);
                 }
                 this.lockerCreators.remove(player.getUniqueId());
@@ -106,5 +107,4 @@ public class LockerPlaceController implements Listener {
 
         player.beginConversation(conversationFactory.buildConversation(player));
     }
-
 }
