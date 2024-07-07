@@ -7,6 +7,7 @@ import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
+import com.eternalcode.parcellockers.shared.ExceptionHandler;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.user.User;
 import com.eternalcode.parcellockers.user.UserManager;
@@ -15,7 +16,6 @@ import dev.triumphteam.gui.builder.item.ItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
-import io.sentry.Sentry;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Server;
@@ -83,13 +83,7 @@ public class ParcelListGUI extends GuiView {
             gui.setItem(slot, backgroundItem);
         }
 
-        this.parcelRepository.findPage(page).whenComplete((result, throwable) -> {
-            if (throwable != null) {
-                Sentry.captureException(throwable);
-                throwable.printStackTrace();
-                return;
-            }
-
+        this.parcelRepository.findPage(page).thenAccept(result -> {
             if (result.parcels().isEmpty() && page.hasPrevious()) {
                 this.show(player, page.previous());
                 return;
@@ -120,13 +114,7 @@ public class ParcelListGUI extends GuiView {
             }
 
             this.server.getScheduler().runTask(this.plugin, () -> gui.open(player));
-        }).whenComplete((unused, throwable) -> {
-            if (throwable != null) {
-                Sentry.captureException(throwable);
-                throwable.printStackTrace();
-            }
-        }
-        );
+        }).whenComplete(ExceptionHandler.handler());
 
     }
 

@@ -10,6 +10,9 @@ public class ExceptionHandler<T> implements BiConsumer<T, Throwable> {
 
     private static final ExceptionHandler<?> INSTANCE = new ExceptionHandler<>();
 
+    private ExceptionHandler() {
+    }
+
     @SuppressWarnings("unchecked")
     public static <T> ExceptionHandler<T> handler() {
         return (ExceptionHandler<T>) INSTANCE;
@@ -22,5 +25,4 @@ public class ExceptionHandler<T> implements BiConsumer<T, Throwable> {
             Sentry.captureException(throwable);
         }
     }
-
 }

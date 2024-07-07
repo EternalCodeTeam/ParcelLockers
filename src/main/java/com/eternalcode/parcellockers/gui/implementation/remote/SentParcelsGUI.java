@@ -91,7 +91,7 @@ public class SentParcelsGUI extends GuiView {
                 gui.addItem(item.asGuiItem());
             }
             this.server.getScheduler().runTask(this.plugin, () -> gui.open(player));
-        }).whenComplete(new ExceptionHandler<>());
+        }).whenComplete(ExceptionHandler.handler());
     }
 
     @Blocking

@@ -11,6 +11,7 @@ import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
+import com.eternalcode.parcellockers.shared.ExceptionHandler;
 import com.eternalcode.parcellockers.user.UserRepository;
 import de.rapha149.signgui.SignGUI;
 import de.rapha149.signgui.SignGUIAction;
@@ -156,7 +157,7 @@ public class ParcelSendingGUI extends GuiView {
                 this.userRepository,
                 this.skullAPI
             );
-            this.itemStorageRepository.find(player.getUniqueId()).whenComplete((result, error) -> {
+            this.itemStorageRepository.find(player.getUniqueId()).thenAccept(result -> {
                     if (result.isPresent()) {
                         int slotsSize = result.get().items().size();
                         if (slotsSize <= 9) {
@@ -172,8 +173,8 @@ public class ParcelSendingGUI extends GuiView {
                     else {
                         this.scheduler.runTask(this.plugin, () -> storageGUI.show(player, this.size));
                     }
-                })
-                .orTimeout(2, TimeUnit.SECONDS);
+            }
+            ).orTimeout(2, TimeUnit.SECONDS);
         });
         GuiItem submitItem = guiSettings.submitParcelItem.toGuiItem(event ->
             this.itemStorageRepository.find(player.getUniqueId()).thenAccept(result -> {
@@ -196,19 +197,20 @@ public class ParcelSendingGUI extends GuiView {
                     .sender(player.getUniqueId())
                     .build();
 
-                this.parcelRepository.save(parcel).whenComplete((unused, throwable) -> {
-                    if (throwable != null) {
-                        this.announcer.sendMessage(player, settings.messages.parcelFailedToSend);
-                        throwable.printStackTrace();
-                        return;
-                    }
+                this.parcelRepository.save(parcel).thenAccept(unused -> {
 
                     this.parcelContentRepository.save(new ParcelContent(parcel.uuid(), result.get().items())
                     ).thenAccept(none -> this.itemStorageRepository.remove(player.getUniqueId()));
 
                     this.announcer.sendMessage(player, settings.messages.parcelSent);
                     gui.close(player);
-                });
+                }).whenComplete(ExceptionHandler.handler()
+                    .andThen((unused, throwable) -> {
+                        if (throwable != null) {
+                            this.announcer.sendMessage(player, settings.messages.parcelFailedToSend);
+                        }
+                    }
+                    ));
             }).orTimeout(5, TimeUnit.SECONDS));
 
         GuiItem closeItem = guiSettings.closeItem.toGuiItem(event ->

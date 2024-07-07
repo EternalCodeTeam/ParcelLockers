@@ -7,13 +7,13 @@ import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepositor
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
+import com.eternalcode.parcellockers.shared.ExceptionHandler;
 import com.eternalcode.parcellockers.user.UserRepository;
 import com.eternalcode.parcellockers.util.InventoryUtil;
 import dev.rollczi.liteskullapi.SkullAPI;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.StorageGui;
-import io.sentry.Sentry;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -111,22 +111,12 @@ public class ParcelItemStorageGUI {
                 items.add(item);
             }
 
-            this.itemStorageRepository.remove(player.getUniqueId()).whenComplete((unused, throwable) -> {
-                if (throwable != null) {
-                    Sentry.captureException(throwable);
-                    throwable.printStackTrace();
-                }
-
+            this.itemStorageRepository.remove(player.getUniqueId()).thenAccept(unused -> {
                 this.itemStorageRepository.save(new ItemStorage(player.getUniqueId(), items));
-            });
+            }).whenComplete(ExceptionHandler.handler());
         });
 
-        this.itemStorageRepository.find(player.getUniqueId()).whenComplete((optional, throwable) -> {
-            if (throwable != null) {
-                Sentry.captureException(throwable);
-                throwable.printStackTrace();
-            }
-
+        this.itemStorageRepository.find(player.getUniqueId()).thenAccept(optional -> {
             if (optional.isPresent()) {
                 ItemStorage itemStorage = optional.get();
 
@@ -136,6 +126,6 @@ public class ParcelItemStorageGUI {
             }
 
             this.plugin.getServer().getScheduler().runTask(this.plugin, () -> gui.open(player));
-        });
+        }).whenComplete(ExceptionHandler.handler());
     }
 }
