@@ -4,8 +4,8 @@ import com.eternalcode.parcellockers.configuration.implementation.ConfigItem;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.content.ParcelContent;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
-import com.eternalcode.parcellockers.gui.GuiRefresher;
 import com.eternalcode.parcellockers.gui.GuiView;
+import com.eternalcode.parcellockers.gui.PaginatedGuiRefresher;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.Parcel;
@@ -288,7 +288,7 @@ public class ParcelSendingGUI extends GuiView {
 
     // TODO: modify appropriate props in GuiItem
 
-    private Supplier<GuiItem> toItem(ConfigItem item, GuiRefresher refresher) {
+    private Supplier<GuiItem> toItem(ConfigItem item, PaginatedGuiRefresher refresher) {
         return () -> item.toGuiItem(event -> refresher.refresh());
     }
 }

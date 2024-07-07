@@ -1,8 +1,8 @@
 package com.eternalcode.parcellockers.gui.implementation.locker;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
-import com.eternalcode.parcellockers.gui.GuiRefresher;
 import com.eternalcode.parcellockers.gui.GuiView;
+import com.eternalcode.parcellockers.gui.PaginatedGuiRefresher;
 import com.eternalcode.parcellockers.shared.ExceptionHandler;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.user.User;
@@ -90,7 +90,7 @@ public class ReceiverSelectionGui extends GuiView {
                 gui.setItem(47, previousPageItem);
             }
 
-            GuiRefresher<PaginatedGui> refresh = new GuiRefresher<>(gui);
+            PaginatedGuiRefresher refresh = new PaginatedGuiRefresher(gui);
 
             this.loadSkulls(player, result, refresh).thenAccept(items -> {
                 for (Supplier<GuiItem> item : items) {
@@ -102,14 +102,14 @@ public class ReceiverSelectionGui extends GuiView {
         }).whenComplete(ExceptionHandler.handler());
     }
 
-    private CompletableFuture<List<Supplier<GuiItem>>> loadSkulls(Player player, UserPageResult result, GuiRefresher<PaginatedGui> refresh) {
+    private CompletableFuture<List<Supplier<GuiItem>>> loadSkulls(Player player, UserPageResult result, PaginatedGuiRefresher refresh) {
         return result.users().stream()
             //.filter(user -> !user.uuid().equals(player.getUniqueId()))
             .map(user -> this.skullAPI.getSkullData(user.uuid()).thenApply(skullData -> this.toItem(player, user, skullData, refresh)))
             .collect(CompletableFutures.joinList());
     }
 
-    private Supplier<GuiItem> toItem(Player player, User user, SkullData skullData, GuiRefresher<PaginatedGui> refresher) {
+    private Supplier<GuiItem> toItem(Player player, User user, SkullData skullData, PaginatedGuiRefresher refresher) {
         UUID uuid = user.uuid();
 
         return () -> ItemBuilder.skull()
