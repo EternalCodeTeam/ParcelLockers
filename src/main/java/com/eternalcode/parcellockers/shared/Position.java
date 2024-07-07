@@ -36,7 +36,7 @@ public record Position(int x, int y, int z, String world) {
      * @param b
      * @return the distance between two positions
      */
-    
+
     public static int distance(Position a, Position b) {
         return Math.abs(a.x() - b.x()) + Math.abs(a.y() - b.y()) + Math.abs(a.z() - b.z());
     }
@@ -64,7 +64,7 @@ public record Position(int x, int y, int z, String world) {
             return true;
         }
 
-        if (o == null || getClass() != o.getClass()) {
+        if (o == null || this.getClass() != o.getClass()) {
             return false;
         }
 

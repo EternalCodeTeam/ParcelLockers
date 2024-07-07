@@ -97,12 +97,12 @@ public class ParcelSendingGUI extends GuiView {
                     String name = result.getLineWithoutColor(1);
 
                     if (name.isEmpty() || name.isBlank()) {
-                        announcer.sendMessage(player, settings.messages.parcelNameCannotBeEmpty);
+                        this.announcer.sendMessage(player, settings.messages.parcelNameCannotBeEmpty);
                         return Collections.emptyList();
                     }
 
-                    parcelNames.put(player.getUniqueId(), name);
-                    announcer.sendMessage(player, settings.messages.parcelNameSet);
+                    this.parcelNames.put(player.getUniqueId(), name);
+                    this.announcer.sendMessage(player, settings.messages.parcelNameSet);
 
                     List<String> lore = nameItem.lore;
                     lore.add(this.config.guiSettings.parcelNameSetLine.replace("{NAME}", this.parcelNames.getOrDefault(player.getUniqueId(), "")));
@@ -127,7 +127,7 @@ public class ParcelSendingGUI extends GuiView {
                     String description = result.getLineWithoutColor(1);
 
                     this.parcelDescriptions.put(player.getUniqueId(), description);
-                    announcer.sendMessage(player, settings.messages.parcelDescriptionSet);
+                    this.announcer.sendMessage(player, settings.messages.parcelDescriptionSet);
 
                     List<String> lore = descriptionItem.lore;
                     lore.add(this.config.guiSettings.parcelDescriptionSetLine.replace("{DESCRIPTION}", description));
@@ -146,28 +146,28 @@ public class ParcelSendingGUI extends GuiView {
 
         GuiItem storageItem = guiSettings.parcelStorageItem.toGuiItem(event -> {
             ParcelItemStorageGUI storageGUI = new ParcelItemStorageGUI(
-                plugin,
+                this.plugin,
                 this.config,
                 this.miniMessage,
-                itemStorageRepository,
-                parcelRepository,
-                announcer,
+                this.itemStorageRepository,
+                this.parcelRepository,
+                this.announcer,
                 this.parcelContentRepository,
-                userRepository,
-                skullAPI
+                this.userRepository,
+                this.skullAPI
             );
-            itemStorageRepository.find(player.getUniqueId()).whenComplete((result, error) -> {
+            this.itemStorageRepository.find(player.getUniqueId()).whenComplete((result, error) -> {
                     if (result.isPresent()) {
                         int slotsSize = result.get().items().size();
                         if (slotsSize <= 9) {
-                            scheduler.runTask(this.plugin, () -> storageGUI.show(player, this.size));
+                            this.scheduler.runTask(this.plugin, () -> storageGUI.show(player, this.size));
                         } else if (slotsSize <= 18 && this.size == ParcelSize.SMALL) {
-                            scheduler.runTask(this.plugin, () -> storageGUI.show(player, ParcelSize.MEDIUM));
+                            this.scheduler.runTask(this.plugin, () -> storageGUI.show(player, ParcelSize.MEDIUM));
                         } else {
-                            scheduler.runTask(this.plugin, () -> storageGUI.show(player, ParcelSize.LARGE));
+                            this.scheduler.runTask(this.plugin, () -> storageGUI.show(player, ParcelSize.LARGE));
                         }
                     } else {
-                        scheduler.runTask(this.plugin, () -> storageGUI.show(player, this.size));
+                        this.scheduler.runTask(this.plugin, () -> storageGUI.show(player, this.size));
                     }
                 })
                 .orTimeout(2, TimeUnit.SECONDS);
@@ -175,7 +175,7 @@ public class ParcelSendingGUI extends GuiView {
         GuiItem submitItem = guiSettings.submitParcelItem.toGuiItem(event ->
             this.itemStorageRepository.find(player.getUniqueId()).thenAccept(result -> {
                 if (result.isEmpty() || result.get().items().isEmpty()) {
-                    announcer.sendMessage(player, settings.messages.parcelCannotBeEmpty);
+                    this.announcer.sendMessage(player, settings.messages.parcelCannotBeEmpty);
                     gui.close(player);
                     return;
                 }
@@ -195,7 +195,7 @@ public class ParcelSendingGUI extends GuiView {
 
                 this.parcelRepository.save(parcel).whenComplete((unused, throwable) -> {
                     if (throwable != null) {
-                        announcer.sendMessage(player, settings.messages.parcelFailedToSend);
+                        this.announcer.sendMessage(player, settings.messages.parcelFailedToSend);
                         throwable.printStackTrace();
                         return;
                     }
@@ -203,21 +203,21 @@ public class ParcelSendingGUI extends GuiView {
                     this.parcelContentRepository.save(new ParcelContent(parcel.uuid(), result.get().items())
                     ).thenAccept(none -> this.itemStorageRepository.remove(player.getUniqueId()));
 
-                    announcer.sendMessage(player, settings.messages.parcelSent);
+                    this.announcer.sendMessage(player, settings.messages.parcelSent);
                     gui.close(player);
                 });
             }).orTimeout(5, TimeUnit.SECONDS));
 
         GuiItem closeItem = guiSettings.closeItem.toGuiItem(event ->
-            new LockerMainGUI(plugin,
+            new LockerMainGUI(this.plugin,
                 this.miniMessage,
                 this.config,
-                itemStorageRepository,
-                parcelRepository,
-                announcer,
-                parcelContentRepository,
-                userRepository,
-                skullAPI
+                this.itemStorageRepository,
+                this.parcelRepository,
+                this.announcer,
+                this.parcelContentRepository,
+                this.userRepository,
+                this.skullAPI
             ).show(player));
 
         // TODO use GuiRefresher
@@ -263,13 +263,13 @@ public class ParcelSendingGUI extends GuiView {
     }
 
     private void setSelected(Gui gui, ParcelSize size) {
-        PluginConfiguration.GuiSettings settings = config.guiSettings;
+        PluginConfiguration.GuiSettings settings = this.config.guiSettings;
         this.size = size;
 
         ConfigItem smallButton = size == ParcelSize.SMALL ? settings.selectedSmallParcelSizeItem : settings.smallParcelSizeItem;
         ConfigItem mediumButton = size == ParcelSize.MEDIUM ? settings.selectedMediumParcelSizeItem : settings.mediumParcelSizeItem;
         ConfigItem largeButton = size == ParcelSize.LARGE ? settings.selectedLargeParcelSizeItem : settings.largeParcelSizeItem;
-        ConfigItem priorityButton = priority ? settings.selectedPriorityItem : settings.priorityItem;
+        ConfigItem priorityButton = this.priority ? settings.selectedPriorityItem : settings.priorityItem;
 
         gui.updateItem(12, smallButton.toItemStack());
         gui.updateItem(13, mediumButton.toItemStack());
@@ -278,7 +278,7 @@ public class ParcelSendingGUI extends GuiView {
     }
 
     private void setSelected(Gui gui, boolean priority) {
-        PluginConfiguration.GuiSettings settings = config.guiSettings;
+        PluginConfiguration.GuiSettings settings = this.config.guiSettings;
         this.priority = priority;
 
         ConfigItem priorityButton = priority ? settings.selectedPriorityItem : settings.priorityItem;

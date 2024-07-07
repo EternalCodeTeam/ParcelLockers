@@ -57,15 +57,15 @@ public class ParcelItemStorageGUI {
         GuiItem backgroundItem = guiSettings.mainGuiBackgroundItem.toGuiItem(event -> event.setCancelled(true));
 
         GuiItem confirmItem = guiSettings.confirmItemsItem.toGuiItem(event -> new ParcelSendingGUI(
-            plugin,
+            this.plugin,
             this.config,
             this.miniMessage,
             this.itemStorageRepository,
             this.parcelRepository,
             this.announcer,
             this.parcelContentRepository,
-            userRepository,
-            skullAPI).show(player));
+            this.userRepository,
+            this.skullAPI).show(player));
 
         switch (size) {
             case SMALL -> gui = Gui.storage()

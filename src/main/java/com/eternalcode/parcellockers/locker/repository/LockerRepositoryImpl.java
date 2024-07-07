@@ -148,7 +148,7 @@ public class LockerRepositoryImpl extends AbstractDatabaseService implements Loc
 
     @Override
     public Map<UUID, Locker> cache() {
-        return cache;
+        return this.cache;
     }
 
     @Override

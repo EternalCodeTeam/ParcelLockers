@@ -115,10 +115,10 @@ public class ReceiverSelectionGui extends GuiView {
         return () -> ItemBuilder.skull()
             .texture(skullData.getValue())
             .name(this.miniMessage.deserialize(user.name()))
-            .lore(uuid.equals(receiver) ? this.miniMessage.deserialize(this.config.guiSettings.parcelReceiverSetLine) : this.miniMessage.deserialize(this.config.guiSettings.parcelReceiverNotSetLine))
-            .glow(uuid.equals(receiver))
+            .lore(uuid.equals(this.receiver) ? this.miniMessage.deserialize(this.config.guiSettings.parcelReceiverSetLine) : this.miniMessage.deserialize(this.config.guiSettings.parcelReceiverNotSetLine))
+            .glow(uuid.equals(this.receiver))
             .asGuiItem(event -> {
-                if (uuid.equals(receiver)) {
+                if (uuid.equals(this.receiver)) {
                     this.receiver = null;
                     refresher.refresh();
                     return;

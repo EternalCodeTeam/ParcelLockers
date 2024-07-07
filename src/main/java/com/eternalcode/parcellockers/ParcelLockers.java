@@ -142,7 +142,7 @@ public final class ParcelLockers extends JavaPlugin {
             return;
         }
 
-        LockerMainGUI lockerMainGUI = new LockerMainGUI(this, miniMessage, config, itemStorageRepository, parcelRepository, announcer, parcelContentRepository, userRepository, skullAPI);
+        LockerMainGUI lockerMainGUI = new LockerMainGUI(this, miniMessage, config, itemStorageRepository, parcelRepository, announcer, parcelContentRepository, userRepository, this.skullAPI);
 
         Stream.of(
             new LockerInteractionController(parcelLockerRepositoryImpl, lockerMainGUI),

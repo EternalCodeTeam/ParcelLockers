@@ -52,7 +52,7 @@ public class ParcelCommand {
 
     @Execute(name = "info")
     void info(@Context Player player, @Arg Parcel parcel) {
-        List<String> messagesToSend = ItemUtil.replaceParcelPlaceholders(parcel, this.config.messages.parcelInfoMessages, userManager, lockerRepository);
+        List<String> messagesToSend = ItemUtil.replaceParcelPlaceholders(parcel, this.config.messages.parcelInfoMessages, this.userManager, this.lockerRepository);
         messagesToSend.forEach(message -> this.announcer.sendMessage(player, message));
     }
 

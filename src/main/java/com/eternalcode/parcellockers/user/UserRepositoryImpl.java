@@ -46,7 +46,7 @@ public class UserRepositoryImpl extends AbstractDatabaseService implements UserR
 
         return this.supplyExecute("SELECT * FROM `users` WHERE `uuid` = ?;", statement -> {
             statement.setString(1, uuid.toString());
-            return extractUser(statement);
+            return this.extractUser(statement);
         });
     }
 
@@ -60,7 +60,7 @@ public class UserRepositoryImpl extends AbstractDatabaseService implements UserR
 
         return this.supplyExecute("SELECT * FROM `users` WHERE `name` = ?;", statement -> {
             statement.setString(1, name);
-            return extractUser(statement);
+            return this.extractUser(statement);
         });
     }
 
@@ -116,7 +116,7 @@ public class UserRepositoryImpl extends AbstractDatabaseService implements UserR
             if (hasNext) {
                 users.remove(users.size() - 1);
             }
-            
+
             return new UserPageResult(users, hasNext);
         });
     }
