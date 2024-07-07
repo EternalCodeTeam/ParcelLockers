@@ -129,7 +129,7 @@ public final class ParcelLockers extends JavaPlugin {
             .extension(new LiteAdventureExtension<>())
             .message(LiteBukkitMessages.PLAYER_ONLY, config.messages.onlyForPlayers)
             .commands(LiteCommandsAnnotations.of(
-                new ParcelCommand(server, parcelLockerRepositoryImpl, announcer, config, mainGUI, parcelListGUI, parcelManager, userManager),
+                new ParcelCommand(parcelLockerRepositoryImpl, announcer, config, mainGUI, parcelListGUI, parcelManager, userManager),
                 new ParcelLockersCommand(configManager, config, announcer)
             ))
             .invalidUsage(new InvalidUsageImpl(announcer, config))

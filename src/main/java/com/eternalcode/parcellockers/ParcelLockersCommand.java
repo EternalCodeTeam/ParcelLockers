@@ -12,7 +12,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-@Command(name = "parcellockers", aliases = {"parcellocker"})
+@Command(name = "parcellockers", aliases = { "parcellocker" })
 @Permission("parcellockers.admin")
 public class ParcelLockersCommand {
 
@@ -25,9 +25,9 @@ public class ParcelLockersCommand {
         this.config = config;
         this.announcer = announcer;
     }
-    
+
     @Async
-    @Execute(name = "reload", aliases = {"rl"})
+    @Execute(name = "reload", aliases = { "rl" })
     void reload(@Context CommandSender sender) {
         this.configManager.reload();
         this.announcer.sendMessage(sender, this.config.messages.reload);
@@ -38,5 +38,4 @@ public class ParcelLockersCommand {
         ItemStack parcelItem = this.config.settings.parcelLockerItem.toGuiItem().getItemStack();
         player.getInventory().addItem(parcelItem);
     }
-
 }
