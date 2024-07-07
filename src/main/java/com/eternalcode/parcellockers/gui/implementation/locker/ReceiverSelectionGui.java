@@ -90,7 +90,7 @@ public class ReceiverSelectionGui extends GuiView {
                 gui.setItem(47, previousPageItem);
             }
 
-            GuiRefresher refresh = new GuiRefresher(gui);
+            GuiRefresher<PaginatedGui> refresh = new GuiRefresher<>(gui);
 
             this.loadSkulls(player, result, refresh).thenAccept(items -> {
                 for (Supplier<GuiItem> item : items) {
@@ -102,14 +102,14 @@ public class ReceiverSelectionGui extends GuiView {
         }).whenComplete(ExceptionHandler.handler());
     }
 
-    private CompletableFuture<List<Supplier<GuiItem>>> loadSkulls(Player player, UserPageResult result, GuiRefresher refresh) {
+    private CompletableFuture<List<Supplier<GuiItem>>> loadSkulls(Player player, UserPageResult result, GuiRefresher<PaginatedGui> refresh) {
         return result.users().stream()
             //.filter(user -> !user.uuid().equals(player.getUniqueId()))
             .map(user -> this.skullAPI.getSkullData(user.uuid()).thenApply(skullData -> this.toItem(player, user, skullData, refresh)))
             .collect(CompletableFutures.joinList());
     }
 
-    private Supplier<GuiItem> toItem(Player player, User user, SkullData skullData, GuiRefresher refresher) {
+    private Supplier<GuiItem> toItem(Player player, User user, SkullData skullData, GuiRefresher<PaginatedGui> refresher) {
         UUID uuid = user.uuid();
 
         return () -> ItemBuilder.skull()

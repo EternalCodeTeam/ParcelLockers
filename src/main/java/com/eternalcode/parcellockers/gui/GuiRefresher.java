@@ -22,7 +22,9 @@ public class GuiRefresher<T extends BaseGui> {
     }
 
     public void refresh() {
-        for (GuiItem item : this.gui.getGuiItems().values()) {
+        List<GuiItem> toRemove = new ArrayList<>(this.gui.getGuiItems().values());
+
+        for (GuiItem item : toRemove) {
             this.gui.removeItem(item);
         }
 
