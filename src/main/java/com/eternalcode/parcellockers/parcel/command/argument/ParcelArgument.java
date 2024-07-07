@@ -34,8 +34,8 @@ public class ParcelArgument extends ArgumentResolver<CommandSender, Parcel> {
     @Override
     public SuggestionResult suggest(Invocation<CommandSender> invocation, Argument<Parcel> argument, SuggestionContext context) {
         return this.databaseService.cache().values().stream()
-                .map(Parcel::uuid)
-                .map(UUID::toString)
-                .collect(SuggestionResult.collector());
+            .map(Parcel::uuid)
+            .map(UUID::toString)
+            .collect(SuggestionResult.collector());
     }
 }

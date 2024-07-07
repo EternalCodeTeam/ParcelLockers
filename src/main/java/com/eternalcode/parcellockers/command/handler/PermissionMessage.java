@@ -24,7 +24,7 @@ public class PermissionMessage implements MissingPermissionsHandler<CommandSende
         String permissions = missingPermissions.asJoinedText();
 
         Formatter formatter = new Formatter()
-                .register("{PERMISSION}", permissions);
+            .register("{PERMISSION}", permissions);
 
         this.announcer.sendMessage(invocation.sender(), formatter.format(this.config.messages.noPermission));
     }

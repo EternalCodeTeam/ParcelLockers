@@ -69,7 +69,7 @@ public class LockerBreakController implements Listener {
         Block block = event.getBlock();
         Location location = block.getLocation();
         Position position = PositionAdapter.convert(location);
-        
+
         if (this.parcelLockerRepository.isInCache(position)) {
             event.setCancelled(true);
         }
@@ -80,7 +80,7 @@ public class LockerBreakController implements Listener {
         Block block = event.getBlock();
         Location location = block.getLocation();
         Position position = PositionAdapter.convert(location);
-        
+
         if (this.parcelLockerRepository.isInCache(position)) {
             event.setCancelled(true);
         }
@@ -100,7 +100,7 @@ public class LockerBreakController implements Listener {
         Block block = event.getBlock();
         Location location = block.getLocation();
         Position position = PositionAdapter.convert(location);
-        
+
         if (this.parcelLockerRepository.isInCache(position)) {
             event.setCancelled(true);
         }
@@ -111,7 +111,7 @@ public class LockerBreakController implements Listener {
         Block block = event.getBlock();
         Location location = block.getLocation();
         Position position = PositionAdapter.convert(location);
-        
+
         if (this.parcelLockerRepository.isInCache(position)) {
             event.setCancelled(true);
         }

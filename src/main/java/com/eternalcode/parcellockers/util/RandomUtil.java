@@ -19,7 +19,7 @@ public class RandomUtil {
     }
 
     @TestOnly
-    public static <T> T randomEnum(Class<T> clazz){
+    public static <T> T randomEnum(Class<T> clazz) {
         int x = RANDOM.nextInt(clazz.getEnumConstants().length);
         return clazz.getEnumConstants()[x];
     }
@@ -30,7 +30,7 @@ public class RandomUtil {
         int rightLimit = 122; // letter 'z'
         int targetStringLength = 16;
 
-       return RANDOM.ints(leftLimit, rightLimit + 1)
+        return RANDOM.ints(leftLimit, rightLimit + 1)
             .limit(targetStringLength)
             .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
             .toString();

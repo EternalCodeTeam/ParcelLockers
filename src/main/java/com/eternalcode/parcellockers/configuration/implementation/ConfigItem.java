@@ -11,12 +11,12 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemFlag;
+import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
 import static com.eternalcode.parcellockers.util.AdventureUtil.RESET_ITEM;
-import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.NotNull;
 
 @Contextual
 public class ConfigItem {

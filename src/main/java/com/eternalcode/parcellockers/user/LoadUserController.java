@@ -21,5 +21,5 @@ public class LoadUserController implements Listener {
         for (Player player : this.server.getOnlinePlayers()) {
             this.userManager.create(player.getUniqueId(), player.getName());
         }
-     }
+    }
 }
