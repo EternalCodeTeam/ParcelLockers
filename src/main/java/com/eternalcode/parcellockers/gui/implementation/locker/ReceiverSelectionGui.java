@@ -15,6 +15,7 @@ import dev.triumphteam.gui.builder.item.ItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -44,7 +45,7 @@ public class ReceiverSelectionGui extends GuiView {
 
     private @Nullable UUID receiver;
 
-    public ReceiverSelectionGui(Plugin plugin, BukkitScheduler scheduler, PluginConfiguration config, MiniMessage miniMessage, UserRepository userRepository, ParcelSendingGUI sendingGUI, SkullAPI skullAPI) {
+    public ReceiverSelectionGui(Plugin plugin, BukkitScheduler scheduler, PluginConfiguration config, MiniMessage miniMessage, UserRepository userRepository, ParcelSendingGUI sendingGUI, SkullAPI skullAPI, UUID receiver) {
         this.plugin = plugin;
         this.scheduler = scheduler;
         this.config = config;
@@ -52,6 +53,7 @@ public class ReceiverSelectionGui extends GuiView {
         this.userRepository = userRepository;
         this.sendingGUI = sendingGUI;
         this.skullAPI = skullAPI;
+        this.receiver = receiver;
     }
 
     @Override
@@ -72,7 +74,6 @@ public class ReceiverSelectionGui extends GuiView {
         GuiItem previousPageItem = this.config.guiSettings.previousPageItem.toGuiItem(event -> this.show(player, page.previous()));
         GuiItem nextPageItem = this.config.guiSettings.nextPageItem.toGuiItem(event -> this.show(player, page.next()));
 
-        gui.setItem(49, closeItem);
 
         for (int slot : CORNER_SLOTS) {
             gui.setItem(slot, cornerItem);
@@ -80,6 +81,8 @@ public class ReceiverSelectionGui extends GuiView {
         for (int slot : BORDER_SLOTS) {
             gui.setItem(slot, backgroundItem);
         }
+
+        gui.setItem(49, closeItem);
 
         this.userRepository.findPage(page).thenAccept(result -> {
             if (result.hasNextPage()) {
@@ -112,21 +115,34 @@ public class ReceiverSelectionGui extends GuiView {
     private Supplier<GuiItem> toItem(Player player, User user, SkullData skullData, PaginatedGuiRefresher refresher) {
         UUID uuid = user.uuid();
 
-        return () -> ItemBuilder.skull()
-            .texture(skullData.getValue())
-            .name(this.miniMessage.deserialize(user.name()))
-            .lore(uuid.equals(this.receiver) ? this.miniMessage.deserialize(this.config.guiSettings.parcelReceiverSetLine) : this.miniMessage.deserialize(this.config.guiSettings.parcelReceiverNotSetLine))
-            .glow(uuid.equals(this.receiver))
-            .asGuiItem(event -> {
-                if (uuid.equals(this.receiver)) {
-                    this.receiver = null;
+        return () -> {
+            List<Component> lore;
+            boolean isReceiverSelected = uuid.equals(this.receiver);
+            if (isReceiverSelected) {
+                // This lore indicates the receiver is already selected
+                lore = List.of(this.miniMessage.deserialize(this.config.guiSettings.parcelReceiverSetLine));
+            } else {
+                // This lore indicates the user can click to select this receiver
+                lore = List.of(this.miniMessage.deserialize(this.config.guiSettings.parcelReceiverNotSetLine));
+            }
+
+            return ItemBuilder.skull()
+                .texture(skullData.getValue())
+                .name(this.miniMessage.deserialize(user.name()))
+                .lore(lore)
+                .glow(uuid.equals(this.receiver))
+                .asGuiItem(event -> {
+                    if (uuid.equals(this.receiver)) {
+                        this.receiver = null;
+                        refresher.refresh();
+                        this.sendingGUI.updateReceiverItem(null, "");
+                        return;
+                    }
+
+                    this.receiver = uuid;
+                    this.sendingGUI.updateReceiverItem(uuid, user.name());
                     refresher.refresh();
-                    return;
-                }
-
-                this.receiver = uuid;
-                refresher.refresh();
-            });
+                });
+        };
     }
-
 }

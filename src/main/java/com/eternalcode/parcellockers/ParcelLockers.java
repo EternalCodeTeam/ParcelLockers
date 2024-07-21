@@ -136,11 +136,11 @@ public final class ParcelLockers extends JavaPlugin {
             .missingPermission(new PermissionMessage(announcer, config))
             .build();
 
-        if (!this.setupEconomy()) {
+        /*if (!this.setupEconomy()) {
             this.getLogger().severe("Disabling due to no Vault dependency or its implementator(s) found!");
             server.getPluginManager().disablePlugin(this);
             return;
-        }
+        }*/
 
         LockerMainGUI lockerMainGUI = new LockerMainGUI(this, miniMessage, config, itemStorageRepository, parcelRepository, announcer, parcelContentRepository, userRepository, this.skullAPI);
 

@@ -5,7 +5,6 @@ import com.eternalcode.parcellockers.configuration.implementation.PluginConfigur
 import com.eternalcode.parcellockers.content.ParcelContent;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.gui.GuiView;
-import com.eternalcode.parcellockers.gui.PaginatedGuiRefresher;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.Parcel;
@@ -33,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 
 public class ParcelSendingGUI extends GuiView {
 
@@ -51,7 +49,12 @@ public class ParcelSendingGUI extends GuiView {
     private final Map<UUID, String> parcelNames = new HashMap<>();
     private final Map<UUID, String> parcelDescriptions = new HashMap<>();
     private ParcelSize size;
+    private UUID receiver;
     private boolean priority = false;
+
+    private ConfigItem receiverItem;
+
+    private Gui gui;
 
     public ParcelSendingGUI(Plugin plugin,
                             PluginConfiguration config,
@@ -79,7 +82,7 @@ public class ParcelSendingGUI extends GuiView {
 
         Component guiTitle = this.miniMessage.deserialize(guiSettings.parcelLockerSendingGuiTitle);
 
-        Gui gui = Gui.gui()
+        this.gui = Gui.gui()
             .rows(6)
             .disableAllInteractions()
             .title(guiTitle)
@@ -102,16 +105,17 @@ public class ParcelSendingGUI extends GuiView {
                         return Collections.emptyList();
                     }
 
+                    this.parcelNames.remove(player.getUniqueId());
                     this.parcelNames.put(player.getUniqueId(), name);
                     this.announcer.sendMessage(player, settings.messages.parcelNameSet);
 
                     List<String> lore = nameItem.lore;
-                    lore.add(this.config.guiSettings.parcelNameSetLine.replace("{NAME}", this.parcelNames.getOrDefault(player.getUniqueId(), "")));
+                    lore.set(1, this.config.guiSettings.parcelNameSetLine.replace("{NAME}", this.parcelNames.getOrDefault(player.getUniqueId(), "")));
 
-                    gui.updateItem(21, nameItem
+                    this.gui.updateItem(21, nameItem
                         .setLore(lore)
                         .toItemStack());
-                    return List.of(SignGUIAction.runSync((JavaPlugin) this.plugin, () -> gui.open(player)));
+                    return List.of(SignGUIAction.runSync((JavaPlugin) this.plugin, () -> this.gui.open(player)));
 
                 })
                 .build();
@@ -127,22 +131,23 @@ public class ParcelSendingGUI extends GuiView {
                 .setHandler((p, result) -> {
                     String description = result.getLineWithoutColor(1);
 
+                    this.parcelDescriptions.remove(player.getUniqueId());
                     this.parcelDescriptions.put(player.getUniqueId(), description);
                     this.announcer.sendMessage(player, settings.messages.parcelDescriptionSet);
 
                     List<String> lore = descriptionItem.lore;
-                    lore.add(this.config.guiSettings.parcelDescriptionSetLine.replace("{DESCRIPTION}", description));
+                    lore.set(1, this.config.guiSettings.parcelDescriptionSetLine.replace("{DESCRIPTION}", description));
 
-                    gui.updateItem(22, descriptionItem
+                    this.gui.updateItem(22, descriptionItem
                         .setLore(lore)
                         .toItemStack());
-                    return List.of(SignGUIAction.runSync((JavaPlugin) this.plugin, () -> gui.open(player)));
+                    return List.of(SignGUIAction.runSync((JavaPlugin) this.plugin, () -> this.gui.open(player)));
                 })
                 .build();
             descriptionSignGui.open(player);
         });
 
-        ConfigItem receiverItem = guiSettings.parcelReceiverItem;
+        this.receiverItem = guiSettings.parcelReceiverItem;
         GuiItem destinationItem = guiSettings.parcelDestinationLockerItem.toGuiItem();
 
         GuiItem storageItem = guiSettings.parcelStorageItem.toGuiItem(event -> {
@@ -162,25 +167,22 @@ public class ParcelSendingGUI extends GuiView {
                         int slotsSize = result.get().items().size();
                         if (slotsSize <= 9) {
                             this.scheduler.runTask(this.plugin, () -> storageGUI.show(player, this.size));
-                        }
-                        else if (slotsSize <= 18 && this.size == ParcelSize.SMALL) {
+                        } else if (slotsSize <= 18 && this.size == ParcelSize.SMALL) {
                             this.scheduler.runTask(this.plugin, () -> storageGUI.show(player, ParcelSize.MEDIUM));
-                        }
-                        else {
+                        } else {
                             this.scheduler.runTask(this.plugin, () -> storageGUI.show(player, ParcelSize.LARGE));
                         }
-                    }
-                    else {
+                    } else {
                         this.scheduler.runTask(this.plugin, () -> storageGUI.show(player, this.size));
                     }
-            }
+                }
             ).orTimeout(2, TimeUnit.SECONDS);
         });
         GuiItem submitItem = guiSettings.submitParcelItem.toGuiItem(event ->
             this.itemStorageRepository.find(player.getUniqueId()).thenAccept(result -> {
                 if (result.isEmpty() || result.get().items().isEmpty()) {
                     this.announcer.sendMessage(player, settings.messages.parcelCannotBeEmpty);
-                    gui.close(player);
+                    this.gui.close(player);
                     return;
                 }
 
@@ -203,13 +205,13 @@ public class ParcelSendingGUI extends GuiView {
                     ).thenAccept(none -> this.itemStorageRepository.remove(player.getUniqueId()));
 
                     this.announcer.sendMessage(player, settings.messages.parcelSent);
-                    gui.close(player);
+                    this.gui.close(player);
                 }).whenComplete(ExceptionHandler.handler()
                     .andThen((unused, throwable) -> {
-                        if (throwable != null) {
-                            this.announcer.sendMessage(player, settings.messages.parcelFailedToSend);
+                            if (throwable != null) {
+                                this.announcer.sendMessage(player, settings.messages.parcelFailedToSend);
+                            }
                         }
-                    }
                     ));
             }).orTimeout(5, TimeUnit.SECONDS));
 
@@ -233,38 +235,39 @@ public class ParcelSendingGUI extends GuiView {
         ConfigItem priorityItem = guiSettings.priorityItem;
 
         for (int slot : CORNER_SLOTS) {
-            gui.setItem(slot, cornerItem);
+            this.gui.setItem(slot, cornerItem);
         }
 
         for (int slot : BORDER_SLOTS) {
-            gui.setItem(slot, backgroundItem);
+            this.gui.setItem(slot, backgroundItem);
         }
 
         // TODO: size buttons not persisiting after actions/closing GUI
         // easy fix - cache the selected size and priority in the ParcelSendingGUI class
 
-        gui.setItem(12, smallButton.toGuiItem(event -> this.setSelected(gui, ParcelSize.SMALL)));
-        gui.setItem(13, mediumButton.toGuiItem(event -> this.setSelected(gui, ParcelSize.MEDIUM)));
-        gui.setItem(14, largeButton.toGuiItem(event -> this.setSelected(gui, ParcelSize.LARGE)));
-        gui.setItem(21, nameGuiItem);
-        gui.setItem(22, descriptionGuiItem);
-        gui.setItem(23, receiverItem.toGuiItem(event -> new ReceiverSelectionGui(
+        this.gui.setItem(12, smallButton.toGuiItem(event -> this.setSelected(this.gui, ParcelSize.SMALL)));
+        this.gui.setItem(13, mediumButton.toGuiItem(event -> this.setSelected(this.gui, ParcelSize.MEDIUM)));
+        this.gui.setItem(14, largeButton.toGuiItem(event -> this.setSelected(this.gui, ParcelSize.LARGE)));
+        this.gui.setItem(21, nameGuiItem);
+        this.gui.setItem(22, descriptionGuiItem);
+        this.gui.setItem(23, this.receiverItem.toGuiItem(event -> new ReceiverSelectionGui(
             this.plugin,
             this.scheduler,
             this.config,
             this.miniMessage,
             this.userRepository,
             this,
-            this.skullAPI
+            this.skullAPI,
+            this.receiver
         ).show(player)));
-        gui.setItem(37, storageItem);
-        gui.setItem(43, submitItem);
-        gui.setItem(42, priorityItem.toGuiItem(event -> this.setSelected(gui, !this.priority)));
-        gui.setItem(49, closeItem);
+        this.gui.setItem(37, storageItem);
+        this.gui.setItem(43, submitItem);
+        this.gui.setItem(42, priorityItem.toGuiItem(event -> this.setSelected(this.gui, !this.priority)));
+        this.gui.setItem(49, closeItem);
 
-        this.setSelected(gui, this.size == null ? ParcelSize.SMALL : this.size);
+        this.setSelected(this.gui, this.size == null ? ParcelSize.SMALL : this.size);
 
-        gui.open(player);
+        this.gui.open(player);
     }
 
     private void setSelected(Gui gui, ParcelSize size) {
@@ -291,9 +294,11 @@ public class ParcelSendingGUI extends GuiView {
         gui.updateItem(42, priorityButton.toItemStack());
     }
 
-    // TODO: modify appropriate props in GuiItem
-
-    private Supplier<GuiItem> toItem(ConfigItem item, PaginatedGuiRefresher refresher) {
-        return () -> item.toGuiItem(event -> refresher.refresh());
+    public void updateReceiverItem(UUID receiverUuid, String receiverName) {
+        this.receiver = receiverUuid;
+        PluginConfiguration.GuiSettings settings = this.config.guiSettings;
+        this.receiverItem.lore.set(0, settings.parcelReceiverGuiSetLine.replace("{RECEIVER}", receiverName));
+        this.receiverItem.setGlow(true);
+        this.gui.updateItem(23, this.receiverItem.toItemStack());
     }
 }

@@ -73,6 +73,11 @@ public class ConfigItem {
         return this;
     }
 
+    public ConfigItem addLore(String lore) {
+        this.lore.add(lore);
+        return this;
+    }
+
     public ConfigItem setGlow(boolean glow) {
         this.glow = glow;
         return this;
