@@ -42,10 +42,11 @@ public class ReceiverSelectionGui extends GuiView {
     private final UserRepository userRepository;
     private final ParcelSendingGUI sendingGUI;
     private final SkullAPI skullAPI;
+    private final ParcelSendingGUIState state;
 
     private @Nullable UUID receiver;
 
-    public ReceiverSelectionGui(Plugin plugin, BukkitScheduler scheduler, PluginConfiguration config, MiniMessage miniMessage, UserRepository userRepository, ParcelSendingGUI sendingGUI, SkullAPI skullAPI, UUID receiver) {
+    public ReceiverSelectionGui(Plugin plugin, BukkitScheduler scheduler, PluginConfiguration config, MiniMessage miniMessage, UserRepository userRepository, ParcelSendingGUI sendingGUI, SkullAPI skullAPI, ParcelSendingGUIState state, UUID receiver) {
         this.plugin = plugin;
         this.scheduler = scheduler;
         this.config = config;
@@ -53,6 +54,7 @@ public class ReceiverSelectionGui extends GuiView {
         this.userRepository = userRepository;
         this.sendingGUI = sendingGUI;
         this.skullAPI = skullAPI;
+        this.state = state;
         this.receiver = receiver;
     }
 
@@ -70,10 +72,12 @@ public class ReceiverSelectionGui extends GuiView {
 
         GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem();
         GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem();
-        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(event -> this.sendingGUI.show(player));
+        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(event -> {
+            gui.close(player);
+            this.sendingGUI.show(player, this.state);
+        });
         GuiItem previousPageItem = this.config.guiSettings.previousPageItem.toGuiItem(event -> this.show(player, page.previous()));
         GuiItem nextPageItem = this.config.guiSettings.nextPageItem.toGuiItem(event -> this.show(player, page.next()));
-
 
         for (int slot : CORNER_SLOTS) {
             gui.setItem(slot, cornerItem);
@@ -83,6 +87,7 @@ public class ReceiverSelectionGui extends GuiView {
         }
 
         gui.setItem(49, closeItem);
+        gui.setCloseGuiAction(event -> this.sendingGUI.show(player, this.state));
 
         this.userRepository.findPage(page).thenAccept(result -> {
             if (result.hasNextPage()) {
@@ -136,11 +141,13 @@ public class ReceiverSelectionGui extends GuiView {
                         this.receiver = null;
                         refresher.refresh();
                         this.sendingGUI.updateReceiverItem(player, null, "");
+                        this.state.setReceiver(null);
                         return;
                     }
 
                     this.receiver = uuid;
                     this.sendingGUI.updateReceiverItem(player, uuid, user.name());
+                    this.state.setReceiver(uuid);
                     refresher.refresh();
                 });
         };

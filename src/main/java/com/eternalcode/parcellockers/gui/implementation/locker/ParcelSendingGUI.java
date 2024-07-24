@@ -49,7 +49,8 @@ public class ParcelSendingGUI extends GuiView {
     private ParcelSize size;
     private UUID receiver;
     private boolean priority = false;
-    private UUID destinationLocker;
+    private UUID entryLocker = UUID.randomUUID();
+    private UUID destinationLocker = UUID.randomUUID();
 
     private ConfigItem receiverItem;
 
@@ -74,6 +75,18 @@ public class ParcelSendingGUI extends GuiView {
         this.userRepository = userRepository;
         this.skullAPI = skullAPI;
         this.scheduler = this.plugin.getServer().getScheduler();
+    }
+
+    public void show(Player player, ParcelSendingGUIState guiState) {
+        this.parcelName = guiState.getParcelName();
+        this.parcelDescription = guiState.getParcelDescription();
+        this.size = guiState.getSize();
+        this.receiver = guiState.getReceiver();
+        this.priority = guiState.isPriority();
+        this.entryLocker = UUID.randomUUID(); //guiState.getEntryLocker(); - temp workaround for NPE
+        this.destinationLocker = UUID.randomUUID(); //guiState.getDestinationLocker(); - temp workaround for NPE
+
+        this.show(player);
     }
 
     @Override
@@ -260,6 +273,7 @@ public class ParcelSendingGUI extends GuiView {
             this.userRepository,
             this,
             this.skullAPI,
+            new ParcelSendingGUIState(this.parcelName, this.parcelDescription, this.size, this.receiver, this.priority, this.entryLocker, this.destinationLocker),
             this.receiver
         ).show(player)));
         this.gui.setItem(37, storageItem);
