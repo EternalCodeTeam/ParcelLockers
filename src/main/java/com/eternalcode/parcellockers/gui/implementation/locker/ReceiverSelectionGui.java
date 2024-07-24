@@ -87,7 +87,6 @@ public class ReceiverSelectionGui extends GuiView {
         }
 
         gui.setItem(49, closeItem);
-        gui.setCloseGuiAction(event -> this.sendingGUI.show(player, this.state));
 
         this.userRepository.findPage(page).thenAccept(result -> {
             if (result.hasNextPage()) {
@@ -108,6 +107,7 @@ public class ReceiverSelectionGui extends GuiView {
                 this.scheduler.runTask(this.plugin, () -> gui.open(player));
             }).whenComplete(ExceptionHandler.handler());
         }).whenComplete(ExceptionHandler.handler());
+        gui.setCloseGuiAction(event -> this.sendingGUI.show(player, this.state));
     }
 
     private CompletableFuture<List<Supplier<GuiItem>>> loadSkulls(Player player, UserPageResult result, PaginatedGuiRefresher refresh) {
