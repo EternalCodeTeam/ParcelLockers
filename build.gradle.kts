@@ -51,7 +51,7 @@ dependencies {
 
     // metrics and sentry
     implementation("org.bstats:bstats-bukkit:3.0.2")
-    implementation("io.sentry:sentry:7.11.0")
+    implementation("io.sentry:sentry:7.12.0")
 
     // database
     implementation("com.zaxxer:HikariCP:5.1.0")
@@ -73,8 +73,8 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.3")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.3")
 
-    testImplementation("org.testcontainers:junit-jupiter:1.19.8")
-    testImplementation("org.testcontainers:mysql:1.19.8")
+    testImplementation("org.testcontainers:junit-jupiter:1.20.0")
+    testImplementation("org.testcontainers:mysql:1.20.0")
     testImplementation("mysql:mysql-connector-java:8.0.33")
 }
 
