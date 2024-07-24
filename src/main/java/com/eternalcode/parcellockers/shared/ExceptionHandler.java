@@ -4,8 +4,6 @@ import io.sentry.Sentry;
 
 import java.util.function.BiConsumer;
 
-// TODO replace whenCompletes with thenAccept and then use this class in whenComplete
-
 public class ExceptionHandler<T> implements BiConsumer<T, Throwable> {
 
     private static final ExceptionHandler<?> INSTANCE = new ExceptionHandler<>();

@@ -135,12 +135,12 @@ public class ReceiverSelectionGui extends GuiView {
                     if (uuid.equals(this.receiver)) {
                         this.receiver = null;
                         refresher.refresh();
-                        this.sendingGUI.updateReceiverItem(null, "");
+                        this.sendingGUI.updateReceiverItem(player, null, "");
                         return;
                     }
 
                     this.receiver = uuid;
-                    this.sendingGUI.updateReceiverItem(uuid, user.name());
+                    this.sendingGUI.updateReceiverItem(player, uuid, user.name());
                     refresher.refresh();
                 });
         };

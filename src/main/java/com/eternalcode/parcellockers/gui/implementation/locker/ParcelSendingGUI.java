@@ -27,9 +27,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -46,11 +44,12 @@ public class ParcelSendingGUI extends GuiView {
     private final UserRepository userRepository;
     private final SkullAPI skullAPI;
 
-    private final Map<UUID, String> parcelNames = new HashMap<>();
-    private final Map<UUID, String> parcelDescriptions = new HashMap<>();
+    private String parcelName;
+    private String parcelDescription;
     private ParcelSize size;
     private UUID receiver;
     private boolean priority = false;
+    private UUID destinationLocker;
 
     private ConfigItem receiverItem;
 
@@ -62,7 +61,9 @@ public class ParcelSendingGUI extends GuiView {
                             ItemStorageRepository itemStorageRepository,
                             ParcelRepository parcelRepository,
                             NotificationAnnouncer announcer,
-                            ParcelContentRepository parcelContentRepository, UserRepository userRepository, SkullAPI skullAPI) {
+                            ParcelContentRepository parcelContentRepository,
+                            UserRepository userRepository,
+                            SkullAPI skullAPI) {
         this.plugin = plugin;
         this.config = config;
         this.miniMessage = miniMessage;
@@ -97,7 +98,6 @@ public class ParcelSendingGUI extends GuiView {
                 .setType(Material.OAK_SIGN)
                 .setLine(0, "Enter parcel name:")
                 .setHandler((p, result) -> {
-
                     String name = result.getLineWithoutColor(1);
 
                     if (name.isEmpty() || name.isBlank()) {
@@ -105,18 +105,20 @@ public class ParcelSendingGUI extends GuiView {
                         return Collections.emptyList();
                     }
 
-                    this.parcelNames.remove(player.getUniqueId());
-                    this.parcelNames.put(player.getUniqueId(), name);
+                    this.parcelName = name;
                     this.announcer.sendMessage(player, settings.messages.parcelNameSet);
 
                     List<String> lore = nameItem.lore;
-                    lore.set(1, this.config.guiSettings.parcelNameSetLine.replace("{NAME}", this.parcelNames.getOrDefault(player.getUniqueId(), "")));
+                    if (lore.size() > 1) {
+                        lore.remove(1);
+                    }
+
+                    lore.add(this.config.guiSettings.parcelNameSetLine.replace("{NAME}", this.parcelName == null ? "None" : this.parcelName));
 
                     this.gui.updateItem(21, nameItem
                         .setLore(lore)
                         .toItemStack());
                     return List.of(SignGUIAction.runSync((JavaPlugin) this.plugin, () -> this.gui.open(player)));
-
                 })
                 .build();
             nameSignGui.open(player);
@@ -131,12 +133,15 @@ public class ParcelSendingGUI extends GuiView {
                 .setHandler((p, result) -> {
                     String description = result.getLineWithoutColor(1);
 
-                    this.parcelDescriptions.remove(player.getUniqueId());
-                    this.parcelDescriptions.put(player.getUniqueId(), description);
+                    this.parcelDescription = description;
                     this.announcer.sendMessage(player, settings.messages.parcelDescriptionSet);
 
                     List<String> lore = descriptionItem.lore;
-                    lore.set(1, this.config.guiSettings.parcelDescriptionSetLine.replace("{DESCRIPTION}", description));
+                    if (lore.size() > 1) {
+                        lore.remove(1);
+                    }
+
+                    lore.add(this.config.guiSettings.parcelDescriptionSetLine.replace("{DESCRIPTION}", description));
 
                     this.gui.updateItem(22, descriptionItem
                         .setLore(lore)
@@ -191,11 +196,10 @@ public class ParcelSendingGUI extends GuiView {
                     .priority(this.priority)
                     .sender(player.getUniqueId())
                     .uuid(UUID.randomUUID())
-                    .name(this.parcelNames.getOrDefault(player.getUniqueId(), "None"))
-                    .description(this.parcelDescriptions.getOrDefault(player.getUniqueId(), "None"))
-                    .destinationLocker(UUID.randomUUID())
-                    .entryLocker(UUID.randomUUID())
-                    .receiver(player.getUniqueId())
+                    .name(this.parcelName)
+                    .description(this.parcelDescription)
+                    .destinationLocker(this.destinationLocker)
+                    .receiver(this.receiver)
                     .sender(player.getUniqueId())
                     .build();
 
@@ -226,8 +230,6 @@ public class ParcelSendingGUI extends GuiView {
                 this.userRepository,
                 this.skullAPI
             ).show(player));
-
-        // TODO use GuiRefresher
 
         ConfigItem smallButton = guiSettings.smallParcelSizeItem;
         ConfigItem mediumButton = guiSettings.mediumParcelSizeItem;
@@ -294,11 +296,19 @@ public class ParcelSendingGUI extends GuiView {
         gui.updateItem(42, priorityButton.toItemStack());
     }
 
-    public void updateReceiverItem(UUID receiverUuid, String receiverName) {
+    public void updateReceiverItem(Player player, UUID receiverUuid, String receiverName) {
         this.receiver = receiverUuid;
-        PluginConfiguration.GuiSettings settings = this.config.guiSettings;
-        this.receiverItem.lore.set(0, settings.parcelReceiverGuiSetLine.replace("{RECEIVER}", receiverName));
+        PluginConfiguration settings = this.config;
+        PluginConfiguration.GuiSettings guiSettings = settings.guiSettings;
+
+        if (this.receiverItem.lore.size() > 1) {
+            this.receiverItem.lore.remove(1);
+        }
+
+        this.receiverItem.lore.add(guiSettings.parcelReceiverGuiSetLine.replace("{RECEIVER}", receiverName));
         this.receiverItem.setGlow(true);
+
         this.gui.updateItem(23, this.receiverItem.toItemStack());
+        this.announcer.sendMessage(player, settings.messages.parcelReceiverSet);
     }
 }
