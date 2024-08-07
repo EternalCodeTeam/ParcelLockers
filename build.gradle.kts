@@ -27,7 +27,7 @@ repositories {
 dependencies {
     // minecraft development api
     compileOnly("org.spigotmc:spigot-api:1.20.5-R0.1-SNAPSHOT")
-    implementation("net.kyori:adventure-platform-bukkit:4.3.3")
+    implementation("net.kyori:adventure-platform-bukkit:4.3.4")
     implementation("net.kyori:adventure-text-minimessage:4.17.0")
     implementation("dev.rollczi.litecommands:bukkit-adventure:2.8.9")
 
@@ -51,7 +51,7 @@ dependencies {
 
     // metrics and sentry
     implementation("org.bstats:bstats-bukkit:3.0.2")
-    implementation("io.sentry:sentry:7.12.0")
+    implementation("io.sentry:sentry:7.13.0")
 
     // database
     implementation("com.zaxxer:HikariCP:5.1.0")
@@ -73,8 +73,8 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.3")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.3")
 
-    testImplementation("org.testcontainers:junit-jupiter:1.20.0")
-    testImplementation("org.testcontainers:mysql:1.20.0")
+    testImplementation("org.testcontainers:junit-jupiter:1.20.1")
+    testImplementation("org.testcontainers:mysql:1.20.1")
     testImplementation("mysql:mysql-connector-java:8.0.33")
 }
 
