@@ -105,6 +105,7 @@ public class PluginConfiguration implements ReloadableConfig {
         public String parcelNameSet = "&2✔ &aParcel name set successfully.";
         public String parcelDescriptionSet = "&2✔ &aParcel description set successfully.";
         public String parcelReceiverSet = "&2✔ &aParcel receiver set successfully.";
+        public String parcelDestinationSet = "&2✔ &aParcel destination locker set successfully.";
         public String alreadyCreatingLocker = "&4✘ &cYou are already creating a parcel locker!";
         @Description({ " ", "# The parcel info message." })
         public List<String> parcelInfoMessages = List.of(
@@ -341,6 +342,24 @@ public class PluginConfiguration implements ReloadableConfig {
 
         @Description({ " ", "# The name of the parcel large content GUI" })
         public String parcelLargeContentGuiTitle = "&cLarge parcel content";
+
+        @Description({ " ", "# The title of the parcel destination locker selection GUI" })
+        public String parcelDestinationLockerSelectionGuiTitle = "&3Select destination locker";
+
+        @Description({ " ", "# The item of the parcel in destination selection GUI" })
+        public ConfigItem destinationLockerItem = new ConfigItem()
+            .setName("&3{DESCRIPTION}")
+            .setLore(List.of("&bClick to select this locker."))
+            .setType(Material.CHEST);
+
+        @Description({ " ", "# The lore of the button in the sending GUI of the parcel destination locker selection GUI" })
+        public String parcelDestinationLockerSetLine = "&6> &eCurrent destination locker: &6{DESCRIPTION}";
+
+        @Description({ " ", "# The destination GUI locker button lore in case the destination locker is set." })
+        public String parcelDestinationSetLine = "&2✔ &aSelected!";
+
+        @Description({ " ", "# The destination GUI locker button lore in case the destination locker is not set." })
+        public String parcelDestinationNotSetLine = "&9ⓘ &bClick to select.";
 
         @Description({ " ", "# Illegal items list, that cannot be stored in the parcel." })
         public List<Material> illegalItems = List.of(

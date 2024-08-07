@@ -107,8 +107,8 @@ public final class ParcelLockers extends JavaPlugin {
             .threadPool(20)
             .build();
 
-        LockerRepositoryImpl parcelLockerRepositoryImpl = new LockerRepositoryImpl(dataSource);
-        parcelLockerRepositoryImpl.updateCaches();
+        LockerRepositoryImpl lockerRepository = new LockerRepositoryImpl(dataSource);
+        lockerRepository.updateCaches();
         ItemStorageRepository itemStorageRepository = new ItemStorageRepositoryImpl(dataSource);
 
         ParcelRepository parcelRepository = new ParcelRepositoryImpl(dataSource);
@@ -120,16 +120,16 @@ public final class ParcelLockers extends JavaPlugin {
 
         ParcelContentRepository parcelContentRepository = new ParcelContentRepositoryImpl(dataSource);
 
-        MainGUI mainGUI = new MainGUI(this, server, miniMessage, config, parcelRepository, parcelLockerRepositoryImpl, userManager);
-        ParcelListGUI parcelListGUI = new ParcelListGUI(this, server, miniMessage, config, parcelRepository, parcelLockerRepositoryImpl, userManager, mainGUI);
+        MainGUI mainGUI = new MainGUI(this, server, miniMessage, config, parcelRepository, lockerRepository, userManager);
+        ParcelListGUI parcelListGUI = new ParcelListGUI(this, server, miniMessage, config, parcelRepository, lockerRepository, userManager, mainGUI);
 
         this.liteCommands = LiteCommandsBukkit.builder("parcellockers", this)
             .argument(Parcel.class, new ParcelArgument(parcelRepository))
-            .argument(Locker.class, new ParcelLockerArgument(parcelLockerRepositoryImpl))
+            .argument(Locker.class, new ParcelLockerArgument(lockerRepository))
             .extension(new LiteAdventureExtension<>())
             .message(LiteBukkitMessages.PLAYER_ONLY, config.messages.onlyForPlayers)
             .commands(LiteCommandsAnnotations.of(
-                new ParcelCommand(parcelLockerRepositoryImpl, announcer, config, mainGUI, parcelListGUI, parcelManager, userManager),
+                new ParcelCommand(lockerRepository, announcer, config, mainGUI, parcelListGUI, parcelManager, userManager),
                 new ParcelLockersCommand(configManager, config, announcer)
             ))
             .invalidUsage(new InvalidUsageImpl(announcer, config))
@@ -142,12 +142,12 @@ public final class ParcelLockers extends JavaPlugin {
             return;
         }*/
 
-        LockerMainGUI lockerMainGUI = new LockerMainGUI(this, miniMessage, config, itemStorageRepository, parcelRepository, announcer, parcelContentRepository, userRepository, this.skullAPI);
+        LockerMainGUI lockerMainGUI = new LockerMainGUI(this, miniMessage, config, itemStorageRepository, parcelRepository, lockerRepository, announcer, parcelContentRepository, userRepository, this.skullAPI);
 
         Stream.of(
-            new LockerInteractionController(parcelLockerRepositoryImpl, lockerMainGUI),
-            new LockerPlaceController(config, this, parcelLockerRepositoryImpl, announcer),
-            new LockerBreakController(parcelLockerRepositoryImpl, announcer, config.messages),
+            new LockerInteractionController(lockerRepository, lockerMainGUI),
+            new LockerPlaceController(config, this, lockerRepository, announcer),
+            new LockerBreakController(lockerRepository, announcer, config.messages),
             new PrepareUserController(userManager),
             new LoadUserController(userManager, server)
         ).forEach(controller -> server.getPluginManager().registerEvents(controller, this));

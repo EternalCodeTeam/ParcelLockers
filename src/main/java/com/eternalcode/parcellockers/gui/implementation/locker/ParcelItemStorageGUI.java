@@ -4,6 +4,7 @@ import com.eternalcode.parcellockers.configuration.implementation.PluginConfigur
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.itemstorage.ItemStorage;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
+import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
@@ -33,17 +34,19 @@ public class ParcelItemStorageGUI {
     private final MiniMessage miniMessage;
     private final ItemStorageRepository itemStorageRepository;
     private final ParcelRepository parcelRepository;
+    private final LockerRepository lockerRepository;
     private final NotificationAnnouncer announcer;
     private final ParcelContentRepository parcelContentRepository;
     private final UserRepository userRepository;
     private final SkullAPI skullAPI;
 
-    public ParcelItemStorageGUI(Plugin plugin, PluginConfiguration config, MiniMessage miniMessage, ItemStorageRepository itemStorageRepository, ParcelRepository parcelRepository, NotificationAnnouncer announcer, ParcelContentRepository parcelContentRepository, UserRepository userRepository, SkullAPI skullAPI) {
+    public ParcelItemStorageGUI(Plugin plugin, PluginConfiguration config, MiniMessage miniMessage, ItemStorageRepository itemStorageRepository, ParcelRepository parcelRepository, LockerRepository lockerRepository, NotificationAnnouncer announcer, ParcelContentRepository parcelContentRepository, UserRepository userRepository, SkullAPI skullAPI) {
         this.plugin = plugin;
         this.config = config;
         this.miniMessage = miniMessage;
         this.itemStorageRepository = itemStorageRepository;
         this.parcelRepository = parcelRepository;
+        this.lockerRepository = lockerRepository;
         this.announcer = announcer;
         this.parcelContentRepository = parcelContentRepository;
         this.userRepository = userRepository;
@@ -62,6 +65,7 @@ public class ParcelItemStorageGUI {
             this.miniMessage,
             this.itemStorageRepository,
             this.parcelRepository,
+            this.lockerRepository,
             this.announcer,
             this.parcelContentRepository,
             this.userRepository,

@@ -4,6 +4,7 @@ import com.eternalcode.parcellockers.configuration.implementation.PluginConfigur
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
+import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.user.UserRepository;
@@ -24,6 +25,7 @@ public class LockerMainGUI extends GuiView {
     private final PluginConfiguration config;
     private final ItemStorageRepository itemStorageRepository;
     private final ParcelRepository parcelRepository;
+    private final LockerRepository lockerRepository;
     private final NotificationAnnouncer announcer;
     private final ParcelContentRepository parcelContentRepository;
     private final UserRepository userRepository;
@@ -33,7 +35,7 @@ public class LockerMainGUI extends GuiView {
                          MiniMessage miniMessage,
                          PluginConfiguration config,
                          ItemStorageRepository itemStorageRepository,
-                         ParcelRepository parcelRepository,
+                         ParcelRepository parcelRepository, LockerRepository lockerRepository,
                          NotificationAnnouncer announcer,
                          ParcelContentRepository parcelContentRepository,
                          UserRepository userRepository,
@@ -43,6 +45,7 @@ public class LockerMainGUI extends GuiView {
         this.config = config;
         this.itemStorageRepository = itemStorageRepository;
         this.parcelRepository = parcelRepository;
+        this.lockerRepository = lockerRepository;
         this.announcer = announcer;
         this.parcelContentRepository = parcelContentRepository;
         this.userRepository = userRepository;
@@ -74,7 +77,7 @@ public class LockerMainGUI extends GuiView {
         }
 
         gui.setItem(20, this.config.guiSettings.parcelLockerCollectItem.toGuiItem(event -> event.setCancelled(true)));
-        gui.setItem(22, this.config.guiSettings.parcelLockerSendItem.toGuiItem(event -> new ParcelSendingGUI(this.plugin, this.config, this.miniMessage, this.itemStorageRepository, this.parcelRepository, this.announcer, this.parcelContentRepository, this.userRepository, this.skullAPI).show(player)));
+        gui.setItem(22, this.config.guiSettings.parcelLockerSendItem.toGuiItem(event -> new ParcelSendingGUI(this.plugin, this.config, this.miniMessage, this.itemStorageRepository, this.parcelRepository, this.lockerRepository, this.announcer, this.parcelContentRepository, this.userRepository, this.skullAPI).show(player)));
         gui.setItem(24, this.config.guiSettings.parcelLockerStatusItem.toGuiItem());
         gui.setItem(49, closeItem);
 

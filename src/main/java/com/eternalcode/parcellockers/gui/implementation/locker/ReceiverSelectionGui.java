@@ -46,7 +46,7 @@ public class ReceiverSelectionGui extends GuiView {
 
     private @Nullable UUID receiver;
 
-    public ReceiverSelectionGui(Plugin plugin, BukkitScheduler scheduler, PluginConfiguration config, MiniMessage miniMessage, UserRepository userRepository, ParcelSendingGUI sendingGUI, SkullAPI skullAPI, ParcelSendingGUIState state, UUID receiver) {
+    public ReceiverSelectionGui(Plugin plugin, BukkitScheduler scheduler, PluginConfiguration config, MiniMessage miniMessage, UserRepository userRepository, ParcelSendingGUI sendingGUI, SkullAPI skullAPI, ParcelSendingGUIState state, @Nullable UUID receiver) {
         this.plugin = plugin;
         this.scheduler = scheduler;
         this.config = config;
@@ -72,10 +72,7 @@ public class ReceiverSelectionGui extends GuiView {
 
         GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem();
         GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem();
-        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(event -> {
-            gui.close(player);
-            this.sendingGUI.show(player, this.state);
-        });
+        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(event -> this.sendingGUI.show(player));
         GuiItem previousPageItem = this.config.guiSettings.previousPageItem.toGuiItem(event -> this.show(player, page.previous()));
         GuiItem nextPageItem = this.config.guiSettings.nextPageItem.toGuiItem(event -> this.show(player, page.next()));
 
@@ -107,7 +104,6 @@ public class ReceiverSelectionGui extends GuiView {
                 this.scheduler.runTask(this.plugin, () -> gui.open(player));
             }).whenComplete(ExceptionHandler.handler());
         }).whenComplete(ExceptionHandler.handler());
-        gui.setCloseGuiAction(event -> this.sendingGUI.show(player, this.state));
     }
 
     private CompletableFuture<List<Supplier<GuiItem>>> loadSkulls(Player player, UserPageResult result, PaginatedGuiRefresher refresh) {
