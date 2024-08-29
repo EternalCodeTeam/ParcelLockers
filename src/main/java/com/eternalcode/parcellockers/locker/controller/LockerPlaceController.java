@@ -103,7 +103,7 @@ public class LockerPlaceController implements Listener {
             .withModality(false)
             .withLocalEcho(false)
             .withTimeout(60)
-            .withFirstPrompt(new ParcelLockerPlacePrompt(this.announcer, this.config));
+            .withFirstPrompt(new ParcelLockerPlacePrompt(this.config));
 
         player.beginConversation(conversationFactory.buildConversation(player));
     }
