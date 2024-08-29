@@ -20,7 +20,6 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitScheduler;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.UUID;
@@ -44,9 +43,8 @@ public class ReceiverSelectionGui extends GuiView {
     private final SkullAPI skullAPI;
     private final ParcelSendingGUIState state;
 
-    private @Nullable UUID receiver;
 
-    public ReceiverSelectionGui(Plugin plugin, BukkitScheduler scheduler, PluginConfiguration config, MiniMessage miniMessage, UserRepository userRepository, ParcelSendingGUI sendingGUI, SkullAPI skullAPI, ParcelSendingGUIState state, @Nullable UUID receiver) {
+    public ReceiverSelectionGui(Plugin plugin, BukkitScheduler scheduler, PluginConfiguration config, MiniMessage miniMessage, UserRepository userRepository, ParcelSendingGUI sendingGUI, SkullAPI skullAPI, ParcelSendingGUIState state) {
         this.plugin = plugin;
         this.scheduler = scheduler;
         this.config = config;
@@ -55,7 +53,6 @@ public class ReceiverSelectionGui extends GuiView {
         this.sendingGUI = sendingGUI;
         this.skullAPI = skullAPI;
         this.state = state;
-        this.receiver = receiver;
     }
 
     @Override
@@ -118,7 +115,7 @@ public class ReceiverSelectionGui extends GuiView {
 
         return () -> {
             List<Component> lore;
-            boolean isReceiverSelected = uuid.equals(this.receiver);
+            boolean isReceiverSelected = uuid.equals(this.state.getReceiver());
             if (isReceiverSelected) {
                 // This lore indicates the receiver is already selected
                 lore = List.of(this.miniMessage.deserialize(this.config.guiSettings.parcelReceiverSetLine));
@@ -131,18 +128,16 @@ public class ReceiverSelectionGui extends GuiView {
                 .texture(skullData.getValue())
                 .name(this.miniMessage.deserialize(user.name()))
                 .lore(lore)
-                .glow(uuid.equals(this.receiver))
+                .glow(uuid.equals(this.state.getReceiver()))
                 .asGuiItem(event -> {
-                    if (uuid.equals(this.receiver)) {
-                        this.receiver = null;
+                    if (uuid.equals(this.state.getReceiver())) {
                         refresher.refresh();
-                        this.sendingGUI.updateReceiverItem(player, null, "");
+                        this.sendingGUI.updateReceiverItem(player, "");
                         this.state.setReceiver(null);
                         return;
                     }
 
-                    this.receiver = uuid;
-                    this.sendingGUI.updateReceiverItem(player, uuid, user.name());
+                    this.sendingGUI.updateReceiverItem(player, user.name());
                     this.state.setReceiver(uuid);
                     refresher.refresh();
                 });

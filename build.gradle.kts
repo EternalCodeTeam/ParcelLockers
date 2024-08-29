@@ -68,7 +68,7 @@ dependencies {
     implementation("io.papermc:paperlib:1.0.8")
 
     // signgui
-    implementation("de.rapha149.signgui:signgui:2.3.5")
+    implementation("de.rapha149.signgui:signgui:2.4.1")
 
     // panda-utilities
     implementation("org.panda-lang:panda-utilities:0.5.2-alpha")
@@ -133,7 +133,7 @@ tasks {
     }
 
     shadowJar {
-        archiveFileName.set("ParcelLockers v${project.version} (MC 1.8.8-1.20.x).jar")
+        archiveFileName.set("ParcelLockers v${project.version} (MC 1.8.8-1.21.x).jar")
 
         exclude(
             "org/intellij/lang/annotations/**",

@@ -1,5 +1,7 @@
 package com.eternalcode.parcellockers.parcel;
 
+import dev.rollczi.litecommands.shared.Preconditions;
+
 import java.util.Set;
 import java.util.UUID;
 
@@ -84,6 +86,13 @@ public record Parcel(UUID uuid,
 
 
         public Parcel build() {
+            Preconditions.notNull(this.uuid, "uuid");
+            Preconditions.notNull(this.sender, "sender");
+            Preconditions.notNull(this.name, "name");
+            Preconditions.notNull(this.receiver, "receiver");
+            Preconditions.notNull(this.size, "size");
+            Preconditions.notNull(this.entryLocker, "entryLocker");
+            Preconditions.notNull(this.destinationLocker, "destinationLocker");
             return new Parcel(this.uuid, this.sender, this.name, this.description, this.priority, this.recipients, this.receiver, this.size, this.entryLocker, this.destinationLocker);
         }
     }

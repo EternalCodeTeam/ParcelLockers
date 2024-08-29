@@ -37,9 +37,6 @@ public class DestinationSelectionGUI extends GuiView {
     private final ParcelSendingGUI sendingGUI;
     private final ParcelSendingGUIState state;
 
-    private UUID entryLocker;
-    private UUID destinationLocker;
-
     public DestinationSelectionGUI(Plugin plugin, BukkitScheduler scheduler, PluginConfiguration config, MiniMessage miniMessage, LockerRepository lockerRepository, ParcelSendingGUI sendingGUI, ParcelSendingGUIState state) {
         this.plugin = plugin;
         this.scheduler = scheduler;
@@ -60,9 +57,7 @@ public class DestinationSelectionGUI extends GuiView {
         GuiItem nextPageItem = this.config.guiSettings.nextPageItem.toGuiItem(event -> this.show(player, page.next()));
         GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem();
         GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem();
-        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(event -> {
-            this.sendingGUI.show(player);
-        });
+        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(event -> this.sendingGUI.show(player));
 
         PaginatedGui gui = Gui.paginated()
             .title(this.miniMessage.deserialize(this.config.guiSettings.parcelDestinationLockerSelectionGuiTitle))
@@ -108,7 +103,7 @@ public class DestinationSelectionGUI extends GuiView {
 
         return () -> {
             List<String> lore;
-            boolean isLockerSelected = uuid.equals(this.destinationLocker);
+            boolean isLockerSelected = uuid.equals(this.state.getDestinationLocker());
             if (isLockerSelected) {
                 // This lore indicates the receiver is already selected
                 lore = List.of(this.config.guiSettings.parcelReceiverSetLine);
@@ -125,13 +120,12 @@ public class DestinationSelectionGUI extends GuiView {
                 .setLore(lore)
                 .toGuiItem(event -> {
                     if (isLockerSelected) {
-                        this.destinationLocker = null;
                         this.state.setDestinationLocker(null);
                         this.sendingGUI.updateDestinationItem(player, null, "");
                         refresher.refresh();
                         return;
                     }
-                    this.destinationLocker = uuid;
+
                     this.state.setDestinationLocker(uuid);
                     this.sendingGUI.updateDestinationItem(player, uuid, locker.description());
                     refresher.refresh();

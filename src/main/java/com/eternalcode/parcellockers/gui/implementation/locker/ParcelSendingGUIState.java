@@ -14,15 +14,15 @@ public class ParcelSendingGUIState {
     private UUID entryLocker;
     private UUID destinationLocker;
 
-    public ParcelSendingGUIState(String parcelName, String parcelDescription, ParcelSize size, UUID receiver,
-                                 boolean priority, UUID entryLocker, UUID destinationLocker) {
-        this.parcelName = parcelName;
-        this.parcelDescription = parcelDescription;
-        this.size = size;
-        this.receiver = receiver;
-        this.priority = priority;
-        this.entryLocker = entryLocker;
-        this.destinationLocker = destinationLocker;
+
+    public ParcelSendingGUIState() {
+        this.parcelName = null;
+        this.parcelDescription = null;
+        this.size = ParcelSize.SMALL;
+        this.receiver = null;
+        this.priority = false;
+        this.entryLocker = UUID.randomUUID();
+        this.destinationLocker = null;
     }
 
     public String getParcelName() {

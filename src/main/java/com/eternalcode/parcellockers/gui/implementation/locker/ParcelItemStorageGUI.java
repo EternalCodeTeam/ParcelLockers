@@ -39,8 +39,9 @@ public class ParcelItemStorageGUI {
     private final ParcelContentRepository parcelContentRepository;
     private final UserRepository userRepository;
     private final SkullAPI skullAPI;
+    private final ParcelSendingGUIState state;
 
-    public ParcelItemStorageGUI(Plugin plugin, PluginConfiguration config, MiniMessage miniMessage, ItemStorageRepository itemStorageRepository, ParcelRepository parcelRepository, LockerRepository lockerRepository, NotificationAnnouncer announcer, ParcelContentRepository parcelContentRepository, UserRepository userRepository, SkullAPI skullAPI) {
+    public ParcelItemStorageGUI(Plugin plugin, PluginConfiguration config, MiniMessage miniMessage, ItemStorageRepository itemStorageRepository, ParcelRepository parcelRepository, LockerRepository lockerRepository, NotificationAnnouncer announcer, ParcelContentRepository parcelContentRepository, UserRepository userRepository, SkullAPI skullAPI, ParcelSendingGUIState state) {
         this.plugin = plugin;
         this.config = config;
         this.miniMessage = miniMessage;
@@ -51,6 +52,7 @@ public class ParcelItemStorageGUI {
         this.parcelContentRepository = parcelContentRepository;
         this.userRepository = userRepository;
         this.skullAPI = skullAPI;
+        this.state = state;
     }
 
     void show(Player player, ParcelSize size) {
@@ -69,7 +71,9 @@ public class ParcelItemStorageGUI {
             this.announcer,
             this.parcelContentRepository,
             this.userRepository,
-            this.skullAPI).show(player));
+            this.skullAPI,
+            this.state
+            ).show(player));
 
         switch (size) {
             case SMALL -> gui = Gui.storage()

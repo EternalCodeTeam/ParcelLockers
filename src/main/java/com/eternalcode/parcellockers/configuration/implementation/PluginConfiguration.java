@@ -107,6 +107,8 @@ public class PluginConfiguration implements ReloadableConfig {
         public String parcelReceiverSet = "&2✔ &aParcel receiver set successfully.";
         public String parcelDestinationSet = "&2✔ &aParcel destination locker set successfully.";
         public String alreadyCreatingLocker = "&4✘ &cYou are already creating a parcel locker!";
+        public String receiverNotSet = "&4✘ &cThe parcel receiver is not set!";
+
         @Description({ " ", "# The parcel info message." })
         public List<String> parcelInfoMessages = List.of(
             "&7» &6Parcel info:",
