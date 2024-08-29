@@ -2,7 +2,7 @@ plugins {
     `java-library`
     checkstyle
     id("net.minecrell.plugin-yml.bukkit") version "0.6.0"
-    id("xyz.jpenilla.run-paper") version "2.3.0"
+    id("xyz.jpenilla.run-paper") version "2.3.1"
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
@@ -27,7 +27,7 @@ repositories {
 dependencies {
     // minecraft development api
     compileOnly("org.spigotmc:spigot-api:1.20.5-R0.1-SNAPSHOT")
-    implementation("net.kyori:adventure-platform-bukkit:4.3.3")
+    implementation("net.kyori:adventure-platform-bukkit:4.3.4")
     implementation("net.kyori:adventure-text-minimessage:4.17.0")
     implementation("dev.rollczi.litecommands:bukkit-adventure:2.8.9")
 
@@ -50,8 +50,8 @@ dependencies {
     implementation("com.eternalcode:gitcheck:1.0.0")
 
     // metrics and sentry
-    implementation("org.bstats:bstats-bukkit:3.0.2")
-    implementation("io.sentry:sentry:7.12.0")
+    implementation("org.bstats:bstats-bukkit:3.0.3")
+    implementation("io.sentry:sentry:7.14.0")
 
     // database
     implementation("com.zaxxer:HikariCP:5.1.0")
@@ -69,12 +69,12 @@ dependencies {
     // panda-utilities
     implementation("org.panda-lang:panda-utilities:0.5.2-alpha")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.3")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.3")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.3")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.11.0")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.0")
 
-    testImplementation("org.testcontainers:junit-jupiter:1.20.0")
-    testImplementation("org.testcontainers:mysql:1.20.0")
+    testImplementation("org.testcontainers:junit-jupiter:1.20.1")
+    testImplementation("org.testcontainers:mysql:1.20.1")
     testImplementation("mysql:mysql-connector-java:8.0.33")
 }
 
@@ -83,7 +83,7 @@ java {
 }
 
 checkstyle {
-    toolVersion = "10.17.0"
+    toolVersion = "10.18.0"
 
     configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
 
