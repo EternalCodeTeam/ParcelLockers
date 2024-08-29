@@ -55,6 +55,7 @@ public class ParcelSendingGUI extends GuiView {
     private UUID destinationLocker = UUID.randomUUID();
 
     private ConfigItem receiverItem;
+    private ConfigItem destinationItem;
 
     private Gui gui;
 
@@ -169,15 +170,8 @@ public class ParcelSendingGUI extends GuiView {
         });
 
         this.receiverItem = guiSettings.parcelReceiverItem;
-        GuiItem destinationItem = guiSettings.parcelDestinationLockerItem.toGuiItem(event -> new DestinationSelectionGUI(
-            this.plugin,
-            this.scheduler,
-            this.config,
-            this.miniMessage,
-            this.lockerRepository,
-            this,
-            new ParcelSendingGUIState(this.parcelName, this.parcelDescription, this.size, this.receiver, this.priority, this.entryLocker, this.destinationLocker)
-        ).show(player));
+        this.destinationItem = guiSettings.parcelDestinationLockerItem;
+
 
         GuiItem storageItem = guiSettings.parcelStorageItem.toGuiItem(event -> {
             ParcelItemStorageGUI storageGUI = new ParcelItemStorageGUI(
@@ -290,7 +284,17 @@ public class ParcelSendingGUI extends GuiView {
             new ParcelSendingGUIState(this.parcelName, this.parcelDescription, this.size, this.receiver, this.priority, this.entryLocker, this.destinationLocker),
             this.receiver
         ).show(player)));
-        this.gui.setItem(30, destinationItem);
+
+        this.gui.setItem(30, this.destinationItem.toGuiItem(event -> new DestinationSelectionGUI(
+            this.plugin,
+            this.scheduler,
+            this.config,
+            this.miniMessage,
+            this.lockerRepository,
+            this,
+            new ParcelSendingGUIState(this.parcelName, this.parcelDescription, this.size, this.receiver, this.priority, this.entryLocker, this.destinationLocker)
+        ).show(player)));
+
         this.gui.setItem(37, storageItem);
         this.gui.setItem(43, submitItem);
         this.gui.setItem(42, priorityItem.toGuiItem(event -> this.setSelected(this.gui, !this.priority)));
@@ -348,16 +352,16 @@ public class ParcelSendingGUI extends GuiView {
         PluginConfiguration settings = this.config;
         PluginConfiguration.GuiSettings guiSettings = settings.guiSettings;
 
-        if (this.receiverItem.lore.size() > 1) {
-            this.receiverItem.lore.remove(1);
+        if (this.destinationItem.lore.size() > 1) {
+            this.destinationItem.lore.remove(1);
         }
 
         if (destinationLockerDesc != null) {
-            this.receiverItem.lore.add(guiSettings.parcelDestinationSetLine.replace("{DESCRIPTION}", destinationLockerDesc));
-            this.receiverItem.setGlow(true);
+            this.destinationItem.lore.add(guiSettings.parcelDestinationLockerSetLine.replace("{DESCRIPTION}", destinationLockerDesc));
+            this.destinationItem.setGlow(true);
         }
 
-        this.gui.updateItem(30, this.receiverItem.toItemStack());
+        this.gui.updateItem(30, this.destinationItem.toItemStack());
         this.announcer.sendMessage(player, settings.messages.parcelDestinationSet);
     }
 }

@@ -90,10 +90,7 @@ public class DestinationSelectionGUI extends GuiView {
                 gui.setItem(47, previousPageItem);
             }
 
-            this.loadLockers(player, result, refresher).forEach(supplier -> {
-                refresher.addItem(supplier);
-                gui.addItem(supplier.get());
-            });
+            this.loadLockers(player, result, refresher).forEach(refresher::addItem);
             this.scheduler.runTask(this.plugin, () -> gui.open(player));
         }).whenComplete(ExceptionHandler.handler())
             .orTimeout(5, TimeUnit.SECONDS);
@@ -107,7 +104,7 @@ public class DestinationSelectionGUI extends GuiView {
 
     private Supplier<GuiItem> toItem(Player player, Locker locker, PaginatedGuiRefresher refresher) {
         UUID uuid = locker.uuid();
-        ConfigItem parcelItem = this.config.guiSettings.destinationLockerItem;
+        ConfigItem parcelItem = this.config.guiSettings.destinationLockerItem.clone();
 
         return () -> {
             List<String> lore;
@@ -120,8 +117,10 @@ public class DestinationSelectionGUI extends GuiView {
                 lore = List.of(this.config.guiSettings.parcelReceiverNotSetLine);
             }
 
+            String name = parcelItem.getName().replace("{DESCRIPTION}", locker.description());
+
             return parcelItem
-                .setName(parcelItem.name.replace("{DESCRIPTION}", locker.description())) // todo fix name duplication
+                .setName(name) // todo fix name duplication
                 .setGlow(isLockerSelected)
                 .setLore(lore)
                 .toGuiItem(event -> {

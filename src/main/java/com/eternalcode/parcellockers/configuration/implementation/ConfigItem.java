@@ -14,12 +14,13 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.eternalcode.parcellockers.util.AdventureUtil.RESET_ITEM;
 
 @Contextual
-public class ConfigItem {
+public class ConfigItem implements Cloneable {
 
     @Exclude
     private static final MiniMessage MINI_MESSAGE = MiniMessage.builder()
@@ -58,6 +59,22 @@ public class ConfigItem {
         return this.toBuilder().build();
     }
 
+    public Material getType() {
+        return this.type;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public List<String> getLore() {
+        return this.lore;
+    }
+
+    public boolean isGlow() {
+        return this.glow;
+    }
+
     public ConfigItem setType(Material type) {
         this.type = type;
         return this;
@@ -81,5 +98,16 @@ public class ConfigItem {
     public ConfigItem setGlow(boolean glow) {
         this.glow = glow;
         return this;
+    }
+
+    @Override
+    public ConfigItem clone() {
+        try {
+            ConfigItem cloned = (ConfigItem) super.clone();
+            cloned.lore = new ArrayList<>(this.lore); // Deep copy of the list
+            return cloned;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(); // Should never happen
+        }
     }
 }
