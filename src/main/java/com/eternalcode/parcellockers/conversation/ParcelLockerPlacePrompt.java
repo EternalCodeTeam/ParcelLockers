@@ -1,7 +1,6 @@
 package com.eternalcode.parcellockers.conversation;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
-import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import org.bukkit.ChatColor;
 import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.Prompt;
@@ -10,11 +9,9 @@ import org.jetbrains.annotations.Nullable;
 
 public class ParcelLockerPlacePrompt implements Prompt {
 
-    private final NotificationAnnouncer announcer;
     private final PluginConfiguration config;
 
-    public ParcelLockerPlacePrompt(NotificationAnnouncer announcer, PluginConfiguration config) {
-        this.announcer = announcer;
+    public ParcelLockerPlacePrompt(PluginConfiguration config) {
         this.config = config;
     }
 

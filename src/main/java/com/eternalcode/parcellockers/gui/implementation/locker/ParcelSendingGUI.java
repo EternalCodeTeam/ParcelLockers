@@ -113,7 +113,8 @@ public class ParcelSendingGUI extends GuiView {
                         lore.remove(1);
                     }
 
-                    lore.add(this.config.guiSettings.parcelNameSetLine.replace("{NAME}", this.state.getParcelName() == null ? "None" : this.state.getParcelName()));
+                    lore.add(this.config.guiSettings.parcelNameSetLine.replace("{NAME}", this.state.getParcelName() == null
+                        ? "None" : this.state.getParcelName()));
 
                     this.gui.updateItem(21, nameItem
                         .setLore(lore)
@@ -155,7 +156,6 @@ public class ParcelSendingGUI extends GuiView {
         this.receiverItem = guiSettings.parcelReceiverItem;
         this.destinationItem = guiSettings.parcelDestinationLockerItem;
 
-
         GuiItem storageItem = guiSettings.parcelStorageItem.toGuiItem(event -> {
             ParcelItemStorageGUI storageGUI = new ParcelItemStorageGUI(
                 this.plugin,
@@ -175,12 +175,15 @@ public class ParcelSendingGUI extends GuiView {
                         int slotsSize = result.get().items().size();
                         if (slotsSize <= 9) {
                             this.scheduler.runTask(this.plugin, () -> storageGUI.show(player, this.state.getSize()));
-                        } else if (slotsSize <= 18 && this.state.getSize() == ParcelSize.SMALL) {
+                        }
+                        else if (slotsSize <= 18 && this.state.getSize() == ParcelSize.SMALL) {
                             this.scheduler.runTask(this.plugin, () -> storageGUI.show(player, ParcelSize.MEDIUM));
-                        } else {
+                        }
+                        else {
                             this.scheduler.runTask(this.plugin, () -> storageGUI.show(player, ParcelSize.LARGE));
                         }
-                    } else {
+                    }
+                    else {
                         this.scheduler.runTask(this.plugin, () -> storageGUI.show(player, this.state.getSize()));
                     }
                 }
@@ -219,6 +222,7 @@ public class ParcelSendingGUI extends GuiView {
 
                     this.announcer.sendMessage(player, settings.messages.parcelSent);
                     this.gui.close(player);
+
                 }).whenComplete(ExceptionHandler.handler()
                     .andThen((unused, throwable) -> {
                             if (throwable != null) {

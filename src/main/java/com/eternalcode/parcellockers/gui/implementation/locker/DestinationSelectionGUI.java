@@ -106,16 +106,16 @@ public class DestinationSelectionGUI extends GuiView {
             boolean isLockerSelected = uuid.equals(this.state.getDestinationLocker());
             if (isLockerSelected) {
                 // This lore indicates the receiver is already selected
-                lore = List.of(this.config.guiSettings.parcelReceiverSetLine);
+                lore = List.of(this.config.guiSettings.parcelDestinationSetLine);
             } else {
                 // This lore indicates the user can click to select this receiver
-                lore = List.of(this.config.guiSettings.parcelReceiverNotSetLine);
+                lore = List.of(this.config.guiSettings.parcelDestinationNotSetLine);
             }
 
             String name = parcelItem.getName().replace("{DESCRIPTION}", locker.description());
 
             return parcelItem
-                .setName(name) // todo fix name duplication
+                .setName(name)
                 .setGlow(isLockerSelected)
                 .setLore(lore)
                 .toGuiItem(event -> {

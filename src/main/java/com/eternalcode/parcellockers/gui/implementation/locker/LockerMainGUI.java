@@ -77,8 +77,19 @@ public class LockerMainGUI extends GuiView {
         }
 
         gui.setItem(20, this.config.guiSettings.parcelLockerCollectItem.toGuiItem(event -> event.setCancelled(true)));
-        gui.setItem(22, this.config.guiSettings.parcelLockerSendItem.toGuiItem(event -> new ParcelSendingGUI(this.plugin, this.config, this.miniMessage, this.itemStorageRepository, this.parcelRepository, this.lockerRepository, this.announcer, this.parcelContentRepository, this.userRepository, this.skullAPI,
-            new ParcelSendingGUIState()).show(player)));
+        gui.setItem(22, this.config.guiSettings.parcelLockerSendItem.toGuiItem(event -> new ParcelSendingGUI(this.plugin,
+            this.config,
+            this.miniMessage,
+            this.itemStorageRepository,
+            this.parcelRepository,
+            this.lockerRepository,
+            this.announcer,
+            this.parcelContentRepository,
+            this.userRepository,
+            this.skullAPI,
+            new ParcelSendingGUIState()
+        ).show(player)));
+
         gui.setItem(24, this.config.guiSettings.parcelLockerStatusItem.toGuiItem());
         gui.setItem(49, closeItem);
 

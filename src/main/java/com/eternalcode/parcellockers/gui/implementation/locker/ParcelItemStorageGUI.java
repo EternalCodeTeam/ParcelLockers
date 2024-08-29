@@ -41,7 +41,18 @@ public class ParcelItemStorageGUI {
     private final SkullAPI skullAPI;
     private final ParcelSendingGUIState state;
 
-    public ParcelItemStorageGUI(Plugin plugin, PluginConfiguration config, MiniMessage miniMessage, ItemStorageRepository itemStorageRepository, ParcelRepository parcelRepository, LockerRepository lockerRepository, NotificationAnnouncer announcer, ParcelContentRepository parcelContentRepository, UserRepository userRepository, SkullAPI skullAPI, ParcelSendingGUIState state) {
+    public ParcelItemStorageGUI(Plugin plugin,
+                                PluginConfiguration config,
+                                MiniMessage miniMessage,
+                                ItemStorageRepository itemStorageRepository,
+                                ParcelRepository parcelRepository,
+                                LockerRepository lockerRepository,
+                                NotificationAnnouncer announcer,
+                                ParcelContentRepository parcelContentRepository,
+                                UserRepository userRepository,
+                                SkullAPI skullAPI,
+                                ParcelSendingGUIState state)
+    {
         this.plugin = plugin;
         this.config = config;
         this.miniMessage = miniMessage;

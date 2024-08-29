@@ -44,7 +44,12 @@ public class ReceiverSelectionGui extends GuiView {
     private final ParcelSendingGUIState state;
 
 
-    public ReceiverSelectionGui(Plugin plugin, BukkitScheduler scheduler, PluginConfiguration config, MiniMessage miniMessage, UserRepository userRepository, ParcelSendingGUI sendingGUI, SkullAPI skullAPI, ParcelSendingGUIState state) {
+    public ReceiverSelectionGui(Plugin plugin,
+                                BukkitScheduler scheduler,
+                                PluginConfiguration config,
+                                MiniMessage miniMessage,
+                                UserRepository userRepository,
+                                ParcelSendingGUI sendingGUI, SkullAPI skullAPI, ParcelSendingGUIState state) {
         this.plugin = plugin;
         this.scheduler = scheduler;
         this.config = config;
@@ -105,7 +110,7 @@ public class ReceiverSelectionGui extends GuiView {
 
     private CompletableFuture<List<Supplier<GuiItem>>> loadSkulls(Player player, UserPageResult result, PaginatedGuiRefresher refresh) {
         return result.users().stream()
-            //.filter(user -> !user.uuid().equals(player.getUniqueId()))
+            .filter(user -> !user.uuid().equals(player.getUniqueId()))
             .map(user -> this.skullAPI.getSkullData(user.uuid()).thenApply(skullData -> this.toItem(player, user, skullData, refresh)))
             .collect(CompletableFutures.joinList());
     }

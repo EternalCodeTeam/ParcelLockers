@@ -25,7 +25,11 @@ public class MainGUI extends GuiView {
     private final LockerRepository lockerRepository;
     private final UserManager userManager;
 
-    public MainGUI(Plugin plugin, Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelRepository parcelRepository, LockerRepository lockerRepository, UserManager userManager) {
+    public MainGUI(Plugin plugin,
+                   Server server,
+                   MiniMessage miniMessage,
+                   PluginConfiguration config,
+                   ParcelRepository parcelRepository, LockerRepository lockerRepository, UserManager userManager) {
         this.plugin = plugin;
         this.server = server;
         this.miniMessage = miniMessage;
