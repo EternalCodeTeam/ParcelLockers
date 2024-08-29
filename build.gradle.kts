@@ -2,7 +2,7 @@ plugins {
     `java-library`
     checkstyle
     id("net.minecrell.plugin-yml.bukkit") version "0.6.0"
-    id("xyz.jpenilla.run-paper") version "2.3.0"
+    id("xyz.jpenilla.run-paper") version "2.3.1"
     id("io.github.goooler.shadow") version "8.1.8"
 }
 
@@ -27,7 +27,7 @@ repositories {
 dependencies {
     // minecraft development api
     compileOnly("org.spigotmc:spigot-api:1.21-R0.1-SNAPSHOT")
-    implementation("net.kyori:adventure-platform-bukkit:4.3.3")
+    implementation("net.kyori:adventure-platform-bukkit:4.3.4")
     implementation("net.kyori:adventure-text-minimessage:4.17.0")
     implementation("dev.rollczi:litecommands-bukkit:3.1.0")
     implementation("dev.rollczi:litecommands-adventure:3.1.0")
@@ -42,7 +42,7 @@ dependencies {
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
 
     // CDN
-    implementation("net.dzikoysk:cdn:1.14.4")
+    implementation("net.dzikoysk:cdn:1.14.5")
 
     // expressible
     implementation("org.panda-lang:expressible:1.3.6")
@@ -51,8 +51,8 @@ dependencies {
     implementation("com.eternalcode:gitcheck:1.0.0")
 
     // metrics and sentry
-    implementation("org.bstats:bstats-bukkit:3.0.2")
-    implementation("io.sentry:sentry:7.12.0")
+    implementation("org.bstats:bstats-bukkit:3.0.3")
+    implementation("io.sentry:sentry:7.14.0")
 
     // database
     implementation("com.zaxxer:HikariCP:5.1.0")
@@ -79,12 +79,12 @@ dependencies {
     // completable-futures
     implementation("com.spotify:completable-futures:0.3.6")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.2")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.11.0")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.0")
 
-    testImplementation("org.testcontainers:junit-jupiter:1.20.0")
-    testImplementation("org.testcontainers:mysql:1.20.0")
+    testImplementation("org.testcontainers:junit-jupiter:1.20.1")
+    testImplementation("org.testcontainers:mysql:1.20.1")
     testImplementation("mysql:mysql-connector-java:8.0.33")
 }
 
@@ -93,7 +93,7 @@ java {
 }
 
 checkstyle {
-    toolVersion = "10.17.0"
+    toolVersion = "10.18.0"
 
     configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
 
