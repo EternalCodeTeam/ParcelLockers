@@ -96,6 +96,7 @@ greatly accelerate the bug fixing process 🥳
 - [TriumphGUI](https://github.com/TriumphTeam/triumph-gui)
 - [bStats](https://bstats.org/)
 - [jackson-bukkit](https://github.com/eldoriarpg/jackson-bukkit)
+- [SignGUI](https://github.com/Rapha149/SignGUI)
 
 ## :heart: Special Thanks
 
