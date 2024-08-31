@@ -14,7 +14,6 @@ public class ParcelSendingGUIState {
     private UUID entryLocker;
     private UUID destinationLocker;
 
-
     public ParcelSendingGUIState() {
         this.parcelName = null;
         this.parcelDescription = null;
