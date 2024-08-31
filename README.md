@@ -34,7 +34,7 @@ ParcelLockers is at an very early stage of development, and you use it at your o
 
 ## 🏗️ Compiling JAR from Source
 
-To build ParcelLockers, follow these steps (Make sure you have **JDK 17 or higher**):
+To build ParcelLockers, follow these steps (Make sure you have **JDK 21 or higher**):
 
 ```shell
 ./gradlew clean shadowJar
