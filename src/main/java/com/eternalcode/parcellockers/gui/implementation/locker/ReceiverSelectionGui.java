@@ -26,7 +26,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
-// TODO: Maybe in future cache this globally, so props wont change after gui exit, because new instance is created.
 
 public class ReceiverSelectionGui extends GuiView {
 
