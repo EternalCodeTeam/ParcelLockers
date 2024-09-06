@@ -22,6 +22,7 @@ repositories {
     maven { url = uri("https://papermc.io/repo/repository/maven-public/") }
     maven { url = uri("https://repo.eternalcode.pl/releases") }
     maven { url = uri("https://repository.minecodes.pl/releases") }
+    maven { url = uri("https://jitpack.io") }
 }
 
 dependencies {
@@ -111,7 +112,6 @@ bukkit {
         "Plugin that provides functionality of parcel lockers in Minecraft, allowing players to send and receive parcels safely."
     website = "https://github.com/EternalCodeTeam/ParcelLockers"
     version = "1.0.0-SNAPSHOT"
-    depend = listOf("Vault")
 }
 
 tasks.withType<JavaCompile> {
@@ -124,8 +124,6 @@ tasks.withType<JavaCompile> {
 tasks {
     runServer {
         minecraftVersion("1.21.1")
-        downloadPlugins.url("https://github.com/MilkBowl/Vault/releases/download/1.7.3/Vault.jar")
-        downloadPlugins.url("https://github.com/EssentialsX/Essentials/releases/download/2.20.1/EssentialsX-2.20.1.jar")
     }
 
     test {

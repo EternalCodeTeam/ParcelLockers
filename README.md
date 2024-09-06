@@ -23,7 +23,7 @@ especially on long distances.
 ## ℹ️ Information
 
 - ParcelLockers fully supports Minecraft's latest minor versions starting from each major version, starting from 1.17
-  onward, e.g. `1.17.1`, `1.18.2`, `1.19.4`, `1.20.6`.
+  onward, e.g. `1.17.1`, `1.18.2`, `1.19.4`, `1.20.6`, `1.21.1`.
 - Requires **Java 17 or later** to work properly. For older versions of Java, this may affect the functionality of the
   plugin.
 - If you have any questions, you can ask us about it on our [Discord server](https://discord.gg/FQ7jmGBd6c).
@@ -34,7 +34,7 @@ ParcelLockers is at an very early stage of development, and you use it at your o
 
 ## 🏗️ Compiling JAR from Source
 
-To build ParcelLockers, follow these steps (Make sure you have **JDK 17 or higher**):
+To build ParcelLockers, follow these steps (Make sure you have **JDK 21 or higher**):
 
 ```shell
 ./gradlew clean shadowJar
@@ -96,6 +96,7 @@ greatly accelerate the bug fixing process 🥳
 - [TriumphGUI](https://github.com/TriumphTeam/triumph-gui)
 - [bStats](https://bstats.org/)
 - [jackson-bukkit](https://github.com/eldoriarpg/jackson-bukkit)
+- [SignGUI](https://github.com/Rapha149/SignGUI)
 
 ## :heart: Special Thanks
 
