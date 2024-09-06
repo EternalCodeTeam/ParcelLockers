@@ -1,18 +1,10 @@
-package com.eternalcode.parcellockers.util;
+package com.eternalcode.parcellockers.parcel.util;
 
-import com.eternalcode.parcellockers.exception.ParcelLockersException;
 import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.user.UserManager;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.spotify.futures.CompletableFutures;
-import de.eldoria.jacksonbukkit.JacksonPaper;
-import io.sentry.Sentry;
-import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Blocking;
 import panda.utilities.text.Formatter;
 
@@ -23,58 +15,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-public class ItemUtil {
-
-    private static final ObjectMapper JSON = JsonMapper.builder()
-        .addModule(JacksonPaper.builder()
-            .useLegacyItemStackSerialization()
-            .build()
-        )
-        .build();
-
-    private ItemUtil() {
-        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
-    }
-
-    public static String serialize(ItemStack stack) {
-        try {
-            return JSON.writeValueAsString(stack);
-        }
-        catch (JsonProcessingException e) {
-            Sentry.captureException(e);
-            throw new ParcelLockersException("Failed to serialize itemstack", e);
-        }
-    }
-
-    public static String serializeItems(List<ItemStack> stack) {
-        try {
-            return JSON.writeValueAsString(stack);
-        }
-        catch (JsonProcessingException e) {
-            Sentry.captureException(e);
-            throw new ParcelLockersException("Failed to serialize itemstack", e);
-        }
-    }
-
-    public static ItemStack deserialize(String string) {
-        try {
-            return JSON.readValue(string, ItemStack.class);
-        }
-        catch (JsonProcessingException e) {
-            Sentry.captureException(e);
-            throw new ParcelLockersException("Failed to deserialize itemstack", e);
-        }
-    }
-
-    public static List<ItemStack> deserializeItems(String string) {
-        try {
-            return JSON.readValue(string, JSON.getTypeFactory().constructCollectionType(List.class, ItemStack.class));
-        }
-        catch (JsonProcessingException e) {
-            Sentry.captureException(e);
-            throw new ParcelLockersException("Failed to deserialize itemstack", e);
-        }
-    }
+public class ParcelPlaceholderUtil {
 
     @Blocking
     public static List<String> replaceParcelPlaceholders(Parcel parcel, List<String> lore, UserManager userManager, LockerRepository lockerRepository) {
@@ -123,13 +64,10 @@ public class ItemUtil {
         return newLore;
     }
 
-    @ApiStatus.Internal
     private static CompletableFuture<String> getName(UUID userUuid, UserManager userManager) {
         return userManager.getUser(userUuid).thenApply(userOptional -> userOptional
             .map(user -> user.name())
             .orElse("Unknown")
         );
     }
-
-
 }

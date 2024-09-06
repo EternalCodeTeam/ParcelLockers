@@ -25,12 +25,13 @@ public class InvalidUsageImpl implements InvalidUsageHandler<CommandSender> {
     @Override
     public void handle(Invocation<CommandSender> invocation, InvalidUsage<CommandSender> result, ResultHandlerChain<CommandSender> chain) {
         Schematic schematic = result.getSchematic();
-        List<String> schematics = schematic.all();
 
         if (schematic.isOnlyFirst()) {
             this.announcer.sendMessage(invocation.sender(), this.config.messages.parcelCommandUsage);
             return;
         }
+
+        List<String> schematics = schematic.all();
 
         for (String scheme : schematics) {
             Formatter formatter = new Formatter()

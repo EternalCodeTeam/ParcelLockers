@@ -33,6 +33,6 @@ public class ParcelLockerArgument extends ArgumentResolver<CommandSender, Locker
             .stream()
             .filter(locker -> locker.description().equalsIgnoreCase(s))
             .findFirst()
-            .orElse(null));
+            .orElseThrow(() -> new IllegalArgumentException("Locker with description '" + s + "' not found")));
     }
 }

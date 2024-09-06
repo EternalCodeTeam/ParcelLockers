@@ -106,8 +106,9 @@ public class ConfigItem implements Cloneable {
             ConfigItem cloned = (ConfigItem) super.clone();
             cloned.lore = new ArrayList<>(this.lore); // Deep copy of the list
             return cloned;
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError(); // Should never happen
+        }
+        catch (CloneNotSupportedException e) {
+            throw new AssertionError("Failed to clone " + this); // Should never happen
         }
     }
 }

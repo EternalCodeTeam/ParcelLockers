@@ -16,6 +16,6 @@ public interface UserRepository {
 
     CompletableFuture<Void> changeName(UUID uuid, String newName);
 
-    CompletableFuture<UserPageResult> findPage(Page page);
+    CompletableFuture<UserPageResult> getPage(Page page);
 
 }

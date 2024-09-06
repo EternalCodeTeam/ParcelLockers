@@ -87,7 +87,7 @@ public class ReceiverSelectionGui extends GuiView {
 
         gui.setItem(49, closeItem);
 
-        this.userRepository.findPage(page).thenAccept(result -> {
+        this.userRepository.getPage(page).thenAccept(result -> {
             if (result.hasNextPage()) {
                 gui.setItem(51, nextPageItem);
             }

@@ -2,7 +2,7 @@ package com.eternalcode.parcellockers.content.repository;
 
 import com.eternalcode.parcellockers.content.ParcelContent;
 import com.eternalcode.parcellockers.database.AbstractDatabaseService;
-import com.eternalcode.parcellockers.util.ItemUtil;
+import com.eternalcode.parcellockers.util.ItemSerdesUtil;
 
 import javax.sql.DataSource;
 import java.sql.PreparedStatement;
@@ -27,7 +27,7 @@ public class ParcelContentRepositoryImpl extends AbstractDatabaseService impleme
     public CompletableFuture<Void> save(ParcelContent parcelContent) {
         return this.execute("INSERT INTO `parcel_content`(`uuid`, `items`) VALUES (?, ?)", statement -> {
             statement.setString(1, parcelContent.uniqueId().toString());
-            statement.setString(2, ItemUtil.serializeItems(parcelContent.items()));
+            statement.setString(2, ItemSerdesUtil.serializeItems(parcelContent.items()));
             statement.execute();
         });
     }
@@ -43,7 +43,7 @@ public class ParcelContentRepositoryImpl extends AbstractDatabaseService impleme
     @Override
     public CompletableFuture<Void> update(ParcelContent parcelContent) {
         return this.execute("UPDATE `parcel_content` SET `items` = ? WHERE `uuid` = ?", statement -> {
-            statement.setString(1, ItemUtil.serializeItems(parcelContent.items()));
+            statement.setString(1, ItemSerdesUtil.serializeItems(parcelContent.items()));
             statement.setString(2, parcelContent.uniqueId().toString());
             statement.execute();
         });
@@ -54,7 +54,7 @@ public class ParcelContentRepositoryImpl extends AbstractDatabaseService impleme
         return this.supplyExecute("SELECT * FROM `parcel_content` WHERE `uuid` = ?", statement -> {
             statement.setString(1, uniqueId.toString());
             ResultSet resultSet = statement.executeQuery();
-            return Optional.of(new ParcelContent(uniqueId, ItemUtil.deserializeItems(resultSet.getString("items"))));
+            return Optional.of(new ParcelContent(uniqueId, ItemSerdesUtil.deserializeItems(resultSet.getString("items"))));
         });
     }
 

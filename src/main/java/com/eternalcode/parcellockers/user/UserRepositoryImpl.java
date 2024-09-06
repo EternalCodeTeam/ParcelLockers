@@ -2,7 +2,6 @@ package com.eternalcode.parcellockers.user;
 
 import com.eternalcode.parcellockers.database.AbstractDatabaseService;
 import com.eternalcode.parcellockers.shared.Page;
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import javax.sql.DataSource;
@@ -97,7 +96,7 @@ public class UserRepositoryImpl extends AbstractDatabaseService implements UserR
     }
 
     @Override
-    public CompletableFuture<UserPageResult> findPage(Page page) {
+    public CompletableFuture<UserPageResult> getPage(Page page) {
         return this.supplyExecute("SELECT * FROM `users` LIMIT ?, ?;", statement -> {
             statement.setInt(1, page.getOffset());
             statement.setInt(2, page.getLimit());
@@ -121,7 +120,6 @@ public class UserRepositoryImpl extends AbstractDatabaseService implements UserR
         });
     }
 
-    @ApiStatus.Internal
     @NotNull
     private Optional<User> extractUser(PreparedStatement statement) throws SQLException {
         ResultSet resultSet = statement.executeQuery();

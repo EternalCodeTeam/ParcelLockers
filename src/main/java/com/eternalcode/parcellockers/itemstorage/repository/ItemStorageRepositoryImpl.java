@@ -2,7 +2,7 @@ package com.eternalcode.parcellockers.itemstorage.repository;
 
 import com.eternalcode.parcellockers.database.AbstractDatabaseService;
 import com.eternalcode.parcellockers.itemstorage.ItemStorage;
-import com.eternalcode.parcellockers.util.ItemUtil;
+import com.eternalcode.parcellockers.util.ItemSerdesUtil;
 
 import javax.sql.DataSource;
 import java.sql.PreparedStatement;
@@ -27,7 +27,7 @@ public class ItemStorageRepositoryImpl extends AbstractDatabaseService implement
     public CompletableFuture<Void> save(ItemStorage itemStorage) {
         return this.execute("INSERT INTO `item_storage`(`uuid`, `items`) VALUES (?, ?)", statement -> {
             statement.setString(1, itemStorage.owner().toString());
-            statement.setString(2, ItemUtil.serializeItems(itemStorage.items()));
+            statement.setString(2, ItemSerdesUtil.serializeItems(itemStorage.items()));
             statement.execute();
         });
     }
@@ -35,7 +35,7 @@ public class ItemStorageRepositoryImpl extends AbstractDatabaseService implement
     @Override
     public CompletableFuture<Void> update(ItemStorage itemStorage) {
         return this.execute("UPDATE `item_storage` SET `items` = ? WHERE `uuid` = ?", statement -> {
-            statement.setString(1, ItemUtil.serializeItems(itemStorage.items()));
+            statement.setString(1, ItemSerdesUtil.serializeItems(itemStorage.items()));
             statement.setString(2, itemStorage.owner().toString());
             statement.execute();
         });
@@ -53,7 +53,7 @@ public class ItemStorageRepositoryImpl extends AbstractDatabaseService implement
             return Optional.of(
                 new ItemStorage(
                     UUID.fromString(resultSet.getString("uuid")),
-                    ItemUtil.deserializeItems(resultSet.getString("items"))
+                    ItemSerdesUtil.deserializeItems(resultSet.getString("items"))
                 ));
         });
     }
