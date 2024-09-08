@@ -114,13 +114,13 @@ public class DestinationSelectionGUI extends GuiView {
                 .toGuiItem(event -> {
                     if (isLockerSelected) {
                         this.state.setDestinationLocker(null);
-                        this.sendingGUI.updateDestinationItem(player, null, "");
+                        this.sendingGUI.updateDestinationItem(player, "");
                         refresher.refresh();
                         return;
                     }
 
                     this.state.setDestinationLocker(uuid);
-                    this.sendingGUI.updateDestinationItem(player, uuid, locker.description());
+                    this.sendingGUI.updateDestinationItem(player, locker.description());
                     refresher.refresh();
                 });
         };

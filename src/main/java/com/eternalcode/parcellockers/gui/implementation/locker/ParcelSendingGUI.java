@@ -13,16 +13,19 @@ import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.shared.ExceptionHandler;
 import com.eternalcode.parcellockers.user.UserRepository;
+import static com.eternalcode.parcellockers.util.AdventureUtil.RESET_ITEM;
 import de.rapha149.signgui.SignGUI;
 import de.rapha149.signgui.SignGUIAction;
 import dev.rollczi.liteskullapi.SkullAPI;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
+import java.util.ArrayList;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
@@ -31,6 +34,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import org.jetbrains.annotations.NotNull;
 
 public class ParcelSendingGUI extends GuiView {
 
@@ -47,9 +51,6 @@ public class ParcelSendingGUI extends GuiView {
     private final SkullAPI skullAPI;
 
     private final ParcelSendingGUIState state;
-
-    private ConfigItem receiverItem;
-    private ConfigItem destinationItem;
 
     private Gui gui;
 
@@ -152,9 +153,6 @@ public class ParcelSendingGUI extends GuiView {
                 .build();
             descriptionSignGui.open(player);
         });
-
-        this.receiverItem = guiSettings.parcelReceiverItem;
-        this.destinationItem = guiSettings.parcelDestinationLockerItem;
 
         GuiItem storageItem = guiSettings.parcelStorageItem.toGuiItem(event -> {
             ParcelItemStorageGUI storageGUI = new ParcelItemStorageGUI(
@@ -263,7 +261,7 @@ public class ParcelSendingGUI extends GuiView {
         this.gui.setItem(14, largeButton.toGuiItem(event -> this.setSelected(this.gui, ParcelSize.LARGE)));
         this.gui.setItem(21, nameGuiItem);
         this.gui.setItem(22, descriptionGuiItem);
-        this.gui.setItem(23, this.receiverItem.toGuiItem(event -> new ReceiverSelectionGui(
+        this.gui.setItem(23, guiSettings.parcelReceiverItem.toGuiItem(event -> new ReceiverSelectionGui(
             this.plugin,
             this.scheduler,
             this.config,
@@ -274,7 +272,7 @@ public class ParcelSendingGUI extends GuiView {
             this.state
         ).show(player)));
 
-        this.gui.setItem(30, this.destinationItem.toGuiItem(event -> new DestinationSelectionGUI(
+        this.gui.setItem(30, guiSettings.destinationLockerItem.toGuiItem(event -> new DestinationSelectionGUI(
             this.plugin,
             this.scheduler,
             this.config,
@@ -319,36 +317,37 @@ public class ParcelSendingGUI extends GuiView {
     }
 
     public void updateReceiverItem(Player player, String receiverName) {
-        PluginConfiguration settings = this.config;
-        PluginConfiguration.GuiSettings guiSettings = settings.guiSettings;
+        this.announcer.sendMessage(player, this.config.messages.parcelReceiverSet);
 
-        if (this.receiverItem.lore.size() > 1) {
-            this.receiverItem.lore.remove(1);
-        }
+         if (receiverName == null || receiverName.isEmpty()) {
+             this.gui.updateItem(23, this.config.guiSettings.parcelReceiverItem.toItemStack());
+             return;
+         }
 
-        if (receiverName != null) {
-            this.receiverItem.lore.add(guiSettings.parcelReceiverGuiSetLine.replace("{RECEIVER}", receiverName));
-            this.receiverItem.setGlow(true);
-        }
-
-        this.gui.updateItem(23, this.receiverItem.toItemStack());
-        this.announcer.sendMessage(player, settings.messages.parcelReceiverSet);
+         String line = this.config.guiSettings.parcelReceiverGuiSetLine.replace("{RECEIVER}", receiverName);
+         this.gui.updateItem(23, createActiveItem(this.config.guiSettings.parcelReceiverItem, line));
     }
 
-    public void updateDestinationItem(Player player, UUID destinationLockerUuid, String destinationLockerDesc) {
-        PluginConfiguration settings = this.config;
-        PluginConfiguration.GuiSettings guiSettings = settings.guiSettings;
+    public void updateDestinationItem(Player player, String destinationLockerDesc) {
+        this.announcer.sendMessage(player, this.config.messages.parcelDestinationSet);
 
-        if (this.destinationItem.lore.size() > 1) {
-            this.destinationItem.lore.remove(1);
+        if (destinationLockerDesc == null || destinationLockerDesc.isEmpty()) {
+            this.gui.updateItem(30, this.config.guiSettings.destinationLockerItem.toItemStack());
+            return;
         }
 
-        if (destinationLockerDesc != null) {
-            this.destinationItem.lore.add(guiSettings.parcelDestinationLockerSetLine.replace("{DESCRIPTION}", destinationLockerDesc));
-            this.destinationItem.setGlow(true);
-        }
-
-        this.gui.updateItem(30, this.destinationItem.toItemStack());
-        this.announcer.sendMessage(player, settings.messages.parcelDestinationSet);
+        String line = this.config.guiSettings.parcelDestinationLockerSetLine.replace("{DESCRIPTION}", destinationLockerDesc);
+        this.gui.updateItem(30, createActiveItem(this.config.guiSettings.destinationLockerItem, line));
     }
+
+    private @NotNull ItemStack createActiveItem(ConfigItem item, String appendLore) {
+        List<String> itemLore = new ArrayList<>(item.lore);
+        itemLore.add(appendLore);
+
+        return item.toBuilder()
+            .lore(itemLore.stream().map(element -> RESET_ITEM.append(miniMessage.deserialize(element))).toList())
+            .glow(true)
+            .build();
+    }
+
 }
