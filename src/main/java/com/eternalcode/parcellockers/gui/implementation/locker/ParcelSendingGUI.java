@@ -91,7 +91,7 @@ public class ParcelSendingGUI extends GuiView {
 
         GuiItem backgroundItem = guiSettings.mainGuiBackgroundItem.toGuiItem();
         GuiItem cornerItem = guiSettings.cornerItem.toGuiItem();
-        ConfigItem nameItem = guiSettings.parcelNameItem;
+        ConfigItem nameItem = guiSettings.parcelNameItem.clone();
         GuiItem nameGuiItem = nameItem.toGuiItem(event -> {
             SignGUI nameSignGui = SignGUI.builder()
                 .setColor(DyeColor.BLACK)
@@ -125,7 +125,7 @@ public class ParcelSendingGUI extends GuiView {
             nameSignGui.open(player);
         });
 
-        ConfigItem descriptionItem = guiSettings.parcelDescriptionItem;
+        ConfigItem descriptionItem = guiSettings.parcelDescriptionItem.clone();
         GuiItem descriptionGuiItem = descriptionItem.toGuiItem(event -> {
             SignGUI descriptionSignGui = SignGUI.builder()
                 .setColor(DyeColor.BLACK)
@@ -137,7 +137,7 @@ public class ParcelSendingGUI extends GuiView {
                     this.state.setParcelDescription(description);
                     this.announcer.sendMessage(player, settings.messages.parcelDescriptionSet);
 
-                    List<String> lore = descriptionItem.lore;
+                    List<String> lore = descriptionItem.clone().lore;
                     if (lore.size() > 1) {
                         lore.remove(1);
                     }
@@ -153,8 +153,8 @@ public class ParcelSendingGUI extends GuiView {
             descriptionSignGui.open(player);
         });
 
-        this.receiverItem = guiSettings.parcelReceiverItem;
-        this.destinationItem = guiSettings.parcelDestinationLockerItem;
+        this.receiverItem = guiSettings.parcelReceiverItem.clone();
+        this.destinationItem = guiSettings.parcelDestinationLockerItem.clone();
 
         GuiItem storageItem = guiSettings.parcelStorageItem.toGuiItem(event -> {
             ParcelItemStorageGUI storageGUI = new ParcelItemStorageGUI(

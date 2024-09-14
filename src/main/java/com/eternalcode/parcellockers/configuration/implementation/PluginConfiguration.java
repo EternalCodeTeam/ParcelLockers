@@ -100,6 +100,7 @@ public class PluginConfiguration implements ReloadableConfig {
         public String broadcastParcelLockerRemoved = "&4❣ &cThe parcel locker at &4{X} {Y} {Z} &cin &4{WORLD} &chas been removed by &4{PLAYER}!";
         public String parcelSent = "&2✔ &aParcel sent successfully.";
         public String parcelFailedToSend = "&4✘ &cAn error occurred while sending the parcel. Check the console for more information.";
+        public String illegalItemFailedToSend = "&4✘ &cThe parcel contains illegal items that cannot be sent!";
         public String parcelCannotBeEmpty = "&4✘ &cThe parcel cannot be empty!";
         public String parcelNameCannotBeEmpty = "&4✘ &cThe parcel name cannot be empty!";
         public String parcelNameSet = "&2✔ &aParcel name set successfully.";

@@ -16,7 +16,6 @@ import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.StorageGui;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -123,7 +122,7 @@ public class ParcelItemStorageGUI {
                         InventoryUtil.addItem(player, item);
                         gui.removeItem(item);
                         player.playSound(player.getLocation(), Sound.ENTITY_ENDERMAN_AMBIENT, 1, 1);
-                        player.sendMessage(ChatColor.RED + "This item is illegal and cannot be send!");
+                        this.announcer.sendMessage(player, this.config.messages.illegalItemFailedToSend);
                     }
                 }
 
