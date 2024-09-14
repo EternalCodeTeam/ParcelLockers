@@ -118,20 +118,15 @@ public class ReceiverSelectionGui extends GuiView {
         UUID uuid = user.uuid();
 
         return () -> {
-            List<Component> lore;
             boolean isReceiverSelected = uuid.equals(this.state.getReceiver());
-            if (isReceiverSelected) {
-                // This lore indicates the receiver is already selected
-                lore = List.of(this.miniMessage.deserialize(this.config.guiSettings.parcelReceiverSetLine));
-            } else {
-                // This lore indicates the user can click to select this receiver
-                lore = List.of(this.miniMessage.deserialize(this.config.guiSettings.parcelReceiverNotSetLine));
-            }
+            String lore = isReceiverSelected
+                ? this.config.guiSettings.parcelReceiverSetLine
+                : this.config.guiSettings.parcelReceiverNotSetLine;
 
             return ItemBuilder.skull()
                 .texture(skullData.getValue())
                 .name(this.miniMessage.deserialize(user.name()))
-                .lore(lore)
+                .lore(this.miniMessage.deserialize(lore))
                 .glow(uuid.equals(this.state.getReceiver()))
                 .asGuiItem(event -> {
                     if (uuid.equals(this.state.getReceiver())) {
