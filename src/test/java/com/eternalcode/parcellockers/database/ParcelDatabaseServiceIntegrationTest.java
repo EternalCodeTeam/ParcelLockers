@@ -3,6 +3,7 @@ package com.eternalcode.parcellockers.database;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.repository.ParcelPageResult;
+import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryImpl;
 import com.eternalcode.parcellockers.shared.Page;
 import com.zaxxer.hikari.HikariDataSource;
@@ -12,6 +13,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -29,14 +31,14 @@ class ParcelDatabaseServiceIntegrationTest extends ParcelLockerIntegrationSpec {
     @Test
     void test() {
         HikariDataSource dataSource = buildHikariDataSource(mySQLContainer);
-        ParcelRepositoryImpl parcelRepositoryImpl = new ParcelRepositoryImpl(dataSource);
+        ParcelRepository parcelRepository = new ParcelRepositoryImpl(dataSource);
         UUID uuid = UUID.randomUUID();
         UUID sender = UUID.randomUUID();
         UUID receiver = UUID.randomUUID();
         UUID entryLocker = UUID.randomUUID();
         UUID destinationLocker = UUID.randomUUID();
 
-        parcelRepositoryImpl.save(Parcel.builder()
+        parcelRepository.save(Parcel.builder()
             .uuid(uuid)
             .name("Test")
             .description("Test")
@@ -50,24 +52,24 @@ class ParcelDatabaseServiceIntegrationTest extends ParcelLockerIntegrationSpec {
             .build()
         );
 
-        Optional<Parcel> parcel = await(parcelRepositoryImpl.findByUUID(uuid));
+        Optional<Parcel> parcel = this.await(parcelRepository.findByUUID(uuid));
         assertTrue(parcel.isPresent());
         assertEquals(uuid, parcel.get().uuid());
 
-        List<Parcel> byReceiver = await(parcelRepositoryImpl.findByReceiver(receiver));
+        List<Parcel> byReceiver = this.await(parcelRepository.findByReceiver(receiver)).orElse(Collections.emptyList());
         assertEquals(1, byReceiver.size());
         assertEquals(uuid, byReceiver.iterator().next().uuid());
 
-        List<Parcel> bySender = await(parcelRepositoryImpl.findBySender(sender));
+        List<Parcel> bySender = this.await(parcelRepository.findBySender(sender)).orElse(Collections.emptyList());
         assertEquals(1, bySender.size());
         assertEquals(uuid, bySender.iterator().next().uuid());
 
-        ParcelPageResult pageResult = await(parcelRepositoryImpl.findPage(new Page(0, 28)));
+        ParcelPageResult pageResult = this.await(parcelRepository.findPage(new Page(0, 28)));
         assertEquals(1, pageResult.parcels().size());
         assertEquals(uuid, pageResult.parcels().iterator().next().uuid());
 
-        await(parcelRepositoryImpl.remove(uuid));
-        Optional<Parcel> removedParcel = await(parcelRepositoryImpl.findByUUID(uuid));
+        this.await(parcelRepository.remove(uuid));
+        Optional<Parcel> removedParcel = this.await(parcelRepository.findByUUID(uuid));
         assertTrue(removedParcel.isEmpty());
     }
 }

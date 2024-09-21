@@ -1,21 +1,17 @@
 package com.eternalcode.parcellockers.conversation;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
-import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
-import org.bukkit.command.CommandSender;
+import org.bukkit.ChatColor;
 import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.Prompt;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import panda.utilities.StringUtils;
 
 public class ParcelLockerPlacePrompt implements Prompt {
 
-    private final NotificationAnnouncer announcer;
     private final PluginConfiguration config;
 
-    public ParcelLockerPlacePrompt(NotificationAnnouncer announcer, PluginConfiguration config) {
-        this.announcer = announcer;
+    public ParcelLockerPlacePrompt(PluginConfiguration config) {
         this.config = config;
     }
 
@@ -28,8 +24,7 @@ public class ParcelLockerPlacePrompt implements Prompt {
     @NotNull
     @Override
     public String getPromptText(@NotNull ConversationContext context) {
-        this.announcer.sendMessage((CommandSender) context.getForWhom(), this.config.messages.enterDescriptionPrompt);
-        return StringUtils.EMPTY;
+        return ChatColor.translateAlternateColorCodes('&', this.config.messages.enterDescriptionPrompt);
     }
 
     @Override

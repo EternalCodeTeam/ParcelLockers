@@ -3,7 +3,7 @@ plugins {
     checkstyle
     id("net.minecrell.plugin-yml.bukkit") version "0.6.0"
     id("xyz.jpenilla.run-paper") version "2.3.1"
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("com.gradleup.shadow") version "8.3.0"
 }
 
 group = "com.eternalcode"
@@ -22,14 +22,16 @@ repositories {
     maven { url = uri("https://papermc.io/repo/repository/maven-public/") }
     maven { url = uri("https://repo.eternalcode.pl/releases") }
     maven { url = uri("https://repository.minecodes.pl/releases") }
+    maven { url = uri("https://jitpack.io") }
 }
 
 dependencies {
     // minecraft development api
-    compileOnly("org.spigotmc:spigot-api:1.20.5-R0.1-SNAPSHOT")
+    compileOnly("org.spigotmc:spigot-api:1.21-R0.1-SNAPSHOT")
     implementation("net.kyori:adventure-platform-bukkit:4.3.4")
     implementation("net.kyori:adventure-text-minimessage:4.17.0")
-    implementation("dev.rollczi.litecommands:bukkit-adventure:2.8.9")
+    implementation("dev.rollczi:litecommands-bukkit:3.1.0")
+    implementation("dev.rollczi:litecommands-adventure:3.1.0")
 
     // skull api
     implementation("dev.rollczi:liteskullapi:1.3.0")
@@ -66,8 +68,17 @@ dependencies {
     // paperlib
     implementation("io.papermc:paperlib:1.0.8")
 
+    // signgui
+    implementation("de.rapha149.signgui:signgui:2.4.1")
+
     // panda-utilities
     implementation("org.panda-lang:panda-utilities:0.5.2-alpha")
+
+    // jackson-bukkit
+    implementation("de.eldoria.jacksonbukkit:paper:1.2.0")
+
+    // completable-futures
+    implementation("com.spotify:completable-futures:0.3.6")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.0")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.11.0")
@@ -79,7 +90,7 @@ dependencies {
 }
 
 java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+    toolchain.languageVersion.set(JavaLanguageVersion.of(21))
 }
 
 checkstyle {
@@ -95,23 +106,24 @@ bukkit {
     main = "com.eternalcode.parcellockers.ParcelLockers"
     apiVersion = "1.13"
     prefix = "ParcelLockers"
-    author = "Jakubk15"
+    author = "EternalCodeTeam"
     name = "ParcelLockers"
     description =
         "Plugin that provides functionality of parcel lockers in Minecraft, allowing players to send and receive parcels safely."
     website = "https://github.com/EternalCodeTeam/ParcelLockers"
     version = "1.0.0-SNAPSHOT"
-    depend = listOf("Vault")
 }
 
 tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
     options.setIncremental(true)
+    options.compilerArgs.add("-parameters")
+    options.release = 17
 }
 
 tasks {
     runServer {
-        minecraftVersion("1.20.2")
+        minecraftVersion("1.21.1")
     }
 
     test {
@@ -119,7 +131,7 @@ tasks {
     }
 
     shadowJar {
-        archiveFileName.set("ParcelLockers v${project.version} (MC 1.8.8-1.20.x).jar")
+        archiveFileName.set("ParcelLockers v${project.version} (MC 1.8.8-1.21.x).jar")
 
         exclude(
             "org/intellij/lang/annotations/**",
@@ -129,7 +141,9 @@ tasks {
         )
 
         mergeServiceFiles()
-        minimize()
+        minimize {
+            exclude(dependency("de\\.rapha149\\.signgui:signgui:.*")) // https://github.com/Rapha149/SignGUI/issues/15
+        }
 
         val prefix = "com.eternalcode.parcellockers.libs"
         listOf(
@@ -141,7 +155,8 @@ tasks {
             "dev.rollczi",
             "net.kyori",
             "org.json",
-            "com.fasterxml"
+            "com.fasterxml",
+            "de.rapha149"
         ).forEach { relocate(it, prefix) }
     }
 }

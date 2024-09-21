@@ -14,6 +14,46 @@ public record Position(int x, int y, int z, String world) {
 
     private static final Pattern PARSE_FORMAT = Pattern.compile("Position\\{x=(?<x>-?\\d+), y=(?<y>-?\\d+), z=(?<z>-?\\d+), world='(?<world>.+)'}");
 
+    public static Position parse(String parse) {
+        Matcher matcher = PARSE_FORMAT.matcher(parse);
+
+        if (!matcher.find()) {
+            throw new IllegalArgumentException("Invalid position format: " + parse);
+        }
+
+        return new Position(
+            Integer.parseInt(matcher.group("x")),
+            Integer.parseInt(matcher.group("y")),
+            Integer.parseInt(matcher.group("z")),
+            matcher.group("world")
+        );
+    }
+
+    /**
+     * Returns the distance between two positions.
+     *
+     * @param a the first position
+     * @param b the second position
+     * @return  the distance between two positions
+     */
+
+    public static int distance(Position a, Position b) {
+        return Math.abs(a.x() - b.x()) + Math.abs(a.y() - b.y()) + Math.abs(a.z() - b.z());
+    }
+
+    /**
+     * Returns whether the two positions are within the specified radius.
+     *
+     * @param a      the first position
+     * @param b      the second position
+     * @param radius the radius
+     * @return whether the two positions are within the specified radius
+     */
+
+    public static boolean isWithin(Position a, Position b, int radius) {
+        return distance(a, b) <= radius;
+    }
+
     public boolean isNoneWorld() {
         return this.world.equals(NONE_WORLD);
     }
@@ -24,7 +64,7 @@ public record Position(int x, int y, int z, String world) {
             return true;
         }
 
-        if (o == null || getClass() != o.getClass()) {
+        if (o == null || this.getClass() != o.getClass()) {
             return false;
         }
 
@@ -44,20 +84,5 @@ public record Position(int x, int y, int z, String world) {
             ", z=" + this.z +
             ", world='" + this.world + '\'' +
             '}';
-    }
-
-    public static Position parse(String parse) {
-        Matcher matcher = PARSE_FORMAT.matcher(parse);
-
-        if (!matcher.find()) {
-            throw new IllegalArgumentException("Invalid position format: " + parse);
-        }
-
-        return new Position(
-            Integer.parseInt(matcher.group("x")),
-            Integer.parseInt(matcher.group("y")),
-            Integer.parseInt(matcher.group("z")),
-            matcher.group("world")
-        );
     }
 }

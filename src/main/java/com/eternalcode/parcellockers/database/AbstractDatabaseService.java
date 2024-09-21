@@ -10,11 +10,25 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class AbstractDatabaseService {
 
+    private static final AtomicInteger EXECUTOR_COUNT = new AtomicInteger();
     protected final DataSource dataSource;
+    private final ExecutorService executorService = Executors.newCachedThreadPool(runnable -> {
+        Thread thread = new Thread(runnable);
+        thread.setName("DATABASE-EXECUTOR-" + EXECUTOR_COUNT.incrementAndGet());
+        thread.setDaemon(true);
+        thread.setUncaughtExceptionHandler((t, e) -> {
+            e.printStackTrace();
+            Sentry.captureException(e);
+        });
+        return thread;
+    });
 
     protected AbstractDatabaseService(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -35,10 +49,9 @@ public abstract class AbstractDatabaseService {
                 return function.apply(statement);
             }
             catch (SQLException e) {
-                Sentry.captureException(e);
                 throw new ParcelLockersException(e);
             }
-        }).orTimeout(5, TimeUnit.SECONDS);
+        }, this.executorService).orTimeout(5, TimeUnit.SECONDS);
     }
 
     protected <T> T executeSync(String sql, ThrowingFunction<PreparedStatement, T, SQLException> function) {
@@ -48,7 +61,6 @@ public abstract class AbstractDatabaseService {
             return function.apply(statement);
         }
         catch (SQLException e) {
-            Sentry.captureException(e);
             throw new ParcelLockersException(e);
         }
     }

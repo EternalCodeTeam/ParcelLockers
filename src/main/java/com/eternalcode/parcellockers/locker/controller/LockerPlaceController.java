@@ -3,11 +3,9 @@ package com.eternalcode.parcellockers.locker.controller;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.conversation.ParcelLockerPlacePrompt;
 import com.eternalcode.parcellockers.locker.Locker;
-import com.eternalcode.parcellockers.locker.repository.LockerRepositoryImpl;
+import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.shared.PositionAdapter;
-import com.eternalcode.parcellockers.util.ItemUtil;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Location;
 import org.bukkit.conversations.ConversationFactory;
 import org.bukkit.conversations.NullConversationPrefix;
@@ -17,24 +15,47 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.UUID;
 
 public class LockerPlaceController implements Listener {
 
     private final PluginConfiguration config;
-    private final MiniMessage miniMessage;
     private final Plugin plugin;
-    private final LockerRepositoryImpl databaseService;
+    private final LockerRepository databaseService;
     private final NotificationAnnouncer announcer;
+    private final Map<UUID, Boolean> lockerCreators = new HashMap<>();
 
-    public LockerPlaceController(PluginConfiguration config, MiniMessage miniMessage, Plugin plugin, LockerRepositoryImpl databaseService, NotificationAnnouncer announcer) {
+    public LockerPlaceController(PluginConfiguration config, Plugin plugin, LockerRepository databaseService, NotificationAnnouncer announcer) {
         this.config = config;
-        this.miniMessage = miniMessage;
         this.plugin = plugin;
         this.databaseService = databaseService;
         this.announcer = announcer;
+    }
+
+    private static boolean compareMeta(ItemStack first, ItemStack second) {
+        ItemMeta firstMeta = first.getItemMeta();
+        if (firstMeta == null) {
+            return false;
+        }
+
+        ItemMeta secondMeta = second.getItemMeta();
+
+        if (secondMeta == null) {
+            return false;
+        }
+
+        if (first.getType() != second.getType()) {
+            return false;
+        }
+
+        return new HashSet<>(firstMeta.getLore()).containsAll(secondMeta.getLore())
+            && firstMeta.getDisplayName().equals(secondMeta.getDisplayName());
     }
 
     @EventHandler
@@ -45,11 +66,18 @@ public class LockerPlaceController implements Listener {
         ItemStack itemInMainHand = playerInventory.getItemInMainHand();
         ItemStack itemInOffHand = playerInventory.getItemInOffHand();
 
-        ItemStack parcelLockerItem = this.config.settings.parcelLockerItem.toGuiItem(this.miniMessage).getItemStack();
+        ItemStack parcelLockerItem = this.config.settings.parcelLockerItem.toGuiItem().getItemStack();
 
-        if (!ItemUtil.compareMeta(itemInMainHand, parcelLockerItem) && !ItemUtil.compareMeta(itemInOffHand, parcelLockerItem)) {
+        if (!compareMeta(itemInMainHand, parcelLockerItem) && !compareMeta(itemInOffHand, parcelLockerItem)) {
             return;
         }
+
+        if (this.lockerCreators.containsKey(player.getUniqueId())) {
+            event.setCancelled(true);
+            this.announcer.sendMessage(player, this.config.messages.alreadyCreatingLocker);
+            return;
+        }
+        this.lockerCreators.put(player.getUniqueId(), true);
 
         ConversationFactory conversationFactory = new ConversationFactory(this.plugin)
             .addConversationAbandonedListener(e -> {
@@ -69,12 +97,13 @@ public class LockerPlaceController implements Listener {
                 else {
                     event.setCancelled(true);
                 }
+                this.lockerCreators.remove(player.getUniqueId());
             })
             .withPrefix(new NullConversationPrefix())
             .withModality(false)
             .withLocalEcho(false)
             .withTimeout(60)
-            .withFirstPrompt(new ParcelLockerPlacePrompt(this.announcer, this.config));
+            .withFirstPrompt(new ParcelLockerPlacePrompt(this.config));
 
         player.beginConversation(conversationFactory.buildConversation(player));
     }

@@ -1,13 +1,11 @@
 package com.eternalcode.parcellockers.parcel.repository;
 
 import com.eternalcode.parcellockers.database.AbstractDatabaseService;
-import com.eternalcode.parcellockers.exception.ParcelLockersException;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.shared.Page;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -32,27 +30,18 @@ public class ParcelRepositoryImpl extends AbstractDatabaseService implements Par
     }
 
     private void initTable() {
-        try (Connection connection = this.dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement(
-                     "CREATE TABLE IF NOT EXISTS `parcels`(" +
-                             "`uuid` VARCHAR(36) NOT NULL, " +
-                             "`name` VARCHAR(24) NOT NULL, " +
-                             "`description` VARCHAR(64), " +
-                             "`priority` BOOLEAN NOT NULL, " +
-                             "`receiver` VARCHAR(36) NOT NULL, " +
-                             "`size` VARCHAR(10) NOT NULL, " +
-                             "`entryLocker` VARCHAR(36) NOT NULL, " +
-                             "`destinationLocker` VARCHAR(36) NOT NULL, " +
-                             "`sender` VARCHAR(36) NOT NULL, " +
-                             "PRIMARY KEY (uuid) " +
-                             ");"
-             )
-        ) {
-            statement.execute();
-        }
-        catch (SQLException e) {
-            throw new ParcelLockersException(e);
-        }
+        this.executeSync("CREATE TABLE IF NOT EXISTS `parcels`(" +
+            "`uuid` VARCHAR(36) NOT NULL, " +
+            "`name` VARCHAR(24) NOT NULL, " +
+            "`description` VARCHAR(64), " +
+            "`priority` BOOLEAN NOT NULL, " +
+            "`receiver` VARCHAR(36) NOT NULL, " +
+            "`size` VARCHAR(10) NOT NULL, " +
+            "`entryLocker` VARCHAR(36) NOT NULL, " +
+            "`destinationLocker` VARCHAR(36) NOT NULL, " +
+            "`sender` VARCHAR(36) NOT NULL, " +
+            "PRIMARY KEY (uuid) " +
+            ");", PreparedStatement::execute);
     }
 
     @Override
@@ -76,13 +65,13 @@ public class ParcelRepositoryImpl extends AbstractDatabaseService implements Par
             statement.setString(8, parcel.destinationLocker().toString());
             statement.setString(9, parcel.sender().toString());
             statement.execute();
-            
+
             this.addParcelToCache(parcel);
         });
     }
 
     @Override
-    public CompletableFuture<Void> update(Parcel newParcel) {
+    public CompletableFuture<Void> update(Parcel parcel) {
         return this.execute("UPDATE `parcels` SET " +
             "`name` = ?, " +
             "`description` = ?, " +
@@ -93,18 +82,16 @@ public class ParcelRepositoryImpl extends AbstractDatabaseService implements Par
             "`destinationLocker` = ?, " +
             "`sender` = ? " +
             "WHERE `uuid` = ?", statement -> {
-            statement.setString(1, newParcel.name());
-            statement.setString(2, newParcel.description());
-            statement.setBoolean(3, newParcel.priority());
-            statement.setString(4, newParcel.receiver().toString());
-            statement.setString(5, newParcel.size().name());
-            statement.setString(6, newParcel.entryLocker().toString());
-            statement.setString(7, newParcel.destinationLocker().toString());
-            statement.setString(8, newParcel.sender().toString());
-            statement.setString(9, newParcel.uuid().toString());
+            statement.setString(1, parcel.name());
+            statement.setString(2, parcel.description());
+            statement.setBoolean(3, parcel.priority());
+            statement.setString(4, parcel.receiver().toString());
+            statement.setString(5, parcel.size().name());
+            statement.setString(6, parcel.entryLocker().toString());
+            statement.setString(7, parcel.destinationLocker().toString());
+            statement.setString(8, parcel.sender().toString());
+            statement.setString(9, parcel.uuid().toString());
             statement.execute();
-            
-            this.addParcelToCache(newParcel);
         });
     }
 
@@ -115,9 +102,9 @@ public class ParcelRepositoryImpl extends AbstractDatabaseService implements Par
             ResultSet rs = statement.executeQuery();
             if (rs.next()) {
                 Parcel parcel = this.createParcel(rs);
-                
+
                 this.addParcelToCache(parcel);
-                
+
                 return Optional.of(parcel);
             }
             return Optional.empty();
@@ -125,37 +112,13 @@ public class ParcelRepositoryImpl extends AbstractDatabaseService implements Par
     }
 
     @Override
-    public CompletableFuture<List<Parcel>> findBySender(UUID sender) {
-        return this.supplyExecute("SELECT * FROM `parcels` WHERE `sender` = ?", statement -> {
-            statement.setString(1, sender.toString());
-            ResultSet rs = statement.executeQuery();
-            
-            List<Parcel> parcels = new ArrayList<>();
-            while (rs.next()) {
-                Parcel parcel = this.createParcel(rs);
-                
-                this.addParcelToCache(parcel);
-                parcels.add(parcel);
-            }
-            return parcels;
-        });
+    public CompletableFuture<Optional<List<Parcel>>> findBySender(UUID sender) {
+        return this.findByMultiple("sender", sender.toString());
     }
 
     @Override
-    public CompletableFuture<List<Parcel>> findByReceiver(UUID receiver) {
-        return this.supplyExecute("SELECT * FROM `parcels` WHERE `receiver` = ?", statement -> {
-            statement.setString(1, receiver.toString());
-            ResultSet rs = statement.executeQuery();
-            
-            List<Parcel> parcels = new ArrayList<>();
-            while (rs.next()) {
-                Parcel parcel = this.createParcel(rs);
-
-                this.addParcelToCache(parcel);
-                parcels.add(parcel);
-            }
-            return parcels;
-        });
+    public CompletableFuture<Optional<List<Parcel>>> findByReceiver(UUID receiver) {
+        return this.findByMultiple("receiver", receiver.toString());
     }
 
     @Override
@@ -168,7 +131,7 @@ public class ParcelRepositoryImpl extends AbstractDatabaseService implements Par
         return this.supplyExecute("DELETE FROM `parcels` WHERE `uuid` = ?", statement -> {
             statement.setString(1, uuid.toString());
             statement.execute();
-            
+
             this.removeParcelFromCache(uuid);
             return null;
         });
@@ -180,7 +143,7 @@ public class ParcelRepositoryImpl extends AbstractDatabaseService implements Par
             statement.setInt(1, page.getLimit() + 1);
             statement.setInt(2, page.getOffset());
             ResultSet rs = statement.executeQuery();
-            
+
             List<Parcel> parcels = new ArrayList<>();
             while (rs.next()) {
                 Parcel parcel = this.createParcel(rs);
@@ -198,16 +161,16 @@ public class ParcelRepositoryImpl extends AbstractDatabaseService implements Par
 
     private Parcel createParcel(ResultSet rs) throws SQLException {
         return new Parcel(
-                UUID.fromString(rs.getString("uuid")),
-                UUID.fromString(rs.getString("sender")),
-                rs.getString("name"),
-                rs.getString("description"),
-                rs.getBoolean("priority"),
-                new HashSet<>(),
-                UUID.fromString(rs.getString("receiver")),
-                ParcelSize.valueOf(rs.getString("size")),
-                UUID.fromString(rs.getString("entryLocker")),
-                UUID.fromString(rs.getString("destinationLocker"))
+            UUID.fromString(rs.getString("uuid")),
+            UUID.fromString(rs.getString("sender")),
+            rs.getString("name"),
+            rs.getString("description"),
+            rs.getBoolean("priority"),
+            new HashSet<>(),
+            UUID.fromString(rs.getString("receiver")),
+            ParcelSize.valueOf(rs.getString("size")),
+            UUID.fromString(rs.getString("entryLocker")),
+            UUID.fromString(rs.getString("destinationLocker"))
         );
     }
 
@@ -220,6 +183,27 @@ public class ParcelRepositoryImpl extends AbstractDatabaseService implements Par
                 this.addParcelToCache(parcel);
                 return Optional.of(parcel);
             }
+            return Optional.empty();
+        });
+    }
+
+    private CompletableFuture<Optional<List<Parcel>>> findByMultiple(String column, String value) {
+        return this.supplyExecute("SELECT * FROM `parcels` WHERE `" + column + "` = ?;", statement -> {
+            statement.setString(1, value);
+            ResultSet rs = statement.executeQuery();
+            List<Parcel> parcels = new ArrayList<>();
+
+            while (rs.next()) {
+                Parcel parcel = this.createParcel(rs);
+                this.addParcelToCache(parcel);
+
+                parcels.add(parcel);
+            }
+
+            if (!parcels.isEmpty()) {
+                return Optional.of(parcels);
+            }
+
             return Optional.empty();
         });
     }

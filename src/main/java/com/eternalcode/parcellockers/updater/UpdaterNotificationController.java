@@ -1,6 +1,7 @@
 package com.eternalcode.parcellockers.updater;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.shared.ExceptionHandler;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.AudienceProvider;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -38,16 +39,10 @@ public class UpdaterNotificationController implements Listener {
 
         CompletableFuture<Boolean> upToDate = this.updaterService.isUpToDate();
 
-        upToDate.whenComplete((isUpToDate, throwable) -> {
-            if (throwable != null) {
-                throwable.printStackTrace();
-
-                return;
-            }
-
+        upToDate.thenAccept(isUpToDate -> {
             if (!isUpToDate) {
                 audience.sendMessage(this.miniMessage.deserialize(NEW_VERSION_AVAILABLE));
             }
-        });
+        }).whenComplete(ExceptionHandler.handler());
     }
 }

@@ -5,6 +5,7 @@ import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.Position;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -12,6 +13,8 @@ import java.util.concurrent.CompletableFuture;
 public interface LockerRepository {
 
     CompletableFuture<Void> save(Locker locker);
+
+    CompletableFuture<Void> update(Locker locker);
 
     CompletableFuture<List<Locker>> findAll();
 
@@ -24,4 +27,14 @@ public interface LockerRepository {
     CompletableFuture<Void> remove(Locker locker);
 
     CompletableFuture<LockerPageResult> findPage(Page page);
+
+    Optional<Locker> findLocker(UUID uuid);
+
+    Map<UUID, Locker> cache();
+
+    Map<Position, UUID> positionCache();
+
+    boolean isInCache(Position position);
+
+    boolean isInCache(UUID uuid);
 }
