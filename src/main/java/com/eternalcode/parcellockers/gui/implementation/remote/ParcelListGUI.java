@@ -22,7 +22,7 @@ import org.bukkit.plugin.Plugin;
 
 import java.util.List;
 
-import static com.eternalcode.parcellockers.util.AdventureUtil.RESET_ITEM;
+import static com.eternalcode.commons.adventure.AdventureUtil.resetItalic;
 
 public class ParcelListGUI extends GuiView {
 
@@ -63,7 +63,7 @@ public class ParcelListGUI extends GuiView {
 
     private void show(Player player, Page page) {
         PaginatedGui gui = Gui.paginated()
-            .title(RESET_ITEM.append(this.miniMessage.deserialize(this.config.guiSettings.parcelListGuiTitle)))
+            .title(resetItalic(this.miniMessage.deserialize(this.config.guiSettings.parcelListGuiTitle)))
             .disableAllInteractions()
             .rows(6)
             .create();
@@ -93,7 +93,7 @@ public class ParcelListGUI extends GuiView {
                 ItemBuilder parcelItem = item.toBuilder();
 
                 List<Component> newLore = ParcelPlaceholderUtil.replaceParcelPlaceholders(parcel, item.lore, this.userManager, this.lockerRepository).stream()
-                    .map(line -> RESET_ITEM.append(this.miniMessage.deserialize(line)))
+                    .map(line -> resetItalic(this.miniMessage.deserialize(line)))
                     .toList();
                 parcelItem.lore(newLore);
                 parcelItem.name(this.miniMessage.deserialize(item.name.replace("{NAME}", parcel.name())));

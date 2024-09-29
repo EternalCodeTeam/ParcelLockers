@@ -13,7 +13,7 @@ import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
-import static com.eternalcode.parcellockers.util.AdventureUtil.RESET_ITEM;
+import static com.eternalcode.commons.adventure.AdventureUtil.resetItalic;
 
 public class MainGUI extends GuiView {
 
@@ -45,7 +45,7 @@ public class MainGUI extends GuiView {
 
         Gui gui = Gui.gui()
             .type(GuiType.CHEST)
-            .title(RESET_ITEM.append(this.miniMessage.deserialize(guiSettings.mainGuiTitle)))
+            .title(resetItalic(this.miniMessage.deserialize(guiSettings.mainGuiTitle)))
             .disableAllInteractions()
             .rows(6)
             .create();

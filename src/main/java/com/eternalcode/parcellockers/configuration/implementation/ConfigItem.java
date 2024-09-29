@@ -1,7 +1,8 @@
 package com.eternalcode.parcellockers.configuration.implementation;
 
 
-import com.eternalcode.parcellockers.util.legacy.LegacyColorProcessor;
+import com.eternalcode.commons.adventure.AdventureLegacyColorPostProcessor;
+import com.eternalcode.commons.adventure.AdventureUtil;
 import dev.triumphteam.gui.builder.item.ItemBuilder;
 import dev.triumphteam.gui.components.GuiAction;
 import dev.triumphteam.gui.guis.GuiItem;
@@ -17,14 +18,12 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.eternalcode.parcellockers.util.AdventureUtil.RESET_ITEM;
-
 @Contextual
 public class ConfigItem implements Cloneable {
 
     @Exclude
     private static final MiniMessage MINI_MESSAGE = MiniMessage.builder()
-        .postProcessor(new LegacyColorProcessor())
+        .postProcessor(new AdventureLegacyColorPostProcessor())
         .build();
 
     public Material type = Material.STONE;
@@ -34,8 +33,8 @@ public class ConfigItem implements Cloneable {
 
     public GuiItem toGuiItem(GuiAction<InventoryClickEvent> action) {
         return ItemBuilder.from(this.type)
-            .name(RESET_ITEM.append(MINI_MESSAGE.deserialize(this.name)))
-            .lore(this.lore.stream().map(element -> RESET_ITEM.append(MINI_MESSAGE.deserialize(element))).toList())
+            .name(AdventureUtil.resetItalic(MINI_MESSAGE.deserialize(this.name)))
+            .lore(this.lore.stream().map(element -> AdventureUtil.resetItalic(MINI_MESSAGE.deserialize(element))).toList())
             .flags(ItemFlag.HIDE_ATTRIBUTES)
             .flags(ItemFlag.HIDE_ENCHANTS)
             .glow(this.glow)
@@ -44,8 +43,8 @@ public class ConfigItem implements Cloneable {
 
     public @NotNull ItemBuilder toBuilder() {
         return ItemBuilder.from(this.type)
-            .name(RESET_ITEM.append(MINI_MESSAGE.deserialize(this.name)))
-            .lore(this.lore.stream().map(element -> RESET_ITEM.append(MINI_MESSAGE.deserialize(element))).toList())
+            .name(AdventureUtil.resetItalic(MINI_MESSAGE.deserialize(this.name)))
+            .lore(this.lore.stream().map(element -> AdventureUtil.resetItalic(MINI_MESSAGE.deserialize(element))).toList())
             .flags(ItemFlag.HIDE_ATTRIBUTES)
             .flags(ItemFlag.HIDE_ENCHANTS)
             .glow(this.glow);

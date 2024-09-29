@@ -16,7 +16,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
-import static com.eternalcode.parcellockers.util.AdventureUtil.RESET_ITEM;
+import static com.eternalcode.commons.adventure.AdventureUtil.resetItalic;
 
 public class LockerMainGUI extends GuiView {
 
@@ -57,7 +57,7 @@ public class LockerMainGUI extends GuiView {
         Component guiTitle = this.miniMessage.deserialize(this.config.guiSettings.mainGuiTitle);
 
         Gui gui = Gui.gui()
-            .title(RESET_ITEM.append(guiTitle))
+            .title(resetItalic(guiTitle))
             .rows(6)
             .disableAllInteractions()
             .create();
