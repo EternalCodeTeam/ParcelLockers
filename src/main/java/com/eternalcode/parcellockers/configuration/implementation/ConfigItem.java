@@ -23,7 +23,8 @@ public class ConfigItem implements Cloneable {
 
     @Exclude
     private static final MiniMessage MINI_MESSAGE = MiniMessage.builder()
-        .postProcessor(new AdventureLegacyColorPostProcessor())
+            .preProcessor(new AdventureLegacyColorPreProcessor())
+            .postProcessor(new AdventureLegacyColorPostProcessor())
         .build();
 
     public Material type = Material.STONE;
