@@ -30,8 +30,8 @@ dependencies {
     compileOnly("org.spigotmc:spigot-api:1.21.1-R0.1-SNAPSHOT")
     implementation("net.kyori:adventure-platform-bukkit:4.3.4")
     implementation("net.kyori:adventure-text-minimessage:4.17.0")
-    implementation("dev.rollczi:litecommands-bukkit:3.6.0")
-    implementation("dev.rollczi:litecommands-adventure:3.6.0")
+    implementation("dev.rollczi:litecommands-bukkit:3.6.1")
+    implementation("dev.rollczi:litecommands-adventure:3.6.1")
 
     // skull api
     implementation("dev.rollczi:liteskullapi:1.3.0")
@@ -88,8 +88,8 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.11.1")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.1")
 
-    testImplementation("org.testcontainers:junit-jupiter:1.20.1")
-    testImplementation("org.testcontainers:mysql:1.20.1")
+    testImplementation("org.testcontainers:junit-jupiter:1.20.2")
+    testImplementation("org.testcontainers:mysql:1.20.2")
     testImplementation("mysql:mysql-connector-java:8.0.33")
 }
 
@@ -98,7 +98,7 @@ java {
 }
 
 checkstyle {
-    toolVersion = "10.18.1"
+    toolVersion = "10.18.2"
 
     configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
 
