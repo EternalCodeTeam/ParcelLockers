@@ -1,5 +1,7 @@
 package com.eternalcode.parcellockers;
 
+import com.eternalcode.commons.adventure.AdventureLegacyColorPostProcessor;
+import com.eternalcode.commons.adventure.AdventureLegacyColorPreProcessor;
 import com.eternalcode.parcellockers.command.handler.InvalidUsageImpl;
 import com.eternalcode.parcellockers.command.handler.PermissionMessage;
 import com.eternalcode.parcellockers.configuration.ConfigurationManager;
@@ -31,7 +33,6 @@ import com.eternalcode.parcellockers.user.PrepareUserController;
 import com.eternalcode.parcellockers.user.UserManager;
 import com.eternalcode.parcellockers.user.UserRepository;
 import com.eternalcode.parcellockers.user.UserRepositoryImpl;
-import com.eternalcode.parcellockers.util.legacy.LegacyColorProcessor;
 import com.google.common.base.Stopwatch;
 import com.zaxxer.hikari.HikariDataSource;
 import dev.rollczi.litecommands.LiteCommands;
@@ -78,7 +79,8 @@ public final class ParcelLockers extends JavaPlugin {
 
         this.audiences = BukkitAudiences.create(this);
         MiniMessage miniMessage = MiniMessage.builder()
-            .postProcessor(new LegacyColorProcessor())
+            .preProcessor(new AdventureLegacyColorPreProcessor())
+            .postProcessor(new AdventureLegacyColorPostProcessor())
             .build();
         NotificationAnnouncer announcer = new NotificationAnnouncer(this.audiences, miniMessage);
 

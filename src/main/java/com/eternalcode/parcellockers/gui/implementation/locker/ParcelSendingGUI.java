@@ -1,5 +1,6 @@
 package com.eternalcode.parcellockers.gui.implementation.locker;
 
+import com.eternalcode.commons.adventure.AdventureUtil;
 import com.eternalcode.parcellockers.configuration.implementation.ConfigItem;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.content.ParcelContent;
@@ -34,8 +35,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-
-import static com.eternalcode.parcellockers.util.AdventureUtil.RESET_ITEM;
 
 public class ParcelSendingGUI extends GuiView {
 
@@ -273,7 +272,7 @@ public class ParcelSendingGUI extends GuiView {
             this.state
         ).show(player)));
 
-        this.gui.setItem(30, guiSettings.destinationLockerItem.toGuiItem(event -> new DestinationSelectionGUI(
+        this.gui.setItem(30, guiSettings.parcelDestinationLockerItem.toGuiItem(event -> new DestinationSelectionGUI(
             this.plugin,
             this.scheduler,
             this.config,
@@ -333,12 +332,12 @@ public class ParcelSendingGUI extends GuiView {
         this.announcer.sendMessage(player, this.config.messages.parcelDestinationSet);
 
         if (destinationLockerDesc == null || destinationLockerDesc.isEmpty()) {
-            this.gui.updateItem(30, this.config.guiSettings.destinationLockerItem.toItemStack());
+            this.gui.updateItem(30, this.config.guiSettings.parcelDestinationLockerItem.toItemStack());
             return;
         }
 
         String line = this.config.guiSettings.parcelDestinationLockerSetLine.replace("{DESCRIPTION}", destinationLockerDesc);
-        this.gui.updateItem(30, this.createActiveItem(this.config.guiSettings.destinationLockerItem, line));
+        this.gui.updateItem(30, this.createActiveItem(this.config.guiSettings.parcelDestinationLockerItem, line));
     }
 
     private @NotNull ItemStack createActiveItem(ConfigItem item, String appendLore) {
@@ -346,7 +345,7 @@ public class ParcelSendingGUI extends GuiView {
         itemLore.add(appendLore);
 
         return item.toBuilder()
-            .lore(itemLore.stream().map(element -> RESET_ITEM.append(this.miniMessage.deserialize(element))).toList())
+            .lore(itemLore.stream().map(element -> AdventureUtil.resetItalic(this.miniMessage.deserialize(element))).toList())
             .glow(true)
             .build();
     }

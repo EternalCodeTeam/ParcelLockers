@@ -27,7 +27,7 @@ repositories {
 
 dependencies {
     // minecraft development api
-    compileOnly("org.spigotmc:spigot-api:1.21-R0.1-SNAPSHOT")
+    compileOnly("org.spigotmc:spigot-api:1.21.1-R0.1-SNAPSHOT")
     implementation("net.kyori:adventure-platform-bukkit:4.3.4")
     implementation("net.kyori:adventure-text-minimessage:4.17.0")
     implementation("dev.rollczi:litecommands-bukkit:3.6.0")
@@ -79,6 +79,10 @@ dependencies {
 
     // completable-futures
     implementation("com.spotify:completable-futures:0.3.6")
+
+    // eternalcode-commons
+    implementation("com.eternalcode:eternalcode-commons-adventure:1.1.3")
+    implementation("com.eternalcode:eternalcode-commons-bukkit:1.1.3")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.1")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.11.1")
