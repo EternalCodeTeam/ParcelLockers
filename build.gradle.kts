@@ -3,7 +3,7 @@ plugins {
     checkstyle
     id("net.minecrell.plugin-yml.bukkit") version "0.6.0"
     id("xyz.jpenilla.run-paper") version "2.3.1"
-    id("com.gradleup.shadow") version "8.3.2"
+    id("com.gradleup.shadow") version "8.3.3"
 }
 
 group = "com.eternalcode"
@@ -53,7 +53,7 @@ dependencies {
 
     // metrics and sentry
     implementation("org.bstats:bstats-bukkit:3.1.0")
-    implementation("io.sentry:sentry:7.14.0")
+    implementation("io.sentry:sentry:7.15.0")
 
     // database
     implementation("com.zaxxer:HikariCP:6.0.0")
@@ -63,7 +63,7 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.34")
 
     // jetbrains annotations
-    api("org.jetbrains:annotations:25.0.0")
+    api("org.jetbrains:annotations:26.0.0")
 
     // paperlib
     implementation("io.papermc:paperlib:1.0.8")
@@ -81,12 +81,12 @@ dependencies {
     implementation("com.spotify:completable-futures:0.3.6")
 
     // eternalcode-commons
-    implementation("com.eternalcode:eternalcode-commons-adventure:1.1.3")
-    implementation("com.eternalcode:eternalcode-commons-bukkit:1.1.3")
+    implementation("com.eternalcode:eternalcode-commons-adventure:1.1.4")
+    implementation("com.eternalcode:eternalcode-commons-bukkit:1.1.4")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.1")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.11.1")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.1")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.11.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.2")
 
     testImplementation("org.testcontainers:junit-jupiter:1.20.2")
     testImplementation("org.testcontainers:mysql:1.20.2")
