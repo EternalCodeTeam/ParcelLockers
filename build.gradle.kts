@@ -30,8 +30,8 @@ dependencies {
     compileOnly("org.spigotmc:spigot-api:1.21.1-R0.1-SNAPSHOT")
     implementation("net.kyori:adventure-platform-bukkit:4.3.4")
     implementation("net.kyori:adventure-text-minimessage:4.17.0")
-    implementation("dev.rollczi:litecommands-bukkit:3.6.1")
-    implementation("dev.rollczi:litecommands-adventure:3.6.1")
+    implementation("dev.rollczi:litecommands-bukkit:3.7.0")
+    implementation("dev.rollczi:litecommands-adventure:3.7.0")
 
     // skull api
     implementation("dev.rollczi:liteskullapi:1.3.0")
@@ -63,7 +63,7 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.34")
 
     // jetbrains annotations
-    api("org.jetbrains:annotations:26.0.0")
+    api("org.jetbrains:annotations:26.0.1")
 
     // paperlib
     implementation("io.papermc:paperlib:1.0.8")
