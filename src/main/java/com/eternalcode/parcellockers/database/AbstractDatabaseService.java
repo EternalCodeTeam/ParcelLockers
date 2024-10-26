@@ -34,6 +34,7 @@ public abstract class AbstractDatabaseService {
         this.dataSource = dataSource;
     }
 
+    // for void-like (removing, inserting, updating)
     protected CompletableFuture<Void> execute(String sql, ThrowingConsumer<PreparedStatement, SQLException> consumer) {
         return this.supplyExecute(sql, statement -> {
             consumer.accept(statement);
@@ -41,6 +42,7 @@ public abstract class AbstractDatabaseService {
         });
     }
 
+    // for selecting
     protected <T> CompletableFuture<T> supplyExecute(String sql, ThrowingFunction<PreparedStatement, T, SQLException> function) {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = this.dataSource.getConnection();
@@ -54,6 +56,7 @@ public abstract class AbstractDatabaseService {
         }, this.executorService).orTimeout(5, TimeUnit.SECONDS);
     }
 
+    // for creating tables only (see TableUtils)
     protected <T> T executeSync(String sql, ThrowingFunction<PreparedStatement, T, SQLException> function) {
         try (Connection connection = this.dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)

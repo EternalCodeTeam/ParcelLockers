@@ -57,6 +57,9 @@ dependencies {
 
     // database
     implementation("com.zaxxer:HikariCP:6.0.0")
+    implementation("com.j256.ormlite:ormlite-jdbc:6.1")
+    implementation("com.h2database:h2:2.3.232")
+    implementation("org.postgresql:postgresql:42.7.4")
 
     // lombok
     compileOnly("org.projectlombok:lombok:1.18.34")
