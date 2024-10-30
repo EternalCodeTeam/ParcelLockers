@@ -4,7 +4,6 @@ import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.repository.ParcelPageResult;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
-import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryImpl;
 import com.eternalcode.parcellockers.shared.Page;
 import com.zaxxer.hikari.HikariDataSource;
 import org.junit.jupiter.api.Test;

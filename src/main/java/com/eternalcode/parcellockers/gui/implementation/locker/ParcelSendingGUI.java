@@ -13,7 +13,7 @@ import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.shared.ExceptionHandler;
-import com.eternalcode.parcellockers.user.UserRepository;
+import com.eternalcode.parcellockers.user.repository.UserRepository;
 import de.rapha149.signgui.SignGUI;
 import de.rapha149.signgui.SignGUIAction;
 import dev.rollczi.liteskullapi.SkullAPI;

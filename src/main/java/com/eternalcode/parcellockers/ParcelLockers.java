@@ -33,8 +33,8 @@ import com.eternalcode.parcellockers.updater.UpdaterService;
 import com.eternalcode.parcellockers.user.LoadUserController;
 import com.eternalcode.parcellockers.user.PrepareUserController;
 import com.eternalcode.parcellockers.user.UserManager;
-import com.eternalcode.parcellockers.user.UserRepository;
-import com.eternalcode.parcellockers.user.UserRepositoryImpl;
+import com.eternalcode.parcellockers.user.repository.UserRepository;
+import com.eternalcode.parcellockers.user.repository.UserRepositoryOrmLite;
 import com.google.common.base.Stopwatch;
 import dev.rollczi.litecommands.LiteCommands;
 import dev.rollczi.litecommands.adventure.LiteAdventureExtension;
@@ -133,7 +133,7 @@ public final class ParcelLockers extends JavaPlugin {
 
         ParcelManager parcelManager = new ParcelManager(config, announcer, parcelRepository);
 
-        UserRepository userRepository = new UserRepositoryImpl(dataSource);
+        UserRepository userRepository = new UserRepositoryOrmLite(databaseManager, scheduler);
         UserManager userManager = new UserManager(userRepository);
 
         ParcelContentRepository parcelContentRepository = new ParcelContentRepositoryImpl(dataSource);
