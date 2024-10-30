@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implements ParcelRepository {
 
@@ -79,7 +80,7 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
                 .offset((long) page.getOffset())
                 .query()
                 .stream().map(ParcelWrapper::toParcel)
-                .toList();
+                .collect(Collectors.toList());
 
             boolean hasNext = parcels.size() > page.getLimit();
             if (hasNext) {

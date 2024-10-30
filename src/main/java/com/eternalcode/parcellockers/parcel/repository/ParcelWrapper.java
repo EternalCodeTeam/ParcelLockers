@@ -13,20 +13,28 @@ class ParcelWrapper {
 
     @DatabaseField(id = true, columnName = "uuid")
     private UUID uuid;
+
     @DatabaseField(columnName = "sender")
     private UUID sender;
+
     @DatabaseField(columnName = "name")
     private String name;
+
     @DatabaseField(columnName = "description")
     private String description;
+
     @DatabaseField(columnName = "priority")
     private boolean priority;
+
     @DatabaseField(columnName = "receiver")
     private UUID receiver;
+
     @DatabaseField(columnName = "size")
     private ParcelSize size;
+
     @DatabaseField(columnName = "entryLocker")
     private UUID entryLocker;
+
     @DatabaseField(columnName = "destinationLocker")
     private UUID destinationLocker;
 
