@@ -6,7 +6,10 @@ import com.eternalcode.parcellockers.database.wrapper.AbstractRepositoryOrmLite;
 import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.Position;
+import com.j256.ormlite.table.TableUtils;
+import io.sentry.Sentry;
 
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -23,6 +26,13 @@ public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     public LockerRepositoryOrmLite(DatabaseManager databaseManager, Scheduler scheduler) {
         super(databaseManager, scheduler);
+
+        try {
+            TableUtils.createTableIfNotExists(databaseManager.connectionSource(), LockerWrapper.class);
+        } catch (SQLException ex) {
+            Sentry.captureException(ex);
+            ex.printStackTrace();
+        }
     }
 
     @Override

@@ -36,6 +36,8 @@ public class PositionPersister extends BaseDataType {
         return worldName + "/" + pos.x() + "/" + pos.y() + "/" + pos.z();
     }
 
+
+
     @Override
     public Object resultToSqlArg(FieldType fieldType, DatabaseResults results, int columnPos) throws SQLException {
         return results.getString(columnPos);

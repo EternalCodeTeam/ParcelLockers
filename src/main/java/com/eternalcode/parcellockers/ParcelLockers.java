@@ -15,7 +15,7 @@ import com.eternalcode.parcellockers.gui.implementation.locker.LockerMainGUI;
 import com.eternalcode.parcellockers.gui.implementation.remote.MainGUI;
 import com.eternalcode.parcellockers.gui.implementation.remote.ParcelListGUI;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
-import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepositoryImpl;
+import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepositoryOrmLite;
 import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.locker.controller.LockerBreakController;
 import com.eternalcode.parcellockers.locker.controller.LockerInteractionController;
@@ -127,7 +127,7 @@ public final class ParcelLockers extends JavaPlugin {
 
         LockerRepositoryOrmLite lockerRepository = new LockerRepositoryOrmLite(databaseManager, scheduler);
         lockerRepository.updateCaches();
-        ItemStorageRepository itemStorageRepository = new ItemStorageRepositoryImpl(dataSource);
+        ItemStorageRepository itemStorageRepository = new ItemStorageRepositoryOrmLite(databaseManager, scheduler);
 
         ParcelRepository parcelRepository = new ParcelRepositoryOrmLite(databaseManager, scheduler);
 
