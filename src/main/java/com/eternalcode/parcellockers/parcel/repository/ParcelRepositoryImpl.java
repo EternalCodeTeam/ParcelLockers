@@ -122,12 +122,12 @@ public class ParcelRepositoryImpl extends AbstractDatabaseService implements Par
     }
 
     @Override
-    public CompletableFuture<Void> remove(Parcel parcel) {
+    public CompletableFuture<Integer> remove(Parcel parcel) {
         return this.remove(parcel.uuid());
     }
 
     @Override
-    public CompletableFuture<Void> remove(UUID uuid) {
+    public CompletableFuture<Integer> remove(UUID uuid) {
         return this.supplyExecute("DELETE FROM `parcels` WHERE `uuid` = ?", statement -> {
             statement.setString(1, uuid.toString());
             statement.execute();

@@ -14,21 +14,19 @@ public interface LockerRepository {
 
     CompletableFuture<Void> save(Locker locker);
 
-    CompletableFuture<Void> update(Locker locker);
-
     CompletableFuture<List<Locker>> findAll();
 
     CompletableFuture<Optional<Locker>> findByUUID(UUID uuid);
 
     CompletableFuture<Optional<Locker>> findByPosition(Position position);
 
-    CompletableFuture<Void> remove(UUID uuid);
+    CompletableFuture<Integer> remove(UUID uuid);
 
-    CompletableFuture<Void> remove(Locker locker);
+    CompletableFuture<Integer> remove(Locker locker);
 
     CompletableFuture<LockerPageResult> findPage(Page page);
 
-    Optional<Locker> findLocker(UUID uuid);
+    Optional<Locker> getFromCache(UUID uuid);
 
     Map<UUID, Locker> cache();
 

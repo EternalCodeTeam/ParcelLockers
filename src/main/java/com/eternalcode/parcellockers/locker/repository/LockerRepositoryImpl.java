@@ -129,7 +129,7 @@ public class LockerRepositoryImpl extends AbstractDatabaseService implements Loc
     }
 
     @Override
-    public Optional<Locker> findLocker(UUID uuid) {
+    public Optional<Locker> getFromCache(UUID uuid) {
         if (this.isInCache(uuid)) {
             return Optional.ofNullable(this.cache.get(uuid));
         }

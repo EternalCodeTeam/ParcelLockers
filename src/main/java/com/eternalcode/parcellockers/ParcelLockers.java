@@ -20,7 +20,7 @@ import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.locker.controller.LockerBreakController;
 import com.eternalcode.parcellockers.locker.controller.LockerInteractionController;
 import com.eternalcode.parcellockers.locker.controller.LockerPlaceController;
-import com.eternalcode.parcellockers.locker.repository.LockerRepositoryImpl;
+import com.eternalcode.parcellockers.locker.repository.LockerRepositoryOrmLite;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelManager;
@@ -125,7 +125,7 @@ public final class ParcelLockers extends JavaPlugin {
             .threadPool(20)
             .build();
 
-        LockerRepositoryImpl lockerRepository = new LockerRepositoryImpl(dataSource);
+        LockerRepositoryOrmLite lockerRepository = new LockerRepositoryOrmLite(databaseManager, scheduler);
         lockerRepository.updateCaches();
         ItemStorageRepository itemStorageRepository = new ItemStorageRepositoryImpl(dataSource);
 
