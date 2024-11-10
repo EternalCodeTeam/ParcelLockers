@@ -3,7 +3,7 @@ plugins {
     checkstyle
     id("net.minecrell.plugin-yml.bukkit") version "0.6.0"
     id("xyz.jpenilla.run-paper") version "2.3.1"
-    id("com.gradleup.shadow") version "8.3.3"
+    id("com.gradleup.shadow") version "8.3.5"
 }
 
 group = "com.eternalcode"
@@ -30,8 +30,8 @@ dependencies {
     compileOnly("org.spigotmc:spigot-api:1.21.1-R0.1-SNAPSHOT")
     implementation("net.kyori:adventure-platform-bukkit:4.3.4")
     implementation("net.kyori:adventure-text-minimessage:4.17.0")
-    implementation("dev.rollczi:litecommands-bukkit:3.8.0")
-    implementation("dev.rollczi:litecommands-adventure:3.8.0")
+    implementation("dev.rollczi:litecommands-bukkit:3.9.0")
+    implementation("dev.rollczi:litecommands-adventure:3.9.0")
 
     // skull api
     implementation("dev.rollczi:liteskullapi:1.3.0")
@@ -56,7 +56,7 @@ dependencies {
     implementation("io.sentry:sentry:7.16.0")
 
     // database
-    implementation("com.zaxxer:HikariCP:6.0.0")
+    implementation("com.zaxxer:HikariCP:6.1.0")
 
     // lombok
     compileOnly("org.projectlombok:lombok:1.18.34")
@@ -69,7 +69,7 @@ dependencies {
     implementation("io.papermc:paperlib:1.0.8")
 
     // signgui
-    implementation("de.rapha149.signgui:signgui:2.4.1")
+    implementation("de.rapha149.signgui:signgui:2.4.2")
 
     // panda-utilities
     implementation("org.panda-lang:panda-utilities:0.5.2-alpha")
@@ -98,7 +98,7 @@ java {
 }
 
 checkstyle {
-    toolVersion = "10.18.2"
+    toolVersion = "10.20.1"
 
     configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
 
