@@ -30,8 +30,8 @@ dependencies {
     compileOnly("org.spigotmc:spigot-api:1.21.1-R0.1-SNAPSHOT")
     implementation("net.kyori:adventure-platform-bukkit:4.3.4")
     implementation("net.kyori:adventure-text-minimessage:4.17.0")
-    implementation("dev.rollczi:litecommands-bukkit:3.9.0")
-    implementation("dev.rollczi:litecommands-adventure:3.9.0")
+    implementation("dev.rollczi:litecommands-bukkit:3.9.1")
+    implementation("dev.rollczi:litecommands-adventure:3.9.1")
 
     // skull api
     implementation("dev.rollczi:liteskullapi:1.3.0")
@@ -53,7 +53,7 @@ dependencies {
 
     // metrics and sentry
     implementation("org.bstats:bstats-bukkit:3.1.0")
-    implementation("io.sentry:sentry:7.16.0")
+    implementation("io.sentry:sentry:7.17.0")
 
     // database
     implementation("com.zaxxer:HikariCP:6.1.0")
