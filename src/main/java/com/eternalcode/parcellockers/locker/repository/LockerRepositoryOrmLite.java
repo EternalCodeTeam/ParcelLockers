@@ -1,6 +1,5 @@
 package com.eternalcode.parcellockers.locker.repository;
 
-import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.eternalcode.parcellockers.database.wrapper.AbstractRepositoryOrmLite;
 import com.eternalcode.parcellockers.locker.Locker;
@@ -24,8 +23,8 @@ public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     private final Map<UUID, Locker> cache = new HashMap<>();
     private final Map<Position, UUID> positionCache = new HashMap<>();
 
-    public LockerRepositoryOrmLite(DatabaseManager databaseManager, Scheduler scheduler) {
-        super(databaseManager, scheduler);
+    public LockerRepositoryOrmLite(DatabaseManager databaseManager) {
+        super(databaseManager);
 
         try {
             TableUtils.createTableIfNotExists(databaseManager.connectionSource(), LockerWrapper.class);

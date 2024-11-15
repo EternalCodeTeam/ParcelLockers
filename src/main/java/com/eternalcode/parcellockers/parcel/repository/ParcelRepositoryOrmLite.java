@@ -1,6 +1,5 @@
 package com.eternalcode.parcellockers.parcel.repository;
 
-import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.eternalcode.parcellockers.database.wrapper.AbstractRepositoryOrmLite;
 import com.eternalcode.parcellockers.parcel.Parcel;
@@ -25,8 +24,8 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     private final Map<UUID, Parcel> cache = new HashMap<>();
 
-    public ParcelRepositoryOrmLite(DatabaseManager databaseManager, Scheduler scheduler) {
-        super(databaseManager, scheduler);
+    public ParcelRepositoryOrmLite(DatabaseManager databaseManager) {
+        super(databaseManager);
 
         try {
             TableUtils.createTableIfNotExists(databaseManager.connectionSource(), ParcelWrapper.class);

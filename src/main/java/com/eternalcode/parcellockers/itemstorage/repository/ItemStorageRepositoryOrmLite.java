@@ -1,6 +1,5 @@
 package com.eternalcode.parcellockers.itemstorage.repository;
 
-import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.eternalcode.parcellockers.database.wrapper.AbstractRepositoryOrmLite;
 import com.eternalcode.parcellockers.itemstorage.ItemStorage;
@@ -14,8 +13,8 @@ import java.util.concurrent.CompletableFuture;
 
 public class ItemStorageRepositoryOrmLite extends AbstractRepositoryOrmLite implements ItemStorageRepository {
 
-    public ItemStorageRepositoryOrmLite(DatabaseManager databaseManager, Scheduler scheduler) {
-        super(databaseManager, scheduler);
+    public ItemStorageRepositoryOrmLite(DatabaseManager databaseManager) {
+        super(databaseManager);
 
         try {
             TableUtils.createTableIfNotExists(databaseManager.connectionSource(), ItemStorageWrapper.class);

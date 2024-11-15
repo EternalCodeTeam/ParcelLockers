@@ -1,6 +1,5 @@
 package com.eternalcode.parcellockers.user.repository;
 
-import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.eternalcode.parcellockers.database.wrapper.AbstractRepositoryOrmLite;
 import com.eternalcode.parcellockers.shared.Page;
@@ -17,8 +16,8 @@ import java.util.stream.Collectors;
 
 public class UserRepositoryOrmLite extends AbstractRepositoryOrmLite implements UserRepository {
 
-    public UserRepositoryOrmLite(DatabaseManager databaseManager, Scheduler scheduler) {
-        super(databaseManager, scheduler);
+    public UserRepositoryOrmLite(DatabaseManager databaseManager) {
+        super(databaseManager);
 
         try {
             TableUtils.createTableIfNotExists(databaseManager.connectionSource(), UserWrapper.class);
