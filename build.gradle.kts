@@ -37,7 +37,7 @@ dependencies {
     implementation("dev.rollczi:liteskullapi:1.3.0")
 
     // gui library
-    implementation("dev.triumphteam:triumph-gui:3.1.10")
+    implementation("dev.triumphteam:triumph-gui:3.1.11")
 
     // economy
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
@@ -53,14 +53,14 @@ dependencies {
 
     // metrics and sentry
     implementation("org.bstats:bstats-bukkit:3.1.0")
-    implementation("io.sentry:sentry:7.17.0")
+    implementation("io.sentry:sentry:7.18.1")
 
     // database
-    implementation("com.zaxxer:HikariCP:6.1.0")
+    implementation("com.zaxxer:HikariCP:6.2.1")
 
     // lombok
-    compileOnly("org.projectlombok:lombok:1.18.34")
-    annotationProcessor("org.projectlombok:lombok:1.18.34")
+    compileOnly("org.projectlombok:lombok:1.18.36")
+    annotationProcessor("org.projectlombok:lombok:1.18.36")
 
     // jetbrains annotations
     api("org.jetbrains:annotations:26.0.1")
@@ -69,7 +69,7 @@ dependencies {
     implementation("io.papermc:paperlib:1.0.8")
 
     // signgui
-    implementation("de.rapha149.signgui:signgui:2.4.2")
+    implementation("de.rapha149.signgui:signgui:2.4.3")
 
     // panda-utilities
     implementation("org.panda-lang:panda-utilities:0.5.2-alpha")
@@ -88,8 +88,8 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.11.3")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.3")
 
-    testImplementation("org.testcontainers:junit-jupiter:1.20.3")
-    testImplementation("org.testcontainers:mysql:1.20.3")
+    testImplementation("org.testcontainers:junit-jupiter:1.20.4")
+    testImplementation("org.testcontainers:mysql:1.20.4")
     testImplementation("mysql:mysql-connector-java:8.0.33")
 }
 
@@ -98,7 +98,7 @@ java {
 }
 
 checkstyle {
-    toolVersion = "10.20.1"
+    toolVersion = "10.20.2"
 
     configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
 
