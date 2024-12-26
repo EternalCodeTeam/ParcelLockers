@@ -130,7 +130,7 @@ tasks.withType<JavaCompile> {
 
 tasks {
     runServer {
-        minecraftVersion("1.21.1")
+        minecraftVersion("1.21.4")
     }
 
     test {
@@ -138,7 +138,7 @@ tasks {
     }
 
     shadowJar {
-        archiveFileName.set("ParcelLockers v${project.version} (MC 1.8.8-1.21.x).jar")
+        archiveFileName.set("ParcelLockers v${project.version} (MC 1.17.x-1.21.x).jar")
 
         exclude(
             "org/intellij/lang/annotations/**",
