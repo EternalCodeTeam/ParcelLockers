@@ -37,6 +37,7 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     @Override
     public CompletableFuture<Void> save(Parcel parcel) {
+        this.addToCache(parcel);
         return this.save(ParcelWrapper.class, ParcelWrapper.from(parcel)).thenApply(dao -> null);
     }
 

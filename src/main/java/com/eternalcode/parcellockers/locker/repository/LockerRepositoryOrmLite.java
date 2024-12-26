@@ -36,6 +36,7 @@ public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     @Override
     public CompletableFuture<Void> save(Locker locker) {
+        this.addToCache(locker);
         return this.save(LockerWrapper.class, LockerWrapper.from(locker)).thenApply(dao -> null);
     }
 
@@ -115,9 +116,11 @@ public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     }
 
     public void updateCaches() {
-        this.cache.clear();
-        this.positionCache.clear();
-        this.findAll().thenAccept(lockers -> lockers.forEach(this::addToCache));
+        this.findAll().thenAccept(lockers -> {
+            this.cache.clear();
+            this.positionCache.clear();
+            lockers.forEach(this::addToCache);
+        });
     }
 
     private void addToCache(Locker locker) {

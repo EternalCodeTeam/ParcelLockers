@@ -16,7 +16,7 @@ public class PositionPersister extends BaseDataType {
         super(SqlType.LONG_STRING, new Class<?>[] { PositionPersister.class });
     }
 
-    public static PositionPersister getInstance() {
+    public static PositionPersister getSingleton() {
         return instance;
     }
 

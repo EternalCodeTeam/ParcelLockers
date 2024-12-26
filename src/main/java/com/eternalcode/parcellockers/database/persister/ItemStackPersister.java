@@ -29,7 +29,7 @@ public class ItemStackPersister extends BaseDataType {
         super(SqlType.LONG_STRING, new Class<?>[] { ItemStackPersister.class });
     }
 
-    public static ItemStackPersister getInstance() {
+    public static ItemStackPersister getSingleton() {
         return instance;
     }
 
