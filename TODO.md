@@ -1,6 +1,6 @@
 ## 📝 TODO
 
-- [ ] Add support for more databases (H2, PostgreSQL, MongoDB?)
+- [x] Add support for more databases (H2, PostgreSQL, MongoDB?)
 - [ ] Add translation system, more languages
 - [ ] Add delivery codes, so any person knowing the code can pick up the parcel
 - [ ] Add delivery time, so the parcel can be picked up only in a specific time
