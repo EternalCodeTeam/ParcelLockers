@@ -23,12 +23,12 @@ import java.util.UUID;
 
 public class LockerBreakController implements Listener {
 
-    private final LockerRepository parcelLockerRepository;
+    private final LockerRepository lockerRepository;
     private final NotificationAnnouncer announcer;
     private final PluginConfiguration.Messages messages;
 
-    public LockerBreakController(LockerRepository parcelLockerRepository, NotificationAnnouncer announcer, PluginConfiguration.Messages messages) {
-        this.parcelLockerRepository = parcelLockerRepository;
+    public LockerBreakController(LockerRepository lockerRepository, NotificationAnnouncer announcer, PluginConfiguration.Messages messages) {
+        this.lockerRepository = lockerRepository;
         this.announcer = announcer;
         this.messages = messages;
     }
@@ -40,15 +40,24 @@ public class LockerBreakController implements Listener {
         Position position = PositionAdapter.convert(location);
         Player player = event.getPlayer();
 
-        if (this.parcelLockerRepository.isInCache(position)) {
+        this.lockerRepository.findByPosition(position).whenComplete((locker, throwable) -> {
+            if (locker.isEmpty()) {
+                return;
+            }
+
+            if (throwable != null) {
+                throwable.printStackTrace();
+                return;
+            }
+
             if (!player.hasPermission("parcellockers.admin.break")) {
                 event.setCancelled(true);
                 this.announcer.sendMessage(player, this.messages.cannotBreakParcelLocker);
                 return;
             }
 
-            UUID toRemove = this.parcelLockerRepository.positionCache().get(position);
-            this.parcelLockerRepository.remove(toRemove);
+            UUID toRemove = this.lockerRepository.positionCache().get(position);
+            this.lockerRepository.remove(toRemove);
 
             this.announcer.sendMessage(player, this.messages.parcelLockerSuccessfullyDeleted);
 
@@ -60,8 +69,7 @@ public class LockerBreakController implements Listener {
                 .register("{PLAYER}", player.getName());
 
             this.announcer.broadcast(formatter.format(this.messages.broadcastParcelLockerRemoved));
-        }
-
+        });
     }
 
     @EventHandler
@@ -70,7 +78,7 @@ public class LockerBreakController implements Listener {
         Location location = block.getLocation();
         Position position = PositionAdapter.convert(location);
 
-        if (this.parcelLockerRepository.isInCache(position)) {
+        if (this.lockerRepository.isInCache(position)) {
             event.setCancelled(true);
         }
     }
@@ -81,7 +89,7 @@ public class LockerBreakController implements Listener {
         Location location = block.getLocation();
         Position position = PositionAdapter.convert(location);
 
-        if (this.parcelLockerRepository.isInCache(position)) {
+        if (this.lockerRepository.isInCache(position)) {
             event.setCancelled(true);
         }
     }
@@ -91,7 +99,7 @@ public class LockerBreakController implements Listener {
         event.blockList().removeIf(block -> {
             Location location = block.getLocation();
             Position position = PositionAdapter.convert(location);
-            return this.parcelLockerRepository.isInCache(position);
+            return this.lockerRepository.isInCache(position);
         });
     }
 
@@ -101,7 +109,7 @@ public class LockerBreakController implements Listener {
         Location location = block.getLocation();
         Position position = PositionAdapter.convert(location);
 
-        if (this.parcelLockerRepository.isInCache(position)) {
+        if (this.lockerRepository.isInCache(position)) {
             event.setCancelled(true);
         }
     }
@@ -112,7 +120,7 @@ public class LockerBreakController implements Listener {
         Location location = block.getLocation();
         Position position = PositionAdapter.convert(location);
 
-        if (this.parcelLockerRepository.isInCache(position)) {
+        if (this.lockerRepository.isInCache(position)) {
             event.setCancelled(true);
         }
     }

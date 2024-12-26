@@ -38,8 +38,8 @@ import com.zaxxer.hikari.HikariDataSource;
 import dev.rollczi.litecommands.LiteCommands;
 import dev.rollczi.litecommands.adventure.LiteAdventureExtension;
 import dev.rollczi.litecommands.annotations.LiteCommandsAnnotations;
+import dev.rollczi.litecommands.bukkit.LiteBukkitFactory;
 import dev.rollczi.litecommands.bukkit.LiteBukkitMessages;
-import dev.rollczi.litecommands.bukkit.LiteCommandsBukkit;
 import dev.rollczi.liteskullapi.LiteSkullFactory;
 import dev.rollczi.liteskullapi.SkullAPI;
 import io.papermc.lib.PaperLib;
@@ -125,7 +125,7 @@ public final class ParcelLockers extends JavaPlugin {
         MainGUI mainGUI = new MainGUI(this, server, miniMessage, config, parcelRepository, lockerRepository, userManager);
         ParcelListGUI parcelListGUI = new ParcelListGUI(this, server, miniMessage, config, parcelRepository, lockerRepository, userManager, mainGUI);
 
-        this.liteCommands = LiteCommandsBukkit.builder("parcellockers", this)
+        this.liteCommands = LiteBukkitFactory.builder("parcellockers", this)
             .argument(Parcel.class, new ParcelArgument(parcelRepository))
             .argument(Locker.class, new ParcelLockerArgument(lockerRepository))
             .extension(new LiteAdventureExtension<>())

@@ -12,6 +12,7 @@ import dev.rollczi.litecommands.suggestion.SuggestionResult;
 import org.bukkit.command.CommandSender;
 
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public class ParcelArgument extends ArgumentResolver<CommandSender, Parcel> {
 
@@ -23,12 +24,12 @@ public class ParcelArgument extends ArgumentResolver<CommandSender, Parcel> {
 
     @Override
     protected ParseResult<Parcel> parse(Invocation<CommandSender> invocation, Argument<Parcel> context, String argument) {
-        Parcel parcel = this.databaseService.findParcel(UUID.fromString(argument)).orElse(null);
-
-        if (parcel == null) {
-            return ParseResult.failure(InvalidUsage.Cause.MISSING_ARGUMENT);
-        }
-        return ParseResult.success(parcel);
+        UUID parcelId = UUID.fromString(argument);
+        CompletableFuture<ParseResult<Parcel>> future = this.databaseService.findByUUID(parcelId)
+            .thenApply(optional -> optional
+                .map(ParseResult::success)
+                .orElse(ParseResult.failure(InvalidUsage.Cause.INVALID_ARGUMENT)));
+        return ParseResult.completableFuture(future);
     }
 
     @Override
@@ -37,5 +38,7 @@ public class ParcelArgument extends ArgumentResolver<CommandSender, Parcel> {
             .map(Parcel::uuid)
             .map(UUID::toString)
             .collect(SuggestionResult.collector());
+
+
     }
 }
