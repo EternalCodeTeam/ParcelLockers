@@ -16,6 +16,7 @@ import com.eternalcode.parcellockers.shared.ExceptionHandler;
 import com.eternalcode.parcellockers.user.repository.UserRepository;
 import de.rapha149.signgui.SignGUI;
 import de.rapha149.signgui.SignGUIAction;
+import de.rapha149.signgui.exception.SignGUIVersionException;
 import dev.rollczi.liteskullapi.SkullAPI;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
@@ -94,63 +95,73 @@ public class ParcelSendingGUI extends GuiView {
         GuiItem cornerItem = guiSettings.cornerItem.toGuiItem();
         ConfigItem nameItem = guiSettings.parcelNameItem.clone();
         GuiItem nameGuiItem = nameItem.toGuiItem(event -> {
-            SignGUI nameSignGui = SignGUI.builder()
-                .setColor(DyeColor.BLACK)
-                .setType(Material.OAK_SIGN)
-                .setLine(0, "Enter parcel name:")
-                .setHandler((p, result) -> {
-                    String name = result.getLineWithoutColor(1);
+            SignGUI nameSignGui = null;
+            try {
+                nameSignGui = SignGUI.builder()
+                    .setColor(DyeColor.BLACK)
+                    .setType(Material.OAK_SIGN)
+                    .setLine(0, "Enter parcel name:")
+                    .setHandler((p, result) -> {
+                        String name = result.getLineWithoutColor(1);
 
-                    if (name.isEmpty() || name.isBlank()) {
-                        this.announcer.sendMessage(player, settings.messages.parcelNameCannotBeEmpty);
-                        return Collections.emptyList();
-                    }
+                        if (name.isEmpty() || name.isBlank()) {
+                            this.announcer.sendMessage(player, settings.messages.parcelNameCannotBeEmpty);
+                            return Collections.emptyList();
+                        }
 
-                    this.state.setParcelName(name);
-                    this.announcer.sendMessage(player, settings.messages.parcelNameSet);
+                        this.state.setParcelName(name);
+                        this.announcer.sendMessage(player, settings.messages.parcelNameSet);
 
-                    List<String> lore = nameItem.lore;
-                    if (lore.size() > 1) {
-                        lore.remove(1);
-                    }
+                        List<String> lore = nameItem.lore;
+                        if (lore.size() > 1) {
+                            lore.remove(1);
+                        }
 
-                    lore.add(this.config.guiSettings.parcelNameSetLine.replace("{NAME}", this.state.getParcelName() == null
-                        ? "None" : this.state.getParcelName()));
+                        lore.add(this.config.guiSettings.parcelNameSetLine.replace("{NAME}", this.state.getParcelName() == null
+                            ? "None" : this.state.getParcelName()));
 
-                    this.gui.updateItem(21, nameItem
-                        .setLore(lore)
-                        .toItemStack());
-                    return List.of(SignGUIAction.runSync((JavaPlugin) this.plugin, () -> this.gui.open(player)));
-                })
-                .build();
+                        this.gui.updateItem(21, nameItem
+                            .setLore(lore)
+                            .toItemStack());
+                        return List.of(SignGUIAction.runSync((JavaPlugin) this.plugin, () -> this.gui.open(player)));
+                    })
+                    .build();
+            } catch (SignGUIVersionException e) {
+                this.plugin.getLogger().severe("The server version is unsupported by SignGUI API!");
+            }
             nameSignGui.open(player);
         });
 
         ConfigItem descriptionItem = guiSettings.parcelDescriptionItem.clone();
         GuiItem descriptionGuiItem = descriptionItem.toGuiItem(event -> {
-            SignGUI descriptionSignGui = SignGUI.builder()
-                .setColor(DyeColor.BLACK)
-                .setType(Material.OAK_SIGN)
-                .setLine(0, "Enter parcel description:")
-                .setHandler((p, result) -> {
-                    String description = result.getLineWithoutColor(1);
+            SignGUI descriptionSignGui = null;
+            try {
+                descriptionSignGui = SignGUI.builder()
+                    .setColor(DyeColor.BLACK)
+                    .setType(Material.OAK_SIGN)
+                    .setLine(0, "Enter parcel description:")
+                    .setHandler((p, result) -> {
+                        String description = result.getLineWithoutColor(1);
 
-                    this.state.setParcelDescription(description);
-                    this.announcer.sendMessage(player, settings.messages.parcelDescriptionSet);
+                        this.state.setParcelDescription(description);
+                        this.announcer.sendMessage(player, settings.messages.parcelDescriptionSet);
 
-                    List<String> lore = descriptionItem.clone().lore;
-                    if (lore.size() > 1) {
-                        lore.remove(1);
-                    }
+                        List<String> lore = descriptionItem.clone().lore;
+                        if (lore.size() > 1) {
+                            lore.remove(1);
+                        }
 
-                    lore.add(this.config.guiSettings.parcelDescriptionSetLine.replace("{DESCRIPTION}", description));
+                        lore.add(this.config.guiSettings.parcelDescriptionSetLine.replace("{DESCRIPTION}", description));
 
-                    this.gui.updateItem(22, descriptionItem
-                        .setLore(lore)
-                        .toItemStack());
-                    return List.of(SignGUIAction.runSync((JavaPlugin) this.plugin, () -> this.gui.open(player)));
-                })
-                .build();
+                        this.gui.updateItem(22, descriptionItem
+                            .setLore(lore)
+                            .toItemStack());
+                        return List.of(SignGUIAction.runSync((JavaPlugin) this.plugin, () -> this.gui.open(player)));
+                    })
+                    .build();
+            } catch (SignGUIVersionException e) {
+                this.plugin.getLogger().severe("The server version is unsupported by SignGUI API!");
+            }
             descriptionSignGui.open(player);
         });
 
