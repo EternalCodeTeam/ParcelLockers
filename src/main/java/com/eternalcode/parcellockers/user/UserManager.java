@@ -1,5 +1,7 @@
 package com.eternalcode.parcellockers.user;
 
+import com.eternalcode.parcellockers.user.repository.UserRepository;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;

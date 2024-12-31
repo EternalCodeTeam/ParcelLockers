@@ -1,6 +1,7 @@
-package com.eternalcode.parcellockers.user;
+package com.eternalcode.parcellockers.user.repository;
 
 import com.eternalcode.parcellockers.shared.Page;
+import com.eternalcode.parcellockers.user.User;
 
 import java.util.Optional;
 import java.util.UUID;

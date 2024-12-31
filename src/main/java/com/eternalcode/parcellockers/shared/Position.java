@@ -55,7 +55,7 @@ public record Position(int x, int y, int z, String world) {
     }
 
     public boolean isNoneWorld() {
-        return this.world.equals(NONE_WORLD);
+        return this.world.equals(NONE_WORLD) || this.world.isEmpty();
     }
 
     @Override

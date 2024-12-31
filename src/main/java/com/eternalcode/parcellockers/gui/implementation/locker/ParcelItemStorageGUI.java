@@ -9,7 +9,7 @@ import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.shared.ExceptionHandler;
-import com.eternalcode.parcellockers.user.UserRepository;
+import com.eternalcode.parcellockers.user.repository.UserRepository;
 import com.eternalcode.parcellockers.util.InventoryUtil;
 import dev.rollczi.liteskullapi.SkullAPI;
 import dev.triumphteam.gui.guis.Gui;

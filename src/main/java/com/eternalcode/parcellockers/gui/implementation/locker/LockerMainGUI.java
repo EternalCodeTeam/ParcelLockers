@@ -7,7 +7,7 @@ import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepositor
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
-import com.eternalcode.parcellockers.user.UserRepository;
+import com.eternalcode.parcellockers.user.repository.UserRepository;
 import dev.rollczi.liteskullapi.SkullAPI;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
