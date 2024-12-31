@@ -64,12 +64,18 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     @Override
     public CompletableFuture<Integer> remove(Parcel parcel) {
-        return this.delete(ParcelWrapper.class, ParcelWrapper.from(parcel));
+        return this.remove(parcel.uuid());
     }
 
     @Override
     public CompletableFuture<Integer> remove(UUID uuid) {
-        return this.deleteById(ParcelWrapper.class, uuid);
+        CompletableFuture<Integer> removeFuture = this.deleteById(ParcelWrapper.class, uuid);
+        removeFuture.thenAccept(deletedCount -> {
+            if (deletedCount > 0) {
+                this.removeFromCache(uuid);
+            }
+        });
+        return removeFuture;
     }
 
     @Override
