@@ -36,6 +36,8 @@ import com.eternalcode.parcellockers.user.UserManager;
 import com.eternalcode.parcellockers.user.repository.UserRepository;
 import com.eternalcode.parcellockers.user.repository.UserRepositoryOrmLite;
 import com.google.common.base.Stopwatch;
+import com.j256.ormlite.logger.LoggerFactory;
+import com.j256.ormlite.logger.NullLogBackend;
 import dev.rollczi.litecommands.LiteCommands;
 import dev.rollczi.litecommands.adventure.LiteAdventureExtension;
 import dev.rollczi.litecommands.annotations.LiteCommandsAnnotations;
@@ -102,11 +104,12 @@ public final class ParcelLockers extends JavaPlugin {
                 options.setTag("serverVersion", this.getServer().getVersion());
                 options.setTag("serverSoftware", PaperLib.getEnvironment().getName());
                 options.setTag("plugins", Arrays.stream(server.getPluginManager().getPlugins()).toList().toString());
+                options.setEnabled(false);
                 this.getLogger().info("Sentry initialized successfully!");
             });
         }
 
-        //HikariDataSource dataSource = DataSourceFactory.buildHikariDataSource(config, this.getDataFolder());
+        LoggerFactory.setLogBackendFactory(new NullLogBackend.NullLogBackendFactory());
 
         DatabaseManager databaseManager = new DatabaseManager(config, this.getLogger(), this.getDataFolder());
 
@@ -127,6 +130,7 @@ public final class ParcelLockers extends JavaPlugin {
 
         LockerRepositoryOrmLite lockerRepository = new LockerRepositoryOrmLite(databaseManager);
         lockerRepository.updateCaches();
+
         ItemStorageRepository itemStorageRepository = new ItemStorageRepositoryOrmLite(databaseManager);
 
         ParcelRepository parcelRepository = new ParcelRepositoryOrmLite(databaseManager);
@@ -179,7 +183,9 @@ public final class ParcelLockers extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        this.databaseManager.disconnect();
+        if (this.databaseManager != null) {
+            this.databaseManager.disconnect();
+        }
 
         if (this.liteCommands != null) {
             this.liteCommands.unregister();
@@ -199,11 +205,11 @@ public final class ParcelLockers extends JavaPlugin {
         if (!environment.isPaper()) {
             logger.warning("Your server running on unsupported software, please use Paper or its forks");
             logger.warning("You can easily download Paper from https://papermc.io/downloads");
-            logger.warning("WARNING: Supported MC versions are 1.17.x-1.19.x");
+            logger.warning("WARNING: Supported MC versions are 1.17.x-1.21.x");
             return;
         }
 
-        if (!environment.isVersion(17)) {
+        if (!environment.isVersion(17) || environment.isVersion(21)) {
             logger.warning("ParcelLockers no longer supports your version, be aware that there may be bugs!");
             return;
         }
