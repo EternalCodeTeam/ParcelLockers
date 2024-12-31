@@ -1,5 +1,6 @@
 package com.eternalcode.parcellockers.database;
 
+import com.eternalcode.parcellockers.TestScheduler;
 import com.eternalcode.parcellockers.configuration.ConfigurationManager;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.parcel.Parcel;
@@ -37,7 +38,7 @@ class ParcelDatabaseServiceIntegrationTest extends ParcelLockerIntegrationSpec {
         PluginConfiguration config = new ConfigurationManager(dataFolder).load(new PluginConfiguration());
         DatabaseManager databaseManager = new DatabaseManager(config, Logger.getLogger("ParcelLockers"), dataFolder);
 
-        ParcelRepository parcelRepository = new ParcelRepositoryOrmLite(databaseManager);
+        ParcelRepository parcelRepository = new ParcelRepositoryOrmLite(databaseManager, new TestScheduler());
         UUID uuid = UUID.randomUUID();
         UUID sender = UUID.randomUUID();
         UUID receiver = UUID.randomUUID();
