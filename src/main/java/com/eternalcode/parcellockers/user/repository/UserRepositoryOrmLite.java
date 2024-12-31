@@ -29,7 +29,9 @@ public class UserRepositoryOrmLite extends AbstractRepositoryOrmLite implements 
 
     @Override
     public CompletableFuture<Optional<User>> getUser(UUID uuid) {
-        return this.select(UserWrapper.class, uuid).thenApply(userWrapper -> Optional.ofNullable(userWrapper.toUser()));
+        return this.select(UserWrapper.class, uuid).thenApply(userWrapper -> Optional.ofNullable(userWrapper)
+            .map(UserWrapper::toUser)
+        );
     }
 
     @Override
