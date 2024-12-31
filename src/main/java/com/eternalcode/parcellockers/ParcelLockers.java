@@ -209,7 +209,7 @@ public final class ParcelLockers extends JavaPlugin {
             return;
         }
 
-        if (!environment.isVersion(17) || environment.isVersion(21)) {
+        if (!environment.isVersion(17)) {
             logger.warning("ParcelLockers no longer supports your version, be aware that there may be bugs!");
             return;
         }
