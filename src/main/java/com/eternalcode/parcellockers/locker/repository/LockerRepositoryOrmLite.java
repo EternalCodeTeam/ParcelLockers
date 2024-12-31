@@ -118,9 +118,16 @@ public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     public void updateCaches() {
         this.findAll().thenAccept(lockers -> {
+            Map<UUID, Locker> newCache = new ConcurrentHashMap<>();
+            Map<Position, UUID> newPositionCache = new ConcurrentHashMap<>();
+            lockers.forEach(locker -> {
+                newCache.put(locker.uuid(), locker);
+                newPositionCache.put(locker.position(), locker.uuid());
+            });
             this.cache.clear();
             this.positionCache.clear();
-            lockers.forEach(this::addToCache);
+            this.cache.putAll(newCache);
+            this.positionCache.putAll(newPositionCache);
         });
     }
 
