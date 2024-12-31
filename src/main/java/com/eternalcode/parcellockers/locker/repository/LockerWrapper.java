@@ -17,7 +17,7 @@ class LockerWrapper {
     @DatabaseField(columnName = "description")
     private String description;
 
-    @DatabaseField(columnName = "position", persisterClass = PositionPersister.class)
+    @DatabaseField(columnName = "position", persisterClass = PositionPersister.class, unique = true)
     private Position position;
 
     LockerWrapper() {
