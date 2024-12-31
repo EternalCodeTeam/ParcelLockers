@@ -27,7 +27,7 @@ repositories {
 
 dependencies {
     // minecraft development api
-    compileOnly("org.spigotmc:spigot-api:1.21.1-R0.1-SNAPSHOT")
+    compileOnly("org.spigotmc:spigot-api:1.21.4-R0.1-SNAPSHOT")
     implementation("net.kyori:adventure-platform-bukkit:4.3.4")
     implementation("net.kyori:adventure-text-minimessage:4.18.0")
     implementation("dev.rollczi:litecommands-bukkit:3.9.5")
