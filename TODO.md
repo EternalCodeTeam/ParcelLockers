@@ -8,7 +8,7 @@
 - [ ] Parcel return logic
 - [x] Banned parcel items (configurable)
 - [ ] Parcel fee
-- [ ] Rewrite database to ORMLite (far in future)
+- [x] Rewrite database to ORMLite (far in future)
 - [ ] Add more parcel types (fragile, etc...)
 - [ ] Add option to config for parcel locker space (e.g. max parcels within a locker)
 - [ ] Finish GUIs
