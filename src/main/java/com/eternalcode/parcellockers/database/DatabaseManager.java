@@ -74,7 +74,7 @@ public class DatabaseManager {
 
             case POSTGRESQL -> {
                 this.dataSource.setDriverClassName("org.postgresql.Driver");
-                this.dataSource.setJdbcUrl("jdbc:postgresql://" + this.config.settings.host + ":" + this.config.settings.port + "/");
+                this.dataSource.setJdbcUrl("jdbc:postgresql://" + this.config.settings.host + ":" + this.config.settings.port + "/" + this.config.settings.databaseName);
             }
 
             default -> throw new IllegalStateException("Unexpected value: SQL type '" + databaseType + "' not found");
