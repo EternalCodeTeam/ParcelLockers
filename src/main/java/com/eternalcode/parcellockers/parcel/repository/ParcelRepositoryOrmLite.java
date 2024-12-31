@@ -38,8 +38,10 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     @Override
     public CompletableFuture<Void> save(Parcel parcel) {
-        this.addToCache(parcel);
-        return this.save(ParcelWrapper.class, ParcelWrapper.from(parcel)).thenApply(dao -> null);
+        return this.save(ParcelWrapper.class, ParcelWrapper.from(parcel)).thenApply(dao -> {
+            this.addToCache(parcel);
+            return null;
+        });
     }
 
     @Override
@@ -112,6 +114,6 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     @Override
     public Optional<Parcel> findParcel(UUID uuid) {
-        return Optional.of(this.cache.get(uuid));
+        return Optional.ofNullable(this.cache.get(uuid));
     }
 }

@@ -37,8 +37,10 @@ public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     @Override
     public CompletableFuture<Void> save(Locker locker) {
-        this.addToCache(locker);
-        return this.save(LockerWrapper.class, LockerWrapper.from(locker)).thenApply(dao -> null);
+        return this.save(LockerWrapper.class, LockerWrapper.from(locker)).thenApply(dao -> {
+            this.addToCache(locker);
+            return null;
+        });
     }
 
     @Override
@@ -64,12 +66,21 @@ public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     @Override
     public CompletableFuture<Integer> remove(UUID uuid) {
-        return this.deleteById(LockerWrapper.class, uuid);
+        return this.deleteById(LockerWrapper.class, uuid)
+            .thenApply(result -> {
+                if (result > 0) {
+                    Locker locker = this.cache.remove(uuid);
+                    if (locker != null) {
+                        this.positionCache.remove(locker.position());
+                    }
+                }
+                return result;
+            });
     }
 
     @Override
     public CompletableFuture<Integer> remove(Locker locker) {
-        return this.action(LockerWrapper.class, dao -> dao.delete(LockerWrapper.from(locker)));
+        return this.remove(locker.uuid());
     }
 
     @Override
