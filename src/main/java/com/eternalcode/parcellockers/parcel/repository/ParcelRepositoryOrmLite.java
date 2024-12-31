@@ -10,12 +10,12 @@ import io.sentry.Sentry;
 
 import java.sql.SQLException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implements ParcelRepository {
@@ -23,7 +23,7 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     private static final String RECEIVER_COLUMN = "receiver";
     private static final String SENDER_COLUMN = "sender";
 
-    private final Map<UUID, Parcel> cache = new HashMap<>();
+    private final Map<UUID, Parcel> cache = new ConcurrentHashMap<>();
 
     public ParcelRepositoryOrmLite(DatabaseManager databaseManager, Scheduler scheduler) {
         super(databaseManager, scheduler);

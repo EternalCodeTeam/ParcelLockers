@@ -11,18 +11,18 @@ import io.sentry.Sentry;
 
 import java.sql.SQLException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implements LockerRepository {
 
-    private final Map<UUID, Locker> cache = new HashMap<>();
-    private final Map<Position, UUID> positionCache = new HashMap<>();
+    private final Map<UUID, Locker> cache = new ConcurrentHashMap<>();
+    private final Map<Position, UUID> positionCache = new ConcurrentHashMap<>();
 
     public LockerRepositoryOrmLite(DatabaseManager databaseManager, Scheduler scheduler) {
         super(databaseManager, scheduler);
