@@ -75,7 +75,7 @@ public class TestScheduler implements Scheduler {
 
         @Override
         public boolean isAsync() {
-            return future instanceof CompletableFuture;
+            return future instanceof CompletableFuture || future instanceof ScheduledFuture;
         }
 
         @Override
