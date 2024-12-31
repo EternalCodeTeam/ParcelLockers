@@ -128,19 +128,19 @@ public final class ParcelLockers extends JavaPlugin {
             .threadPool(20)
             .build();
 
-        LockerRepositoryOrmLite lockerRepository = new LockerRepositoryOrmLite(databaseManager);
+        LockerRepositoryOrmLite lockerRepository = new LockerRepositoryOrmLite(databaseManager, scheduler);
         lockerRepository.updateCaches();
 
-        ItemStorageRepository itemStorageRepository = new ItemStorageRepositoryOrmLite(databaseManager);
+        ItemStorageRepository itemStorageRepository = new ItemStorageRepositoryOrmLite(databaseManager, scheduler);
 
-        ParcelRepository parcelRepository = new ParcelRepositoryOrmLite(databaseManager);
+        ParcelRepository parcelRepository = new ParcelRepositoryOrmLite(databaseManager, scheduler);
 
         ParcelManager parcelManager = new ParcelManager(config, announcer, parcelRepository);
 
-        UserRepository userRepository = new UserRepositoryOrmLite(databaseManager);
+        UserRepository userRepository = new UserRepositoryOrmLite(databaseManager, scheduler);
         UserManager userManager = new UserManager(userRepository);
 
-        ParcelContentRepository parcelContentRepository = new ParcelContentRepositoryOrmLite(databaseManager);
+        ParcelContentRepository parcelContentRepository = new ParcelContentRepositoryOrmLite(databaseManager, scheduler);
 
         MainGUI mainGUI = new MainGUI(this, server, miniMessage, config, parcelRepository, lockerRepository, userManager);
         ParcelListGUI parcelListGUI = new ParcelListGUI(this, server, miniMessage, config, parcelRepository, lockerRepository, userManager, mainGUI);

@@ -1,5 +1,6 @@
 package com.eternalcode.parcellockers.database.wrapper;
 
+import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.j256.ormlite.dao.Dao;
 import io.sentry.Sentry;
@@ -13,9 +14,11 @@ import java.util.concurrent.CompletableFuture;
 public abstract class AbstractRepositoryOrmLite {
 
     protected final DatabaseManager databaseManager;
+    protected final Scheduler scheduler;
 
-    protected AbstractRepositoryOrmLite(DatabaseManager databaseManager) {
+    protected AbstractRepositoryOrmLite(DatabaseManager databaseManager, Scheduler scheduler) {
         this.databaseManager = databaseManager;
+        this.scheduler = scheduler;
     }
 
     protected <T> CompletableFuture<Dao.CreateOrUpdateStatus> save(Class<T> type, T warp) {
@@ -53,7 +56,7 @@ public abstract class AbstractRepositoryOrmLite {
     protected <T, ID, R> CompletableFuture<R> action(Class<T> type, ThrowingFunction<Dao<T, ID>, R, SQLException> action) {
         CompletableFuture<R> completableFuture = new CompletableFuture<>();
 
-        CompletableFuture.runAsync(() -> {
+        this.scheduler.runAsync(() -> {
             Dao<T, ID> dao = this.databaseManager.getDao(type);
 
             try {

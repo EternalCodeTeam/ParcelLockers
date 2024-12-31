@@ -1,5 +1,6 @@
 package com.eternalcode.parcellockers.content.repository;
 
+import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.content.ParcelContent;
 import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.eternalcode.parcellockers.database.wrapper.AbstractRepositoryOrmLite;
@@ -13,8 +14,8 @@ import java.util.concurrent.CompletableFuture;
 
 public class ParcelContentRepositoryOrmLite extends AbstractRepositoryOrmLite implements ParcelContentRepository {
 
-    public ParcelContentRepositoryOrmLite(DatabaseManager databaseManager) {
-        super(databaseManager);
+    public ParcelContentRepositoryOrmLite(DatabaseManager databaseManager, Scheduler scheduler) {
+        super(databaseManager, scheduler);
 
         try {
             TableUtils.createTableIfNotExists(databaseManager.connectionSource(), ParcelContentWrapper.class);
