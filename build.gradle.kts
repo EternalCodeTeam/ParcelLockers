@@ -125,7 +125,7 @@ tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
     options.setIncremental(true)
     options.compilerArgs.add("-parameters")
-    options.release = 17
+    options.release = 21
 }
 
 tasks {
@@ -138,7 +138,7 @@ tasks {
     }
 
     shadowJar {
-        archiveFileName.set("ParcelLockers v${project.version} (MC 1.17.x-1.21.x).jar")
+        archiveFileName.set("ParcelLockers v${project.version} (MC 1.21.3-1.21.4).jar")
 
         exclude(
             "org/intellij/lang/annotations/**",
