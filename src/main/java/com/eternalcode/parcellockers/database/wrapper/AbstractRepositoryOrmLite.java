@@ -21,12 +21,12 @@ public abstract class AbstractRepositoryOrmLite {
         this.scheduler = scheduler;
     }
 
-    protected <T> CompletableFuture<Dao.CreateOrUpdateStatus> save(Class<T> type, T warp) {
-        return this.action(type, dao -> dao.createOrUpdate(warp));
+    protected <T> CompletableFuture<Dao.CreateOrUpdateStatus> save(Class<T> type, T entity) {
+        return this.action(type, dao -> dao.createOrUpdate(entity));
     }
 
-    protected <T> CompletableFuture<T> saveIfNotExist(Class<T> type, T warp) {
-        return this.action(type, dao -> dao.createIfNotExists(warp));
+    protected <T> CompletableFuture<T> saveIfNotExist(Class<T> type, T entity) {
+        return this.action(type, dao -> dao.createIfNotExists(entity));
     }
 
     protected <T, ID> CompletableFuture<T> select(Class<T> type, ID id) {
@@ -37,8 +37,8 @@ public abstract class AbstractRepositoryOrmLite {
         return this.action(type, dao -> Optional.ofNullable(dao.queryForId(id)));
     }
 
-    protected <T> CompletableFuture<Integer> delete(Class<T> type, T warp) {
-        return this.action(type, dao -> dao.delete(warp));
+    protected <T> CompletableFuture<Integer> delete(Class<T> type, T entity) {
+        return this.action(type, dao -> dao.delete(entity));
     }
 
     protected <T> CompletableFuture<Integer> deleteAll(Class<T> type) {
