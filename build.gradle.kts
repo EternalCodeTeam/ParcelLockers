@@ -30,8 +30,8 @@ dependencies {
     compileOnly("org.spigotmc:spigot-api:1.21.1-R0.1-SNAPSHOT")
     implementation("net.kyori:adventure-platform-bukkit:4.3.4")
     implementation("net.kyori:adventure-text-minimessage:4.18.0")
-    implementation("dev.rollczi:litecommands-bukkit:3.9.5")
-    implementation("dev.rollczi:litecommands-adventure:3.9.5")
+    implementation("dev.rollczi:litecommands-bukkit:3.9.7")
+    implementation("dev.rollczi:litecommands-adventure:3.9.7")
 
     // skull api
     implementation("dev.rollczi:liteskullapi:1.3.0")
@@ -43,7 +43,7 @@ dependencies {
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
 
     // CDN
-    implementation("net.dzikoysk:cdn:1.14.5")
+    implementation("net.dzikoysk:cdn:1.14.6")
 
     // expressible
     implementation("org.panda-lang:expressible:1.3.6")
@@ -53,7 +53,7 @@ dependencies {
 
     // metrics and sentry
     implementation("org.bstats:bstats-bukkit:3.1.0")
-    implementation("io.sentry:sentry:7.19.1")
+    implementation("io.sentry:sentry:7.20.0")
 
     // database
     implementation("com.zaxxer:HikariCP:6.2.1")
@@ -81,8 +81,8 @@ dependencies {
     implementation("com.spotify:completable-futures:0.3.6")
 
     // eternalcode-commons
-    implementation("com.eternalcode:eternalcode-commons-adventure:1.1.4")
-    implementation("com.eternalcode:eternalcode-commons-bukkit:1.1.4")
+    implementation("com.eternalcode:eternalcode-commons-adventure:1.1.5")
+    implementation("com.eternalcode:eternalcode-commons-bukkit:1.1.5")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.4")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.11.4")
@@ -98,7 +98,7 @@ java {
 }
 
 checkstyle {
-    toolVersion = "10.21.0"
+    toolVersion = "10.21.1"
 
     configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
 
