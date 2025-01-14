@@ -25,7 +25,6 @@ public class ParcelContentRepositoryOrmLite extends AbstractRepositoryOrmLite im
         }
     }
 
-
     @Override
     public CompletableFuture<Void> save(ParcelContent parcelContent) {
         return this.saveIfNotExist(ParcelContentWrapper.class, ParcelContentWrapper.from(parcelContent)).thenApply(dao -> null);
@@ -34,11 +33,6 @@ public class ParcelContentRepositoryOrmLite extends AbstractRepositoryOrmLite im
     @Override
     public CompletableFuture<Integer> remove(UUID uniqueId) {
         return this.deleteById(ParcelContentWrapper.class, uniqueId);
-    }
-
-    @Override
-    public CompletableFuture<Void> update(ParcelContent parcelContent) {
-        return this.save(ParcelContentWrapper.class, ParcelContentWrapper.from(parcelContent)).thenApply(dao -> null);
     }
 
     @Override

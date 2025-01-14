@@ -27,6 +27,6 @@ public interface ParcelRepository {
 
     Map<UUID, Parcel> cache();
 
-    Optional<Parcel> findParcel(UUID uuid);
+    Optional<Parcel> findParcelFromCache(UUID uuid);
 
 }

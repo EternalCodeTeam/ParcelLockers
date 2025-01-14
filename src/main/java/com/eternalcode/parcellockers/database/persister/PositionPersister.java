@@ -22,10 +22,6 @@ public class PositionPersister extends BaseDataType {
 
     @Override
     public Object javaToSqlArg(FieldType fieldType, Object javaObject) {
-        if (javaObject == null) {
-            return null;
-        }
-
         Position pos = (Position) javaObject;
         String worldName = "world";
 
@@ -45,17 +41,12 @@ public class PositionPersister extends BaseDataType {
 
     @Override
     public Object parseDefaultString(FieldType fieldType, String defaultStr) {
-        return String.valueOf(defaultStr);
+        return defaultStr;
     }
 
     @Override
     public Object sqlArgToJava(FieldType fieldType, Object sqlArg, int columnPos) {
         String s = (String) sqlArg;
-
-        if (s == null) {
-            return null;
-        }
-
         String[] params = s.split("/");
 
         return new Position(

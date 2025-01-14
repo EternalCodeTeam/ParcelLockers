@@ -14,7 +14,7 @@ class ParcelWrapper {
     @DatabaseField(id = true, columnName = "uuid")
     private UUID uuid;
 
-    @DatabaseField(columnName = "sender")
+    @DatabaseField(columnName = "sender", index = true)
     private UUID sender;
 
     @DatabaseField(columnName = "name")
@@ -26,7 +26,7 @@ class ParcelWrapper {
     @DatabaseField(columnName = "priority")
     private boolean priority;
 
-    @DatabaseField(columnName = "receiver")
+    @DatabaseField(columnName = "receiver", index = true)
     private UUID receiver;
 
     @DatabaseField(columnName = "size")

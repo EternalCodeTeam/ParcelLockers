@@ -32,6 +32,7 @@ public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implement
         } catch (SQLException ex) {
             Sentry.captureException(ex);
             ex.printStackTrace();
+            throw new RuntimeException("Failed to initialize locker table", ex);
         }
     }
 
@@ -60,7 +61,7 @@ public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implement
         // We have to assume that there is only one locker per position
         return this.action(LockerWrapper.class, dao -> {
             List<LockerWrapper> lockers = dao.queryForEq("position", position);
-            return lockers.isEmpty() ? Optional.empty() : Optional.of(lockers.get(0).toLocker());
+            return lockers.isEmpty() ? Optional.empty() : Optional.of(lockers.getFirst().toLocker());
         });
     }
 

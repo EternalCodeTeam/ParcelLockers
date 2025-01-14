@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 @DatabaseTable(tableName = "parcel_content")
-public class ParcelContentWrapper {
+class ParcelContentWrapper {
 
     @DatabaseField(id = true)
     private UUID uniqueId;

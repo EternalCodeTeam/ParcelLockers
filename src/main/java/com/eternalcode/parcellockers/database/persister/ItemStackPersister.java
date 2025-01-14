@@ -35,10 +35,6 @@ public class ItemStackPersister extends BaseDataType {
 
     @Override
     public Object javaToSqlArg(FieldType fieldType, Object javaObject) {
-        if (javaObject == null) {
-            return null;
-        }
-
         List<ItemStack> stacks = (List<ItemStack>) javaObject;
 
         try {
@@ -52,7 +48,7 @@ public class ItemStackPersister extends BaseDataType {
 
     @Override
     public Object parseDefaultString(FieldType fieldType, String defaultString) {
-        return String.valueOf(defaultString);
+        return defaultString;
     }
 
     @Override
@@ -63,10 +59,6 @@ public class ItemStackPersister extends BaseDataType {
     @Override
     public Object sqlArgToJava(FieldType fieldType, Object sqlArg, int columnPos) {
         String string = (String) sqlArg;
-
-        if (string == null) {
-            return null;
-        }
 
         try {
             return JSON.readValue(string, JSON.getTypeFactory().constructCollectionType(List.class, ItemStack.class));

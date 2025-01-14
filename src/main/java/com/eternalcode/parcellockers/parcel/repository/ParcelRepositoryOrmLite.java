@@ -112,8 +112,7 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
         this.cache.remove(uuid);
     }
 
-    @Override
-    public Optional<Parcel> findParcel(UUID uuid) {
+    public Optional<Parcel> findParcelFromCache(UUID uuid) {
         return Optional.ofNullable(this.cache.get(uuid));
     }
 }
