@@ -1,7 +1,7 @@
-package com.eternalcode.parcellockers.parcel.command.argument;
+package com.eternalcode.parcellockers.locker.argument;
 
 import com.eternalcode.parcellockers.locker.Locker;
-import com.eternalcode.parcellockers.locker.repository.LockerRepository;
+import com.eternalcode.parcellockers.locker.repository.LockerCache;
 import dev.rollczi.litecommands.argument.Argument;
 import dev.rollczi.litecommands.argument.parser.ParseResult;
 import dev.rollczi.litecommands.argument.resolver.ArgumentResolver;
@@ -12,27 +12,27 @@ import org.bukkit.command.CommandSender;
 
 public class ParcelLockerArgument extends ArgumentResolver<CommandSender, Locker> {
 
-    private final LockerRepository lockerRepository;
+    private final LockerCache cache;
 
-    public ParcelLockerArgument(LockerRepository lockerRepository) {
-        this.lockerRepository = lockerRepository;
-    }
-
-    @Override
-    public SuggestionResult suggest(Invocation<CommandSender> invocation, Argument<Locker> argument, SuggestionContext context) {
-        return this.lockerRepository.cache()
-            .values()
-            .stream()
-            .map(Locker::description)
-            .collect(SuggestionResult.collector());
+    public ParcelLockerArgument(LockerCache cache) {
+        this.cache = cache;
     }
 
     @Override
     protected ParseResult<Locker> parse(Invocation<CommandSender> invocation, Argument<Locker> argument, String s) {
-        return ParseResult.success(this.lockerRepository.cache().values()
+        return ParseResult.success(this.cache.cache().values()
             .stream()
             .filter(locker -> locker.description().equalsIgnoreCase(s))
             .findFirst()
             .orElseThrow(() -> new IllegalArgumentException("Locker with description '" + s + "' not found")));
+    }
+
+    @Override
+    public SuggestionResult suggest(Invocation<CommandSender> invocation, Argument<Locker> argument, SuggestionContext context) {
+        return this.cache.cache()
+            .values()
+            .stream()
+            .map(Locker::description)
+            .collect(SuggestionResult.collector());
     }
 }

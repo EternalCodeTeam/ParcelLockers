@@ -17,17 +17,18 @@ import com.eternalcode.parcellockers.gui.implementation.remote.ParcelListGUI;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepositoryOrmLite;
 import com.eternalcode.parcellockers.locker.Locker;
+import com.eternalcode.parcellockers.locker.argument.ParcelLockerArgument;
 import com.eternalcode.parcellockers.locker.controller.LockerBreakController;
 import com.eternalcode.parcellockers.locker.controller.LockerInteractionController;
 import com.eternalcode.parcellockers.locker.controller.LockerPlaceController;
+import com.eternalcode.parcellockers.locker.repository.LockerCache;
 import com.eternalcode.parcellockers.locker.repository.LockerRepositoryOrmLite;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelManager;
 import com.eternalcode.parcellockers.parcel.command.ParcelCommand;
 import com.eternalcode.parcellockers.parcel.command.argument.ParcelArgument;
-import com.eternalcode.parcellockers.parcel.command.argument.ParcelLockerArgument;
-import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
+import com.eternalcode.parcellockers.parcel.repository.ParcelCache;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryOrmLite;
 import com.eternalcode.parcellockers.updater.UpdaterService;
 import com.eternalcode.parcellockers.user.LoadUserController;
@@ -128,14 +129,18 @@ public final class ParcelLockers extends JavaPlugin {
             .threadPool(20)
             .build();
 
-        LockerRepositoryOrmLite lockerRepository = new LockerRepositoryOrmLite(databaseManager, scheduler);
+        LockerCache lockerCache = new LockerCache();
+        ParcelCache parcelCache = new ParcelCache();
+
+        LockerRepositoryOrmLite lockerRepository = new LockerRepositoryOrmLite(databaseManager, scheduler, lockerCache);
         lockerRepository.updateCaches();
 
-        ItemStorageRepository itemStorageRepository = new ItemStorageRepositoryOrmLite(databaseManager, scheduler);
-
-        ParcelRepository parcelRepository = new ParcelRepositoryOrmLite(databaseManager, scheduler);
+        ParcelRepositoryOrmLite parcelRepository = new ParcelRepositoryOrmLite(databaseManager, scheduler, parcelCache);
+        parcelRepository.updateCaches();
 
         ParcelManager parcelManager = new ParcelManager(config, announcer, parcelRepository);
+
+        ItemStorageRepository itemStorageRepository = new ItemStorageRepositoryOrmLite(databaseManager, scheduler);
 
         UserRepository userRepository = new UserRepositoryOrmLite(databaseManager, scheduler);
         UserManager userManager = new UserManager(userRepository);
@@ -146,8 +151,8 @@ public final class ParcelLockers extends JavaPlugin {
         ParcelListGUI parcelListGUI = new ParcelListGUI(this, server, miniMessage, config, parcelRepository, lockerRepository, userManager, mainGUI);
 
         this.liteCommands = LiteBukkitFactory.builder("parcellockers", this)
-            .argument(Parcel.class, new ParcelArgument(parcelRepository))
-            .argument(Locker.class, new ParcelLockerArgument(lockerRepository))
+            .argument(Parcel.class, new ParcelArgument(parcelCache))
+            .argument(Locker.class, new ParcelLockerArgument(lockerCache))
             .extension(new LiteAdventureExtension<>())
             .message(LiteBukkitMessages.PLAYER_ONLY, config.messages.onlyForPlayers)
             .commands(LiteCommandsAnnotations.of(
@@ -167,9 +172,9 @@ public final class ParcelLockers extends JavaPlugin {
         LockerMainGUI lockerMainGUI = new LockerMainGUI(this, miniMessage, config, itemStorageRepository, parcelRepository, lockerRepository, announcer, parcelContentRepository, userRepository, this.skullAPI);
 
         Stream.of(
-            new LockerInteractionController(lockerRepository, lockerMainGUI),
+            new LockerInteractionController(lockerCache, lockerMainGUI),
             new LockerPlaceController(config, this, lockerRepository, announcer),
-            new LockerBreakController(lockerRepository, announcer, config.messages),
+            new LockerBreakController(lockerRepository, lockerCache, announcer, config.messages),
             new PrepareUserController(userManager),
             new LoadUserController(userManager, server)
         ).forEach(controller -> server.getPluginManager().registerEvents(controller, this));

@@ -10,7 +10,6 @@ import com.j256.ormlite.table.TableUtils;
 import io.sentry.Sentry;
 
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -21,11 +20,11 @@ import java.util.stream.Collectors;
 
 public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implements LockerRepository {
 
-    private final Map<UUID, Locker> cache = new ConcurrentHashMap<>();
-    private final Map<Position, UUID> positionCache = new ConcurrentHashMap<>();
+    private final LockerCache cache;
 
-    public LockerRepositoryOrmLite(DatabaseManager databaseManager, Scheduler scheduler) {
+    public LockerRepositoryOrmLite(DatabaseManager databaseManager, Scheduler scheduler, LockerCache cache) {
         super(databaseManager, scheduler);
+        this.cache = cache;
 
         try {
             TableUtils.createTableIfNotExists(databaseManager.connectionSource(), LockerWrapper.class);
@@ -39,7 +38,7 @@ public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     @Override
     public CompletableFuture<Void> save(Locker locker) {
         return this.save(LockerWrapper.class, LockerWrapper.from(locker)).thenApply(dao -> {
-            this.addToCache(locker);
+            this.cache.put(locker);
             return null;
         });
     }
@@ -70,10 +69,7 @@ public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implement
         return this.deleteById(LockerWrapper.class, uuid)
             .thenApply(result -> {
                 if (result > 0) {
-                    Locker locker = this.cache.remove(uuid);
-                    if (locker != null) {
-                        this.positionCache.remove(locker.position());
-                    }
+                    this.cache.remove(uuid);
                 }
                 return result;
             });
@@ -96,55 +92,19 @@ public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
             boolean hasNext = lockers.size() > page.getLimit();
             if (hasNext) {
-                lockers.remove(lockers.size() - 1);
+                lockers.removeLast();
             }
 
             return new LockerPageResult(lockers, hasNext);
         });
     }
 
-    @Override
-    public Optional<Locker> getFromCache(UUID uuid) {
-        return Optional.ofNullable(this.cache.get(uuid));
-    }
-
-    @Override
-    public Map<UUID, Locker> cache() {
-        return Collections.unmodifiableMap(this.cache);
-    }
-
-    @Override
-    public Map<Position, UUID> positionCache() {
-        return Collections.unmodifiableMap(this.positionCache);
-    }
-
-    @Override
-    public boolean isInCache(Position position) {
-        return this.positionCache.containsKey(position);
-    }
-
-    @Override
-    public boolean isInCache(UUID uuid) {
-        return this.cache.containsKey(uuid);
-    }
-
     public void updateCaches() {
         this.findAll().thenAccept(lockers -> {
             Map<UUID, Locker> newCache = new ConcurrentHashMap<>();
-            Map<Position, UUID> newPositionCache = new ConcurrentHashMap<>();
-            lockers.forEach(locker -> {
-                newCache.put(locker.uuid(), locker);
-                newPositionCache.put(locker.position(), locker.uuid());
-            });
+            lockers.forEach(locker -> newCache.put(locker.uuid(), locker));
             this.cache.clear();
-            this.positionCache.clear();
             this.cache.putAll(newCache);
-            this.positionCache.putAll(newPositionCache);
         });
-    }
-
-    private void addToCache(Locker locker) {
-        this.cache.put(locker.uuid(), locker);
-        this.positionCache.put(locker.position(), locker.uuid());
     }
 }
