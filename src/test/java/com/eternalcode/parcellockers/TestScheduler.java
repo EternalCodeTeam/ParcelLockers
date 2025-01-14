@@ -14,6 +14,10 @@ import java.util.function.Supplier;
 
 public class TestScheduler implements Scheduler {
     private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(8);
+    
+    public void shutdown() {
+        executorService.shutdown();
+    }
 
     @Override
     public Task run(Runnable runnable) {
