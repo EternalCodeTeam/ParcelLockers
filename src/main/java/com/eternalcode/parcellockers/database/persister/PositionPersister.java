@@ -17,7 +17,7 @@ public class PositionPersister extends BaseDataType {
     }
 
     public static PositionPersister getSingleton() {
-        return instance;
+        return INSTANCE;
     }
 
     @Override
