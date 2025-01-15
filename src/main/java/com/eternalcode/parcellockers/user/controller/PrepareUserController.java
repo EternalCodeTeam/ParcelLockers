@@ -1,5 +1,6 @@
-package com.eternalcode.parcellockers.user;
+package com.eternalcode.parcellockers.user.controller;
 
+import com.eternalcode.parcellockers.user.UserManager;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
