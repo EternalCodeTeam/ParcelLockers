@@ -32,7 +32,7 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
             TableUtils.createTableIfNotExists(databaseManager.connectionSource(), ParcelWrapper.class);
         } catch (SQLException ex) {
             Sentry.captureException(ex);
-            ex.printStackTrace();
+            throw new RuntimeException("Failed to initialize parcel table", ex);
         }
     }
 
