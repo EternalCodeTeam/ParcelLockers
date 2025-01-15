@@ -2,39 +2,43 @@ package com.eternalcode.parcellockers;
 
 import com.eternalcode.commons.adventure.AdventureLegacyColorPostProcessor;
 import com.eternalcode.commons.adventure.AdventureLegacyColorPreProcessor;
+import com.eternalcode.commons.bukkit.scheduler.BukkitSchedulerImpl;
+import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.command.handler.InvalidUsageImpl;
 import com.eternalcode.parcellockers.command.handler.PermissionMessage;
 import com.eternalcode.parcellockers.configuration.ConfigurationManager;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
-import com.eternalcode.parcellockers.content.repository.ParcelContentRepositoryImpl;
-import com.eternalcode.parcellockers.database.DataSourceFactory;
+import com.eternalcode.parcellockers.content.repository.ParcelContentRepositoryOrmLite;
+import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.eternalcode.parcellockers.gui.implementation.locker.LockerMainGUI;
 import com.eternalcode.parcellockers.gui.implementation.remote.MainGUI;
 import com.eternalcode.parcellockers.gui.implementation.remote.ParcelListGUI;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
-import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepositoryImpl;
+import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepositoryOrmLite;
 import com.eternalcode.parcellockers.locker.Locker;
+import com.eternalcode.parcellockers.locker.argument.ParcelLockerArgument;
 import com.eternalcode.parcellockers.locker.controller.LockerBreakController;
 import com.eternalcode.parcellockers.locker.controller.LockerInteractionController;
 import com.eternalcode.parcellockers.locker.controller.LockerPlaceController;
-import com.eternalcode.parcellockers.locker.repository.LockerRepositoryImpl;
+import com.eternalcode.parcellockers.locker.repository.LockerCache;
+import com.eternalcode.parcellockers.locker.repository.LockerRepositoryOrmLite;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelManager;
 import com.eternalcode.parcellockers.parcel.command.ParcelCommand;
 import com.eternalcode.parcellockers.parcel.command.argument.ParcelArgument;
-import com.eternalcode.parcellockers.parcel.command.argument.ParcelLockerArgument;
-import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
-import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryImpl;
+import com.eternalcode.parcellockers.parcel.repository.ParcelCache;
+import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryOrmLite;
 import com.eternalcode.parcellockers.updater.UpdaterService;
 import com.eternalcode.parcellockers.user.LoadUserController;
 import com.eternalcode.parcellockers.user.PrepareUserController;
 import com.eternalcode.parcellockers.user.UserManager;
-import com.eternalcode.parcellockers.user.UserRepository;
-import com.eternalcode.parcellockers.user.UserRepositoryImpl;
+import com.eternalcode.parcellockers.user.repository.UserRepository;
+import com.eternalcode.parcellockers.user.repository.UserRepositoryOrmLite;
 import com.google.common.base.Stopwatch;
-import com.zaxxer.hikari.HikariDataSource;
+import com.j256.ormlite.logger.LoggerFactory;
+import com.j256.ormlite.logger.NullLogBackend;
 import dev.rollczi.litecommands.LiteCommands;
 import dev.rollczi.litecommands.adventure.LiteAdventureExtension;
 import dev.rollczi.litecommands.annotations.LiteCommandsAnnotations;
@@ -54,6 +58,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.sql.SQLException;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
@@ -71,6 +76,8 @@ public final class ParcelLockers extends JavaPlugin {
 
     private Economy economy;
 
+    private DatabaseManager databaseManager;
+
     @Override
     public void onEnable() {
         Stopwatch started = Stopwatch.createStarted();
@@ -87,6 +94,7 @@ public final class ParcelLockers extends JavaPlugin {
         ConfigurationManager configManager = new ConfigurationManager(this.getDataFolder());
         PluginConfiguration config = configManager.load(new PluginConfiguration());
         Server server = this.getServer();
+        Scheduler scheduler = new BukkitSchedulerImpl(this);
 
         if (config.settings.enableSentry) {
             Sentry.init(options -> {
@@ -97,11 +105,23 @@ public final class ParcelLockers extends JavaPlugin {
                 options.setTag("serverVersion", this.getServer().getVersion());
                 options.setTag("serverSoftware", PaperLib.getEnvironment().getName());
                 options.setTag("plugins", Arrays.stream(server.getPluginManager().getPlugins()).toList().toString());
+                options.setEnabled(false);
                 this.getLogger().info("Sentry initialized successfully!");
             });
         }
 
-        HikariDataSource dataSource = DataSourceFactory.buildHikariDataSource(config, this.getDataFolder());
+        LoggerFactory.setLogBackendFactory(new NullLogBackend.NullLogBackendFactory());
+
+        DatabaseManager databaseManager = new DatabaseManager(config, this.getLogger(), this.getDataFolder());
+        this.databaseManager = databaseManager;
+
+        try {
+            databaseManager.connect();
+        }
+        catch (SQLException exception) {
+            this.getLogger().severe("Could not connect to database! Some functions may not work properly!");
+            throw new RuntimeException(exception);
+        }
 
         this.skullAPI = LiteSkullFactory.builder()
             .cacheExpireAfterWrite(Duration.ofMinutes(45L))
@@ -109,25 +129,30 @@ public final class ParcelLockers extends JavaPlugin {
             .threadPool(20)
             .build();
 
-        LockerRepositoryImpl lockerRepository = new LockerRepositoryImpl(dataSource);
-        lockerRepository.updateCaches();
-        ItemStorageRepository itemStorageRepository = new ItemStorageRepositoryImpl(dataSource);
+        LockerCache lockerCache = new LockerCache();
+        ParcelCache parcelCache = new ParcelCache();
 
-        ParcelRepository parcelRepository = new ParcelRepositoryImpl(dataSource);
+        LockerRepositoryOrmLite lockerRepository = new LockerRepositoryOrmLite(databaseManager, scheduler, lockerCache);
+        lockerRepository.updateCaches();
+
+        ParcelRepositoryOrmLite parcelRepository = new ParcelRepositoryOrmLite(databaseManager, scheduler, parcelCache);
+        parcelRepository.updateCaches();
 
         ParcelManager parcelManager = new ParcelManager(config, announcer, parcelRepository);
 
-        UserRepository userRepository = new UserRepositoryImpl(dataSource);
+        ItemStorageRepository itemStorageRepository = new ItemStorageRepositoryOrmLite(databaseManager, scheduler);
+
+        UserRepository userRepository = new UserRepositoryOrmLite(databaseManager, scheduler);
         UserManager userManager = new UserManager(userRepository);
 
-        ParcelContentRepository parcelContentRepository = new ParcelContentRepositoryImpl(dataSource);
+        ParcelContentRepository parcelContentRepository = new ParcelContentRepositoryOrmLite(databaseManager, scheduler);
 
         MainGUI mainGUI = new MainGUI(this, server, miniMessage, config, parcelRepository, lockerRepository, userManager);
         ParcelListGUI parcelListGUI = new ParcelListGUI(this, server, miniMessage, config, parcelRepository, lockerRepository, userManager, mainGUI);
 
         this.liteCommands = LiteBukkitFactory.builder("parcellockers", this)
-            .argument(Parcel.class, new ParcelArgument(parcelRepository))
-            .argument(Locker.class, new ParcelLockerArgument(lockerRepository))
+            .argument(Parcel.class, new ParcelArgument(parcelCache))
+            .argument(Locker.class, new ParcelLockerArgument(lockerCache))
             .extension(new LiteAdventureExtension<>())
             .message(LiteBukkitMessages.PLAYER_ONLY, config.messages.onlyForPlayers)
             .commands(LiteCommandsAnnotations.of(
@@ -147,9 +172,9 @@ public final class ParcelLockers extends JavaPlugin {
         LockerMainGUI lockerMainGUI = new LockerMainGUI(this, miniMessage, config, itemStorageRepository, parcelRepository, lockerRepository, announcer, parcelContentRepository, userRepository, this.skullAPI);
 
         Stream.of(
-            new LockerInteractionController(lockerRepository, lockerMainGUI),
+            new LockerInteractionController(lockerCache, lockerMainGUI),
             new LockerPlaceController(config, this, lockerRepository, announcer),
-            new LockerBreakController(lockerRepository, announcer, config.messages),
+            new LockerBreakController(lockerRepository, lockerCache, announcer, config.messages),
             new PrepareUserController(userManager),
             new LoadUserController(userManager, server)
         ).forEach(controller -> server.getPluginManager().registerEvents(controller, this));
@@ -163,6 +188,10 @@ public final class ParcelLockers extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (this.databaseManager != null) {
+            this.databaseManager.disconnect();
+        }
+
         if (this.liteCommands != null) {
             this.liteCommands.unregister();
         }
@@ -181,7 +210,7 @@ public final class ParcelLockers extends JavaPlugin {
         if (!environment.isPaper()) {
             logger.warning("Your server running on unsupported software, please use Paper or its forks");
             logger.warning("You can easily download Paper from https://papermc.io/downloads");
-            logger.warning("WARNING: Supported MC versions are 1.17.x-1.19.x");
+            logger.warning("WARNING: Supported MC versions are 1.17.x-1.21.x");
             return;
         }
 
