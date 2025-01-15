@@ -21,7 +21,7 @@ public class ParcelContentRepositoryOrmLite extends AbstractRepositoryOrmLite im
             TableUtils.createTableIfNotExists(databaseManager.connectionSource(), ParcelContentWrapper.class);
         } catch (SQLException exception) {
             Sentry.captureException(exception);
-            exception.printStackTrace();
+            throw new RuntimeException("Failed to create ParcelContent table", exception);
         }
     }
 
