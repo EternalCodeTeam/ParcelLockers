@@ -1,6 +1,7 @@
 package com.eternalcode.parcellockers.locker.controller;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.locker.repository.LockerCache;
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.shared.Position;
@@ -24,11 +25,13 @@ import java.util.UUID;
 public class LockerBreakController implements Listener {
 
     private final LockerRepository lockerRepository;
+    private final LockerCache cache;
     private final NotificationAnnouncer announcer;
     private final PluginConfiguration.Messages messages;
 
-    public LockerBreakController(LockerRepository lockerRepository, NotificationAnnouncer announcer, PluginConfiguration.Messages messages) {
+    public LockerBreakController(LockerRepository lockerRepository, LockerCache cache, NotificationAnnouncer announcer, PluginConfiguration.Messages messages) {
         this.lockerRepository = lockerRepository;
+        this.cache = cache;
         this.announcer = announcer;
         this.messages = messages;
     }
@@ -40,23 +43,22 @@ public class LockerBreakController implements Listener {
         Position position = PositionAdapter.convert(location);
         Player player = event.getPlayer();
 
-        this.lockerRepository.findByPosition(position).whenComplete((locker, throwable) -> {
+        if (this.cache.get(position).isEmpty()) {
+            return;
+        }
+
+        if (!player.hasPermission("parcellockers.admin.break")) {
+            event.setCancelled(true);
+            this.announcer.sendMessage(player, this.messages.cannotBreakParcelLocker);
+            return;
+        }
+
+        this.lockerRepository.findByPosition(position).thenAccept((locker) -> {
             if (locker.isEmpty()) {
                 return;
             }
 
-            if (throwable != null) {
-                throwable.printStackTrace();
-                return;
-            }
-
-            if (!player.hasPermission("parcellockers.admin.break")) {
-                event.setCancelled(true);
-                this.announcer.sendMessage(player, this.messages.cannotBreakParcelLocker);
-                return;
-            }
-
-            UUID toRemove = this.lockerRepository.positionCache().get(position);
+            UUID toRemove = this.cache.get(position).get().uuid();
             this.lockerRepository.remove(toRemove);
 
             this.announcer.sendMessage(player, this.messages.parcelLockerSuccessfullyDeleted);
@@ -78,7 +80,7 @@ public class LockerBreakController implements Listener {
         Location location = block.getLocation();
         Position position = PositionAdapter.convert(location);
 
-        if (this.lockerRepository.isInCache(position)) {
+        if (this.cache.get(position).isPresent()) {
             event.setCancelled(true);
         }
     }
@@ -89,7 +91,7 @@ public class LockerBreakController implements Listener {
         Location location = block.getLocation();
         Position position = PositionAdapter.convert(location);
 
-        if (this.lockerRepository.isInCache(position)) {
+        if (this.cache.get(position).isPresent()) {
             event.setCancelled(true);
         }
     }
@@ -99,7 +101,7 @@ public class LockerBreakController implements Listener {
         event.blockList().removeIf(block -> {
             Location location = block.getLocation();
             Position position = PositionAdapter.convert(location);
-            return this.lockerRepository.isInCache(position);
+            return this.cache.get(position).isPresent();
         });
     }
 
@@ -109,7 +111,7 @@ public class LockerBreakController implements Listener {
         Location location = block.getLocation();
         Position position = PositionAdapter.convert(location);
 
-        if (this.lockerRepository.isInCache(position)) {
+        if (this.cache.get(position).isPresent()) {
             event.setCancelled(true);
         }
     }
@@ -120,7 +122,7 @@ public class LockerBreakController implements Listener {
         Location location = block.getLocation();
         Position position = PositionAdapter.convert(location);
 
-        if (this.lockerRepository.isInCache(position)) {
+        if (this.cache.get(position).isPresent()) {
             event.setCancelled(true);
         }
     }

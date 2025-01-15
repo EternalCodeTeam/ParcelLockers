@@ -27,7 +27,7 @@ repositories {
 
 dependencies {
     // minecraft development api
-    compileOnly("org.spigotmc:spigot-api:1.21.1-R0.1-SNAPSHOT")
+    compileOnly("org.spigotmc:spigot-api:1.21.4-R0.1-SNAPSHOT")
     implementation("net.kyori:adventure-platform-bukkit:4.3.4")
     implementation("net.kyori:adventure-text-minimessage:4.18.0")
     implementation("dev.rollczi:litecommands-bukkit:3.9.5")
@@ -57,6 +57,9 @@ dependencies {
 
     // database
     implementation("com.zaxxer:HikariCP:6.2.1")
+    implementation("com.j256.ormlite:ormlite-jdbc:6.1")
+    implementation("com.h2database:h2:2.3.232")
+    implementation("org.postgresql:postgresql:42.7.4")
 
     // lombok
     compileOnly("org.projectlombok:lombok:1.18.36")
@@ -122,12 +125,12 @@ tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
     options.setIncremental(true)
     options.compilerArgs.add("-parameters")
-    options.release = 17
+    options.release = 21
 }
 
 tasks {
     runServer {
-        minecraftVersion("1.21.1")
+        minecraftVersion("1.21.4")
     }
 
     test {
@@ -135,7 +138,7 @@ tasks {
     }
 
     shadowJar {
-        archiveFileName.set("ParcelLockers v${project.version} (MC 1.8.8-1.21.x).jar")
+        archiveFileName.set("ParcelLockers v${project.version} (MC 1.21.3-1.21.4).jar")
 
         exclude(
             "org/intellij/lang/annotations/**",
