@@ -20,11 +20,12 @@ public class ParcelLockerArgument extends ArgumentResolver<CommandSender, Locker
 
     @Override
     protected ParseResult<Locker> parse(Invocation<CommandSender> invocation, Argument<Locker> argument, String s) {
-        return ParseResult.success(this.cache.cache().values()
+        return this.cache.cache().values()
             .stream()
             .filter(locker -> locker.description().equalsIgnoreCase(s))
             .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("Locker with description '" + s + "' not found")));
+            .map(ParseResult::success)
+            .orElseThrow(() -> new IllegalArgumentException("Locker with description '" + s + "' not found"));
     }
 
     @Override

@@ -24,10 +24,14 @@ public class ParcelArgument extends ArgumentResolver<CommandSender, Parcel> {
 
     @Override
     protected ParseResult<Parcel> parse(Invocation<CommandSender> invocation, Argument<Parcel> context, String argument) {
-        UUID parcelId = UUID.fromString(argument);
-        Optional<Parcel> parcel = this.cache.get(parcelId);
-        return parcel.map(ParseResult::success)
-            .orElseGet(() -> ParseResult.failure(InvalidUsage.Cause.INVALID_ARGUMENT));
+        try {
+            UUID parcelId = UUID.fromString(argument);
+            Optional<Parcel> parcel = this.cache.get(parcelId);
+            return parcel.map(ParseResult::success)
+                .orElseGet(() -> ParseResult.failure(InvalidUsage.Cause.INVALID_ARGUMENT));
+        } catch (IllegalArgumentException e) {
+            return ParseResult.failure(InvalidUsage.Cause.INVALID_ARGUMENT);
+        }
     }
 
     @Override

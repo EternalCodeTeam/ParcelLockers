@@ -12,7 +12,7 @@ class UserWrapper {
     @DatabaseField(id = true)
     private UUID uuid;
 
-    @DatabaseField(index = true)
+    @DatabaseField(index = true, unique = true, canBeNull = false)
     private String username;
 
     UserWrapper() {
