@@ -113,6 +113,7 @@ public final class ParcelLockers extends JavaPlugin {
         LoggerFactory.setLogBackendFactory(new NullLogBackend.NullLogBackendFactory());
 
         DatabaseManager databaseManager = new DatabaseManager(config, this.getLogger(), this.getDataFolder());
+        this.databaseManager = databaseManager;
 
         try {
             databaseManager.connect();
