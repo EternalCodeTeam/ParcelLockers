@@ -32,12 +32,11 @@ class ParcelWrapper {
     @DatabaseField(columnName = "size")
     private ParcelSize size;
 
-    @DatabaseField(columnName = "entryLocker")
+    @DatabaseField(columnName = "entryLocker", index = true)
     private UUID entryLocker;
 
-    @DatabaseField(columnName = "destinationLocker")
+    @DatabaseField(columnName = "destinationLocker", index = true)
     private UUID destinationLocker;
-
     ParcelWrapper() {
     }
 
