@@ -11,7 +11,7 @@ import java.util.UUID;
 @DatabaseTable(tableName = "parcels")
 class ParcelWrapper {
 
-    @DatabaseField(id = true, columnName = "uuid")
+    @DatabaseField(columnName = "uuid", id = true)
     private UUID uuid;
 
     @DatabaseField(columnName = "sender", index = true)
