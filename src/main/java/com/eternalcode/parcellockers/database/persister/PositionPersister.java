@@ -10,7 +10,7 @@ import java.sql.SQLException;
 
 public class PositionPersister extends BaseDataType {
 
-    private static final PositionPersister instance = new PositionPersister();
+    private static final PositionPersister INSTANCE = new PositionPersister();
 
     private PositionPersister() {
         super(SqlType.LONG_STRING, new Class<?>[] { PositionPersister.class });
