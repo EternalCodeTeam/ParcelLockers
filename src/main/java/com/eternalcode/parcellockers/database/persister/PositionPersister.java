@@ -48,13 +48,19 @@ public class PositionPersister extends BaseDataType {
     public Object sqlArgToJava(FieldType fieldType, Object sqlArg, int columnPos) {
         String s = (String) sqlArg;
         String[] params = s.split("/");
-
-        return new Position(
-            Integer.parseInt(params[1]),
-            Integer.parseInt(params[2]),
-            Integer.parseInt(params[3]),
-            params[0]
-        );
+        if (params.length != 4) {
+            throw new IllegalArgumentException("Invalid position format: " + s);
+        }
+        try {
+            return new Position(
+                Integer.parseInt(params[1]),
+                Integer.parseInt(params[2]),
+                Integer.parseInt(params[3]),
+                params[0]
+            );
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid coordinate format: " + s, e);
+        }
     }
 
 }
