@@ -5,12 +5,12 @@
 [![Supports Paper](https://raw.githubusercontent.com/intergrav/devins-badges/v3/assets/cozy/supported/paper_vector.svg)](https://papermc.io)
 [![Supports Spigot](https://raw.githubusercontent.com/intergrav/devins-badges/v3/assets/cozy/supported/spigot_vector.svg)](https://spigotmc.org)
 
-[![Patreon](https://raw.githubusercontent.com/intergrav/devins-badges/v3/assets/cozy/donate/patreon-plural_vector.svg)](https://www.patreon.com/eternalcode)
+[![ko-fi](https://github.com/intergrav/devins-badges/blob/v3/assets/cozy/donate/kofi-plural_vector.svg)](https://ko-fi.com/eternalcodeteam)
 [![Website](https://raw.githubusercontent.com/intergrav/devins-badges/v3/assets/cozy/documentation/website_vector.svg)](https://eternalcode.pl/)
 [![Chat on Discord](https://raw.githubusercontent.com/vLuckyyy/badges/main//chat-with-us-on-discord.svg)](https://discord.com/invite/FQ7jmGBd6c)
 
 [![Gradle](https://raw.githubusercontent.com/intergrav/devins-badges/v3/assets/cozy/built-with/gradle_vector.svg)](https://gradle.org/)
-[![Java](https://raw.githubusercontent.com/intergrav/devins-badges/v3/assets/cozy/built-with/java17_vector.svg)](https://www.java.com/)
+[![Java](https://raw.githubusercontent.com/intergrav/devins-badges/v3/assets/cozy/built-with/java21_vector.svg)](https://www.java.com/)
 
 </div>
 
@@ -37,10 +37,10 @@ ParcelLockers is at an very early stage of development, and you use it at your o
 To build ParcelLockers, follow these steps (Make sure you have **JDK 21 or higher**):
 
 ```shell
-./gradlew clean shadowJar
+./gradlew shadowJar
 ```
 
-- The output file will be located at `build/libs`.
+- The output JAR file will be located at `build/libs`.
 - When you build the plugin for the first time, it might take a while to download all the dependencies.
 
 ## 🛠️ Development builds
@@ -67,22 +67,6 @@ Additionally, if you enable automatic Sentry bug
 reporting in your config.yml file (we strongly advise to do so), errors will be automatically sent to us, which will
 greatly accelerate the bug fixing process 🥳
 
-## 📜 License
-
-### ParcelLockers is published under the GNU GPL-v3 license. In particular, the developer:
-
-- Is freely allowed to modify and improve the code
-- Can distribute production versions
-- He must publish any changes made, ie. the public fork of this repository
-- Cannot change the license or copyright
-
-### Additionally:
-
-- It is forbidden to modify or remove the code responsible for the compliance of production versions with the license.
-- The authors of this project are not responsible for using the application, modifying and distributing it.
-- Trademarks appearing in this project and this document belong to their rightful owners and are used for informational
-  purposes only.
-
 ## ❤️ Other dependencies usages
 
 - [LiteCommands (by Rollczi ❤️)](https://github.com/Rollczi/LiteCommands)
@@ -99,9 +83,8 @@ greatly accelerate the bug fixing process 🥳
 - [SignGUI](https://github.com/Rapha149/SignGUI)
 
 ## :heart: Special Thanks
-
 [<img src="https://user-images.githubusercontent.com/65517973/210912946-447a6b9a-2685-4796-9482-a44bffc727ce.png" alt="JetBrains" width="150">](https://www.jetbrains.com)
-![sentry.svg](assets/sentry.svg)
+[<img src="assets/sentry.svg" alt="Sentry logo" width="150" height="150">](https://www.sentry.io)
 
 We express our gratitude to JetBrains for providing [Open Source Licenses](https://www.jetbrains.com/opensource/) for
 their outstanding tools. We recommend using [IntelliJ IDEA](https://www.jetbrains.com/idea/) to work with our projects
@@ -109,8 +92,6 @@ and boost your productivity!
 
 We also thank [Sentry](https://sentry.io) for providing us with
 a [Open-Source Sponsorship plan](https://sentry.io/for/open-source/) for error tracking. We recommend using
-[Sentry](https://sentry.io) to track
-errors in
-your projects and improve the quality of your software.
+[Sentry](https://sentry.io) to track errors in your projects and improve the quality of your software.
 
 
