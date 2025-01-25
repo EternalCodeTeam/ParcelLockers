@@ -10,7 +10,8 @@
 [![Chat on Discord](https://raw.githubusercontent.com/vLuckyyy/badges/main//chat-with-us-on-discord.svg)](https://discord.com/invite/FQ7jmGBd6c)
 
 [![Gradle](https://raw.githubusercontent.com/intergrav/devins-badges/v3/assets/cozy/built-with/gradle_vector.svg)](https://gradle.org/)
-[![Java](https://raw.githubusercontent.com/intergrav/devins-badges/v3/assets/cozy/built-with/java21_vector.svg)](https://www.java.com/)
+[![Java](https://badges.penpow.dev/badges/built-with/java/cozy.svg)](https://www.java.com/)
+[![LiteCommands](https://raw.githubusercontent.com/Jakubk15/devins-badges/refs/heads/v3/assets/cozy/built-with/litecommands_vector.svg)](https://github.com/Rollczi/LiteCommands)
 
 </div>
 
