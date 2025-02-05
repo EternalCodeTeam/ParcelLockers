@@ -46,18 +46,8 @@ class ParcelDatabaseServiceIntegrationTest extends ParcelLockerIntegrationSpec {
         UUID entryLocker = UUID.randomUUID();
         UUID destinationLocker = UUID.randomUUID();
 
-        parcelRepository.save(Parcel.builder()
-            .uuid(uuid)
-            .name("Test")
-            .description("Test")
-            .priority(false)
-            .sender(sender)
-            .receiver(receiver)
-            .entryLocker(entryLocker)
-            .destinationLocker(destinationLocker)
-            .size(ParcelSize.SMALL)
-            .build()
-        );
+        parcelRepository.save(new Parcel(uuid, sender, "name", "description", true, receiver,
+            ParcelSize.SMALL, entryLocker, destinationLocker));
 
         Optional<Parcel> parcel = this.await(parcelRepository.findByUUID(uuid));
         assertTrue(parcel.isPresent());
