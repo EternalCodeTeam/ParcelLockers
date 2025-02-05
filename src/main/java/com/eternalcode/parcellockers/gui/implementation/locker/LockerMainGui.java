@@ -18,7 +18,7 @@ import org.bukkit.plugin.Plugin;
 
 import static com.eternalcode.commons.adventure.AdventureUtil.resetItalic;
 
-public class LockerMainGUI extends GuiView {
+public class LockerMainGui implements GuiView {
 
     private final Plugin plugin;
     private final MiniMessage miniMessage;
@@ -31,7 +31,7 @@ public class LockerMainGUI extends GuiView {
     private final UserRepository userRepository;
     private final SkullAPI skullAPI;
 
-    public LockerMainGUI(Plugin plugin,
+    public LockerMainGui(Plugin plugin,
                          MiniMessage miniMessage,
                          PluginConfiguration config,
                          ItemStorageRepository itemStorageRepository,
@@ -77,7 +77,7 @@ public class LockerMainGUI extends GuiView {
         }
 
         gui.setItem(20, this.config.guiSettings.parcelLockerCollectItem.toGuiItem(event -> event.setCancelled(true)));
-        gui.setItem(22, this.config.guiSettings.parcelLockerSendItem.toGuiItem(event -> new ParcelSendingGUI(this.plugin,
+        gui.setItem(22, this.config.guiSettings.parcelLockerSendItem.toGuiItem(event -> new ParcelSendingGui(this.plugin,
             this.config,
             this.miniMessage,
             this.itemStorageRepository,
@@ -87,7 +87,7 @@ public class LockerMainGUI extends GuiView {
             this.parcelContentRepository,
             this.userRepository,
             this.skullAPI,
-            new ParcelSendingGUIState()
+            new ParcelSendingGuiState()
         ).show(player)));
 
         gui.setItem(24, this.config.guiSettings.parcelLockerStatusItem.toGuiItem());

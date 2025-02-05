@@ -26,7 +26,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
 
-public class ReceiverSelectionGui extends GuiView {
+public class ReceiverSelectionGui implements GuiView {
 
     private static final int WIDTH = 7;
     private static final int HEIGHT = 4;
@@ -37,9 +37,9 @@ public class ReceiverSelectionGui extends GuiView {
     private final PluginConfiguration config;
     private final MiniMessage miniMessage;
     private final UserRepository userRepository;
-    private final ParcelSendingGUI sendingGUI;
+    private final ParcelSendingGui sendingGUI;
     private final SkullAPI skullAPI;
-    private final ParcelSendingGUIState state;
+    private final ParcelSendingGuiState state;
 
 
     public ReceiverSelectionGui(Plugin plugin,
@@ -47,7 +47,7 @@ public class ReceiverSelectionGui extends GuiView {
                                 PluginConfiguration config,
                                 MiniMessage miniMessage,
                                 UserRepository userRepository,
-                                ParcelSendingGUI sendingGUI, SkullAPI skullAPI, ParcelSendingGUIState state) {
+                                ParcelSendingGui sendingGUI, SkullAPI skullAPI, ParcelSendingGuiState state) {
         this.plugin = plugin;
         this.scheduler = scheduler;
         this.config = config;

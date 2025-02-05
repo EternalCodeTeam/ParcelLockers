@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
-public class ParcelItemStorageGUI {
+public class ParcelItemStorageGui {
 
     private final Plugin plugin;
     private final PluginConfiguration config;
@@ -38,9 +38,9 @@ public class ParcelItemStorageGUI {
     private final ParcelContentRepository parcelContentRepository;
     private final UserRepository userRepository;
     private final SkullAPI skullAPI;
-    private final ParcelSendingGUIState state;
+    private final ParcelSendingGuiState state;
 
-    public ParcelItemStorageGUI(Plugin plugin,
+    public ParcelItemStorageGui(Plugin plugin,
                                 PluginConfiguration config,
                                 MiniMessage miniMessage,
                                 ItemStorageRepository itemStorageRepository,
@@ -50,7 +50,7 @@ public class ParcelItemStorageGUI {
                                 ParcelContentRepository parcelContentRepository,
                                 UserRepository userRepository,
                                 SkullAPI skullAPI,
-                                ParcelSendingGUIState state)
+                                ParcelSendingGuiState state)
     {
         this.plugin = plugin;
         this.config = config;
@@ -71,7 +71,7 @@ public class ParcelItemStorageGUI {
 
         GuiItem backgroundItem = guiSettings.mainGuiBackgroundItem.toGuiItem(event -> event.setCancelled(true));
 
-        GuiItem confirmItem = guiSettings.confirmItemsItem.toGuiItem(event -> new ParcelSendingGUI(
+        GuiItem confirmItem = guiSettings.confirmItemsItem.toGuiItem(event -> new ParcelSendingGui(
             this.plugin,
             this.config,
             this.miniMessage,

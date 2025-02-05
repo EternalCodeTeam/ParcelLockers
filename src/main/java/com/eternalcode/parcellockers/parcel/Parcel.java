@@ -2,7 +2,6 @@ package com.eternalcode.parcellockers.parcel;
 
 import dev.rollczi.litecommands.shared.Preconditions;
 
-import java.util.Set;
 import java.util.UUID;
 
 
@@ -11,7 +10,6 @@ public record Parcel(UUID uuid,
                      String name,
                      String description,
                      boolean priority,
-                     Set<UUID> recipients,
                      UUID receiver,
                      ParcelSize size,
                      UUID entryLocker,
@@ -28,7 +26,6 @@ public record Parcel(UUID uuid,
         private String name;
         private String description;
         private boolean priority;
-        private Set<UUID> recipients;
         private UUID receiver;
         private ParcelSize size;
         private UUID entryLocker;
@@ -56,11 +53,6 @@ public record Parcel(UUID uuid,
 
         public Builder priority(boolean priority) {
             this.priority = priority;
-            return this;
-        }
-
-        public Builder recipients(Set<UUID> recipients) {
-            this.recipients = recipients;
             return this;
         }
 
@@ -93,7 +85,7 @@ public record Parcel(UUID uuid,
             Preconditions.notNull(this.size, "size");
             Preconditions.notNull(this.entryLocker, "entryLocker");
             Preconditions.notNull(this.destinationLocker, "destinationLocker");
-            return new Parcel(this.uuid, this.sender, this.name, this.description, this.priority, this.recipients, this.receiver, this.size, this.entryLocker, this.destinationLocker);
+            return new Parcel(this.uuid, this.sender, this.name, this.description, this.priority, this.receiver, this.size, this.entryLocker, this.destinationLocker);
         }
     }
 }

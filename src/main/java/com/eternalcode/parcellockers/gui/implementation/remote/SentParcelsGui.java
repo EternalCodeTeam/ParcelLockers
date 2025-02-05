@@ -9,7 +9,6 @@ import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.shared.ExceptionHandler;
 import com.eternalcode.parcellockers.user.UserManager;
-import com.spotify.futures.CompletableFutures;
 import dev.triumphteam.gui.builder.item.ItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
@@ -22,14 +21,10 @@ import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.Blocking;
 import panda.utilities.text.Formatter;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
-public class SentParcelsGUI extends GuiView {
+public class SentParcelsGui implements GuiView {
 
     private final Plugin plugin;
     private final Server server;
@@ -37,10 +32,10 @@ public class SentParcelsGUI extends GuiView {
     private final PluginConfiguration config;
     private final ParcelRepository parcelRepository;
     private final LockerRepository lockerRepository;
-    private final MainGUI mainGUI;
+    private final MainGui mainGUI;
     private final UserManager userManager;
 
-    public SentParcelsGUI(Plugin plugin, Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelRepository parcelRepository, LockerRepository lockerRepository, MainGUI mainGUI, UserManager userManager) {
+    public SentParcelsGui(Plugin plugin, Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelRepository parcelRepository, LockerRepository lockerRepository, MainGui mainGUI, UserManager userManager) {
         this.plugin = plugin;
         this.server = server;
         this.miniMessage = miniMessage;
@@ -103,11 +98,6 @@ public class SentParcelsGUI extends GuiView {
         String senderName = this.getName(parcel.sender()).join();
         String receiver = this.getName(parcel.receiver()).join();
 
-        List<String> recipients = parcel.recipients().stream()
-            .map(uuid -> this.getName(uuid))
-            .collect(CompletableFutures.joinList())
-            .join();
-
         Formatter formatter = new Formatter()
             .register("{UUID}", parcel.uuid().toString())
             .register("{NAME}", parcel.name())
@@ -115,8 +105,7 @@ public class SentParcelsGUI extends GuiView {
             .register("{RECEIVER}", receiver)
             .register("{SIZE}", parcel.size().toString())
             .register("{PRIORITY}", parcel.priority() ? "&aYes" : "&cNo")
-            .register("{DESCRIPTION}", parcel.description())
-            .register("{RECIPIENTS}", recipients.toString());
+            .register("{DESCRIPTION}", parcel.description());
 
         Optional<Locker> lockerOptional = this.lockerRepository.findByUUID(parcel.destinationLocker()).join();
 
@@ -125,8 +114,7 @@ public class SentParcelsGUI extends GuiView {
             formatter.register("{POSITION_X}", locker.position().x())
                 .register("{POSITION_Y}", locker.position().y())
                 .register("{POSITION_Z}", locker.position().z());
-        }
-        else {
+        } else {
             formatter.register("{POSITION_X}", "-")
                 .register("{POSITION_Y}", "-")
                 .register("{POSITION_Z}", "-");

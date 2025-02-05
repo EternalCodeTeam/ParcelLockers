@@ -4,15 +4,10 @@ import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.user.UserManager;
-import com.spotify.futures.CompletableFutures;
 import org.jetbrains.annotations.Blocking;
 import panda.utilities.text.Formatter;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 public class ParcelPlaceholderUtil {
@@ -26,11 +21,6 @@ public class ParcelPlaceholderUtil {
         String senderName = getName(parcel.sender(), userManager).join();
         String receiver = getName(parcel.receiver(), userManager).join();
 
-        List<String> recipients = parcel.recipients().stream()
-            .map(uuid -> getName(uuid, userManager))
-            .collect(CompletableFutures.joinList())
-            .join();
-
         Formatter formatter = new Formatter()
             .register("{UUID}", parcel.uuid().toString())
             .register("{NAME}", parcel.name())
@@ -38,8 +28,7 @@ public class ParcelPlaceholderUtil {
             .register("{RECEIVER}", receiver)
             .register("{SIZE}", parcel.size().toString())
             .register("{PRIORITY}", parcel.priority() ? "&aYes" : "&cNo")
-            .register("{DESCRIPTION}", parcel.description())
-            .register("{RECIPIENTS}", recipients.toString());
+            .register("{DESCRIPTION}", parcel.description());
 
         Optional<Locker> lockerOptional = lockerRepository.findByUUID(parcel.destinationLocker()).join();
 

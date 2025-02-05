@@ -119,8 +119,7 @@ public class PluginConfiguration implements ReloadableConfig {
             "&6Size: &e{SIZE}",
             "&6Position: &6X: &e{POSITION_X}, &6Y: &e{POSITION_Y}, &6Z: &e{POSITION_Z}",
             "&6Priority: &e{PRIORITY}",
-            "&6Description: &e{DESCRIPTION}",
-            "&6Recipients: &e{RECIPIENTS}"
+            "&6Description: &e{DESCRIPTION}"
         );
     }
 
@@ -141,6 +140,9 @@ public class PluginConfiguration implements ReloadableConfig {
 
         @Description({ " ", "# The item of the parcel recipient pick GUI" })
         public String parcelReceiverSelectionGuiTitle = "&5Select recipient";
+
+        @Description({ " ", "# The item of the parcel collection GUI" })
+        public String parcelCollectionGuiTitle = "&aCollect parcels";
 
         @Description({ " ", "# The item of the small parcel size button" })
         public ConfigItem smallParcelSizeItem = new ConfigItem()
@@ -269,8 +271,7 @@ public class PluginConfiguration implements ReloadableConfig {
                     "&6Size: &e{SIZE}",
                     "&6Position: &6X: &e{POSITION_X}, &6Y: &e{POSITION_Y}, &6Z: &e{POSITION_Z}",
                     "&6Priority: &e{PRIORITY}",
-                    "&6Description: &e{DESCRIPTION}",
-                    "&6Recipients: &e{RECIPIENTS}"
+                    "&6Description: &e{DESCRIPTION}"
                 )
             )
             .setType(Material.CHEST_MINECART);
@@ -378,5 +379,17 @@ public class PluginConfiguration implements ReloadableConfig {
             Material.SPAWNER,
             Material.BEDROCK
         );
+
+        @Description({ " ", "# The item of the parcel item in the collection GUI" })
+        public ConfigItem parcelCollectionItem = new ConfigItem()
+            .setName("&a{NAME}")
+            .setLore(List.of(
+                    "&6UUID: &e{UUID}",
+                    "&6Sender: &e{SENDER}",
+                    "&6Size: &e{SIZE}",
+                    "&6Description: &e{DESCRIPTION}"
+                )
+            )
+            .setType(Material.CHEST_MINECART);
     }
 }

@@ -15,6 +15,7 @@ import org.bukkit.inventory.ItemStack;
 import java.sql.SQLException;
 import java.util.List;
 
+@SuppressWarnings("unchecked")
 public class ItemStackPersister extends BaseDataType {
 
     private static final ItemStackPersister instance = new ItemStackPersister();
@@ -39,8 +40,7 @@ public class ItemStackPersister extends BaseDataType {
 
         try {
             return JSON.writeValueAsString(stacks);
-        }
-        catch (JsonProcessingException e) {
+        } catch (JsonProcessingException e) {
             Sentry.captureException(e);
             throw new ParcelLockersException("Failed to serialize itemstacks", e);
         }
@@ -62,8 +62,7 @@ public class ItemStackPersister extends BaseDataType {
 
         try {
             return JSON.readValue(string, JSON.getTypeFactory().constructCollectionType(List.class, ItemStack.class));
-        }
-        catch (JsonProcessingException exception) {
+        } catch (JsonProcessingException exception) {
             Sentry.captureException(exception);
             throw new ParcelLockersException("Failed to deserialize itemstacks", exception);
         }

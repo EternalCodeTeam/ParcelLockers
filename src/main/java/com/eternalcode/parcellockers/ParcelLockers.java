@@ -11,9 +11,9 @@ import com.eternalcode.parcellockers.configuration.implementation.PluginConfigur
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepositoryOrmLite;
 import com.eternalcode.parcellockers.database.DatabaseManager;
-import com.eternalcode.parcellockers.gui.implementation.locker.LockerMainGUI;
-import com.eternalcode.parcellockers.gui.implementation.remote.MainGUI;
-import com.eternalcode.parcellockers.gui.implementation.remote.ParcelListGUI;
+import com.eternalcode.parcellockers.gui.implementation.locker.LockerMainGui;
+import com.eternalcode.parcellockers.gui.implementation.remote.MainGui;
+import com.eternalcode.parcellockers.gui.implementation.remote.ParcelListGui;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepositoryOrmLite;
 import com.eternalcode.parcellockers.locker.Locker;
@@ -147,8 +147,8 @@ public final class ParcelLockers extends JavaPlugin {
 
         ParcelContentRepository parcelContentRepository = new ParcelContentRepositoryOrmLite(databaseManager, scheduler);
 
-        MainGUI mainGUI = new MainGUI(this, server, miniMessage, config, parcelRepository, lockerRepository, userManager);
-        ParcelListGUI parcelListGUI = new ParcelListGUI(this, server, miniMessage, config, parcelRepository, lockerRepository, userManager, mainGUI);
+        MainGui mainGUI = new MainGui(this, server, miniMessage, config, parcelRepository, lockerRepository, userManager);
+        ParcelListGui parcelListGUI = new ParcelListGui(this, server, miniMessage, config, parcelRepository, lockerRepository, userManager, mainGUI);
 
         this.liteCommands = LiteBukkitFactory.builder("parcellockers", this)
             .argument(Parcel.class, new ParcelArgument(parcelCache))
@@ -169,7 +169,7 @@ public final class ParcelLockers extends JavaPlugin {
             return;
         }*/
 
-        LockerMainGUI lockerMainGUI = new LockerMainGUI(this, miniMessage, config, itemStorageRepository, parcelRepository, lockerRepository, announcer, parcelContentRepository, userRepository, this.skullAPI);
+        LockerMainGui lockerMainGUI = new LockerMainGui(this, miniMessage, config, itemStorageRepository, parcelRepository, lockerRepository, announcer, parcelContentRepository, userRepository, this.skullAPI);
 
         Stream.of(
             new LockerInteractionController(lockerCache, lockerMainGUI),
