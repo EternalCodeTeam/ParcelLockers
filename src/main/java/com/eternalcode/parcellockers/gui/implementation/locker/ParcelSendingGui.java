@@ -208,18 +208,9 @@ public class ParcelSendingGui implements GuiView {
                     return;
                 }
 
-                Parcel parcel = Parcel.builder()
-                    .size(this.state.getSize())
-                    .priority(this.state.isPriority())
-                    .sender(player.getUniqueId())
-                    .uuid(UUID.randomUUID())
-                    .name(this.state.getParcelName())
-                    .description(this.state.getParcelDescription())
-                    .entryLocker(this.state.getEntryLocker())
-                    .destinationLocker(this.state.getDestinationLocker())
-                    .receiver(this.state.getReceiver())
-                    .sender(player.getUniqueId())
-                    .build();
+                Parcel parcel = new Parcel(UUID.randomUUID(), player.getUniqueId(), this.state.getParcelName(),
+                    this.state.getParcelDescription(), this.state.isPriority(), this.state.getReceiver(),
+                    this.state.getSize(), this.state.getEntryLocker(), this.state.getDestinationLocker());
 
                 this.parcelRepository.save(parcel).thenAccept(unused -> {
 
