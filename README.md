@@ -1,6 +1,6 @@
 <div align="center">
 
-![ParcelLockers.svg](assets/ParcelLockers.svg)
+![ParcelLockers.svg](.github/assets/ParcelLockers.svg)
 
 [![Supports Paper](https://raw.githubusercontent.com/intergrav/devins-badges/v3/assets/cozy/supported/paper_vector.svg)](https://papermc.io)
 [![Supports Spigot](https://raw.githubusercontent.com/intergrav/devins-badges/v3/assets/cozy/supported/spigot_vector.svg)](https://spigotmc.org)
@@ -85,7 +85,7 @@ greatly accelerate the bug fixing process 🥳
 
 ## :heart: Special Thanks
 [<img src="https://user-images.githubusercontent.com/65517973/210912946-447a6b9a-2685-4796-9482-a44bffc727ce.png" alt="JetBrains" width="150">](https://www.jetbrains.com)
-[<img src="assets/sentry.svg" alt="Sentry logo" width="150" height="150">](https://www.sentry.io)
+[<img src=".github/assets/sentry.svg" alt="Sentry logo" width="150" height="150">](https://www.sentry.io)
 
 We express our gratitude to JetBrains for providing [Open Source Licenses](https://www.jetbrains.com/opensource/) for
 their outstanding tools. We recommend using [IntelliJ IDEA](https://www.jetbrains.com/idea/) to work with our projects
