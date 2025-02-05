@@ -20,7 +20,6 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -57,7 +56,6 @@ class ParcelDatabaseServiceIntegrationTest extends ParcelLockerIntegrationSpec {
             .entryLocker(entryLocker)
             .destinationLocker(destinationLocker)
             .size(ParcelSize.SMALL)
-            .recipients(Set.of())
             .build()
         );
 
@@ -67,15 +65,15 @@ class ParcelDatabaseServiceIntegrationTest extends ParcelLockerIntegrationSpec {
 
         List<Parcel> byReceiver = this.await(parcelRepository.findByReceiver(receiver)).orElse(Collections.emptyList());
         assertEquals(1, byReceiver.size());
-        assertEquals(uuid, byReceiver.iterator().next().uuid());
+        assertEquals(uuid, byReceiver.getFirst().uuid());
 
         List<Parcel> bySender = this.await(parcelRepository.findBySender(sender)).orElse(Collections.emptyList());
         assertEquals(1, bySender.size());
-        assertEquals(uuid, bySender.iterator().next().uuid());
+        assertEquals(uuid, bySender.getFirst().uuid());
 
         ParcelPageResult pageResult = this.await(parcelRepository.findPage(new Page(0, 28)));
         assertEquals(1, pageResult.parcels().size());
-        assertEquals(uuid, pageResult.parcels().iterator().next().uuid());
+        assertEquals(uuid, pageResult.parcels().getFirst().uuid());
 
         this.await(parcelRepository.remove(uuid));
         Optional<Parcel> removedParcel = this.await(parcelRepository.findByUUID(uuid));

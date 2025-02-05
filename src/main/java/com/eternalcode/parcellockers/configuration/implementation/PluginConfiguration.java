@@ -391,5 +391,11 @@ public class PluginConfiguration implements ReloadableConfig {
                 )
             )
             .setType(Material.CHEST_MINECART);
+
+        @Description({ " ", "# The item that is displayed in the collection GUI when no parcels are found" })
+        public ConfigItem noParcelsItem = new ConfigItem()
+            .setName("&cNo parcels found")
+            .setLore(List.of("&cYou don't have any parcels to collect."))
+            .setType(Material.BARRIER);
     }
 }
