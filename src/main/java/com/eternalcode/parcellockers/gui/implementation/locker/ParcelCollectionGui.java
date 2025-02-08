@@ -5,8 +5,8 @@ import com.eternalcode.parcellockers.configuration.implementation.PluginConfigur
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
-import com.eternalcode.parcellockers.shared.ExceptionHandler;
 import com.eternalcode.parcellockers.shared.Page;
+import com.eternalcode.parcellockers.shared.SentryExceptionHandler;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
@@ -100,10 +100,12 @@ public class ParcelCollectionGui implements GuiView {
                     .map(line -> line.replace("{SENDER}", parcel.sender().toString()))
                     .toList();
                 item.setGlow(true);
-                gui.addItem(item.toGuiItem());
+                gui.addItem(item.toGuiItem(event -> {
+
+                }));
             }
 
             this.scheduler.runTask(this.plugin, () -> gui.open(player));
-        }).whenComplete(ExceptionHandler.handler());
+        }).whenComplete(SentryExceptionHandler.handler());
     }
 }

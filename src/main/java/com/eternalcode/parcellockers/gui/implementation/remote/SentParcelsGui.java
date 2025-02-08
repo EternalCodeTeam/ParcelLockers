@@ -7,7 +7,7 @@ import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
-import com.eternalcode.parcellockers.shared.ExceptionHandler;
+import com.eternalcode.parcellockers.shared.SentryExceptionHandler;
 import com.eternalcode.parcellockers.user.UserManager;
 import dev.triumphteam.gui.builder.item.ItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
@@ -86,7 +86,7 @@ public class SentParcelsGui implements GuiView {
                 gui.addItem(item.asGuiItem());
             }
             this.server.getScheduler().runTask(this.plugin, () -> gui.open(player));
-        }).whenComplete(ExceptionHandler.handler());
+        }).whenComplete(SentryExceptionHandler.handler());
     }
 
     @Blocking

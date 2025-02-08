@@ -3,7 +3,6 @@ package com.eternalcode.parcellockers.database.wrapper;
 import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.j256.ormlite.dao.Dao;
-import io.sentry.Sentry;
 import panda.std.function.ThrowingFunction;
 
 import java.sql.SQLException;
@@ -61,9 +60,7 @@ public abstract class AbstractRepositoryOrmLite {
 
             try {
                 completableFuture.complete(action.apply(dao));
-            }
-            catch (Throwable throwable) {
-                Sentry.captureException(throwable);
+            } catch (Throwable throwable) {
                 completableFuture.completeExceptionally(throwable);
                 throwable.printStackTrace();
             }

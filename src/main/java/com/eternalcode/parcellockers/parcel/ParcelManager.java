@@ -3,7 +3,7 @@ package com.eternalcode.parcellockers.parcel;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
-import com.eternalcode.parcellockers.shared.ExceptionHandler;
+import com.eternalcode.parcellockers.shared.SentryExceptionHandler;
 import org.bukkit.command.CommandSender;
 
 public class ParcelManager {
@@ -21,22 +21,22 @@ public class ParcelManager {
     public void createParcel(CommandSender sender, Parcel parcel) {
         this.parcelRepository.save(parcel).thenAccept(v ->
             this.announcer.sendMessage(sender, this.config.messages.parcelSuccessfullyCreated)
-        ).whenComplete(ExceptionHandler.handler().andThen((v, throwable) -> {
-            if (throwable != null) {
-                this.announcer.sendMessage(sender, this.config.messages.failedToCreateParcel);
+        ).whenComplete(SentryExceptionHandler.handler().andThen((v, throwable) -> {
+                if (throwable != null) {
+                    this.announcer.sendMessage(sender, this.config.messages.failedToCreateParcel);
+                }
             }
-        }
         ));
     }
 
     public void deleteParcel(CommandSender sender, Parcel parcel) {
         this.parcelRepository.remove(parcel).thenAccept(v ->
             this.announcer.sendMessage(sender, this.config.messages.parcelSuccessfullyDeleted)
-        ).whenComplete(ExceptionHandler.handler().andThen((v, throwable) -> {
-            if (throwable != null) {
-                this.announcer.sendMessage(sender, this.config.messages.failedToDeleteParcel);
+        ).whenComplete(SentryExceptionHandler.handler().andThen((v, throwable) -> {
+                if (throwable != null) {
+                    this.announcer.sendMessage(sender, this.config.messages.failedToDeleteParcel);
+                }
             }
-        }
         ));
     }
 }

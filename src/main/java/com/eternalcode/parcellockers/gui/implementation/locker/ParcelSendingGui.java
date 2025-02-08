@@ -12,7 +12,7 @@ import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
-import com.eternalcode.parcellockers.shared.ExceptionHandler;
+import com.eternalcode.parcellockers.shared.SentryExceptionHandler;
 import com.eternalcode.parcellockers.user.repository.UserRepository;
 import de.rapha149.signgui.SignGUI;
 import de.rapha149.signgui.SignGUIAction;
@@ -220,7 +220,7 @@ public class ParcelSendingGui implements GuiView {
                     this.announcer.sendMessage(player, settings.messages.parcelSent);
                     this.gui.close(player);
 
-                }).whenComplete(ExceptionHandler.handler()
+                }).whenComplete(SentryExceptionHandler.handler()
                     .andThen((unused, throwable) -> {
                             if (throwable != null) {
                                 this.announcer.sendMessage(player, settings.messages.parcelFailedToSend);

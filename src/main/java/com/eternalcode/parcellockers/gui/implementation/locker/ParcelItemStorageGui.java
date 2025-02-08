@@ -8,7 +8,7 @@ import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
-import com.eternalcode.parcellockers.shared.ExceptionHandler;
+import com.eternalcode.parcellockers.shared.SentryExceptionHandler;
 import com.eternalcode.parcellockers.user.repository.UserRepository;
 import com.eternalcode.parcellockers.util.InventoryUtil;
 import dev.rollczi.liteskullapi.SkullAPI;
@@ -50,8 +50,7 @@ public class ParcelItemStorageGui {
                                 ParcelContentRepository parcelContentRepository,
                                 UserRepository userRepository,
                                 SkullAPI skullAPI,
-                                ParcelSendingGuiState state)
-    {
+                                ParcelSendingGuiState state) {
         this.plugin = plugin;
         this.config = config;
         this.miniMessage = miniMessage;
@@ -83,7 +82,7 @@ public class ParcelItemStorageGui {
             this.userRepository,
             this.skullAPI,
             this.state
-            ).show(player));
+        ).show(player));
 
         switch (size) {
             case SMALL -> gui = Gui.storage()
@@ -131,7 +130,7 @@ public class ParcelItemStorageGui {
 
             this.itemStorageRepository.remove(player.getUniqueId()).thenAccept(unused -> {
                 this.itemStorageRepository.save(new ItemStorage(player.getUniqueId(), items));
-            }).whenComplete(ExceptionHandler.handler());
+            }).whenComplete(SentryExceptionHandler.handler());
         });
 
         this.itemStorageRepository.find(player.getUniqueId()).thenAccept(optional -> {
@@ -144,6 +143,6 @@ public class ParcelItemStorageGui {
             }
 
             this.plugin.getServer().getScheduler().runTask(this.plugin, () -> gui.open(player));
-        }).whenComplete(ExceptionHandler.handler());
+        }).whenComplete(SentryExceptionHandler.handler());
     }
 }

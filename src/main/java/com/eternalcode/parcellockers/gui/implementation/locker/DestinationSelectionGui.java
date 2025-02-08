@@ -7,8 +7,8 @@ import com.eternalcode.parcellockers.gui.PaginatedGuiRefresher;
 import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.locker.repository.LockerPageResult;
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
-import com.eternalcode.parcellockers.shared.ExceptionHandler;
 import com.eternalcode.parcellockers.shared.Page;
+import com.eternalcode.parcellockers.shared.SentryExceptionHandler;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
@@ -86,7 +86,7 @@ public class DestinationSelectionGui implements GuiView {
 
                 this.loadLockers(player, result, refresher).forEach(refresher::addItem);
                 this.scheduler.runTask(this.plugin, () -> gui.open(player));
-            }).whenComplete(ExceptionHandler.handler())
+            }).whenComplete(SentryExceptionHandler.handler())
             .orTimeout(5, TimeUnit.SECONDS);
     }
 
