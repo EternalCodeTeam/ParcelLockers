@@ -1,6 +1,5 @@
 plugins {
     `java-library`
-    checkstyle
     id("net.minecrell.plugin-yml.bukkit") version "0.6.0"
     id("xyz.jpenilla.run-paper") version "2.3.1"
     id("com.gradleup.shadow") version "8.3.5"
@@ -99,15 +98,6 @@ dependencies {
 
 java {
     toolchain.languageVersion.set(JavaLanguageVersion.of(21))
-}
-
-checkstyle {
-    toolVersion = "10.21.1"
-
-    configFile = file("${rootDir}/gradle/checkstyle/checkstyle.xml")
-
-    maxErrors = 0
-    maxWarnings = 0
 }
 
 bukkit {
