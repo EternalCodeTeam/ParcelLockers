@@ -26,5 +26,7 @@ public interface ParcelRepository {
 
     CompletableFuture<Integer> remove(UUID uuid);
 
+    CompletableFuture<Integer> removeAll();
+
     CompletableFuture<ParcelPageResult> findPage(Page page);
 }

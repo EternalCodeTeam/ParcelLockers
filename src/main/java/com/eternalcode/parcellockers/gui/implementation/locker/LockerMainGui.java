@@ -6,6 +6,7 @@ import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
+import com.eternalcode.parcellockers.parcel.ParcelManager;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.user.repository.UserRepository;
 import dev.rollczi.liteskullapi.SkullAPI;
@@ -30,6 +31,7 @@ public class LockerMainGui implements GuiView {
     private final ParcelContentRepository parcelContentRepository;
     private final UserRepository userRepository;
     private final SkullAPI skullAPI;
+    private final ParcelManager parcelManager;
 
     public LockerMainGui(Plugin plugin,
                          MiniMessage miniMessage,
@@ -39,7 +41,7 @@ public class LockerMainGui implements GuiView {
                          NotificationAnnouncer announcer,
                          ParcelContentRepository parcelContentRepository,
                          UserRepository userRepository,
-                         SkullAPI skullAPI) {
+                         SkullAPI skullAPI, ParcelManager parcelManager) {
         this.plugin = plugin;
         this.miniMessage = miniMessage;
         this.config = config;
@@ -50,6 +52,7 @@ public class LockerMainGui implements GuiView {
         this.parcelContentRepository = parcelContentRepository;
         this.userRepository = userRepository;
         this.skullAPI = skullAPI;
+        this.parcelManager = parcelManager;
     }
 
     @Override
@@ -80,7 +83,8 @@ public class LockerMainGui implements GuiView {
             this.config,
             this.plugin.getServer().getScheduler(),
             this.parcelRepository,
-            this.miniMessage
+            this.miniMessage,
+            this.parcelManager
         ).show(player)));
 
         gui.setItem(22, this.config.guiSettings.parcelLockerSendItem.toGuiItem(event -> new ParcelSendingGui(this.plugin,
@@ -93,6 +97,7 @@ public class LockerMainGui implements GuiView {
             this.parcelContentRepository,
             this.userRepository,
             this.skullAPI,
+            this.parcelManager,
             new ParcelSendingGuiState()
         ).show(player)));
 

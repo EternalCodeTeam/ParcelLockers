@@ -6,6 +6,7 @@ import com.eternalcode.parcellockers.itemstorage.ItemStorage;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
+import com.eternalcode.parcellockers.parcel.ParcelManager;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.shared.SentryExceptionHandler;
@@ -39,6 +40,7 @@ public class ParcelItemStorageGui {
     private final UserRepository userRepository;
     private final SkullAPI skullAPI;
     private final ParcelSendingGuiState state;
+    private final ParcelManager parcelManager;
 
     public ParcelItemStorageGui(Plugin plugin,
                                 PluginConfiguration config,
@@ -50,7 +52,7 @@ public class ParcelItemStorageGui {
                                 ParcelContentRepository parcelContentRepository,
                                 UserRepository userRepository,
                                 SkullAPI skullAPI,
-                                ParcelSendingGuiState state) {
+                                ParcelSendingGuiState state, ParcelManager parcelManager) {
         this.plugin = plugin;
         this.config = config;
         this.miniMessage = miniMessage;
@@ -62,6 +64,7 @@ public class ParcelItemStorageGui {
         this.userRepository = userRepository;
         this.skullAPI = skullAPI;
         this.state = state;
+        this.parcelManager = parcelManager;
     }
 
     void show(Player player, ParcelSize size) {
@@ -81,6 +84,7 @@ public class ParcelItemStorageGui {
             this.parcelContentRepository,
             this.userRepository,
             this.skullAPI,
+            this.parcelManager,
             this.state
         ).show(player));
 

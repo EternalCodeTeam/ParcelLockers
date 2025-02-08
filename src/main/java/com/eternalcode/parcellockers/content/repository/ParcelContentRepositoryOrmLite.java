@@ -36,6 +36,11 @@ public class ParcelContentRepositoryOrmLite extends AbstractRepositoryOrmLite im
     }
 
     @Override
+    public CompletableFuture<Integer> removeAll() {
+        return this.deleteAll(ParcelContentWrapper.class);
+    }
+
+    @Override
     public CompletableFuture<Optional<ParcelContent>> find(UUID uniqueId) {
         return this.select(ParcelContentWrapper.class, uniqueId).thenApply(parcelContentWrapper -> Optional.ofNullable(parcelContentWrapper.toParcelContent()));
     }

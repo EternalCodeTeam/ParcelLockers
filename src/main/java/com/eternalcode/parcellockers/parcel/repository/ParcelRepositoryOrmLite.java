@@ -126,6 +126,11 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
             .toList()));
     }
 
+    @Override
+    public CompletableFuture<Integer> removeAll() {
+        return this.deleteAll(ParcelWrapper.class);
+    }
+
     public void updateCaches() {
         this.findAll().thenAccept(parcels -> {
             List<Parcel> parcelList = parcels.orElse(List.of());

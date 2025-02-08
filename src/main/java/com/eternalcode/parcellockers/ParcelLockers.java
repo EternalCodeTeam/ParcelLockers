@@ -4,6 +4,7 @@ import com.eternalcode.commons.adventure.AdventureLegacyColorPostProcessor;
 import com.eternalcode.commons.adventure.AdventureLegacyColorPreProcessor;
 import com.eternalcode.commons.bukkit.scheduler.BukkitSchedulerImpl;
 import com.eternalcode.commons.scheduler.Scheduler;
+import com.eternalcode.parcellockers.command.debug.DebugCommand;
 import com.eternalcode.parcellockers.command.handler.InvalidUsageImpl;
 import com.eternalcode.parcellockers.command.handler.PermissionMessage;
 import com.eternalcode.parcellockers.configuration.ConfigurationManager;
@@ -150,14 +151,15 @@ public final class ParcelLockers extends JavaPlugin {
         MainGui mainGUI = new MainGui(this, server, miniMessage, config, parcelRepository, lockerRepository, userManager);
         ParcelListGui parcelListGUI = new ParcelListGui(this, server, miniMessage, config, parcelRepository, lockerRepository, userManager, mainGUI);
 
-        this.liteCommands = LiteBukkitFactory.builder("parcellockers", this)
+        this.liteCommands = LiteBukkitFactory.builder(this.getName(), this)
             .argument(Parcel.class, new ParcelArgument(parcelCache))
             .argument(Locker.class, new ParcelLockerArgument(lockerCache))
             .extension(new LiteAdventureExtension<>())
             .message(LiteBukkitMessages.PLAYER_ONLY, config.messages.onlyForPlayers)
             .commands(LiteCommandsAnnotations.of(
                 new ParcelCommand(lockerRepository, announcer, config, mainGUI, parcelListGUI, parcelManager, userManager),
-                new ParcelLockersCommand(configManager, config, announcer)
+                new ParcelLockersCommand(configManager, config, announcer),
+                new DebugCommand(parcelRepository, lockerRepository, itemStorageRepository, parcelContentRepository, announcer)
             ))
             .invalidUsage(new InvalidUsageImpl(announcer, config))
             .missingPermission(new PermissionMessage(announcer, config))
@@ -169,7 +171,7 @@ public final class ParcelLockers extends JavaPlugin {
             return;
         }*/
 
-        LockerMainGui lockerMainGUI = new LockerMainGui(this, miniMessage, config, itemStorageRepository, parcelRepository, lockerRepository, announcer, parcelContentRepository, userRepository, this.skullAPI);
+        LockerMainGui lockerMainGUI = new LockerMainGui(this, miniMessage, config, itemStorageRepository, parcelRepository, lockerRepository, announcer, parcelContentRepository, userRepository, this.skullAPI, parcelManager);
 
         Stream.of(
             new LockerInteractionController(lockerCache, lockerMainGUI),

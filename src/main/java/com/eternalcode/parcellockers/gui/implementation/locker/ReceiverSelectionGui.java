@@ -108,7 +108,7 @@ public class ReceiverSelectionGui implements GuiView {
 
     private CompletableFuture<List<Supplier<GuiItem>>> loadSkulls(Player player, UserPageResult result, PaginatedGuiRefresher refresh) {
         return result.users().stream()
-            .filter(user -> !user.uuid().equals(player.getUniqueId()))
+//            .filter(user -> !user.uuid().equals(player.getUniqueId()))
             .map(user -> this.skullAPI.getSkullData(user.uuid()).thenApply(skullData -> this.toItem(player, user, skullData, refresh)))
             .collect(CompletableFutures.joinList());
     }

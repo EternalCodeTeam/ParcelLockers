@@ -13,6 +13,8 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
 
+import static com.eternalcode.parcellockers.util.InventoryUtil.freeSlotsInInventory;
+
 public class ParcelManager {
 
     private final PluginConfiguration config;
@@ -53,7 +55,7 @@ public class ParcelManager {
         this.parcelContentRepository.find(parcel.uuid()).thenAccept(optional -> {
             optional.ifPresent(content -> {
                 List<ItemStack> items = content.items();
-                if (player.getInventory().getStorageContents().length > items.size()) {
+                if (items.size() > freeSlotsInInventory(player)) {
                     player.playSound(player.getLocation(), Sound.ITEM_CHORUS_FRUIT_TELEPORT, 1, 1);
                     this.announcer.sendMessage(player, this.config.messages.notEnoughInventorySpace);
                     return;

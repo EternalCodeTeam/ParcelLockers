@@ -4,6 +4,7 @@ import com.eternalcode.parcellockers.configuration.implementation.ConfigItem;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.parcel.Parcel;
+import com.eternalcode.parcellockers.parcel.ParcelManager;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.SentryExceptionHandler;
@@ -12,6 +13,7 @@ import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitScheduler;
@@ -27,13 +29,15 @@ public class ParcelCollectionGui implements GuiView {
     private final BukkitScheduler scheduler;
     private final ParcelRepository parcelRepository;
     private final MiniMessage miniMessage;
+    private final ParcelManager parcelManager;
 
-    public ParcelCollectionGui(Plugin plugin, PluginConfiguration config, BukkitScheduler scheduler, ParcelRepository parcelRepository, MiniMessage miniMessage) {
+    public ParcelCollectionGui(Plugin plugin, PluginConfiguration config, BukkitScheduler scheduler, ParcelRepository parcelRepository, MiniMessage miniMessage, ParcelManager parcelManager) {
         this.plugin = plugin;
         this.config = config;
         this.scheduler = scheduler;
         this.parcelRepository = parcelRepository;
         this.miniMessage = miniMessage;
+        this.parcelManager = parcelManager;
     }
 
     @Override
@@ -78,8 +82,7 @@ public class ParcelCollectionGui implements GuiView {
 
         this.parcelRepository.findByReceiver(player.getUniqueId(), FIRST_PAGE).thenAccept(result -> {
             if (result == null || result.parcels().isEmpty()) {
-                gui.setItem(22, guiSettings.noParcelsItem.toGuiItem());
-                return;
+                gui.setItem(22, guiSettings.noParcelsItem.toGuiItem(event -> player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_TELEPORT, 0.5F, 1)));
             }
 
             if (result.hasNextPage()) {
@@ -94,6 +97,7 @@ public class ParcelCollectionGui implements GuiView {
                 ConfigItem item = parcelItem.clone();
                 item.name = item.name.replace("{NAME}", parcel.name());
                 item.lore = item.lore.stream()
+                    .map(line -> line.replace("{UUID}", parcel.uuid().toString()))
                     .map(line -> line.replace("{DESCRIPTION}", parcel.description()))
                     .map(line -> line.replace("{SIZE}", parcel.size().name()))
                     .map(line -> line.replace("{SENDER}", parcel.sender().toString()))

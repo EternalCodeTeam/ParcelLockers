@@ -1,9 +1,10 @@
+import xyz.jpenilla.runtask.task.AbstractRun
+
 plugins {
     `java-library`
     id("net.minecrell.plugin-yml.bukkit") version "0.6.0"
     id("xyz.jpenilla.run-paper") version "2.3.1"
-    id("com.gradleup.shadow") version "8.3.5"
-    id("net.kyori.blossom") version "2.1.0"
+    id("com.gradleup.shadow") version "9.0.0-beta8"
 }
 
 group = "com.eternalcode"
@@ -118,12 +119,12 @@ tasks.withType<JavaCompile> {
     options.release = 21
 }
 
-sourceSets.main {
-    blossom.javaSources {
-        property("@NAME@", project.name)
-        property("@VERSION@", project.version.toString())
-        property("@DEVELOPER_MODE@", System.getenv("DEVELOPER_MODE") ?: "false")
+tasks.withType(AbstractRun::class) {
+    javaLauncher = javaToolchains.launcherFor {
+        vendor = JvmVendorSpec.JETBRAINS
+        languageVersion = JavaLanguageVersion.of(21)
     }
+    jvmArgs("-XX:+AllowEnhancedClassRedefinition", "-XX:+AllowRedefinitionToAddDeleteMethods")
 }
 
 tasks {
@@ -152,27 +153,31 @@ tasks {
             exclude(dependency("de\\.rapha149\\.signgui:signgui:.*")) // https://github.com/Rapha149/SignGUI/issues/15
         }
 
+        val relocate = false
         val relocationPrefix = "com.eternalcode.parcellockers.libs"
-        listOf(
-            "panda",
-            "org.bstats",
-            "org.json",
-            "org.postgresql",
-            "net.dzikoysk",
-            "net.kyori",
-            "io.papermc",
-            "io.sentry",
-            "dev.rollczi",
-            "de.eldoria",
-            "com.eternalcode.commons",
-            "com.eternalcode.gitcheck",
-            "com.fasterxml",
-            "com.j256",
-            "com.spotify",
-            "com.zaxxer",
-            "de.rapha149",
-            "dev.triumphteam"
-        ).forEach { relocate(it, "$relocationPrefix.$it") }
+        if (relocate) {
+            listOf(
+                "panda",
+                "org.bstats",
+                "org.json",
+                "org.postgresql",
+                "net.dzikoysk",
+                "net.kyori",
+                "io.papermc",
+                "io.sentry",
+                "dev.rollczi",
+                "de.eldoria",
+                "com.eternalcode.commons",
+                "com.eternalcode.gitcheck",
+                "com.fasterxml",
+                "com.j256",
+                "com.spotify",
+                "com.zaxxer",
+                "de.rapha149",
+                "dev.triumphteam"
+            ).forEach { relocate(it, "$relocationPrefix.$it") }
+        }
+        relocate("org.bstats", "$relocationPrefix.bstats")
     }
 }
 

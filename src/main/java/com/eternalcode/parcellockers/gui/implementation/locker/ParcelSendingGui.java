@@ -10,6 +10,7 @@ import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepositor
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.Parcel;
+import com.eternalcode.parcellockers.parcel.ParcelManager;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.shared.SentryExceptionHandler;
@@ -50,6 +51,7 @@ public class ParcelSendingGui implements GuiView {
     private final ParcelContentRepository parcelContentRepository;
     private final UserRepository userRepository;
     private final SkullAPI skullAPI;
+    private final ParcelManager parcelManager;
 
     private final ParcelSendingGuiState state;
 
@@ -63,7 +65,7 @@ public class ParcelSendingGui implements GuiView {
                             NotificationAnnouncer announcer,
                             ParcelContentRepository parcelContentRepository,
                             UserRepository userRepository,
-                            SkullAPI skullAPI, ParcelSendingGuiState state) {
+                            SkullAPI skullAPI, ParcelManager parcelManager, ParcelSendingGuiState state) {
         this.plugin = plugin;
         this.config = config;
         this.miniMessage = miniMessage;
@@ -74,6 +76,7 @@ public class ParcelSendingGui implements GuiView {
         this.parcelContentRepository = parcelContentRepository;
         this.userRepository = userRepository;
         this.skullAPI = skullAPI;
+        this.parcelManager = parcelManager;
         this.state = state;
         this.scheduler = this.plugin.getServer().getScheduler();
     }
@@ -177,7 +180,8 @@ public class ParcelSendingGui implements GuiView {
                 this.parcelContentRepository,
                 this.userRepository,
                 this.skullAPI,
-                this.state
+                this.state,
+                this.parcelManager
             );
             this.itemStorageRepository.find(player.getUniqueId()).thenAccept(result -> {
                     if (result.isPresent()) {
@@ -239,7 +243,8 @@ public class ParcelSendingGui implements GuiView {
                 this.announcer,
                 this.parcelContentRepository,
                 this.userRepository,
-                this.skullAPI
+                this.skullAPI,
+                this.parcelManager
             ).show(player));
 
         ConfigItem smallButton = guiSettings.smallParcelSizeItem;

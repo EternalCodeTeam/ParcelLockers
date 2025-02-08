@@ -28,7 +28,7 @@ public class ParcelPlaceholderUtil {
             .register("{RECEIVER}", receiver)
             .register("{SIZE}", parcel.size().toString())
             .register("{PRIORITY}", parcel.priority() ? "&aYes" : "&cNo")
-            .register("{DESCRIPTION}", parcel.description());
+            .register("{DESCRIPTION}", parcel.description() != null ? parcel.description() : "-");
 
         Optional<Locker> lockerOptional = lockerRepository.findByUUID(parcel.destinationLocker()).join();
 
