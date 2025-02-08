@@ -52,7 +52,7 @@ dependencies {
     implementation("com.eternalcode:gitcheck:1.0.0")
 
     // metrics and sentry
-    implementation("org.bstats:bstats-bukkit:3.1.0")
+    compileOnly("org.bstats:bstats-bukkit:3.1.0")
     implementation("io.sentry:sentry:8.0.0")
 
     // database
@@ -145,6 +145,7 @@ tasks {
             "org/jetbrains/annotations/**",
             "META-INF/**",
             "javax/**",
+            "com/google/**",
         )
 
         mergeServiceFiles()
@@ -152,18 +153,7 @@ tasks {
             exclude(dependency("de\\.rapha149\\.signgui:signgui:.*")) // https://github.com/Rapha149/SignGUI/issues/15
         }
 
-        val prefix = "com.eternalcode.parcellockers.libs"
-        listOf(
-            "panda",
-            "org.panda_lang",
-            "net.dzikoysk",
-            "io.papermc.lib",
-            "org.bstats",
-            "dev.rollczi",
-            "net.kyori",
-            "org.json",
-            "com.fasterxml",
-            "de.rapha149"
-        ).forEach { relocate(it, prefix) }
+        isEnableRelocation = true
+        relocationPrefix = "com.eternalcode.parcellockers.libs"
     }
 }
