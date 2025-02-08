@@ -42,8 +42,7 @@ public class ParcelCollectionGui implements GuiView {
     }
 
     private void show(Player player, Page page) {
-        PluginConfiguration settings = this.config;
-        PluginConfiguration.GuiSettings guiSettings = settings.guiSettings;
+        PluginConfiguration.GuiSettings guiSettings = this.config.guiSettings;
 
         Component guiTitle = this.miniMessage.deserialize(guiSettings.parcelCollectionGuiTitle);
 

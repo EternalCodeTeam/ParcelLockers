@@ -128,14 +128,17 @@ tasks.withType<JavaCompile> {
     options.release = 21
 }
 
+sourceSets.main {
+    blossom.javaSources {
+        property("@NAME@", project.name)
+        property("@VERSION@", project.version.toString())
+        property("@DEVELOPER_MODE@", System.getenv("DEVELOPER_MODE") ?: "false")
+    }
+}
+
 tasks {
     runServer {
         minecraftVersion("1.21.4")
-        // remove ParcelLockers data folder
-        doFirst {
-            project.file("run/plugins/ParcelLockers").deleteRecursively()
-        }
-        dependsOn(cleanPaperPluginsCache)
     }
 
     test {
@@ -149,7 +152,9 @@ tasks {
             "org/intellij/lang/annotations/**",
             "org/jetbrains/annotations/**",
             "META-INF/**",
-            "javax/**"
+            "javax/**",
+            "javassist/**",
+            "org/h2/util/**"
         )
 
         mergeServiceFiles()
@@ -157,9 +162,27 @@ tasks {
             exclude(dependency("de\\.rapha149\\.signgui:signgui:.*")) // https://github.com/Rapha149/SignGUI/issues/15
         }
 
-        isEnableRelocation = true
-        relocationPrefix = "com.eternalcode.parcellockers.libs"
-
+        val relocationPrefix = "com.eternalcode.parcellockers.libs"
+        listOf(
+            "panda",
+            "org.bstats",
+            "org.json",
+            "org.postgresql",
+            "net.dzikoysk",
+            "net.kyori",
+            "io.papermc",
+            "io.sentry",
+            "dev.rollczi",
+            "de.eldoria",
+            "com.eternalcode.commons",
+            "com.eternalcode.gitcheck",
+            "com.fasterxml",
+            "com.j256",
+            "com.spotify",
+            "com.zaxxer",
+            "de.rapha149",
+            "dev.triumphteam"
+        ).forEach { relocate(it, "$relocationPrefix.$it") }
     }
 }
 

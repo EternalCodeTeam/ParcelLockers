@@ -66,7 +66,7 @@ public class LockerMainGui implements GuiView {
         GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem();
         GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(event -> gui.close(player));
 
-        gui.setDefaultClickAction(event -> event.setCancelled(true));
+        //gui.setDefaultClickAction(event -> event.setCancelled(true));
 
         for (int slot : CORNER_SLOTS) {
             gui.setItem(slot, cornerItem);
@@ -76,7 +76,13 @@ public class LockerMainGui implements GuiView {
             gui.setItem(slot, backgroundItem);
         }
 
-        gui.setItem(20, this.config.guiSettings.parcelLockerCollectItem.toGuiItem(event -> event.setCancelled(true)));
+        gui.setItem(20, this.config.guiSettings.parcelLockerCollectItem.toGuiItem(event -> new ParcelCollectionGui(this.plugin,
+            this.config,
+            this.plugin.getServer().getScheduler(),
+            this.parcelRepository,
+            this.miniMessage
+        ).show(player)));
+
         gui.setItem(22, this.config.guiSettings.parcelLockerSendItem.toGuiItem(event -> new ParcelSendingGui(this.plugin,
             this.config,
             this.miniMessage,
