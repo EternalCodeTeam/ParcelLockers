@@ -4,6 +4,7 @@ plugins {
     id("net.minecrell.plugin-yml.bukkit") version "0.6.0"
     id("xyz.jpenilla.run-paper") version "2.3.1"
     id("com.gradleup.shadow") version "8.3.5"
+    id("net.kyori.blossom") version "2.1.0"
 }
 
 group = "com.eternalcode"
@@ -52,7 +53,7 @@ dependencies {
     implementation("com.eternalcode:gitcheck:1.0.0")
 
     // metrics and sentry
-    compileOnly("org.bstats:bstats-bukkit:3.1.0")
+    implementation("org.bstats:bstats-bukkit:3.1.0")
     implementation("io.sentry:sentry:8.0.0")
 
     // database
@@ -115,10 +116,9 @@ bukkit {
     prefix = "ParcelLockers"
     author = "EternalCodeTeam"
     name = "ParcelLockers"
-    description =
-        "Plugin that provides functionality of parcel lockers in Minecraft, allowing players to send and receive parcels safely."
+    description = "Plugin that provides functionality of parcel lockers in Minecraft, allowing players to send and receive parcels safely."
     website = "https://github.com/EternalCodeTeam/ParcelLockers"
-    version = "1.0.0-SNAPSHOT"
+    version = "0.0.1-SNAPSHOT"
 }
 
 tasks.withType<JavaCompile> {
@@ -131,6 +131,11 @@ tasks.withType<JavaCompile> {
 tasks {
     runServer {
         minecraftVersion("1.21.4")
+        // remove ParcelLockers data folder
+        doFirst {
+            project.file("run/plugins/ParcelLockers").deleteRecursively()
+        }
+        dependsOn(cleanPaperPluginsCache)
     }
 
     test {
@@ -144,8 +149,7 @@ tasks {
             "org/intellij/lang/annotations/**",
             "org/jetbrains/annotations/**",
             "META-INF/**",
-            "javax/**",
-            "com/google/**",
+            "javax/**"
         )
 
         mergeServiceFiles()
@@ -155,5 +159,8 @@ tasks {
 
         isEnableRelocation = true
         relocationPrefix = "com.eternalcode.parcellockers.libs"
+
     }
 }
+
+

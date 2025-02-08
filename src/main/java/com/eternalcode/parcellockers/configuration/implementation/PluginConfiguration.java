@@ -109,6 +109,9 @@ public class PluginConfiguration implements ReloadableConfig {
         public String parcelDestinationSet = "&2✔ &aParcel destination locker set successfully.";
         public String alreadyCreatingLocker = "&4✘ &cYou are already creating a parcel locker!";
         public String receiverNotSet = "&4✘ &cThe parcel receiver is not set!";
+        public String parcelSuccessfullyCollected = "&2✔ &aParcel collected successfully.";
+        public String failedToCollectParcel = "&4✘ &cAn error occurred while collecting the parcel.";
+        public String notEnoughInventorySpace = "&4✘ &cYou don't have enough space in your inventory to collect the parcel!";
 
         @Description({ " ", "# The parcel info message." })
         public List<String> parcelInfoMessages = List.of(
