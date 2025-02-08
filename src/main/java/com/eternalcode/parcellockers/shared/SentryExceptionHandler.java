@@ -4,16 +4,16 @@ import io.sentry.Sentry;
 
 import java.util.function.BiConsumer;
 
-public class ExceptionHandler<T> implements BiConsumer<T, Throwable> {
+public class SentryExceptionHandler<T> implements BiConsumer<T, Throwable> {
 
-    private static final ExceptionHandler<?> INSTANCE = new ExceptionHandler<>();
+    private static final SentryExceptionHandler<?> INSTANCE = new SentryExceptionHandler<>();
 
-    private ExceptionHandler() {
+    private SentryExceptionHandler() {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> ExceptionHandler<T> handler() {
-        return (ExceptionHandler<T>) INSTANCE;
+    public static <T> SentryExceptionHandler<T> handler() {
+        return (SentryExceptionHandler<T>) INSTANCE;
     }
 
     @Override

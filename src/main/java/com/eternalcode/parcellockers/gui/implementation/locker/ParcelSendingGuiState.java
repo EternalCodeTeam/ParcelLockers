@@ -4,7 +4,7 @@ import com.eternalcode.parcellockers.parcel.ParcelSize;
 
 import java.util.UUID;
 
-public class ParcelSendingGUIState {
+public class ParcelSendingGuiState {
 
     private String parcelName;
     private String parcelDescription;
@@ -14,7 +14,7 @@ public class ParcelSendingGUIState {
     private UUID entryLocker;
     private UUID destinationLocker;
 
-    public ParcelSendingGUIState() {
+    public ParcelSendingGuiState() {
         this.parcelName = null;
         this.parcelDescription = null;
         this.size = ParcelSize.SMALL;

@@ -6,9 +6,10 @@ import com.eternalcode.parcellockers.itemstorage.ItemStorage;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
+import com.eternalcode.parcellockers.parcel.ParcelManager;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
-import com.eternalcode.parcellockers.shared.ExceptionHandler;
+import com.eternalcode.parcellockers.shared.SentryExceptionHandler;
 import com.eternalcode.parcellockers.user.repository.UserRepository;
 import com.eternalcode.parcellockers.util.InventoryUtil;
 import dev.rollczi.liteskullapi.SkullAPI;
@@ -26,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
-public class ParcelItemStorageGUI {
+public class ParcelItemStorageGui {
 
     private final Plugin plugin;
     private final PluginConfiguration config;
@@ -38,9 +39,10 @@ public class ParcelItemStorageGUI {
     private final ParcelContentRepository parcelContentRepository;
     private final UserRepository userRepository;
     private final SkullAPI skullAPI;
-    private final ParcelSendingGUIState state;
+    private final ParcelSendingGuiState state;
+    private final ParcelManager parcelManager;
 
-    public ParcelItemStorageGUI(Plugin plugin,
+    public ParcelItemStorageGui(Plugin plugin,
                                 PluginConfiguration config,
                                 MiniMessage miniMessage,
                                 ItemStorageRepository itemStorageRepository,
@@ -50,8 +52,7 @@ public class ParcelItemStorageGUI {
                                 ParcelContentRepository parcelContentRepository,
                                 UserRepository userRepository,
                                 SkullAPI skullAPI,
-                                ParcelSendingGUIState state)
-    {
+                                ParcelSendingGuiState state, ParcelManager parcelManager) {
         this.plugin = plugin;
         this.config = config;
         this.miniMessage = miniMessage;
@@ -63,6 +64,7 @@ public class ParcelItemStorageGUI {
         this.userRepository = userRepository;
         this.skullAPI = skullAPI;
         this.state = state;
+        this.parcelManager = parcelManager;
     }
 
     void show(Player player, ParcelSize size) {
@@ -71,7 +73,7 @@ public class ParcelItemStorageGUI {
 
         GuiItem backgroundItem = guiSettings.mainGuiBackgroundItem.toGuiItem(event -> event.setCancelled(true));
 
-        GuiItem confirmItem = guiSettings.confirmItemsItem.toGuiItem(event -> new ParcelSendingGUI(
+        GuiItem confirmItem = guiSettings.confirmItemsItem.toGuiItem(event -> new ParcelSendingGui(
             this.plugin,
             this.config,
             this.miniMessage,
@@ -82,8 +84,9 @@ public class ParcelItemStorageGUI {
             this.parcelContentRepository,
             this.userRepository,
             this.skullAPI,
+            this.parcelManager,
             this.state
-            ).show(player));
+        ).show(player));
 
         switch (size) {
             case SMALL -> gui = Gui.storage()
@@ -131,7 +134,7 @@ public class ParcelItemStorageGUI {
 
             this.itemStorageRepository.remove(player.getUniqueId()).thenAccept(unused -> {
                 this.itemStorageRepository.save(new ItemStorage(player.getUniqueId(), items));
-            }).whenComplete(ExceptionHandler.handler());
+            }).whenComplete(SentryExceptionHandler.handler());
         });
 
         this.itemStorageRepository.find(player.getUniqueId()).thenAccept(optional -> {
@@ -144,6 +147,6 @@ public class ParcelItemStorageGUI {
             }
 
             this.plugin.getServer().getScheduler().runTask(this.plugin, () -> gui.open(player));
-        }).whenComplete(ExceptionHandler.handler());
+        }).whenComplete(SentryExceptionHandler.handler());
     }
 }

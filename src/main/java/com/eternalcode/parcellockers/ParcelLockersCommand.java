@@ -12,7 +12,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-@Command(name = "parcellockers", aliases = { "parcellocker" })
+@Command(name = "parcellockers")
 @Permission("parcellockers.admin")
 public class ParcelLockersCommand {
 

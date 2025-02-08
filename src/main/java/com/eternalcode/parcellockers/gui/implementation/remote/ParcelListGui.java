@@ -7,8 +7,8 @@ import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.parcel.util.ParcelPlaceholderUtil;
-import com.eternalcode.parcellockers.shared.ExceptionHandler;
 import com.eternalcode.parcellockers.shared.Page;
+import com.eternalcode.parcellockers.shared.SentryExceptionHandler;
 import com.eternalcode.parcellockers.user.UserManager;
 import dev.triumphteam.gui.builder.item.ItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
@@ -24,7 +24,7 @@ import java.util.List;
 
 import static com.eternalcode.commons.adventure.AdventureUtil.resetItalic;
 
-public class ParcelListGUI extends GuiView {
+public class ParcelListGui implements GuiView {
 
     private static final int WIDTH = 7;
     private static final int HEIGHT = 4;
@@ -36,16 +36,16 @@ public class ParcelListGUI extends GuiView {
     private final ParcelRepository parcelRepository;
     private final LockerRepository lockerRepository;
     private final UserManager userManager;
-    private final MainGUI mainGUI;
+    private final MainGui mainGUI;
 
-    public ParcelListGUI(Plugin plugin,
+    public ParcelListGui(Plugin plugin,
                          Server server,
                          MiniMessage miniMessage,
                          PluginConfiguration config,
                          ParcelRepository parcelRepository,
                          LockerRepository lockerRepository,
                          UserManager userManager,
-                         MainGUI mainGUI) {
+                         MainGui mainGUI) {
         this.plugin = plugin;
         this.server = server;
         this.miniMessage = miniMessage;
@@ -112,7 +112,7 @@ public class ParcelListGUI extends GuiView {
             }
 
             this.server.getScheduler().runTask(this.plugin, () -> gui.open(player));
-        }).whenComplete(ExceptionHandler.handler());
+        }).whenComplete(SentryExceptionHandler.handler());
 
     }
 }

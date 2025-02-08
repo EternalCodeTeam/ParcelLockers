@@ -39,4 +39,9 @@ public class ItemStorageRepositoryOrmLite extends AbstractRepositoryOrmLite impl
     public CompletableFuture<Integer> remove(UUID uuid) {
         return this.deleteById(ItemStorageWrapper.class, uuid);
     }
+
+    @Override
+    public CompletableFuture<Integer> removeAll() {
+        return this.deleteAll(ItemStorageWrapper.class);
+    }
 }

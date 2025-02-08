@@ -1,9 +1,10 @@
+import xyz.jpenilla.runtask.task.AbstractRun
+
 plugins {
     `java-library`
-    checkstyle
     id("net.minecrell.plugin-yml.bukkit") version "0.6.0"
     id("xyz.jpenilla.run-paper") version "2.3.1"
-    id("com.gradleup.shadow") version "8.3.5"
+    id("com.gradleup.shadow") version "9.0.0-beta8"
 }
 
 group = "com.eternalcode"
@@ -100,25 +101,15 @@ java {
     toolchain.languageVersion.set(JavaLanguageVersion.of(21))
 }
 
-checkstyle {
-    toolVersion = "10.21.1"
-
-    configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
-
-    maxErrors = 0
-    maxWarnings = 0
-}
-
 bukkit {
     main = "com.eternalcode.parcellockers.ParcelLockers"
     apiVersion = "1.13"
     prefix = "ParcelLockers"
     author = "EternalCodeTeam"
     name = "ParcelLockers"
-    description =
-        "Plugin that provides functionality of parcel lockers in Minecraft, allowing players to send and receive parcels safely."
+    description = "Plugin that provides functionality of parcel lockers in Minecraft, allowing players to send and receive parcels safely."
     website = "https://github.com/EternalCodeTeam/ParcelLockers"
-    version = "1.0.0-SNAPSHOT"
+    version = "0.0.1-SNAPSHOT"
 }
 
 tasks.withType<JavaCompile> {
@@ -126,6 +117,14 @@ tasks.withType<JavaCompile> {
     options.setIncremental(true)
     options.compilerArgs.add("-parameters")
     options.release = 21
+}
+
+tasks.withType(AbstractRun::class) {
+    javaLauncher = javaToolchains.launcherFor {
+        vendor = JvmVendorSpec.JETBRAINS
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+    jvmArgs("-XX:+AllowEnhancedClassRedefinition", "-XX:+AllowRedefinitionToAddDeleteMethods")
 }
 
 tasks {
@@ -145,6 +144,8 @@ tasks {
             "org/jetbrains/annotations/**",
             "META-INF/**",
             "javax/**",
+            "javassist/**",
+            "org/h2/util/**"
         )
 
         mergeServiceFiles()
@@ -152,18 +153,32 @@ tasks {
             exclude(dependency("de\\.rapha149\\.signgui:signgui:.*")) // https://github.com/Rapha149/SignGUI/issues/15
         }
 
-        val prefix = "com.eternalcode.parcellockers.libs"
-        listOf(
-            "panda",
-            "org.panda_lang",
-            "net.dzikoysk",
-            "io.papermc.lib",
-            "org.bstats",
-            "dev.rollczi",
-            "net.kyori",
-            "org.json",
-            "com.fasterxml",
-            "de.rapha149"
-        ).forEach { relocate(it, prefix) }
+        val relocate = false
+        val relocationPrefix = "com.eternalcode.parcellockers.libs"
+        if (relocate) {
+            listOf(
+                "panda",
+                "org.bstats",
+                "org.json",
+                "org.postgresql",
+                "net.dzikoysk",
+                "net.kyori",
+                "io.papermc",
+                "io.sentry",
+                "dev.rollczi",
+                "de.eldoria",
+                "com.eternalcode.commons",
+                "com.eternalcode.gitcheck",
+                "com.fasterxml",
+                "com.j256",
+                "com.spotify",
+                "com.zaxxer",
+                "de.rapha149",
+                "dev.triumphteam"
+            ).forEach { relocate(it, "$relocationPrefix.$it") }
+        }
+        relocate("org.bstats", "$relocationPrefix.bstats")
     }
 }
+
+

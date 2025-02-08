@@ -16,4 +16,14 @@ public class InventoryUtil {
             player.getWorld().dropItem(player.getLocation(), itemStack);
         }
     }
+
+    public static int freeSlotsInInventory(Player player) {
+        int freeSlots = 0;
+        for (ItemStack item : player.getInventory().getStorageContents()) {
+            if (item == null) {
+                freeSlots++;
+            }
+        }
+        return freeSlots;
+    }
 }

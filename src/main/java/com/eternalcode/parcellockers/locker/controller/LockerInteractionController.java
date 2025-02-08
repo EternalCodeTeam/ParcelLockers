@@ -1,6 +1,6 @@
 package com.eternalcode.parcellockers.locker.controller;
 
-import com.eternalcode.parcellockers.gui.implementation.locker.LockerMainGUI;
+import com.eternalcode.parcellockers.gui.implementation.locker.LockerMainGui;
 import com.eternalcode.parcellockers.locker.repository.LockerCache;
 import com.eternalcode.parcellockers.shared.Position;
 import com.eternalcode.parcellockers.shared.PositionAdapter;
@@ -16,9 +16,9 @@ import java.util.Set;
 public class LockerInteractionController implements Listener {
 
     private final LockerCache cache;
-    private final LockerMainGUI lockerMainGUI;
+    private final LockerMainGui lockerMainGUI;
 
-    public LockerInteractionController(LockerCache cache, LockerMainGUI lockerMainGUI) {
+    public LockerInteractionController(LockerCache cache, LockerMainGui lockerMainGUI) {
         this.cache = cache;
         this.lockerMainGUI = lockerMainGUI;
     }

@@ -7,8 +7,8 @@ import com.eternalcode.parcellockers.gui.PaginatedGuiRefresher;
 import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.locker.repository.LockerPageResult;
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
-import com.eternalcode.parcellockers.shared.ExceptionHandler;
 import com.eternalcode.parcellockers.shared.Page;
+import com.eternalcode.parcellockers.shared.SentryExceptionHandler;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
@@ -22,7 +22,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
-public class DestinationSelectionGUI extends GuiView {
+public class DestinationSelectionGui implements GuiView {
 
     private static final int WIDTH = 7;
     private static final int HEIGHT = 4;
@@ -33,10 +33,10 @@ public class DestinationSelectionGUI extends GuiView {
     private final PluginConfiguration config;
     private final MiniMessage miniMessage;
     private final LockerRepository lockerRepository;
-    private final ParcelSendingGUI sendingGUI;
-    private final ParcelSendingGUIState state;
+    private final ParcelSendingGui sendingGUI;
+    private final ParcelSendingGuiState state;
 
-    public DestinationSelectionGUI(Plugin plugin, BukkitScheduler scheduler, PluginConfiguration config, MiniMessage miniMessage, LockerRepository lockerRepository, ParcelSendingGUI sendingGUI, ParcelSendingGUIState state) {
+    public DestinationSelectionGui(Plugin plugin, BukkitScheduler scheduler, PluginConfiguration config, MiniMessage miniMessage, LockerRepository lockerRepository, ParcelSendingGui sendingGUI, ParcelSendingGuiState state) {
         this.plugin = plugin;
         this.scheduler = scheduler;
         this.config = config;
@@ -76,17 +76,17 @@ public class DestinationSelectionGUI extends GuiView {
         gui.setItem(49, closeItem);
 
         this.lockerRepository.findPage(page).thenAccept(result -> {
-            if (result.hasNextPage()) {
-                gui.setItem(51, nextPageItem);
-            }
+                if (result.hasNextPage()) {
+                    gui.setItem(51, nextPageItem);
+                }
 
-            if (page.hasPrevious()) {
-                gui.setItem(47, previousPageItem);
-            }
+                if (page.hasPrevious()) {
+                    gui.setItem(47, previousPageItem);
+                }
 
-            this.loadLockers(player, result, refresher).forEach(refresher::addItem);
-            this.scheduler.runTask(this.plugin, () -> gui.open(player));
-        }).whenComplete(ExceptionHandler.handler())
+                this.loadLockers(player, result, refresher).forEach(refresher::addItem);
+                this.scheduler.runTask(this.plugin, () -> gui.open(player));
+            }).whenComplete(SentryExceptionHandler.handler())
             .orTimeout(5, TimeUnit.SECONDS);
     }
 

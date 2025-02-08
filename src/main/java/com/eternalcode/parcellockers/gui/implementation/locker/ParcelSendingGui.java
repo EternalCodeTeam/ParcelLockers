@@ -10,9 +10,10 @@ import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepositor
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.Parcel;
+import com.eternalcode.parcellockers.parcel.ParcelManager;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
-import com.eternalcode.parcellockers.shared.ExceptionHandler;
+import com.eternalcode.parcellockers.shared.SentryExceptionHandler;
 import com.eternalcode.parcellockers.user.repository.UserRepository;
 import de.rapha149.signgui.SignGUI;
 import de.rapha149.signgui.SignGUIAction;
@@ -37,7 +38,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-public class ParcelSendingGUI extends GuiView {
+public class ParcelSendingGui implements GuiView {
 
     private final Plugin plugin;
     private final BukkitScheduler scheduler;
@@ -50,12 +51,13 @@ public class ParcelSendingGUI extends GuiView {
     private final ParcelContentRepository parcelContentRepository;
     private final UserRepository userRepository;
     private final SkullAPI skullAPI;
+    private final ParcelManager parcelManager;
 
-    private final ParcelSendingGUIState state;
+    private final ParcelSendingGuiState state;
 
     private Gui gui;
 
-    public ParcelSendingGUI(Plugin plugin,
+    public ParcelSendingGui(Plugin plugin,
                             PluginConfiguration config,
                             MiniMessage miniMessage,
                             ItemStorageRepository itemStorageRepository,
@@ -63,7 +65,7 @@ public class ParcelSendingGUI extends GuiView {
                             NotificationAnnouncer announcer,
                             ParcelContentRepository parcelContentRepository,
                             UserRepository userRepository,
-                            SkullAPI skullAPI, ParcelSendingGUIState state) {
+                            SkullAPI skullAPI, ParcelManager parcelManager, ParcelSendingGuiState state) {
         this.plugin = plugin;
         this.config = config;
         this.miniMessage = miniMessage;
@@ -74,6 +76,7 @@ public class ParcelSendingGUI extends GuiView {
         this.parcelContentRepository = parcelContentRepository;
         this.userRepository = userRepository;
         this.skullAPI = skullAPI;
+        this.parcelManager = parcelManager;
         this.state = state;
         this.scheduler = this.plugin.getServer().getScheduler();
     }
@@ -166,7 +169,7 @@ public class ParcelSendingGUI extends GuiView {
         });
 
         GuiItem storageItem = guiSettings.parcelStorageItem.toGuiItem(event -> {
-            ParcelItemStorageGUI storageGUI = new ParcelItemStorageGUI(
+            ParcelItemStorageGui storageGUI = new ParcelItemStorageGui(
                 this.plugin,
                 this.config,
                 this.miniMessage,
@@ -177,22 +180,20 @@ public class ParcelSendingGUI extends GuiView {
                 this.parcelContentRepository,
                 this.userRepository,
                 this.skullAPI,
-                this.state
+                this.state,
+                this.parcelManager
             );
             this.itemStorageRepository.find(player.getUniqueId()).thenAccept(result -> {
                     if (result.isPresent()) {
                         int slotsSize = result.get().items().size();
                         if (slotsSize <= 9) {
                             this.scheduler.runTask(this.plugin, () -> storageGUI.show(player, this.state.getSize()));
-                        }
-                        else if (slotsSize <= 18 && this.state.getSize() == ParcelSize.SMALL) {
+                        } else if (slotsSize <= 18 && this.state.getSize() == ParcelSize.SMALL) {
                             this.scheduler.runTask(this.plugin, () -> storageGUI.show(player, ParcelSize.MEDIUM));
-                        }
-                        else {
+                        } else {
                             this.scheduler.runTask(this.plugin, () -> storageGUI.show(player, ParcelSize.LARGE));
                         }
-                    }
-                    else {
+                    } else {
                         this.scheduler.runTask(this.plugin, () -> storageGUI.show(player, this.state.getSize()));
                     }
                 }
@@ -211,18 +212,9 @@ public class ParcelSendingGUI extends GuiView {
                     return;
                 }
 
-                Parcel parcel = Parcel.builder()
-                    .size(this.state.getSize())
-                    .priority(this.state.isPriority())
-                    .sender(player.getUniqueId())
-                    .uuid(UUID.randomUUID())
-                    .name(this.state.getParcelName())
-                    .description(this.state.getParcelDescription())
-                    .entryLocker(this.state.getEntryLocker())
-                    .destinationLocker(this.state.getDestinationLocker())
-                    .receiver(this.state.getReceiver())
-                    .sender(player.getUniqueId())
-                    .build();
+                Parcel parcel = new Parcel(UUID.randomUUID(), player.getUniqueId(), this.state.getParcelName(),
+                    this.state.getParcelDescription(), this.state.isPriority(), this.state.getReceiver(),
+                    this.state.getSize(), this.state.getEntryLocker(), this.state.getDestinationLocker());
 
                 this.parcelRepository.save(parcel).thenAccept(unused -> {
 
@@ -232,7 +224,7 @@ public class ParcelSendingGUI extends GuiView {
                     this.announcer.sendMessage(player, settings.messages.parcelSent);
                     this.gui.close(player);
 
-                }).whenComplete(ExceptionHandler.handler()
+                }).whenComplete(SentryExceptionHandler.handler()
                     .andThen((unused, throwable) -> {
                             if (throwable != null) {
                                 this.announcer.sendMessage(player, settings.messages.parcelFailedToSend);
@@ -242,7 +234,7 @@ public class ParcelSendingGUI extends GuiView {
             }).orTimeout(5, TimeUnit.SECONDS));
 
         GuiItem closeItem = guiSettings.closeItem.toGuiItem(event ->
-            new LockerMainGUI(this.plugin,
+            new LockerMainGui(this.plugin,
                 this.miniMessage,
                 this.config,
                 this.itemStorageRepository,
@@ -251,7 +243,8 @@ public class ParcelSendingGUI extends GuiView {
                 this.announcer,
                 this.parcelContentRepository,
                 this.userRepository,
-                this.skullAPI
+                this.skullAPI,
+                this.parcelManager
             ).show(player));
 
         ConfigItem smallButton = guiSettings.smallParcelSizeItem;
@@ -283,7 +276,7 @@ public class ParcelSendingGUI extends GuiView {
             this.state
         ).show(player)));
 
-        this.gui.setItem(30, guiSettings.parcelDestinationLockerItem.toGuiItem(event -> new DestinationSelectionGUI(
+        this.gui.setItem(30, guiSettings.parcelDestinationLockerItem.toGuiItem(event -> new DestinationSelectionGui(
             this.plugin,
             this.scheduler,
             this.config,
@@ -330,13 +323,13 @@ public class ParcelSendingGUI extends GuiView {
     public void updateReceiverItem(Player player, String receiverName) {
         this.announcer.sendMessage(player, this.config.messages.parcelReceiverSet);
 
-         if (receiverName == null || receiverName.isEmpty()) {
-             this.gui.updateItem(23, this.config.guiSettings.parcelReceiverItem.toItemStack());
-             return;
-         }
+        if (receiverName == null || receiverName.isEmpty()) {
+            this.gui.updateItem(23, this.config.guiSettings.parcelReceiverItem.toItemStack());
+            return;
+        }
 
-         String line = this.config.guiSettings.parcelReceiverGuiSetLine.replace("{RECEIVER}", receiverName);
-         this.gui.updateItem(23, this.createActiveItem(this.config.guiSettings.parcelReceiverItem, line));
+        String line = this.config.guiSettings.parcelReceiverGuiSetLine.replace("{RECEIVER}", receiverName);
+        this.gui.updateItem(23, this.createActiveItem(this.config.guiSettings.parcelReceiverItem, line));
     }
 
     public void updateDestinationItem(Player player, String destinationLockerDesc) {

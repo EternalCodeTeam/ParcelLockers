@@ -99,6 +99,11 @@ public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implement
         });
     }
 
+    @Override
+    public CompletableFuture<Integer> removeAll() {
+        return this.deleteAll(LockerWrapper.class);
+    }
+
     public void updateCaches() {
         this.findAll().thenAccept(lockers -> {
             Map<UUID, Locker> newCache = new ConcurrentHashMap<>();
