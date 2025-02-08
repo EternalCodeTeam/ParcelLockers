@@ -103,7 +103,7 @@ java {
 checkstyle {
     toolVersion = "10.21.1"
 
-    configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
+    configFile = file("${rootDir}/gradle/checkstyle/checkstyle.xml")
 
     maxErrors = 0
     maxWarnings = 0
