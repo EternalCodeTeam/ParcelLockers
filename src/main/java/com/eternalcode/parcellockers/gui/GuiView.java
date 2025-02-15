@@ -3,7 +3,6 @@ package com.eternalcode.parcellockers.gui;
 import org.bukkit.entity.Player;
 
 
-// TODO INTERFACE
 public interface GuiView {
 
     int[] CORNER_SLOTS = { 0, 8, 45, 53 };
