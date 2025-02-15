@@ -8,6 +8,7 @@ import com.eternalcode.parcellockers.parcel.ParcelManager;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.SentryExceptionHandler;
+import com.eternalcode.parcellockers.util.InventoryUtil;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
@@ -102,9 +103,13 @@ public class ParcelCollectionGui implements GuiView {
                     .map(line -> line.replace("{SIZE}", parcel.size().name()))
                     .map(line -> line.replace("{SENDER}", parcel.sender().toString()))
                     .toList();
-                item.setGlow(true);
-                gui.addItem(item.toGuiItem(event -> {
 
+                item.setGlow(true);
+
+                gui.addItem(item.toGuiItem(event -> {
+                    this.parcelManager.collectParcel(player, parcel);
+                    gui.removeItem(event.getSlot());
+                    InventoryUtil.shiftItems(event.getSlot(), gui);
                 }));
             }
 

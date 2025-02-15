@@ -153,31 +153,27 @@ tasks {
             exclude(dependency("de\\.rapha149\\.signgui:signgui:.*")) // https://github.com/Rapha149/SignGUI/issues/15
         }
 
-        val relocate = false
         val relocationPrefix = "com.eternalcode.parcellockers.libs"
-        if (relocate) {
-            listOf(
-                "panda",
-                "org.bstats",
-                "org.json",
-                "org.postgresql",
-                "net.dzikoysk",
-                "net.kyori",
-                "io.papermc",
-                "io.sentry",
-                "dev.rollczi",
-                "de.eldoria",
-                "com.eternalcode.commons",
-                "com.eternalcode.gitcheck",
-                "com.fasterxml",
-                "com.j256",
-                "com.spotify",
-                "com.zaxxer",
-                "de.rapha149",
-                "dev.triumphteam"
-            ).forEach { relocate(it, "$relocationPrefix.$it") }
-        }
-        relocate("org.bstats", "$relocationPrefix.bstats")
+        listOf(
+            "panda",
+            "org.bstats",
+            "org.json",
+            "org.postgresql",
+            "net.dzikoysk",
+            "net.kyori",
+            "io.papermc",
+            "io.sentry",
+            "dev.rollczi",
+            "de.eldoria",
+            "com.eternalcode.commons",
+            "com.eternalcode.gitcheck",
+            "com.fasterxml",
+            "com.j256",
+            "com.spotify",
+            "com.zaxxer",
+            "de.rapha149",
+            "dev.triumphteam"
+        ).forEach { relocate(it, "$relocationPrefix.$it") }
     }
 }
 

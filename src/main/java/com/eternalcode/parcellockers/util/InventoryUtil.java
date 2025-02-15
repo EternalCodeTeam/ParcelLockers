@@ -1,8 +1,13 @@
 package com.eternalcode.parcellockers.util;
 
+import dev.triumphteam.gui.guis.BaseGui;
+import dev.triumphteam.gui.guis.GuiItem;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class InventoryUtil {
 
@@ -26,4 +31,21 @@ public class InventoryUtil {
         }
         return freeSlots;
     }
+
+    public static void shiftItems(int removedSlot, BaseGui gui) {
+        Map<Integer, GuiItem> itemsToShift = gui.getGuiItems().entrySet()
+            .stream()
+            .filter(entry -> entry.getKey() > removedSlot)
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        int currentShift = removedSlot;
+        for (Map.Entry<Integer, GuiItem> entry : itemsToShift.entrySet()) {
+            int nextShift = entry.getKey();
+            GuiItem item = entry.getValue();
+            gui.setItem(currentShift, item);
+            currentShift = nextShift;
+        }
+    }
+
+
 }

@@ -30,12 +30,12 @@ public class ParcelManager {
     }
 
     public void createParcel(CommandSender sender, Parcel parcel) {
-        this.parcelRepository.save(parcel).thenAccept(v ->
-            this.announcer.sendMessage(sender, this.config.messages.parcelSuccessfullyCreated)
-        ).whenComplete(SentryExceptionHandler.handler().andThen((v, throwable) -> {
+        this.parcelRepository.save(parcel).whenComplete(SentryExceptionHandler.handler().andThen((v, throwable) -> {
                 if (throwable != null) {
                     this.announcer.sendMessage(sender, this.config.messages.failedToCreateParcel);
+                    return;
                 }
+                this.announcer.sendMessage(sender, this.config.messages.parcelSuccessfullyCreated);
             }
         ));
     }
@@ -56,10 +56,11 @@ public class ParcelManager {
             optional.ifPresent(content -> {
                 List<ItemStack> items = content.items();
                 if (items.size() > freeSlotsInInventory(player)) {
-                    player.playSound(player.getLocation(), Sound.ITEM_CHORUS_FRUIT_TELEPORT, 1, 1);
+                    player.playSound(player.getLocation(), Sound.ITEM_CHORUS_FRUIT_TELEPORT, 0.5F, 1);
                     this.announcer.sendMessage(player, this.config.messages.notEnoughInventorySpace);
                     return;
                 }
+
                 items.forEach(item -> InventoryUtil.addItem(player, item));
                 this.parcelRepository.remove(parcel)
                     .whenComplete(SentryExceptionHandler.handler().andThen((v, throwable) -> {
@@ -67,6 +68,7 @@ public class ParcelManager {
                             this.announcer.sendMessage(player, this.config.messages.failedToCollectParcel);
                             return;
                         }
+                        player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5F, 1);
                         this.announcer.sendMessage(player, this.config.messages.parcelSuccessfullyCollected);
                     }
                 ));
