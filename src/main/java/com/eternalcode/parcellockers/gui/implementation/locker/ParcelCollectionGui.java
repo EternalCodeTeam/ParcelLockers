@@ -62,12 +62,12 @@ public class ParcelCollectionGui implements GuiView {
         GuiItem cornerItem = guiSettings.cornerItem.toGuiItem();
         GuiItem backgroundItem = guiSettings.mainGuiBackgroundItem.toGuiItem();
         GuiItem nextPageItem = guiSettings.nextPageItem.toGuiItem(event -> {
-            Page nextPage = new Page(FIRST_PAGE.page() + 1, FIRST_PAGE.size());
+            Page nextPage = new Page(page.page() + 1, page.size());
             this.show(player, nextPage);
         });
 
         GuiItem previousPageItem = guiSettings.previousPageItem.toGuiItem(event -> {
-            Page previousPage = new Page(FIRST_PAGE.page() - 1, FIRST_PAGE.size());
+            Page previousPage = new Page(page.page() - 1, page.size());
             this.show(player, previousPage);
         });
 
