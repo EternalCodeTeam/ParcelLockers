@@ -140,7 +140,7 @@ public final class ParcelLockers extends JavaPlugin {
         parcelRepository.updateCaches();
 
         ParcelContentRepository parcelContentRepository = new ParcelContentRepositoryOrmLite(databaseManager, scheduler);
-        ParcelManager parcelManager = new ParcelManager(config, announcer, parcelRepository, parcelContentRepository);
+        ParcelManager parcelManager = new ParcelManager(config, announcer, parcelRepository, parcelContentRepository, scheduler);
 
         ItemStorageRepository itemStorageRepository = new ItemStorageRepositoryOrmLite(databaseManager, scheduler);
 
@@ -156,6 +156,7 @@ public final class ParcelLockers extends JavaPlugin {
             .argument(Locker.class, new ParcelLockerArgument(lockerCache))
             .extension(new LiteAdventureExtension<>())
             .message(LiteBukkitMessages.PLAYER_ONLY, config.messages.onlyForPlayers)
+            .message(LiteBukkitMessages.PLAYER_NOT_FOUND, config.messages.cantFindPlayer)
             .commands(LiteCommandsAnnotations.of(
                 new ParcelCommand(lockerRepository, announcer, config, mainGUI, parcelListGUI, parcelManager, userManager),
                 new ParcelLockersCommand(configManager, config, announcer),

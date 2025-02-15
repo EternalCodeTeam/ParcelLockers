@@ -1,5 +1,6 @@
 package com.eternalcode.parcellockers.gui.implementation.locker;
 
+import com.eternalcode.commons.bukkit.ItemUtil;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.itemstorage.ItemStorage;
@@ -11,7 +12,6 @@ import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.shared.SentryExceptionHandler;
 import com.eternalcode.parcellockers.user.repository.UserRepository;
-import com.eternalcode.parcellockers.util.InventoryUtil;
 import dev.rollczi.liteskullapi.SkullAPI;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
@@ -122,7 +122,7 @@ public class ParcelItemStorageGui {
 
                 for (Material type : this.config.guiSettings.illegalItems) {
                     if (item.getType() == type) {
-                        InventoryUtil.addItem(player, item);
+                        ItemUtil.giveItem(player, item);
                         gui.removeItem(item);
                         player.playSound(player.getLocation(), Sound.ENTITY_ENDERMAN_AMBIENT, 1, 1);
                         this.announcer.sendMessage(player, this.config.messages.illegalItemFailedToSend);

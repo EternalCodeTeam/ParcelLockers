@@ -85,8 +85,8 @@ dependencies {
     implementation("com.spotify:completable-futures:0.3.6")
 
     // eternalcode-commons
-    implementation("com.eternalcode:eternalcode-commons-adventure:1.1.5")
-    implementation("com.eternalcode:eternalcode-commons-bukkit:1.1.5")
+    implementation("com.eternalcode:eternalcode-commons-adventure:1.1.6")
+    implementation("com.eternalcode:eternalcode-commons-bukkit:1.1.6")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.4")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.11.4")

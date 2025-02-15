@@ -102,6 +102,12 @@ public class DebugCommand {
 
         for (int i = 0; i < stacks; i++) {
             Material randomMaterial = materials[RANDOM.nextInt(materials.length)];
+
+            if (!randomMaterial.isItem()) {
+                i--;
+                continue;
+            }
+
             int randomAmount = RANDOM.nextInt(64) + 1;
             if (randomAmount > randomMaterial.getMaxStackSize()) {
                 randomAmount = randomMaterial.getMaxStackSize();

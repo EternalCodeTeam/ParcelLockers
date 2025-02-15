@@ -109,7 +109,8 @@ public class ParcelCollectionGui implements GuiView {
                 gui.addItem(item.toGuiItem(event -> {
                     this.parcelManager.collectParcel(player, parcel);
                     gui.removeItem(event.getSlot());
-                    InventoryUtil.shiftItems(event.getSlot(), gui);
+                    InventoryUtil.shiftItems(event.getSlot(), gui, item.type);
+                    gui.update();
                 }));
             }
 

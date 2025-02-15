@@ -1,11 +1,12 @@
 package com.eternalcode.parcellockers.parcel;
 
+import com.eternalcode.commons.bukkit.ItemUtil;
+import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.shared.SentryExceptionHandler;
-import com.eternalcode.parcellockers.util.InventoryUtil;
 import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -21,12 +22,14 @@ public class ParcelManager {
     private final NotificationAnnouncer announcer;
     private final ParcelRepository parcelRepository;
     private final ParcelContentRepository parcelContentRepository;
+    private final Scheduler scheduler;
 
-    public ParcelManager(PluginConfiguration config, NotificationAnnouncer announcer, ParcelRepository parcelRepository, ParcelContentRepository parcelContentRepository) {
+    public ParcelManager(PluginConfiguration config, NotificationAnnouncer announcer, ParcelRepository parcelRepository, ParcelContentRepository parcelContentRepository, Scheduler scheduler) {
         this.config = config;
         this.announcer = announcer;
         this.parcelRepository = parcelRepository;
         this.parcelContentRepository = parcelContentRepository;
+        this.scheduler = scheduler;
     }
 
     public void createParcel(CommandSender sender, Parcel parcel) {
@@ -61,7 +64,9 @@ public class ParcelManager {
                     return;
                 }
 
-                items.forEach(item -> InventoryUtil.addItem(player, item));
+                items.forEach(item ->
+                    this.scheduler.run(() -> ItemUtil.giveItem(player, item))
+                );
                 this.parcelRepository.remove(parcel)
                     .thenCompose(v -> this.parcelContentRepository.remove(content.uniqueId()))
                     .whenComplete(SentryExceptionHandler.handler().andThen((v, throwable) -> {
