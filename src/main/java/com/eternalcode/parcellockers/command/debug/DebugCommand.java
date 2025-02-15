@@ -11,6 +11,7 @@ import dev.rollczi.litecommands.annotations.execute.Execute;
 import org.bukkit.entity.Player;
 
 @Command(name = "parcel debug")
+@Permission("parcellockers.debug")
 public class DebugCommand {
 
     private final ParcelRepository parcelRepository;
