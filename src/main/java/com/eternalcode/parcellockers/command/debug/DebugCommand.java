@@ -95,6 +95,11 @@ public class DebugCommand {
     @Execute(name = "getrandomitem")
     void getRandomItem(@Context Player player, @Arg int stacks) {
         Material[] materials = Material.values();
+        if (stacks <= 0 || stacks > 36) {
+            this.announcer.sendMessage(player, "&cPlease request between 1 and 36 stacks");
+            return;
+        }
+
         for (int i = 0; i < stacks; i++) {
             Material randomMaterial = materials[RANDOM.nextInt(materials.length)];
             int randomAmount = RANDOM.nextInt(64) + 1;
