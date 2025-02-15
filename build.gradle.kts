@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "com.eternalcode"
-version = "1.0.0-SNAPSHOT"
+version = "0.0.1-SNAPSHOT"
 description =
     "Plugin that provides functionality of parcel lockers in Minecraft, allowing players to send and receive parcels safely."
 
@@ -109,7 +109,7 @@ bukkit {
     name = "ParcelLockers"
     description = "Plugin that provides functionality of parcel lockers in Minecraft, allowing players to send and receive parcels safely."
     website = "https://github.com/EternalCodeTeam/ParcelLockers"
-    version = "0.0.1-SNAPSHOT"
+    version = project.version.toString()
 }
 
 tasks.withType<JavaCompile> {
