@@ -81,7 +81,7 @@ public class ParcelCollectionGui implements GuiView {
 
         gui.setItem(49, closeItem);
 
-        this.parcelRepository.findByReceiver(player.getUniqueId(), FIRST_PAGE).thenAccept(result -> {
+        this.parcelRepository.findByReceiver(player.getUniqueId(), page).thenAccept(result -> {
             if (result == null || result.parcels().isEmpty()) {
                 gui.setItem(22, guiSettings.noParcelsItem.toGuiItem(event -> player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_TELEPORT, 0.5F, 1)));
             }
