@@ -52,7 +52,7 @@ public class ParcelManager {
     }
 
     public void collectParcel(Player player, Parcel parcel) {
-        this.parcelContentRepository.find(parcel.uuid()).thenAccept(optional -> {
+        this.parcelContentRepository.findByUUID(parcel.uuid()).thenAccept(optional -> {
             optional.ifPresent(content -> {
                 List<ItemStack> items = content.items();
                 if (items.size() > freeSlotsInInventory(player)) {
@@ -63,6 +63,7 @@ public class ParcelManager {
 
                 items.forEach(item -> InventoryUtil.addItem(player, item));
                 this.parcelRepository.remove(parcel)
+                    .thenCompose(v -> this.parcelContentRepository.remove(content.uniqueId()))
                     .whenComplete(SentryExceptionHandler.handler().andThen((v, throwable) -> {
                         if (throwable != null) {
                             this.announcer.sendMessage(player, this.config.messages.failedToCollectParcel);
