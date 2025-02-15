@@ -99,7 +99,7 @@ public class ParcelCollectionGui implements GuiView {
                 item.name = item.name.replace("{NAME}", parcel.name());
                 item.lore = item.lore.stream()
                     .map(line -> line.replace("{UUID}", parcel.uuid().toString()))
-                    .map(line -> line.replace("{DESCRIPTION}", parcel.description()))
+                    .map(line -> line.replace("{DESCRIPTION}", parcel.description() == null ? "" : parcel.description()))
                     .map(line -> line.replace("{SIZE}", parcel.size().name()))
                     .map(line -> line.replace("{SENDER}", parcel.sender().toString()))
                     .toList();
