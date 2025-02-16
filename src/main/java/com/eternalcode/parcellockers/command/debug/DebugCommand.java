@@ -14,7 +14,10 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Command(name = "parcel debug")
 @Permission("parcellockers.debug")
