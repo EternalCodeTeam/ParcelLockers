@@ -33,7 +33,9 @@ public class ParcelManager {
     }
 
     public void createParcel(CommandSender sender, Parcel parcel) {
-        this.parcelRepository.save(parcel).whenComplete(SentryExceptionHandler.handler().andThen((v, throwable) -> {
+        this.parcelRepository.save(parcel)
+            .whenComplete(SentryExceptionHandler.handler()
+            .andThen((v, throwable) -> {
                 if (throwable != null) {
                     this.announcer.sendMessage(sender, this.config.messages.failedToCreateParcel);
                     return;
