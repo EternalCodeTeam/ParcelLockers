@@ -38,14 +38,12 @@ public class DebugCommand {
 
     @Execute(name = "deleteparcels")
     void deleteParcels(@Context Player player) {
-        this.parcelRepository.removeAll().thenAccept(v -> {
-        }).whenComplete((v, throwable) -> {
-            if (throwable != null) {
-                this.announcer.sendMessage(player, "&cFailed to delete parcels");
-                return;
-            }
-            this.announcer.sendMessage(player, "&cParcels deleted");
-        });
+this.parcelRepository.removeAll()
+    .exceptionally(throwable -> {
+        this.announcer.sendMessage(player, "&cFailed to delete parcels");
+        return null;
+    })
+    .thenRun(() -> this.announcer.sendMessage(player, "&aParcels deleted"));
     }
 
     @Execute(name = "deletelockers")
