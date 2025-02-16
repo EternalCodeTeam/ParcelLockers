@@ -53,8 +53,7 @@ public class ConfigItem implements Cloneable {
     }
 
     public GuiItem toGuiItem() {
-        return this.toGuiItem(event -> {
-        });
+        return this.toGuiItem();
     }
 
     public ItemStack toItemStack() {
