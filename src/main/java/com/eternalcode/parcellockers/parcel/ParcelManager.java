@@ -70,14 +70,14 @@ public class ParcelManager {
                 this.parcelRepository.remove(parcel)
                     .thenCompose(v -> this.parcelContentRepository.remove(content.uniqueId()))
                     .whenComplete(SentryExceptionHandler.handler().andThen((v, throwable) -> {
-                        if (throwable != null) {
-                            this.announcer.sendMessage(player, this.config.messages.failedToCollectParcel);
-                            return;
+                            if (throwable != null) {
+                                this.announcer.sendMessage(player, this.config.messages.failedToCollectParcel);
+                                return;
+                            }
+                            player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5F, 1);
+                            this.announcer.sendMessage(player, this.config.messages.parcelSuccessfullyCollected);
                         }
-                        player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5F, 1);
-                        this.announcer.sendMessage(player, this.config.messages.parcelSuccessfullyCollected);
-                    }
-                ));
+                    ));
             });
         });
     }

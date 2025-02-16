@@ -118,8 +118,7 @@ public final class ParcelLockers extends JavaPlugin {
 
         try {
             databaseManager.connect();
-        }
-        catch (SQLException exception) {
+        } catch (SQLException exception) {
             this.getLogger().severe("Could not connect to database! Some functions may not work properly!");
             throw new RuntimeException(exception);
         }

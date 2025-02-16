@@ -7,7 +7,11 @@ import com.eternalcode.parcellockers.user.UserManager;
 import org.jetbrains.annotations.Blocking;
 import panda.utilities.text.Formatter;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public class ParcelPlaceholderUtil {
@@ -37,8 +41,7 @@ public class ParcelPlaceholderUtil {
             formatter.register("{POSITION_X}", locker.position().x())
                 .register("{POSITION_Y}", locker.position().y())
                 .register("{POSITION_Z}", locker.position().z());
-        }
-        else {
+        } else {
             formatter.register("{POSITION_X}", "-")
                 .register("{POSITION_Y}", "-")
                 .register("{POSITION_Z}", "-");

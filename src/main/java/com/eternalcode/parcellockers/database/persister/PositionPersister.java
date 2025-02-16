@@ -33,7 +33,6 @@ public class PositionPersister extends BaseDataType {
     }
 
 
-
     @Override
     public Object resultToSqlArg(FieldType fieldType, DatabaseResults results, int columnPos) throws SQLException {
         return results.getString(columnPos);

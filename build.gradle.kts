@@ -37,8 +37,9 @@ dependencies {
     // skull api
     implementation("dev.rollczi:liteskullapi:1.3.0")
 
-    // gui library
+    // gui
     implementation("dev.triumphteam:triumph-gui:3.1.11")
+    implementation("de.rapha149.signgui:signgui:2.5.0")
 
     // economy
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
@@ -72,9 +73,6 @@ dependencies {
     // paperlib
     implementation("io.papermc:paperlib:1.0.8")
 
-    // signgui
-    implementation("de.rapha149.signgui:signgui:2.5.0")
-
     // panda-utilities
     implementation("org.panda-lang:panda-utilities:0.5.2-alpha")
 
@@ -107,7 +105,8 @@ bukkit {
     prefix = "ParcelLockers"
     author = "EternalCodeTeam"
     name = "ParcelLockers"
-    description = "Plugin that provides functionality of parcel lockers in Minecraft, allowing players to send and receive parcels safely."
+    description =
+        "Plugin that provides functionality of parcel lockers in Minecraft, allowing players to send and receive parcels safely."
     website = "https://github.com/EternalCodeTeam/ParcelLockers"
     version = project.version.toString()
 }

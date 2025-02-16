@@ -21,7 +21,11 @@ import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.Blocking;
 import panda.utilities.text.Formatter;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public class SentParcelsGui implements GuiView {

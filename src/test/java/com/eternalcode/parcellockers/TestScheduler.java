@@ -13,8 +13,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 public class TestScheduler implements Scheduler {
+
     private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(8);
-    
+
     public void shutdown() {
         executorService.shutdown();
     }
