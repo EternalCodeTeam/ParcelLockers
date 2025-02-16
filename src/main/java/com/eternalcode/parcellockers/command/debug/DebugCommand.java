@@ -62,14 +62,12 @@ public class DebugCommand {
 
     @Execute(name = "deleteitemstorages")
     void deleteItemStorages(@Context Player player) {
-        this.itemStorageRepository.removeAll().thenAccept(v -> {
-        }).whenComplete((v, throwable) -> {
-            if (throwable != null) {
-                this.announcer.sendMessage(player, "&cFailed to delete item storages");
-                return;
-            }
-            this.announcer.sendMessage(player, "&cItem storages deleted");
-        });
+    this.itemStorageRepository.removeAll()
+        .exceptionally(throwable -> {
+            this.announcer.sendMessage(player, "&cFailed to delete item storages");
+            return null;
+        })
+        .thenRun(() -> this.announcer.sendMessage(player, "&aItem storages deleted"));
     }
 
     @Execute(name = "deleteparcelcontents")
