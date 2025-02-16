@@ -79,13 +79,15 @@ public class LockerMainGui implements GuiView {
             gui.setItem(slot, backgroundItem);
         }
 
-        gui.setItem(20, this.config.guiSettings.parcelLockerCollectItem.toGuiItem(event -> new ParcelCollectionGui(this.plugin,
+        ParcelCollectionGui collectionGui = new ParcelCollectionGui(this.plugin,
             this.config,
             this.plugin.getServer().getScheduler(),
             this.parcelRepository,
             this.miniMessage,
             this.parcelManager
-        ).show(player)));
+        );
+
+        gui.setItem(20, this.config.guiSettings.parcelLockerCollectItem.toGuiItem(event -> collectionGui.show(player)));
 
         gui.setItem(22, this.config.guiSettings.parcelLockerSendItem.toGuiItem(event -> new ParcelSendingGui(this.plugin,
             this.config,
