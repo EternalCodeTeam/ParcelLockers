@@ -92,29 +92,32 @@ public class DebugCommand {
         this.deleteParcelContents(player);
     }
 
-    @Execute(name = "getrandomitem")
-    void getRandomItem(@Context Player player, @Arg int stacks) {
-        Material[] materials = Material.values();
-        if (stacks <= 0 || stacks > 36) {
-            this.announcer.sendMessage(player, "&cPlease request between 1 and 36 stacks");
-            return;
-        }
-
-        for (int i = 0; i < stacks; i++) {
-            Material randomMaterial = materials[RANDOM.nextInt(materials.length)];
-
-            if (!randomMaterial.isItem()) {
-                i--;
-                continue;
-            }
-
-            int randomAmount = RANDOM.nextInt(64) + 1;
-            if (randomAmount > randomMaterial.getMaxStackSize()) {
-                randomAmount = randomMaterial.getMaxStackSize();
-            }
-            ItemStack itemStack = new ItemStack(randomMaterial, randomAmount);
-            player.getInventory().addItem(itemStack);
-        }
+@Execute(name = "getrandomitem")
+void getRandomItem(@Context Player player, @Arg int stacks) {
+    if (stacks <= 0 || stacks > 36) {
+        this.announcer.sendMessage(player, "&cPlease request between 1 and 36 stacks");
+        return;
     }
+
+    List<Material> itemMaterials = Arrays.stream(Material.values())
+                                         .filter(Material::isItem)
+                                         .toList();
+
+    if (itemMaterials.isEmpty()) {
+        this.announcer.sendMessage(player, "&cNo valid items found.");
+        return;
+    }
+
+    //Faster solution than RANDOM#nextInt
+    Random random = ThreadLocalRandom.current();
+
+    for (int i = 0; i < stacks; i++) {
+        Material randomMaterial = itemMaterials.get(random.nextInt(itemMaterials.size()));
+        int randomAmount = Math.min(random.nextInt(64) + 1, randomMaterial.getMaxStackSize());
+        
+        ItemStack itemStack = new ItemStack(randomMaterial, randomAmount);
+        player.getInventory().addItem(itemStack);
+    }
+}
 
 }
