@@ -65,14 +65,12 @@ this.lockerRepository.removeAll()
 
     @Execute(name = "deleteparcelcontents")
     void deleteParcelContents(@Context Player player) {
-        this.contentRepository.removeAll().thenAccept(v -> {
-        }).whenComplete((v, throwable) -> {
-            if (throwable != null) {
-                this.announcer.sendMessage(player, "&cFailed to delete parcel contents");
-                return;
-            }
-            this.announcer.sendMessage(player, "&cParcel contents deleted");
-        });
+this.contentRepository.removeAll()
+    .exceptionally(throwable -> {
+        this.announcer.sendMessage(player, "&cFailed to delete parcel contents");
+        return null;
+    })
+    .thenRun(() -> this.announcer.sendMessage(player, "&aParcel contents deleted"));
     }
 
     @Execute(name = "deleteall")
