@@ -19,9 +19,6 @@ import java.util.Random;
 @Command(name = "parcel debug")
 @Permission("parcellockers.debug")
 public class DebugCommand {
-
-    private static final Random RANDOM = new Random();
-
     private final ParcelRepository parcelRepository;
     private final LockerRepository lockerRepository;
     private final ItemStorageRepository itemStorageRepository;
