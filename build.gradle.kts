@@ -4,13 +4,12 @@ plugins {
     `java-library`
     id("net.minecrell.plugin-yml.bukkit") version "0.6.0"
     id("xyz.jpenilla.run-paper") version "2.3.1"
-    id("com.gradleup.shadow") version "9.0.0-beta8"
+    id("com.gradleup.shadow") version "8.3.6"
 }
 
 group = "com.eternalcode"
 version = "0.0.1-SNAPSHOT"
-description =
-    "Plugin that provides functionality of parcel lockers in Minecraft, allowing players to send and receive parcels safely."
+description = "Plugin that provides functionality of parcel lockers in Minecraft, allowing players to send and receive parcels safely."
 
 repositories {
     gradlePluginPortal()
@@ -105,8 +104,7 @@ bukkit {
     prefix = "ParcelLockers"
     author = "EternalCodeTeam"
     name = "ParcelLockers"
-    description =
-        "Plugin that provides functionality of parcel lockers in Minecraft, allowing players to send and receive parcels safely."
+    description = project.description
     website = "https://github.com/EternalCodeTeam/ParcelLockers"
     version = project.version.toString()
 }
