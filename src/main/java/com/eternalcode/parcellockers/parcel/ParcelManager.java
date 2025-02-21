@@ -58,6 +58,12 @@ public class ParcelManager {
 
     public void collectParcel(Player player, Parcel parcel) {
         this.parcelContentRepository.findByUUID(parcel.uuid()).thenAccept(optional -> {
+            if (optional.isEmpty()) {
+                player.playSound(player.getLocation(), Sound.ITEM_CHORUS_FRUIT_TELEPORT, 0.5F, 1);
+                this.announcer.sendMessage(player, this.config.messages.failedToCollectParcel);
+                return;
+            }
+
             optional.ifPresent(content -> {
                 List<ItemStack> items = content.items();
                 if (items.size() > freeSlotsInInventory(player)) {
