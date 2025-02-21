@@ -64,29 +64,27 @@ public class ParcelManager {
                 return;
             }
 
-            optional.ifPresent(content -> {
-                List<ItemStack> items = content.items();
-                if (items.size() > freeSlotsInInventory(player)) {
-                    player.playSound(player.getLocation(), Sound.ITEM_CHORUS_FRUIT_TELEPORT, 0.5F, 1);
-                    this.announcer.sendMessage(player, this.config.messages.notEnoughInventorySpace);
-                    return;
-                }
+            List<ItemStack> items = optional.get().items();
+            if (items.size() > freeSlotsInInventory(player)) {
+                player.playSound(player.getLocation(), Sound.ITEM_CHORUS_FRUIT_TELEPORT, 0.5F, 1);
+                this.announcer.sendMessage(player, this.config.messages.notEnoughInventorySpace);
+                return;
+            }
 
-                items.forEach(item ->
-                    this.scheduler.run(() -> ItemUtil.giveItem(player, item))
-                );
-                this.parcelRepository.remove(parcel)
-                    .thenCompose(v -> this.parcelContentRepository.remove(content.uniqueId()))
-                    .whenComplete(SentryExceptionHandler.handler().andThen((v, throwable) -> {
-                            if (throwable != null) {
-                                this.announcer.sendMessage(player, this.config.messages.failedToCollectParcel);
-                                return;
-                            }
-                            player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5F, 1);
-                            this.announcer.sendMessage(player, this.config.messages.parcelSuccessfullyCollected);
+            items.forEach(item ->
+                this.scheduler.run(() -> ItemUtil.giveItem(player, item))
+            );
+            this.parcelRepository.remove(parcel)
+                .thenCompose(v -> this.parcelContentRepository.remove(content.uniqueId()))
+                .whenComplete(SentryExceptionHandler.handler().andThen((v, throwable) -> {
+                        if (throwable != null) {
+                            this.announcer.sendMessage(player, this.config.messages.failedToCollectParcel);
+                            return;
                         }
-                    ));
-            });
+                        player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5F, 1);
+                        this.announcer.sendMessage(player, this.config.messages.parcelSuccessfullyCollected);
+                    }
+                ));
         });
     }
 }
