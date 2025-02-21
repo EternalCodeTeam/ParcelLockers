@@ -75,7 +75,7 @@ public class ParcelManager {
                 this.scheduler.run(() -> ItemUtil.giveItem(player, item))
             );
             this.parcelRepository.remove(parcel)
-                .thenCompose(v -> this.parcelContentRepository.remove(content.uniqueId()))
+                .thenCompose(v -> this.parcelContentRepository.remove(optional.get().uniqueId()))
                 .whenComplete(SentryExceptionHandler.handler().andThen((v, throwable) -> {
                         if (throwable != null) {
                             this.announcer.sendMessage(player, this.config.messages.failedToCollectParcel);
