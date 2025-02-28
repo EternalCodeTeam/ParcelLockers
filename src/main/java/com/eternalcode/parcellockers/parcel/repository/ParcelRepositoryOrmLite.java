@@ -65,6 +65,26 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
             .toList()));
     }
 
+    public CompletableFuture<ParcelPageResult> findByReceiver(UUID receiver, Page page) {
+        return this.action(ParcelWrapper.class, dao -> {
+            List<Parcel> parcels = dao.queryBuilder()
+                .limit((long) page.getLimit() + 1)
+                .offset((long) page.getOffset())
+                .where()
+                .eq(RECEIVER_COLUMN, receiver)
+                .query()
+                .stream()
+                .map(ParcelWrapper::toParcel)
+                .toList();
+
+            boolean hasNext = parcels.size() > page.getLimit();
+            if (hasNext) {
+                parcels.removeLast();
+            }
+            return new ParcelPageResult(parcels, hasNext);
+        });
+    }
+
     @Override
     public CompletableFuture<Integer> remove(Parcel parcel) {
         return this.remove(parcel.uuid());
@@ -84,7 +104,7 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     @Override
     public CompletableFuture<ParcelPageResult> findPage(Page page) {
         return this.action(ParcelWrapper.class, dao -> {
-            List<com.eternalcode.parcellockers.parcel.Parcel> parcels = dao.queryBuilder()
+            List<Parcel> parcels = dao.queryBuilder()
                 .limit((long) page.getLimit() + 1)
                 .offset((long) page.getOffset())
                 .query()
@@ -104,6 +124,11 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
         return this.selectAll(ParcelWrapper.class).thenApply(parcels -> Optional.of(parcels.stream()
             .map(ParcelWrapper::toParcel)
             .toList()));
+    }
+
+    @Override
+    public CompletableFuture<Integer> removeAll() {
+        return this.deleteAll(ParcelWrapper.class);
     }
 
     public void updateCaches() {

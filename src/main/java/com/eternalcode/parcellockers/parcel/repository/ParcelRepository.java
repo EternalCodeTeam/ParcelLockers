@@ -20,9 +20,13 @@ public interface ParcelRepository {
 
     CompletableFuture<Optional<List<Parcel>>> findByReceiver(UUID receiver);
 
+    CompletableFuture<ParcelPageResult> findByReceiver(UUID receiver, Page page);
+
     CompletableFuture<Integer> remove(Parcel parcel);
 
     CompletableFuture<Integer> remove(UUID uuid);
+
+    CompletableFuture<Integer> removeAll();
 
     CompletableFuture<ParcelPageResult> findPage(Page page);
 }

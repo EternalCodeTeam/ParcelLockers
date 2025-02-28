@@ -6,6 +6,7 @@ import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
+import com.eternalcode.parcellockers.parcel.ParcelManager;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.user.repository.UserRepository;
 import dev.rollczi.liteskullapi.SkullAPI;
@@ -18,7 +19,7 @@ import org.bukkit.plugin.Plugin;
 
 import static com.eternalcode.commons.adventure.AdventureUtil.resetItalic;
 
-public class LockerMainGUI extends GuiView {
+public class LockerMainGui implements GuiView {
 
     private final Plugin plugin;
     private final MiniMessage miniMessage;
@@ -30,8 +31,9 @@ public class LockerMainGUI extends GuiView {
     private final ParcelContentRepository parcelContentRepository;
     private final UserRepository userRepository;
     private final SkullAPI skullAPI;
+    private final ParcelManager parcelManager;
 
-    public LockerMainGUI(Plugin plugin,
+    public LockerMainGui(Plugin plugin,
                          MiniMessage miniMessage,
                          PluginConfiguration config,
                          ItemStorageRepository itemStorageRepository,
@@ -39,7 +41,7 @@ public class LockerMainGUI extends GuiView {
                          NotificationAnnouncer announcer,
                          ParcelContentRepository parcelContentRepository,
                          UserRepository userRepository,
-                         SkullAPI skullAPI) {
+                         SkullAPI skullAPI, ParcelManager parcelManager) {
         this.plugin = plugin;
         this.miniMessage = miniMessage;
         this.config = config;
@@ -50,6 +52,7 @@ public class LockerMainGUI extends GuiView {
         this.parcelContentRepository = parcelContentRepository;
         this.userRepository = userRepository;
         this.skullAPI = skullAPI;
+        this.parcelManager = parcelManager;
     }
 
     @Override
@@ -66,7 +69,7 @@ public class LockerMainGUI extends GuiView {
         GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem();
         GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(event -> gui.close(player));
 
-        gui.setDefaultClickAction(event -> event.setCancelled(true));
+        //gui.setDefaultClickAction(event -> event.setCancelled(true));
 
         for (int slot : CORNER_SLOTS) {
             gui.setItem(slot, cornerItem);
@@ -76,8 +79,17 @@ public class LockerMainGUI extends GuiView {
             gui.setItem(slot, backgroundItem);
         }
 
-        gui.setItem(20, this.config.guiSettings.parcelLockerCollectItem.toGuiItem(event -> event.setCancelled(true)));
-        gui.setItem(22, this.config.guiSettings.parcelLockerSendItem.toGuiItem(event -> new ParcelSendingGUI(this.plugin,
+        ParcelCollectionGui collectionGui = new ParcelCollectionGui(this.plugin,
+            this.config,
+            this.plugin.getServer().getScheduler(),
+            this.parcelRepository,
+            this.miniMessage,
+            this.parcelManager
+        );
+
+        gui.setItem(20, this.config.guiSettings.parcelLockerCollectItem.toGuiItem(event -> collectionGui.show(player)));
+
+        gui.setItem(22, this.config.guiSettings.parcelLockerSendItem.toGuiItem(event -> new ParcelSendingGui(this.plugin,
             this.config,
             this.miniMessage,
             this.itemStorageRepository,
@@ -87,7 +99,8 @@ public class LockerMainGUI extends GuiView {
             this.parcelContentRepository,
             this.userRepository,
             this.skullAPI,
-            new ParcelSendingGUIState()
+            this.parcelManager,
+            new ParcelSendingGuiState()
         ).show(player)));
 
         gui.setItem(24, this.config.guiSettings.parcelLockerStatusItem.toGuiItem());

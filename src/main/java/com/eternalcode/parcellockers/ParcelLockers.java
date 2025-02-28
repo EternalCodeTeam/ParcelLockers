@@ -4,6 +4,7 @@ import com.eternalcode.commons.adventure.AdventureLegacyColorPostProcessor;
 import com.eternalcode.commons.adventure.AdventureLegacyColorPreProcessor;
 import com.eternalcode.commons.bukkit.scheduler.BukkitSchedulerImpl;
 import com.eternalcode.commons.scheduler.Scheduler;
+import com.eternalcode.parcellockers.command.debug.DebugCommand;
 import com.eternalcode.parcellockers.command.handler.InvalidUsageImpl;
 import com.eternalcode.parcellockers.command.handler.PermissionMessage;
 import com.eternalcode.parcellockers.configuration.ConfigurationManager;
@@ -11,9 +12,9 @@ import com.eternalcode.parcellockers.configuration.implementation.PluginConfigur
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepositoryOrmLite;
 import com.eternalcode.parcellockers.database.DatabaseManager;
-import com.eternalcode.parcellockers.gui.implementation.locker.LockerMainGUI;
-import com.eternalcode.parcellockers.gui.implementation.remote.MainGUI;
-import com.eternalcode.parcellockers.gui.implementation.remote.ParcelListGUI;
+import com.eternalcode.parcellockers.gui.implementation.locker.LockerMainGui;
+import com.eternalcode.parcellockers.gui.implementation.remote.MainGui;
+import com.eternalcode.parcellockers.gui.implementation.remote.ParcelListGui;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepositoryOrmLite;
 import com.eternalcode.parcellockers.locker.Locker;
@@ -117,8 +118,7 @@ public final class ParcelLockers extends JavaPlugin {
 
         try {
             databaseManager.connect();
-        }
-        catch (SQLException exception) {
+        } catch (SQLException exception) {
             this.getLogger().severe("Could not connect to database! Some functions may not work properly!");
             throw new RuntimeException(exception);
         }
@@ -138,26 +138,28 @@ public final class ParcelLockers extends JavaPlugin {
         ParcelRepositoryOrmLite parcelRepository = new ParcelRepositoryOrmLite(databaseManager, scheduler, parcelCache);
         parcelRepository.updateCaches();
 
-        ParcelManager parcelManager = new ParcelManager(config, announcer, parcelRepository);
+        ParcelContentRepository parcelContentRepository = new ParcelContentRepositoryOrmLite(databaseManager, scheduler);
+        ParcelManager parcelManager = new ParcelManager(config, announcer, parcelRepository, parcelContentRepository, scheduler);
 
         ItemStorageRepository itemStorageRepository = new ItemStorageRepositoryOrmLite(databaseManager, scheduler);
 
         UserRepository userRepository = new UserRepositoryOrmLite(databaseManager, scheduler);
         UserManager userManager = new UserManager(userRepository);
 
-        ParcelContentRepository parcelContentRepository = new ParcelContentRepositoryOrmLite(databaseManager, scheduler);
 
-        MainGUI mainGUI = new MainGUI(this, server, miniMessage, config, parcelRepository, lockerRepository, userManager);
-        ParcelListGUI parcelListGUI = new ParcelListGUI(this, server, miniMessage, config, parcelRepository, lockerRepository, userManager, mainGUI);
+        MainGui mainGUI = new MainGui(this, server, miniMessage, config, parcelRepository, lockerRepository, userManager);
+        ParcelListGui parcelListGUI = new ParcelListGui(this, server, miniMessage, config, parcelRepository, lockerRepository, userManager, mainGUI);
 
-        this.liteCommands = LiteBukkitFactory.builder("parcellockers", this)
+        this.liteCommands = LiteBukkitFactory.builder(this.getName(), this)
             .argument(Parcel.class, new ParcelArgument(parcelCache))
             .argument(Locker.class, new ParcelLockerArgument(lockerCache))
             .extension(new LiteAdventureExtension<>())
             .message(LiteBukkitMessages.PLAYER_ONLY, config.messages.onlyForPlayers)
+            .message(LiteBukkitMessages.PLAYER_NOT_FOUND, config.messages.cantFindPlayer)
             .commands(LiteCommandsAnnotations.of(
                 new ParcelCommand(lockerRepository, announcer, config, mainGUI, parcelListGUI, parcelManager, userManager),
-                new ParcelLockersCommand(configManager, config, announcer)
+                new ParcelLockersCommand(configManager, config, announcer),
+                new DebugCommand(parcelRepository, lockerRepository, itemStorageRepository, parcelContentRepository, announcer)
             ))
             .invalidUsage(new InvalidUsageImpl(announcer, config))
             .missingPermission(new PermissionMessage(announcer, config))
@@ -169,7 +171,7 @@ public final class ParcelLockers extends JavaPlugin {
             return;
         }*/
 
-        LockerMainGUI lockerMainGUI = new LockerMainGUI(this, miniMessage, config, itemStorageRepository, parcelRepository, lockerRepository, announcer, parcelContentRepository, userRepository, this.skullAPI);
+        LockerMainGui lockerMainGUI = new LockerMainGui(this, miniMessage, config, itemStorageRepository, parcelRepository, lockerRepository, announcer, parcelContentRepository, userRepository, this.skullAPI, parcelManager);
 
         Stream.of(
             new LockerInteractionController(lockerCache, lockerMainGUI),

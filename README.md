@@ -84,6 +84,7 @@ greatly accelerate the bug fixing process 🥳
 - [SignGUI](https://github.com/Rapha149/SignGUI)
 
 ## :heart: Special Thanks
+
 [<img src="https://user-images.githubusercontent.com/65517973/210912946-447a6b9a-2685-4796-9482-a44bffc727ce.png" alt="JetBrains" width="150">](https://www.jetbrains.com)
 [<img src=".github/assets/sentry.svg" alt="Sentry logo" width="150" height="150">](https://www.sentry.io)
 

@@ -5,7 +5,6 @@ import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
-import java.util.Set;
 import java.util.UUID;
 
 @DatabaseTable(tableName = "parcels")
@@ -37,6 +36,7 @@ class ParcelWrapper {
 
     @DatabaseField(columnName = "destinationLocker", index = true)
     private UUID destinationLocker;
+
     ParcelWrapper() {
     }
 
@@ -57,6 +57,6 @@ class ParcelWrapper {
     }
 
     Parcel toParcel() {
-        return new Parcel(this.uuid, this.sender, this.name, this.description, this.priority, Set.of(this.sender), this.receiver, this.size, this.entryLocker, this.destinationLocker);
+        return new Parcel(this.uuid, this.sender, this.name, this.description, this.priority, this.receiver, this.size, this.entryLocker, this.destinationLocker);
     }
 }

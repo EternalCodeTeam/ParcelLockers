@@ -26,8 +26,7 @@ public class ItemSerdesUtil {
     public static String serialize(ItemStack stack) {
         try {
             return JSON.writeValueAsString(stack);
-        }
-        catch (JsonProcessingException e) {
+        } catch (JsonProcessingException e) {
             Sentry.captureException(e);
             throw new ParcelLockersException("Failed to serialize itemstack", e);
         }
@@ -36,8 +35,7 @@ public class ItemSerdesUtil {
     public static String serializeItems(List<ItemStack> stack) {
         try {
             return JSON.writeValueAsString(stack);
-        }
-        catch (JsonProcessingException e) {
+        } catch (JsonProcessingException e) {
             Sentry.captureException(e);
             throw new ParcelLockersException("Failed to serialize itemstack", e);
         }
@@ -46,8 +44,7 @@ public class ItemSerdesUtil {
     public static ItemStack deserialize(String string) {
         try {
             return JSON.readValue(string, ItemStack.class);
-        }
-        catch (JsonProcessingException e) {
+        } catch (JsonProcessingException e) {
             Sentry.captureException(e);
             throw new ParcelLockersException("Failed to deserialize itemstack", e);
         }
@@ -56,8 +53,7 @@ public class ItemSerdesUtil {
     public static List<ItemStack> deserializeItems(String string) {
         try {
             return JSON.readValue(string, JSON.getTypeFactory().constructCollectionType(List.class, ItemStack.class));
-        }
-        catch (JsonProcessingException exception) {
+        } catch (JsonProcessingException exception) {
             Sentry.captureException(exception);
             throw new ParcelLockersException("Failed to deserialize itemstack", exception);
         }

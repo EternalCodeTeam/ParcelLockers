@@ -109,6 +109,9 @@ public class PluginConfiguration implements ReloadableConfig {
         public String parcelDestinationSet = "&2✔ &aParcel destination locker set successfully.";
         public String alreadyCreatingLocker = "&4✘ &cYou are already creating a parcel locker!";
         public String receiverNotSet = "&4✘ &cThe parcel receiver is not set!";
+        public String parcelSuccessfullyCollected = "&2✔ &aParcel collected successfully.";
+        public String failedToCollectParcel = "&4✘ &cAn error occurred while collecting the parcel.";
+        public String notEnoughInventorySpace = "&4✘ &cYou don't have enough space in your inventory to collect the parcel!";
 
         @Description({ " ", "# The parcel info message." })
         public List<String> parcelInfoMessages = List.of(
@@ -119,8 +122,7 @@ public class PluginConfiguration implements ReloadableConfig {
             "&6Size: &e{SIZE}",
             "&6Position: &6X: &e{POSITION_X}, &6Y: &e{POSITION_Y}, &6Z: &e{POSITION_Z}",
             "&6Priority: &e{PRIORITY}",
-            "&6Description: &e{DESCRIPTION}",
-            "&6Recipients: &e{RECIPIENTS}"
+            "&6Description: &e{DESCRIPTION}"
         );
     }
 
@@ -141,6 +143,9 @@ public class PluginConfiguration implements ReloadableConfig {
 
         @Description({ " ", "# The item of the parcel recipient pick GUI" })
         public String parcelReceiverSelectionGuiTitle = "&5Select recipient";
+
+        @Description({ " ", "# The item of the parcel collection GUI" })
+        public String parcelCollectionGuiTitle = "&aCollect parcels";
 
         @Description({ " ", "# The item of the small parcel size button" })
         public ConfigItem smallParcelSizeItem = new ConfigItem()
@@ -269,8 +274,7 @@ public class PluginConfiguration implements ReloadableConfig {
                     "&6Size: &e{SIZE}",
                     "&6Position: &6X: &e{POSITION_X}, &6Y: &e{POSITION_Y}, &6Z: &e{POSITION_Z}",
                     "&6Priority: &e{PRIORITY}",
-                    "&6Description: &e{DESCRIPTION}",
-                    "&6Recipients: &e{RECIPIENTS}"
+                    "&6Description: &e{DESCRIPTION}"
                 )
             )
             .setType(Material.CHEST_MINECART);
@@ -378,5 +382,23 @@ public class PluginConfiguration implements ReloadableConfig {
             Material.SPAWNER,
             Material.BEDROCK
         );
+
+        @Description({ " ", "# The item of the parcel item in the collection GUI" })
+        public ConfigItem parcelCollectionItem = new ConfigItem()
+            .setName("&a{NAME}")
+            .setLore(List.of(
+                    "&6UUID: &e{UUID}",
+                    "&6Sender: &e{SENDER}",
+                    "&6Size: &e{SIZE}",
+                    "&6Description: &e{DESCRIPTION}"
+                )
+            )
+            .setType(Material.CHEST_MINECART);
+
+        @Description({ " ", "# The item that is displayed in the collection GUI when no parcels are found" })
+        public ConfigItem noParcelsItem = new ConfigItem()
+            .setName("&cNo parcels found")
+            .setLore(List.of("&cYou don't have any parcels to collect."))
+            .setType(Material.BARRIER);
     }
 }

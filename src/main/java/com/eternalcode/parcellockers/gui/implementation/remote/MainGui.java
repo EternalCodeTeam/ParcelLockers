@@ -15,7 +15,7 @@ import org.bukkit.plugin.Plugin;
 
 import static com.eternalcode.commons.adventure.AdventureUtil.resetItalic;
 
-public class MainGUI extends GuiView {
+public class MainGui implements GuiView {
 
     private final Plugin plugin;
     private final Server server;
@@ -25,7 +25,7 @@ public class MainGUI extends GuiView {
     private final LockerRepository lockerRepository;
     private final UserManager userManager;
 
-    public MainGUI(Plugin plugin,
+    public MainGui(Plugin plugin,
                    Server server,
                    MiniMessage miniMessage,
                    PluginConfiguration config,
@@ -72,8 +72,8 @@ public class MainGUI extends GuiView {
         gui.setItem(24, parcelArchiveItem);
         gui.setItem(40, closeItem);
 
-        gui.addSlotAction(20, event -> new ParcelListGUI(this.plugin, this.server, this.miniMessage, this.config, this.parcelRepository, this.lockerRepository, this.userManager, this).show(player));
-        gui.addSlotAction(22, event -> new SentParcelsGUI(this.plugin, this.server, this.miniMessage, this.config, this.parcelRepository, this.lockerRepository, this, this.userManager).show(player));
+        gui.addSlotAction(20, event -> new ParcelListGui(this.plugin, this.server, this.miniMessage, this.config, this.parcelRepository, this.lockerRepository, this.userManager, this).show(player));
+        gui.addSlotAction(22, event -> new SentParcelsGui(this.plugin, this.server, this.miniMessage, this.config, this.parcelRepository, this.lockerRepository, this, this.userManager).show(player));
         gui.setDefaultClickAction(event -> event.setCancelled(true));
         gui.open(player);
 

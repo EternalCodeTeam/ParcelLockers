@@ -24,8 +24,8 @@ public class ConfigItem implements Cloneable {
 
     @Exclude
     private static final MiniMessage MINI_MESSAGE = MiniMessage.builder()
-            .preProcessor(new AdventureLegacyColorPreProcessor())
-            .postProcessor(new AdventureLegacyColorPostProcessor())
+        .preProcessor(new AdventureLegacyColorPreProcessor())
+        .postProcessor(new AdventureLegacyColorPostProcessor())
         .build();
 
     public Material type = Material.STONE;
@@ -53,7 +53,7 @@ public class ConfigItem implements Cloneable {
     }
 
     public GuiItem toGuiItem() {
-        return this.toGuiItem(event -> {});
+        return this.toBuilder().asGuiItem();
     }
 
     public ItemStack toItemStack() {
@@ -107,8 +107,7 @@ public class ConfigItem implements Cloneable {
             ConfigItem cloned = (ConfigItem) super.clone();
             cloned.lore = new ArrayList<>(this.lore); // Deep copy of the list
             return cloned;
-        }
-        catch (CloneNotSupportedException e) {
+        } catch (CloneNotSupportedException e) {
             throw new AssertionError("Failed to clone " + this); // Should never happen
         }
     }

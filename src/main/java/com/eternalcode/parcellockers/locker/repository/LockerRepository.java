@@ -23,5 +23,7 @@ public interface LockerRepository {
 
     CompletableFuture<Integer> remove(Locker locker);
 
+    CompletableFuture<Integer> removeAll();
+
     CompletableFuture<LockerPageResult> findPage(Page page);
 }

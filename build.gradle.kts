@@ -1,15 +1,15 @@
+import xyz.jpenilla.runtask.task.AbstractRun
+
 plugins {
     `java-library`
-    checkstyle
     id("net.minecrell.plugin-yml.bukkit") version "0.6.0"
     id("xyz.jpenilla.run-paper") version "2.3.1"
-    id("com.gradleup.shadow") version "8.3.5"
+    id("com.gradleup.shadow") version "8.3.6"
 }
 
 group = "com.eternalcode"
-version = "1.0.0-SNAPSHOT"
-description =
-    "Plugin that provides functionality of parcel lockers in Minecraft, allowing players to send and receive parcels safely."
+version = "0.0.1-SNAPSHOT"
+description = "Plugin that provides functionality of parcel lockers in Minecraft, allowing players to send and receive parcels safely."
 
 repositories {
     gradlePluginPortal()
@@ -36,8 +36,9 @@ dependencies {
     // skull api
     implementation("dev.rollczi:liteskullapi:1.3.0")
 
-    // gui library
+    // gui
     implementation("dev.triumphteam:triumph-gui:3.1.11")
+    implementation("de.rapha149.signgui:signgui:2.5.0")
 
     // economy
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
@@ -71,9 +72,6 @@ dependencies {
     // paperlib
     implementation("io.papermc:paperlib:1.0.8")
 
-    // signgui
-    implementation("de.rapha149.signgui:signgui:2.5.0")
-
     // panda-utilities
     implementation("org.panda-lang:panda-utilities:0.5.2-alpha")
 
@@ -84,8 +82,8 @@ dependencies {
     implementation("com.spotify:completable-futures:0.3.6")
 
     // eternalcode-commons
-    implementation("com.eternalcode:eternalcode-commons-adventure:1.1.5")
-    implementation("com.eternalcode:eternalcode-commons-bukkit:1.1.5")
+    implementation("com.eternalcode:eternalcode-commons-adventure:1.1.6")
+    implementation("com.eternalcode:eternalcode-commons-bukkit:1.1.6")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.4")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.11.4")
@@ -100,25 +98,15 @@ java {
     toolchain.languageVersion.set(JavaLanguageVersion.of(21))
 }
 
-checkstyle {
-    toolVersion = "10.21.1"
-
-    configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
-
-    maxErrors = 0
-    maxWarnings = 0
-}
-
 bukkit {
     main = "com.eternalcode.parcellockers.ParcelLockers"
     apiVersion = "1.13"
     prefix = "ParcelLockers"
     author = "EternalCodeTeam"
     name = "ParcelLockers"
-    description =
-        "Plugin that provides functionality of parcel lockers in Minecraft, allowing players to send and receive parcels safely."
+    description = project.description
     website = "https://github.com/EternalCodeTeam/ParcelLockers"
-    version = "1.0.0-SNAPSHOT"
+    version = project.version.toString()
 }
 
 tasks.withType<JavaCompile> {
@@ -128,9 +116,31 @@ tasks.withType<JavaCompile> {
     options.release = 21
 }
 
+tasks.withType(AbstractRun::class) {
+    javaLauncher = javaToolchains.launcherFor {
+        vendor = JvmVendorSpec.JETBRAINS
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+    jvmArgs("-XX:+AllowEnhancedClassRedefinition", "-XX:+AllowRedefinitionToAddDeleteMethods")
+}
+
 tasks {
     runServer {
         minecraftVersion("1.21.4")
+    }
+
+    cleanPaperPluginsCache {
+        doLast {
+            project.file("run/plugins").deleteRecursively()
+        }
+    }
+
+    cleanPaperCache {
+        doLast {
+            project.file("run/cache").deleteRecursively()
+            project.file("run/logs").deleteRecursively()
+            project.file("run/versions").deleteRecursively()
+        }
     }
 
     test {
@@ -145,6 +155,8 @@ tasks {
             "org/jetbrains/annotations/**",
             "META-INF/**",
             "javax/**",
+            "javassist/**",
+            "org/h2/util/**"
         )
 
         mergeServiceFiles()
@@ -152,18 +164,29 @@ tasks {
             exclude(dependency("de\\.rapha149\\.signgui:signgui:.*")) // https://github.com/Rapha149/SignGUI/issues/15
         }
 
-        val prefix = "com.eternalcode.parcellockers.libs"
+        val relocationPrefix = "com.eternalcode.parcellockers.libs"
         listOf(
             "panda",
-            "org.panda_lang",
-            "net.dzikoysk",
-            "io.papermc.lib",
             "org.bstats",
-            "dev.rollczi",
-            "net.kyori",
             "org.json",
+            "org.postgresql",
+            "net.dzikoysk",
+            "net.kyori",
+            "io.papermc",
+            "io.sentry",
+            "dev.rollczi",
+            "de.eldoria",
+            "com.eternalcode.commons",
+            "com.eternalcode.gitcheck",
             "com.fasterxml",
-            "de.rapha149"
-        ).forEach { relocate(it, prefix) }
+            "com.j256",
+            "com.spotify",
+            "com.zaxxer",
+            "de.rapha149",
+            "dev.triumphteam"
+        ).forEach { relocate(it, "$relocationPrefix.$it") }
     }
 }
+
+
+
