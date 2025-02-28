@@ -1,5 +1,3 @@
-import xyz.jpenilla.runtask.task.AbstractRun
-
 plugins {
     `java-library`
     id("net.minecrell.plugin-yml.bukkit") version "0.6.0"
@@ -114,14 +112,6 @@ tasks.withType<JavaCompile> {
     options.setIncremental(true)
     options.compilerArgs.add("-parameters")
     options.release = 21
-}
-
-tasks.withType(AbstractRun::class) {
-    javaLauncher = javaToolchains.launcherFor {
-        vendor = JvmVendorSpec.JETBRAINS
-        languageVersion = JavaLanguageVersion.of(21)
-    }
-    jvmArgs("-XX:+AllowEnhancedClassRedefinition", "-XX:+AllowRedefinitionToAddDeleteMethods")
 }
 
 tasks {
