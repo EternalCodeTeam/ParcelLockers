@@ -39,6 +39,7 @@ public class ConfigItem implements Cloneable {
             .lore(this.lore.stream().map(element -> AdventureUtil.resetItalic(MINI_MESSAGE.deserialize(element))).toList())
             .flags(ItemFlag.HIDE_ATTRIBUTES)
             .flags(ItemFlag.HIDE_ENCHANTS)
+            .flags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP)
             .glow(this.glow)
             .asGuiItem(action);
     }
@@ -49,6 +50,7 @@ public class ConfigItem implements Cloneable {
             .lore(this.lore.stream().map(element -> AdventureUtil.resetItalic(MINI_MESSAGE.deserialize(element))).toList())
             .flags(ItemFlag.HIDE_ATTRIBUTES)
             .flags(ItemFlag.HIDE_ENCHANTS)
+            .flags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP)
             .glow(this.glow);
     }
 
