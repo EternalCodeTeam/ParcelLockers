@@ -52,55 +52,67 @@ public class ConfigItem implements Cloneable {
             .glow(this.glow);
     }
 
+    @Exclude
     public GuiItem toGuiItem() {
         return this.toBuilder().asGuiItem();
     }
 
+    @Exclude
     public ItemStack toItemStack() {
         return this.toBuilder().build();
     }
 
+    @Exclude
     public Material getType() {
         return this.type;
     }
 
+    @Exclude
     public String getName() {
         return this.name;
     }
 
+    @Exclude
     public List<String> getLore() {
         return this.lore;
     }
 
+    @Exclude
     public boolean isGlow() {
         return this.glow;
     }
 
+    @Exclude
     public ConfigItem setType(Material type) {
         this.type = type;
         return this;
     }
 
+    @Exclude
     public ConfigItem setName(String name) {
         this.name = name;
         return this;
     }
 
+    @Exclude
     public ConfigItem setLore(List<String> lore) {
         this.lore = lore;
         return this;
     }
 
+    @Exclude
     public ConfigItem addLore(String lore) {
         this.lore.add(lore);
         return this;
     }
 
+    @Exclude
     public ConfigItem setGlow(boolean glow) {
         this.glow = glow;
         return this;
     }
 
+    @Exclude
     @Override
     public ConfigItem clone() {
         try {

@@ -160,7 +160,7 @@ tasks {
             "org.bstats",
             "org.json",
             "org.postgresql",
-            "net.dzikoysk",
+//            "net.dzikoysk",
             "net.kyori",
             "io.papermc",
             "io.sentry",
