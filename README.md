@@ -23,9 +23,8 @@ especially on long distances.
 
 ## ℹ️ Information
 
-- ParcelLockers fully supports Minecraft's latest minor versions starting from each major version, starting from 1.17
-  onward, e.g. `1.17.1`, `1.18.2`, `1.19.4`, `1.20.6`, `1.21.1`.
-- Requires **Java 17 or later** to work properly. For older versions of Java, this may affect the functionality of the
+- ParcelLockers *currently* supports only latest Minecraft version.
+- Requires **Java 21 or later** to work properly. For older versions of Java, this may affect the functionality of the
   plugin.
 - If you have any questions, you can ask us about it on our [Discord server](https://discord.gg/FQ7jmGBd6c).
 
