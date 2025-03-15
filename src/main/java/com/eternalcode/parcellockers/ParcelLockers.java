@@ -37,6 +37,7 @@ import com.eternalcode.parcellockers.user.controller.LoadUserController;
 import com.eternalcode.parcellockers.user.controller.PrepareUserController;
 import com.eternalcode.parcellockers.user.repository.UserRepository;
 import com.eternalcode.parcellockers.user.repository.UserRepositoryOrmLite;
+import com.eternalcode.parcellockers.util.NullLogger;
 import com.google.common.base.Stopwatch;
 import com.j256.ormlite.logger.LoggerFactory;
 import com.j256.ormlite.logger.NullLogBackend;
@@ -69,14 +70,12 @@ import java.util.stream.Stream;
 
 public final class ParcelLockers extends JavaPlugin {
 
+    public static org.slf4j.Logger DEBUG_LOGGER;
+
     private LiteCommands<CommandSender> liteCommands;
-
     private BukkitAudiences audiences;
-
     private SkullAPI skullAPI;
-
     private Economy economy;
-
     private DatabaseManager databaseManager;
 
     @Override
@@ -109,6 +108,12 @@ public final class ParcelLockers extends JavaPlugin {
                 options.setEnabled(false);
                 this.getLogger().info("Sentry initialized successfully!");
             });
+        }
+
+        if (config.settings.debug) {
+            DEBUG_LOGGER = org.slf4j.LoggerFactory.getLogger("ParcelLockers] [DEBUG");
+        } else {
+            DEBUG_LOGGER = new NullLogger();
         }
 
         LoggerFactory.setLogBackendFactory(new NullLogBackend.NullLogBackendFactory());
