@@ -3,7 +3,6 @@ package com.eternalcode.parcellockers.gui.implementation.locker;
 import com.eternalcode.commons.adventure.AdventureUtil;
 import com.eternalcode.parcellockers.configuration.implementation.ConfigItem;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
-import com.eternalcode.parcellockers.content.ParcelContent;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
@@ -13,7 +12,6 @@ import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelManager;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
-import com.eternalcode.parcellockers.shared.SentryExceptionHandler;
 import com.eternalcode.parcellockers.user.repository.UserRepository;
 import de.rapha149.signgui.SignGUI;
 import de.rapha149.signgui.SignGUIAction;
@@ -214,23 +212,10 @@ public class ParcelSendingGui implements GuiView {
 
                 Parcel parcel = new Parcel(UUID.randomUUID(), player.getUniqueId(), this.state.getParcelName(),
                     this.state.getParcelDescription(), this.state.isPriority(), this.state.getReceiver(),
-                    this.state.getSize(), this.state.getEntryLocker(), this.state.getDestinationLocker());
+                    this.state.getSize(), this.state.getEntryLocker(), this.state.getDestinationLocker(), this.state.getStatus());
 
-                this.parcelRepository.save(parcel).thenAccept(unused -> {
-
-                    this.parcelContentRepository.save(new ParcelContent(parcel.uuid(), result.get().items())
-                    ).thenAccept(none -> this.itemStorageRepository.remove(player.getUniqueId()));
-
-                    this.announcer.sendMessage(player, settings.messages.parcelSent);
-                    this.gui.close(player);
-
-                }).whenComplete(SentryExceptionHandler.handler()
-                    .andThen((unused, throwable) -> {
-                            if (throwable != null) {
-                                this.announcer.sendMessage(player, settings.messages.parcelFailedToSend);
-                            }
-                        }
-                    ));
+                this.itemStorageRepository.remove(player.getUniqueId());
+                this.parcelManager.createParcel(player, parcel, result.get().items());
             }).orTimeout(5, TimeUnit.SECONDS));
 
         GuiItem closeItem = guiSettings.closeItem.toGuiItem(event ->

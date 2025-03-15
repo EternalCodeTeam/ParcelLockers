@@ -12,6 +12,9 @@ import com.eternalcode.parcellockers.configuration.implementation.PluginConfigur
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepositoryOrmLite;
 import com.eternalcode.parcellockers.database.DatabaseManager;
+import com.eternalcode.parcellockers.delivery.Delivery;
+import com.eternalcode.parcellockers.delivery.repository.DeliveryRepository;
+import com.eternalcode.parcellockers.delivery.repository.DeliveryRepositoryOrmLite;
 import com.eternalcode.parcellockers.gui.implementation.locker.LockerMainGui;
 import com.eternalcode.parcellockers.gui.implementation.remote.MainGui;
 import com.eternalcode.parcellockers.gui.implementation.remote.ParcelListGui;
@@ -27,10 +30,12 @@ import com.eternalcode.parcellockers.locker.repository.LockerRepositoryOrmLite;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelManager;
+import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import com.eternalcode.parcellockers.parcel.command.ParcelCommand;
 import com.eternalcode.parcellockers.parcel.command.argument.ParcelArgument;
 import com.eternalcode.parcellockers.parcel.repository.ParcelCache;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryOrmLite;
+import com.eternalcode.parcellockers.parcel.task.ParcelSendTask;
 import com.eternalcode.parcellockers.updater.UpdaterService;
 import com.eternalcode.parcellockers.user.UserManager;
 import com.eternalcode.parcellockers.user.controller.LoadUserController;
@@ -62,6 +67,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -146,6 +152,8 @@ public final class ParcelLockers extends JavaPlugin {
         UserRepository userRepository = new UserRepositoryOrmLite(databaseManager, scheduler);
         UserManager userManager = new UserManager(userRepository);
 
+        DeliveryRepository deliveryRepository = new DeliveryRepositoryOrmLite(databaseManager, scheduler);
+
 
         MainGui mainGUI = new MainGui(this, server, miniMessage, config, parcelRepository, lockerRepository, userManager);
         ParcelListGui parcelListGUI = new ParcelListGui(this, server, miniMessage, config, parcelRepository, lockerRepository, userManager, mainGUI);
@@ -183,6 +191,23 @@ public final class ParcelLockers extends JavaPlugin {
 
         new Metrics(this, 17677);
         new UpdaterService(this.getDescription());
+
+        parcelRepository.findAll().thenAccept(optional -> {
+            List<Parcel> parcels = optional.orElse(List.of());
+            parcels.removeIf(parcel -> parcel.status() == ParcelStatus.DELIVERED);
+            for (Parcel parcel : parcels) {
+                deliveryRepository.find(parcel.uuid()).thenAccept(optionalDelivery -> {
+                    Delivery delivery = optionalDelivery.get();
+                    long delay = delivery.deliveryTimestamp() - System.currentTimeMillis();
+
+                    if (delay < 0) {
+                        delay = 0;
+                    }
+
+                    scheduler.runLaterAsync(new ParcelSendTask(parcel, delivery, parcelRepository, deliveryRepository, config), Duration.ofMillis(delay));
+                });
+            }
+        });
 
         long millis = started.elapsed(TimeUnit.MILLISECONDS);
         this.getLogger().log(Level.INFO, "Successfully enabled ParcelLockers in {0}ms", millis);

@@ -9,6 +9,7 @@ import net.dzikoysk.cdn.source.Source;
 import org.bukkit.Material;
 
 import java.io.File;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 
@@ -57,9 +58,6 @@ public class PluginConfiguration implements ReloadableConfig {
         @Description({ " ", "# The database port." })
         public String port = "3306";
 
-        @Description({ " ", "# Turn this on to enable SSL (Secure Sockets Layer)" })
-        public boolean useSSL = false;
-
         @Description({ " ", "# The database password." })
         public String password = "";
 
@@ -69,14 +67,11 @@ public class PluginConfiguration implements ReloadableConfig {
             .setType(Material.CHEST)
             .setLore(List.of("&bPlace to create a parcel locker."));
 
-        @Description({ " ", "# Small parcel cost." })
-        public double smallParcelCost = 5.0;
+        @Description({" ", "# Standard parcel sending duration"})
+        public Duration parcelSendDuration = Duration.ofMinutes(30);
 
-        @Description({ " ", "# Medium parcel cost." })
-        public double mediumParcelCost = 10.0;
-
-        @Description({ " ", "# Large parcel cost." })
-        public double largeParcelCost = 15.0;
+        @Description({" ", "# Parcel sending duration for priority parcels"})
+        public Duration priorityParcelSendDuration = Duration.ofMinutes(15);
     }
 
     @Contextual
