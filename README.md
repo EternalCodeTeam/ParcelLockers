@@ -17,9 +17,12 @@
 
 # Welcome to ParcelLockers! 🚀
 
-ParcelLockers is a minecraft plugin, dedicated for Spigot-based servers.. 💎 Crafted with care, ParcelLockers
-is dedicated to incorporating highly practical server function of transfering items across the Minecraft world,
+ParcelLockers is a minecraft plugin dedicated to incorporating highly practical server function of transfering items across the Minecraft world,
 especially on long distances.
+
+## ❗Warning
+
+ParcelLockers is at an very early stage of development, and you use it at your own risk.
 
 ## ℹ️ Information
 
@@ -27,10 +30,6 @@ especially on long distances.
 - Requires **Java 21 or later** to work properly. For older versions of Java, this may affect the functionality of the
   plugin.
 - If you have any questions, you can ask us about it on our [Discord server](https://discord.gg/FQ7jmGBd6c).
-
-## ❗Warning
-
-ParcelLockers is at an very early stage of development, and you use it at your own risk.
 
 ## 🏗️ Compiling JAR from Source
 
