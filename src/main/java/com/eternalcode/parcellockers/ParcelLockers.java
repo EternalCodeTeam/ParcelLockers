@@ -37,7 +37,6 @@ import com.eternalcode.parcellockers.user.controller.LoadUserController;
 import com.eternalcode.parcellockers.user.controller.PrepareUserController;
 import com.eternalcode.parcellockers.user.repository.UserRepository;
 import com.eternalcode.parcellockers.user.repository.UserRepositoryOrmLite;
-import com.eternalcode.parcellockers.util.NullLogger;
 import com.google.common.base.Stopwatch;
 import com.j256.ormlite.logger.LoggerFactory;
 import com.j256.ormlite.logger.NullLogBackend;
@@ -67,10 +66,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
+import org.slf4j.helpers.NOPLogger;
 
 public final class ParcelLockers extends JavaPlugin {
 
-    public static org.slf4j.Logger DEBUG_LOGGER;
+    public static org.slf4j.Logger DEBUG_LOGGER = NOPLogger.NOP_LOGGER;
 
     private LiteCommands<CommandSender> liteCommands;
     private BukkitAudiences audiences;
@@ -112,8 +112,6 @@ public final class ParcelLockers extends JavaPlugin {
 
         if (config.settings.debug) {
             DEBUG_LOGGER = org.slf4j.LoggerFactory.getLogger("ParcelLockers] [DEBUG");
-        } else {
-            DEBUG_LOGGER = new NullLogger();
         }
 
         LoggerFactory.setLogBackendFactory(new NullLogBackend.NullLogBackendFactory());
