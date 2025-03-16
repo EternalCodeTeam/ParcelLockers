@@ -58,7 +58,7 @@ public abstract class AbstractRepositoryOrmLite {
 
     protected <T> CompletableFuture<Integer> deleteAll(Class<T> type) {
         return this.action(type, dao -> {
-            ParcelLockers.DEBUG_LOGGER.info("Deleting all");
+            ParcelLockers.DEBUG_LOGGER.info("Deleting all entities of type: {}", type.getSimpleName());
             return dao.deleteBuilder().delete();
         });
     }
@@ -71,6 +71,7 @@ public abstract class AbstractRepositoryOrmLite {
     }
 
     protected <T> CompletableFuture<List<T>> selectAll(Class<T> type) {
+        ParcelLockers.DEBUG_LOGGER.info("Selecting all entities of type: {}", type.getSimpleName());
         return this.action(type, Dao::queryForAll);
     }
 
