@@ -3,6 +3,7 @@ package com.eternalcode.parcellockers.parcel;
 import com.eternalcode.commons.bukkit.ItemUtil;
 import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.content.ParcelContent;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
@@ -32,10 +33,11 @@ public class ParcelManager {
         this.scheduler = scheduler;
     }
 
-    public void createParcel(CommandSender sender, Parcel parcel) {
+    public void createParcel(CommandSender sender, Parcel parcel, List<ItemStack> items) {
         this.parcelRepository.save(parcel)
             .whenComplete(SentryExceptionHandler.handler()
             .andThen((v, throwable) -> {
+                this.parcelContentRepository.save(new ParcelContent(parcel.uuid(), items));
                 if (throwable != null) {
                     this.announcer.sendMessage(sender, this.config.messages.failedToCreateParcel);
                     return;
