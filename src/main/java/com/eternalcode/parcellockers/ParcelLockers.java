@@ -66,17 +66,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
+import org.slf4j.helpers.NOPLogger;
 
 public final class ParcelLockers extends JavaPlugin {
 
+    public static org.slf4j.Logger DEBUG_LOGGER = NOPLogger.NOP_LOGGER;
+
     private LiteCommands<CommandSender> liteCommands;
-
     private BukkitAudiences audiences;
-
     private SkullAPI skullAPI;
-
     private Economy economy;
-
     private DatabaseManager databaseManager;
 
     @Override
@@ -109,6 +108,10 @@ public final class ParcelLockers extends JavaPlugin {
                 options.setEnabled(false);
                 this.getLogger().info("Sentry initialized successfully!");
             });
+        }
+
+        if (config.settings.debug) {
+            DEBUG_LOGGER = org.slf4j.LoggerFactory.getLogger("ParcelLockers] [DEBUG");
         }
 
         LoggerFactory.setLogBackendFactory(new NullLogBackend.NullLogBackendFactory());
