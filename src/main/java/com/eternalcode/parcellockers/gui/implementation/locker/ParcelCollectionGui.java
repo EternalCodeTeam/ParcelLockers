@@ -5,6 +5,7 @@ import com.eternalcode.parcellockers.configuration.implementation.PluginConfigur
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelManager;
+import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.SentryExceptionHandler;
@@ -95,6 +96,11 @@ public class ParcelCollectionGui implements GuiView {
             }
 
             for (Parcel parcel : result.parcels()) {
+
+                if (parcel.status() == ParcelStatus.DELIVERED) {
+                    continue;
+                }
+
                 ConfigItem item = parcelItem.clone();
                 item.name = item.name.replace("{NAME}", parcel.name());
                 item.lore = item.lore.stream()

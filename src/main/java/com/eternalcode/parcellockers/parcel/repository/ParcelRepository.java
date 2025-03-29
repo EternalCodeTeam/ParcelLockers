@@ -12,6 +12,8 @@ public interface ParcelRepository {
 
     CompletableFuture<Void> save(Parcel parcel);
 
+    CompletableFuture<Void> update(Parcel parcel);
+
     CompletableFuture<Optional<List<Parcel>>> findAll();
 
     CompletableFuture<Optional<Parcel>> findByUUID(UUID uuid);
