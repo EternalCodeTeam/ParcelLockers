@@ -13,7 +13,6 @@ import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepositoryOrmLite;
 import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.eternalcode.parcellockers.delivery.Delivery;
-import com.eternalcode.parcellockers.delivery.repository.DeliveryRepository;
 import com.eternalcode.parcellockers.delivery.repository.DeliveryRepositoryOrmLite;
 import com.eternalcode.parcellockers.gui.implementation.locker.LockerMainGui;
 import com.eternalcode.parcellockers.gui.implementation.remote.MainGui;
@@ -144,16 +143,15 @@ public final class ParcelLockers extends JavaPlugin {
         ParcelRepositoryOrmLite parcelRepository = new ParcelRepositoryOrmLite(databaseManager, scheduler, parcelCache);
         parcelRepository.updateCaches();
 
+        DeliveryRepositoryOrmLite deliveryRepository = new DeliveryRepositoryOrmLite(databaseManager, scheduler);
+
         ParcelContentRepository parcelContentRepository = new ParcelContentRepositoryOrmLite(databaseManager, scheduler);
-        ParcelManager parcelManager = new ParcelManager(config, announcer, parcelRepository, parcelContentRepository, scheduler);
+        ParcelManager parcelManager = new ParcelManager(config, announcer, parcelRepository, deliveryRepository, parcelContentRepository, scheduler);
 
         ItemStorageRepository itemStorageRepository = new ItemStorageRepositoryOrmLite(databaseManager, scheduler);
 
         UserRepository userRepository = new UserRepositoryOrmLite(databaseManager, scheduler);
         UserManager userManager = new UserManager(userRepository);
-
-        DeliveryRepository deliveryRepository = new DeliveryRepositoryOrmLite(databaseManager, scheduler);
-
 
         MainGui mainGUI = new MainGui(this, server, miniMessage, config, parcelRepository, lockerRepository, userManager);
         ParcelListGui parcelListGUI = new ParcelListGui(this, server, miniMessage, config, parcelRepository, lockerRepository, userManager, mainGUI);
@@ -204,6 +202,7 @@ public final class ParcelLockers extends JavaPlugin {
                         delay = 0;
                     }
 
+                    System.out.println("scheduled parcel: " + parcel);
                     scheduler.runLaterAsync(new ParcelSendTask(parcel, delivery, parcelRepository, deliveryRepository, config), Duration.ofMillis(delay));
                 });
             }

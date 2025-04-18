@@ -1,5 +1,6 @@
 package com.eternalcode.parcellockers.configuration;
 
+import com.eternalcode.parcellockers.configuration.composer.DurationComposer;
 import com.eternalcode.parcellockers.configuration.composer.PositionComposer;
 import net.dzikoysk.cdn.Cdn;
 import net.dzikoysk.cdn.CdnFactory;
@@ -14,6 +15,7 @@ public class ConfigurationManager {
         .createYamlLike()
         .getSettings()
         .withComposer(PositionComposer.class, new PositionComposer())
+        .withComposer(DurationComposer.class, new DurationComposer())
         .build();
 
     private final Set<ReloadableConfig> configs = new HashSet<>();
