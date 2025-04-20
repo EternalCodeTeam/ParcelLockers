@@ -7,6 +7,14 @@ import java.time.Duration;
 public class DurationComposer implements SimpleComposer<Duration> {
 
     @Override
+    public Result<String, Exception> serialize(Duration duration) {
+        return Result.ok(duration.toString()
+            .substring(2)
+            .replaceAll("(\\d[HMS])(?!$)", "$1 ")
+            .toLowerCase());
+    }
+
+    @Override
     public Result<Duration, Exception> deserialize(String input) {
         try {
             if (input == null || input.isBlank()) {
@@ -23,13 +31,5 @@ public class DurationComposer implements SimpleComposer<Duration> {
         } catch (Exception e) {
             return Result.error(e);
         }
-    }
-
-    @Override
-    public Result<String, Exception> serialize(Duration duration) {
-        return Result.ok(duration.toString()
-            .substring(2)
-            .replaceAll("(\\d[HMS])(?!$)", "$1 ")
-            .toLowerCase());
     }
 }
