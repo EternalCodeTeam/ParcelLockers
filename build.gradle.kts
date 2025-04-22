@@ -42,7 +42,7 @@ dependencies {
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
 
     // CDN
-    implementation("net.dzikoysk:cdn:1.14.6")
+    implementation("net.dzikoysk:cdn:1.14.8")
 
     // expressible
     implementation("org.panda-lang:expressible:1.3.6")
