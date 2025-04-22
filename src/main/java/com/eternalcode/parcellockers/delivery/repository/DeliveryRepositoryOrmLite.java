@@ -18,7 +18,7 @@ public class DeliveryRepositoryOrmLite extends AbstractRepositoryOrmLite impleme
         super(databaseManager, scheduler);
 
         try {
-            TableUtils.createTableIfNotExists(databaseManager.connectionSource(), Delivery.class);
+            TableUtils.createTableIfNotExists(databaseManager.connectionSource(), DeliveryWrapper.class);
         } catch (SQLException exception) {
             exception.printStackTrace();
         }
