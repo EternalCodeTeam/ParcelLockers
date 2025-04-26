@@ -216,8 +216,9 @@ public class ParcelSendingGui implements GuiView {
                     this.state.getParcelDescription(), this.state.isPriority(), this.state.getReceiver(),
                     this.state.getSize(), this.state.getEntryLocker(), this.state.getDestinationLocker(), this.state.getStatus());
 
-                this.itemStorageRepository.remove(player.getUniqueId());
-                this.parcelManager.createParcel(player, parcel, result.get().items());
+                if (this.parcelManager.sendParcel(player, parcel, result.get().items()).isOk()) {
+                    this.itemStorageRepository.remove(player.getUniqueId());
+                }
                 this.gui.close(player);
             }).orTimeout(5, TimeUnit.SECONDS));
 

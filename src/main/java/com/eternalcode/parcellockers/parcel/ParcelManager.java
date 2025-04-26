@@ -15,6 +15,8 @@ import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import panda.std.Blank;
+import panda.std.Result;
 
 import java.time.Duration;
 import java.util.List;
@@ -39,7 +41,7 @@ public class ParcelManager {
         this.scheduler = scheduler;
     }
 
-    public void createParcel(CommandSender sender, Parcel parcel, List<ItemStack> items) {
+    public Result<Blank, Exception> sendParcel(CommandSender sender, Parcel parcel, List<ItemStack> items) {
         System.out.println("scheduled parcel: " + parcel);
         Duration delay = parcel.priority() ? this.config.settings.priorityParcelSendDuration : this.config.settings.parcelSendDuration;
         this.parcelRepository.save(parcel);
@@ -58,6 +60,7 @@ public class ParcelManager {
             this.config),
             delay);
 
+        return Result.ok();
     }
 
     public void deleteParcel(CommandSender sender, Parcel parcel) {
