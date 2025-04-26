@@ -68,10 +68,10 @@ public class PluginConfiguration implements ReloadableConfig {
             .setLore(List.of("&bPlace to create a parcel locker."));
 
         @Description({" ", "# Standard parcel sending duration"})
-        public Duration parcelSendDuration = Duration.ofMinutes(30);
+        public Duration parcelSendDuration = Duration.ofSeconds(10);
 
         @Description({" ", "# Parcel sending duration for priority parcels"})
-        public Duration priorityParcelSendDuration = Duration.ofMinutes(15);
+        public Duration priorityParcelSendDuration = Duration.ofSeconds(5);
     }
 
     @Contextual
