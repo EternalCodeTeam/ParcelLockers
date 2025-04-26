@@ -41,33 +41,33 @@ public class DebugCommand {
     @Execute(name = "deleteparcels")
     void deleteParcels(@Context CommandSender sender) {
         this.parcelRepository.removeAll().exceptionally(throwable -> {
-            this.announcer.sendMessage(sender, "&cFailed to delete parcels");
+            this.announcer.sendMessage(sender, "&4Failed to delete parcels");
             return null;
-        }).thenRun(() -> this.announcer.sendMessage(sender, "&aParcels deleted"));
+        }).thenRun(() -> this.announcer.sendMessage(sender, "&cParcels deleted"));
     }
 
     @Execute(name = "deletelockers")
     void deleteLockers(@Context CommandSender sender) {
         this.lockerRepository.removeAll().exceptionally(throwable -> {
-            this.announcer.sendMessage(sender, "&cFailed to delete lockers");
+            this.announcer.sendMessage(sender, "&4Failed to delete lockers");
             return null;
-        }).thenRun(() -> this.announcer.sendMessage(sender, "&aLockers deleted"));
+        }).thenRun(() -> this.announcer.sendMessage(sender, "&cLockers deleted"));
     }
 
     @Execute(name = "deleteitemstorages")
     void deleteItemStorages(@Context CommandSender sender) {
         this.itemStorageRepository.removeAll().exceptionally(throwable -> {
-            this.announcer.sendMessage(sender, "&cFailed to delete item storages");
+            this.announcer.sendMessage(sender, "&4Failed to delete item storages");
             return null;
-        }).thenRun(() -> this.announcer.sendMessage(sender, "&aItem storages deleted"));
+        }).thenRun(() -> this.announcer.sendMessage(sender, "&cItem storages deleted"));
     }
 
     @Execute(name = "deleteparcelcontents")
     void deleteParcelContents(@Context CommandSender sender) {
         this.contentRepository.removeAll().exceptionally(throwable -> {
-            this.announcer.sendMessage(sender, "&cFailed to delete parcel contents");
+            this.announcer.sendMessage(sender, "&4Failed to delete parcel contents");
             return null;
-        }).thenRun(() -> this.announcer.sendMessage(sender, "&aParcel contents deleted"));
+        }).thenRun(() -> this.announcer.sendMessage(sender, "&cParcel contents deleted"));
     }
 
     @Execute(name = "deleteall")
