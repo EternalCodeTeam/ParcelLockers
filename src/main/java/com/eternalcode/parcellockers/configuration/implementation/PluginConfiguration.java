@@ -40,6 +40,9 @@ public class PluginConfiguration implements ReloadableConfig {
             "# You can learn more about Sentry here: https://sentry.io/" })
         public boolean enableSentry = true;
 
+        @Description({ " ", "# Set to enable debug mode and receive more detailed information in the console." })
+        public boolean debug = false;
+
         @Description({ " ", "# Whether the player after entering the server should receive information about the new version of the plugin?" })
         public boolean receiveUpdates = true;
 
