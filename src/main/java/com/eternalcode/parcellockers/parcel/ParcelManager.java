@@ -52,10 +52,10 @@ public class ParcelManager {
 
         this.parcelContentRepository.save(new ParcelContent(parcel.uuid(), items)).whenComplete((content, throwable) -> {
             if (throwable != null) {
-                this.announcer.sendMessage(sender, this.config.messages.failedToCreateParcel);
+                this.announcer.sendMessage(sender, this.config.messages.parcelFailedToSend);
                 return;
             }
-            this.announcer.sendMessage(sender, this.config.messages.parcelSuccessfullyCreated);
+            this.announcer.sendMessage(sender, this.config.messages.parcelSent);
         });
     }
 

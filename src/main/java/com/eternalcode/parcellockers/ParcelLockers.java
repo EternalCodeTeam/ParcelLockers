@@ -65,6 +65,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.SQLException;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -191,7 +192,7 @@ public final class ParcelLockers extends JavaPlugin {
         new UpdaterService(this.getDescription());
 
         parcelRepository.findAll().thenAccept(optional -> {
-            List<Parcel> parcels = optional.orElse(List.of());
+            List<Parcel> parcels = optional.orElse(new ArrayList<>());
             parcels.removeIf(parcel -> parcel.status() == ParcelStatus.DELIVERED);
             for (Parcel parcel : parcels) {
                 deliveryRepository.find(parcel.uuid()).thenAccept(optionalDelivery -> {
