@@ -125,7 +125,7 @@ public class ParcelItemStorageGui {
                         ItemUtil.giveItem(player, item);
                         gui.removeItem(item);
                         player.playSound(player.getLocation(), Sound.ENTITY_ENDERMAN_AMBIENT, 1, 1);
-                        this.announcer.sendMessage(player, this.config.messages.illegalItemFailedToSend);
+                        this.announcer.sendMessage(player, this.config.messages.illegalItemFailedToSend.replace("{ITEMS}", item.getType().name()));
                     }
                 }
 

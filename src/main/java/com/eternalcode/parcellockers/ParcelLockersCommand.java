@@ -27,7 +27,7 @@ public class ParcelLockersCommand {
     }
 
     @Async
-    @Execute(name = "reload", aliases = { "rl" })
+    @Execute(name = "reload")
     void reload(@Context CommandSender sender) {
         this.configManager.reload();
         this.announcer.sendMessage(sender, this.config.messages.reload);

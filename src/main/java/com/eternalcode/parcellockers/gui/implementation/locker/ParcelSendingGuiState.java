@@ -1,6 +1,7 @@
 package com.eternalcode.parcellockers.gui.implementation.locker;
 
 import com.eternalcode.parcellockers.parcel.ParcelSize;
+import com.eternalcode.parcellockers.parcel.ParcelStatus;
 
 import java.util.UUID;
 
@@ -13,6 +14,7 @@ public class ParcelSendingGuiState {
     private boolean priority;
     private UUID entryLocker;
     private UUID destinationLocker;
+    private ParcelStatus status;
 
     public ParcelSendingGuiState() {
         this.parcelName = null;
@@ -22,6 +24,7 @@ public class ParcelSendingGuiState {
         this.priority = false;
         this.entryLocker = UUID.randomUUID();
         this.destinationLocker = null;
+        this.status = ParcelStatus.PENDING;
     }
 
     public String getParcelName() {
@@ -78,5 +81,13 @@ public class ParcelSendingGuiState {
 
     public void setEntryLocker(UUID entryLocker) {
         this.entryLocker = entryLocker;
+    }
+
+    public ParcelStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ParcelStatus status) {
+        this.status = status;
     }
 }

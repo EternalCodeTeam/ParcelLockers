@@ -57,7 +57,6 @@ public class MainGui implements GuiView {
         GuiItem closeItem = guiSettings.closeItem.toGuiItem(event -> gui.close(player));
         GuiItem cornerItem = guiSettings.cornerItem.toGuiItem();
 
-
         int size = gui.getRows() * 9;
         for (int i = 0; i < size; i++) {
             gui.setItem(i, backgroundItem);

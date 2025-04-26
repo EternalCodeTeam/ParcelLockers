@@ -15,12 +15,8 @@ repositories {
 
     maven { url = uri("https://repo.panda-lang.org/releases") }
     maven { url = uri("https://hub.spigotmc.org/nexus/content/repositories/snapshots/") }
-    maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots") }
-    maven { url = uri("https://oss.sonatype.org/content/repositories/central") }
-    maven { url = uri("https://papermc.io/repo/repository/maven-public/") }
+    maven { url = uri("https://repo.papermc.io/repository/maven-public/") }
     maven { url = uri("https://repo.eternalcode.pl/releases") }
-    maven { url = uri("https://repository.minecodes.pl/releases") }
-    maven { url = uri("https://jitpack.io") }
 }
 
 dependencies {
@@ -38,11 +34,8 @@ dependencies {
     implementation("dev.triumphteam:triumph-gui:3.1.11")
     implementation("de.rapha149.signgui:signgui:2.5.0")
 
-    // economy
-    compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
-
     // CDN
-    implementation("net.dzikoysk:cdn:1.14.6")
+    implementation("net.dzikoysk:cdn:1.14.8")
 
     // expressible
     implementation("org.panda-lang:expressible:1.3.6")
@@ -55,7 +48,7 @@ dependencies {
     implementation("io.sentry:sentry:8.0.0")
 
     // database
-    implementation("com.zaxxer:HikariCP:6.2.1")
+    implementation("com.zaxxer:HikariCP:6.3.0")
     implementation("com.j256.ormlite:ormlite-jdbc:6.1")
     implementation("com.h2database:h2:2.3.232")
     implementation("org.postgresql:postgresql:42.7.5")
@@ -119,17 +112,10 @@ tasks {
         minecraftVersion("1.21.4")
     }
 
-    cleanPaperPluginsCache {
+    clean {
         doLast {
             project.file("run/plugins").deleteRecursively()
-        }
-    }
-
-    cleanPaperCache {
-        doLast {
-            project.file("run/cache").deleteRecursively()
             project.file("run/logs").deleteRecursively()
-            project.file("run/versions").deleteRecursively()
         }
     }
 
@@ -138,7 +124,7 @@ tasks {
     }
 
     shadowJar {
-        archiveFileName.set("ParcelLockers v${project.version} (MC 1.21.3-1.21.4).jar")
+        archiveFileName.set("ParcelLockers v${project.version}.jar")
 
         exclude(
             "org/intellij/lang/annotations/**",
