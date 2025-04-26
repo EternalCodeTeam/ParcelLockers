@@ -15,12 +15,8 @@ repositories {
 
     maven { url = uri("https://repo.panda-lang.org/releases") }
     maven { url = uri("https://hub.spigotmc.org/nexus/content/repositories/snapshots/") }
-//    maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots") }
-//    maven { url = uri("https://oss.sonatype.org/content/repositories/central") }
     maven { url = uri("https://papermc.io/repo/repository/maven-public/") }
     maven { url = uri("https://repo.eternalcode.pl/releases") }
-//    maven { url = uri("https://repository.minecodes.pl/releases") }
-    maven { url = uri("https://jitpack.io") }
 }
 
 dependencies {
@@ -37,9 +33,6 @@ dependencies {
     // gui
     implementation("dev.triumphteam:triumph-gui:3.1.11")
     implementation("de.rapha149.signgui:signgui:2.5.0")
-
-    // economy
-    compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
 
     // CDN
     implementation("net.dzikoysk:cdn:1.14.8")

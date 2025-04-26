@@ -56,11 +56,9 @@ import io.papermc.lib.environments.Environment;
 import io.sentry.Sentry;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.milkbowl.vault.economy.Economy;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
-import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.SQLException;
@@ -80,8 +78,6 @@ public final class ParcelLockers extends JavaPlugin {
     private BukkitAudiences audiences;
 
     private SkullAPI skullAPI;
-
-    private Economy economy;
 
     private DatabaseManager databaseManager;
 
@@ -172,12 +168,6 @@ public final class ParcelLockers extends JavaPlugin {
             .missingPermission(new PermissionMessage(announcer, config))
             .build();
 
-        /*if (!this.setupEconomy()) {
-            this.getLogger().severe("Disabling due to no Vault dependency or its implementator(s) found!");
-            server.getPluginManager().disablePlugin(this);
-            return;
-        }*/
-
         LockerMainGui lockerMainGUI = new LockerMainGui(this, miniMessage, config, itemStorageRepository, parcelRepository, lockerRepository, announcer, parcelContentRepository, userRepository, this.skullAPI, parcelManager);
 
         Stream.of(
@@ -248,24 +238,6 @@ public final class ParcelLockers extends JavaPlugin {
 
         logger.info("Your server is running on supported software, congratulations!");
         logger.info("Server version: " + this.getServer().getVersion());
-    }
-
-    private boolean setupEconomy() {
-        if (this.getServer().getPluginManager().getPlugin("Vault") == null) {
-            return false;
-        }
-
-        RegisteredServiceProvider<Economy> rsp = this.getServer().getServicesManager().getRegistration(Economy.class);
-        if (rsp == null) {
-            return false; // Vault is installed but no economy plugin is registered (e.g. EssentialsX) - majk
-        }
-
-        this.economy = rsp.getProvider();
-        return true;
-    }
-
-    public Economy getEconomy() {
-        return this.economy;
     }
 }
 
