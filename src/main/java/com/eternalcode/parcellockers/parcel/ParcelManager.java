@@ -43,13 +43,6 @@ public class ParcelManager {
         System.out.println("scheduled parcel: " + parcel);
         Duration delay = parcel.priority() ? this.config.settings.priorityParcelSendDuration : this.config.settings.parcelSendDuration;
         this.parcelRepository.save(parcel);
-        this.scheduler.runLaterAsync(new ParcelSendTask(parcel,
-            new Delivery(parcel.uuid(), System.currentTimeMillis() + delay.toMillis()),
-            this.parcelRepository,
-            this.deliveryRepository,
-            this.config),
-            delay);
-
         this.parcelContentRepository.save(new ParcelContent(parcel.uuid(), items)).whenComplete((content, throwable) -> {
             if (throwable != null) {
                 this.announcer.sendMessage(sender, this.config.messages.parcelFailedToSend);
@@ -57,6 +50,14 @@ public class ParcelManager {
             }
             this.announcer.sendMessage(sender, this.config.messages.parcelSent);
         });
+
+        this.scheduler.runLaterAsync(new ParcelSendTask(parcel,
+            new Delivery(parcel.uuid(), System.currentTimeMillis() + delay.toMillis()),
+            this.parcelRepository,
+            this.deliveryRepository,
+            this.config),
+            delay);
+
     }
 
     public void deleteParcel(CommandSender sender, Parcel parcel) {
@@ -85,9 +86,10 @@ public class ParcelManager {
                 return;
             }
 
-            items.forEach(item ->
-                this.scheduler.run(() -> ItemUtil.giveItem(player, item))
-            );
+            for (ItemStack item : items) {
+                this.scheduler.run(() -> ItemUtil.giveItem(player, item));
+            }
+
             this.parcelRepository.remove(parcel)
                 .thenCompose(v -> this.parcelContentRepository.remove(optional.get().uniqueId()))
                 .whenComplete(SentryExceptionHandler.handler().andThen((v, throwable) -> {

@@ -38,7 +38,7 @@ public class ParcelSendTask extends BukkitRunnable {
             parcel.destinationLocker(),
             ParcelStatus.DELIVERED);
 
-        System.out.println("ParcelSendTask: " + updatedParcel);
+        System.out.println("Delivered: " + updatedParcel);
 
         this.parcelRepository.update(updatedParcel);
         this.deliveryRepository.remove(updatedParcel.uuid());

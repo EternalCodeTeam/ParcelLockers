@@ -203,7 +203,7 @@ public final class ParcelLockers extends JavaPlugin {
                         delay = 0;
                     }
 
-                    System.out.println("scheduled parcel: " + parcel);
+                    System.out.println("scheduled parcel from db: " + parcel);
                     scheduler.runLaterAsync(new ParcelSendTask(parcel, delivery, parcelRepository, deliveryRepository, config), Duration.ofMillis(delay));
                 });
             }
