@@ -23,6 +23,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
@@ -96,9 +97,8 @@ public class ParcelSendingGui implements GuiView {
         GuiItem cornerItem = guiSettings.cornerItem.toGuiItem();
         ConfigItem nameItem = guiSettings.parcelNameItem.clone();
         GuiItem nameGuiItem = nameItem.toGuiItem(event -> {
-            SignGUI nameSignGui = null;
             try {
-                nameSignGui = SignGUI.builder()
+                SignGUI nameSignGui = SignGUI.builder()
                     .setColor(DyeColor.BLACK)
                     .setType(Material.OAK_SIGN)
                     .setLine(0, "Enter parcel name:")
@@ -127,10 +127,11 @@ public class ParcelSendingGui implements GuiView {
                         return List.of(SignGUIAction.runSync((JavaPlugin) this.plugin, () -> this.gui.open(player)));
                     })
                     .build();
+                nameSignGui.open(player);
             } catch (SignGUIVersionException e) {
                 this.plugin.getLogger().severe("The server version is unsupported by SignGUI API!");
             }
-            nameSignGui.open(player);
+
         });
 
         ConfigItem descriptionItem = guiSettings.parcelDescriptionItem.clone();
@@ -201,12 +202,13 @@ public class ParcelSendingGui implements GuiView {
             this.itemStorageRepository.find(player.getUniqueId()).thenAccept(result -> {
                 if (result.isEmpty() || result.get().items().isEmpty()) {
                     this.announcer.sendMessage(player, settings.messages.parcelCannotBeEmpty);
-                    this.gui.close(player);
+                    player.playSound(player, Sound.ENTITY_ENDERMAN_AMBIENT, 1, 1);
                     return;
                 }
 
                 if (this.state.getReceiver() == null) {
                     this.announcer.sendMessage(player, settings.messages.receiverNotSet);
+                    player.playSound(player, Sound.ENTITY_ENDERMAN_AMBIENT, 1, 1);
                     return;
                 }
 
@@ -216,6 +218,7 @@ public class ParcelSendingGui implements GuiView {
 
                 this.itemStorageRepository.remove(player.getUniqueId());
                 this.parcelManager.createParcel(player, parcel, result.get().items());
+                this.gui.close(player);
             }).orTimeout(5, TimeUnit.SECONDS));
 
         GuiItem closeItem = guiSettings.closeItem.toGuiItem(event ->

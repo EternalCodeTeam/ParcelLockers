@@ -42,6 +42,7 @@ public class ParcelManager {
     public void createParcel(CommandSender sender, Parcel parcel, List<ItemStack> items) {
         System.out.println("scheduled parcel: " + parcel);
         Duration delay = parcel.priority() ? this.config.settings.priorityParcelSendDuration : this.config.settings.parcelSendDuration;
+        this.parcelRepository.save(parcel);
         this.scheduler.runLaterAsync(new ParcelSendTask(parcel,
             new Delivery(parcel.uuid(), System.currentTimeMillis() + delay.toMillis()),
             this.parcelRepository,

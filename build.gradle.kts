@@ -15,11 +15,11 @@ repositories {
 
     maven { url = uri("https://repo.panda-lang.org/releases") }
     maven { url = uri("https://hub.spigotmc.org/nexus/content/repositories/snapshots/") }
-    maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots") }
-    maven { url = uri("https://oss.sonatype.org/content/repositories/central") }
+//    maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots") }
+//    maven { url = uri("https://oss.sonatype.org/content/repositories/central") }
     maven { url = uri("https://papermc.io/repo/repository/maven-public/") }
     maven { url = uri("https://repo.eternalcode.pl/releases") }
-    maven { url = uri("https://repository.minecodes.pl/releases") }
+//    maven { url = uri("https://repository.minecodes.pl/releases") }
     maven { url = uri("https://jitpack.io") }
 }
 
@@ -55,7 +55,7 @@ dependencies {
     implementation("io.sentry:sentry:8.0.0")
 
     // database
-    implementation("com.zaxxer:HikariCP:6.2.1")
+    implementation("com.zaxxer:HikariCP:6.3.0")
     implementation("com.j256.ormlite:ormlite-jdbc:6.1")
     implementation("com.h2database:h2:2.3.232")
     implementation("org.postgresql:postgresql:42.7.5")
@@ -138,7 +138,7 @@ tasks {
     }
 
     shadowJar {
-        archiveFileName.set("ParcelLockers v${project.version} (MC 1.21.3-1.21.4).jar")
+        archiveFileName.set("ParcelLockers v${project.version}.jar")
 
         exclude(
             "org/intellij/lang/annotations/**",

@@ -3,12 +3,15 @@ package com.eternalcode.parcellockers.gui.implementation.locker;
 import com.eternalcode.parcellockers.configuration.implementation.ConfigItem;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.gui.GuiView;
+import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelManager;
 import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
+import com.eternalcode.parcellockers.parcel.util.ParcelPlaceholderUtil;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.SentryExceptionHandler;
+import com.eternalcode.parcellockers.user.UserManager;
 import com.eternalcode.parcellockers.util.InventoryUtil;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
@@ -32,14 +35,18 @@ public class ParcelCollectionGui implements GuiView {
     private final ParcelRepository parcelRepository;
     private final MiniMessage miniMessage;
     private final ParcelManager parcelManager;
+    private final UserManager userManager;
+    private final LockerRepository lockerRepository;
 
-    public ParcelCollectionGui(Plugin plugin, PluginConfiguration config, BukkitScheduler scheduler, ParcelRepository parcelRepository, MiniMessage miniMessage, ParcelManager parcelManager) {
+    public ParcelCollectionGui(Plugin plugin, PluginConfiguration config, BukkitScheduler scheduler, ParcelRepository parcelRepository, MiniMessage miniMessage, ParcelManager parcelManager, UserManager userManager, LockerRepository lockerRepository) {
         this.plugin = plugin;
         this.config = config;
         this.scheduler = scheduler;
         this.parcelRepository = parcelRepository;
         this.miniMessage = miniMessage;
         this.parcelManager = parcelManager;
+        this.userManager = userManager;
+        this.lockerRepository = lockerRepository;
     }
 
     @Override
@@ -103,12 +110,7 @@ public class ParcelCollectionGui implements GuiView {
 
                 ConfigItem item = parcelItem.clone();
                 item.name = item.name.replace("{NAME}", parcel.name());
-                item.lore = item.lore.stream()
-                    .map(line -> line.replace("{UUID}", parcel.uuid().toString()))
-                    .map(line -> line.replace("{DESCRIPTION}", parcel.description() == null ? "" : parcel.description()))
-                    .map(line -> line.replace("{SIZE}", parcel.size().name()))
-                    .map(line -> line.replace("{SENDER}", parcel.sender().toString()))
-                    .toList();
+                item.lore = ParcelPlaceholderUtil.replaceParcelPlaceholders(parcel, item.lore, this.userManager, this.lockerRepository);
 
                 item.setGlow(true);
 
