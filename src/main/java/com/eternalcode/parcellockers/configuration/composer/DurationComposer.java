@@ -8,6 +8,9 @@ public class DurationComposer implements SimpleComposer<Duration> {
 
     @Override
     public Result<String, Exception> serialize(Duration duration) {
+        if (duration == null) {
+            return Result.error(new IllegalArgumentException("Duration cannot be null"));
+        }
         return Result.ok(duration.toString()
             .substring(2)
             .replaceAll("(\\d[HMS])(?!$)", "$1 ")
