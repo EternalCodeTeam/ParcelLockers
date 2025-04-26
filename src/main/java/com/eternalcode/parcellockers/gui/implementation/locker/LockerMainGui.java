@@ -72,12 +72,13 @@ public class LockerMainGui implements GuiView {
 
         //gui.setDefaultClickAction(event -> event.setCancelled(true));
 
-        for (int slot : CORNER_SLOTS) {
-            gui.setItem(slot, cornerItem);
+        int size = gui.getRows() * 9;
+        for (int i = 0; i < size; i++) {
+            gui.setItem(i, backgroundItem);
         }
 
-        for (int slot : BORDER_SLOTS) {
-            gui.setItem(slot, backgroundItem);
+        for (int slot : CORNER_SLOTS) {
+            gui.setItem(slot, cornerItem);
         }
 
         ParcelCollectionGui collectionGui = new ParcelCollectionGui(this.plugin,
@@ -90,9 +91,8 @@ public class LockerMainGui implements GuiView {
             this.lockerRepository
         );
 
-        gui.setItem(20, this.config.guiSettings.parcelLockerCollectItem.toGuiItem(event -> collectionGui.show(player)));
-
-        gui.setItem(22, this.config.guiSettings.parcelLockerSendItem.toGuiItem(event -> new ParcelSendingGui(this.plugin,
+        gui.setItem(21, this.config.guiSettings.parcelLockerCollectItem.toGuiItem(event -> collectionGui.show(player)));
+        gui.setItem(23, this.config.guiSettings.parcelLockerSendItem.toGuiItem(event -> new ParcelSendingGui(this.plugin,
             this.config,
             this.miniMessage,
             this.itemStorageRepository,
@@ -106,9 +106,7 @@ public class LockerMainGui implements GuiView {
             new ParcelSendingGuiState()
         ).show(player)));
 
-        gui.setItem(24, this.config.guiSettings.parcelLockerStatusItem.toGuiItem());
         gui.setItem(49, closeItem);
-
         gui.open(player);
     }
 }

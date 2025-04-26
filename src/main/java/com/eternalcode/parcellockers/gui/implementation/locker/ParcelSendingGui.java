@@ -244,8 +244,9 @@ public class ParcelSendingGui implements GuiView {
             this.gui.setItem(slot, cornerItem);
         }
 
-        for (int slot : BORDER_SLOTS) {
-            this.gui.setItem(slot, backgroundItem);
+        int size = gui.getRows() * 9;
+        for (int i = 0; i < size; i++) {
+            gui.setItem(i, backgroundItem);
         }
 
         this.gui.setItem(12, smallButton.toGuiItem(event -> this.setSelected(this.gui, ParcelSize.SMALL)));
