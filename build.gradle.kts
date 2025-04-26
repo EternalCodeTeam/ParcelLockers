@@ -112,17 +112,10 @@ tasks {
         minecraftVersion("1.21.4")
     }
 
-    cleanPaperPluginsCache {
+    clean {
         doLast {
             project.file("run/plugins").deleteRecursively()
-        }
-    }
-
-    cleanPaperCache {
-        doLast {
-            project.file("run/cache").deleteRecursively()
             project.file("run/logs").deleteRecursively()
-            project.file("run/versions").deleteRecursively()
         }
     }
 
