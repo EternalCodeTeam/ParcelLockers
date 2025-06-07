@@ -10,7 +10,7 @@ public class DurationComposer implements SimpleComposer<Duration> {
 
     // Regex to match each time component individually
     private static final Pattern TIME_PATTERN = Pattern.compile(
-        "(-?\\d+(?:\\.\\d+)?)\\s*([dhms])",
+        "(\\d+(?:\\.\\d+)?)\\s*([dhms])",
         Pattern.CASE_INSENSITIVE);
 
     @Override
@@ -54,7 +54,7 @@ public class DurationComposer implements SimpleComposer<Duration> {
             }
 
             // For simple case: just a number (assume seconds)
-            if (input.matches("-?\\d+(\\.\\d+)?")) {
+            if (input.matches("\\d+(\\.\\d+)?")) {
                 return Result.ok(Duration.ofSeconds(Long.parseLong(input)));
             }
 
