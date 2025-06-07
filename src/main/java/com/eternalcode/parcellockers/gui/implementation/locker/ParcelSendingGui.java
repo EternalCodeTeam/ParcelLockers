@@ -241,13 +241,13 @@ public class ParcelSendingGui implements GuiView {
         ConfigItem largeButton = guiSettings.largeParcelSizeItem;
         ConfigItem priorityItem = guiSettings.priorityItem;
 
-        for (int slot : CORNER_SLOTS) {
-            this.gui.setItem(slot, cornerItem);
-        }
 
         int size = gui.getRows() * 9;
         for (int i = 0; i < size; i++) {
             gui.setItem(i, backgroundItem);
+        }
+        for (int slot : CORNER_SLOTS) {
+            this.gui.setItem(slot, cornerItem);
         }
 
         this.gui.setItem(12, smallButton.toGuiItem(event -> this.setSelected(this.gui, ParcelSize.SMALL)));

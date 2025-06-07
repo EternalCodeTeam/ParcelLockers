@@ -20,6 +20,7 @@ import panda.std.Result;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.eternalcode.parcellockers.util.InventoryUtil.freeSlotsInInventory;
 
@@ -41,13 +42,15 @@ public class ParcelManager {
         this.scheduler = scheduler;
     }
 
-    public Result<Blank, Exception> sendParcel(CommandSender sender, Parcel parcel, List<ItemStack> items) {
+    public Result<Blank, Throwable> sendParcel(CommandSender sender, Parcel parcel, List<ItemStack> items) {
         System.out.println("scheduled parcel: " + parcel);
         Duration delay = parcel.priority() ? this.config.settings.priorityParcelSendDuration : this.config.settings.parcelSendDuration;
         this.parcelRepository.save(parcel);
+        AtomicReference<Throwable> error = new AtomicReference<>();
         this.parcelContentRepository.save(new ParcelContent(parcel.uuid(), items)).whenComplete((content, throwable) -> {
             if (throwable != null) {
                 this.announcer.sendMessage(sender, this.config.messages.parcelFailedToSend);
+                error.set(throwable);
                 return;
             }
             this.announcer.sendMessage(sender, this.config.messages.parcelSent);
@@ -59,6 +62,10 @@ public class ParcelManager {
             this.deliveryRepository,
             this.config),
             delay);
+
+        if (error.get() != null) {
+            return Result.error(error.get());
+        }
 
         return Result.ok();
     }
