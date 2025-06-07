@@ -18,10 +18,27 @@ public class DurationComposer implements SimpleComposer<Duration> {
         if (duration == null) {
             return Result.error(new IllegalArgumentException("Duration cannot be null"));
         }
-        return Result.ok(duration.toString()
-            .substring(2)  // Remove the PT prefix
-            .replaceAll("(\\d[HMS])(?!$)", "$1 ")  // Add spaces between components
-            .toLowerCase());
+
+        long days = duration.toDays();
+        long hours = duration.toHours() % 24;
+        long minutes = duration.toMinutes() % 60;
+        long seconds = duration.getSeconds() % 60;
+
+        StringBuilder result = new StringBuilder();
+        if (days > 0) {
+            result.append(days).append("d ");
+        }
+        if (hours > 0) {
+            result.append(hours).append("h ");
+        }
+        if (minutes > 0) {
+            result.append(minutes).append("m ");
+        }
+        if (seconds > 0 || result.isEmpty()) { // Always include seconds if no other components
+            result.append(seconds).append("s");
+        }
+
+        return Result.ok(result.toString().trim());
     }
 
     @Override
