@@ -13,17 +13,6 @@ class DurationComposerTest {
 
     private final DurationComposer composer = new DurationComposer();
 
-    public static void main(String[] args) {
-        DurationComposer composer = new DurationComposer();
-        String input = "1d2h30m15s";
-        Result<Duration, Exception> result = composer.deserialize(input);
-        if (result.isOk()) {
-            System.out.println("Parsed Duration: " + result.get());
-        } else {
-            System.err.println("Error: " + result.getError().getMessage());
-        }
-    }
-
     @Test
     @DisplayName("Serialize valid ISO-8601 duration")
     void testSerializeValidDuration() {
