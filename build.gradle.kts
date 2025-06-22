@@ -15,27 +15,29 @@ repositories {
 
     maven { url = uri("https://repo.panda-lang.org/releases") }
     maven { url = uri("https://hub.spigotmc.org/nexus/content/repositories/snapshots/") }
-    maven { url = uri("https://repo.papermc.io/repository/maven-public/") }
+    maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots") }
+    maven { url = uri("https://oss.sonatype.org/content/repositories/central") }
+    maven { url = uri("https://papermc.io/repo/repository/maven-public/") }
     maven { url = uri("https://repo.eternalcode.pl/releases") }
 }
 
 dependencies {
     // minecraft development api
     compileOnly("org.spigotmc:spigot-api:1.21.4-R0.1-SNAPSHOT")
-    implementation("net.kyori:adventure-platform-bukkit:4.3.4")
-    implementation("net.kyori:adventure-text-minimessage:4.18.0")
-    implementation("dev.rollczi:litecommands-bukkit:3.9.7")
-    implementation("dev.rollczi:litecommands-adventure:3.9.7")
+    implementation("net.kyori:adventure-platform-bukkit:4.4.0")
+    implementation("net.kyori:adventure-text-minimessage:4.23.0")
+    implementation("dev.rollczi:litecommands-bukkit:3.10.0")
+    implementation("dev.rollczi:litecommands-adventure:3.10.0")
 
     // skull api
-    implementation("dev.rollczi:liteskullapi:1.3.0")
+    implementation("dev.rollczi:liteskullapi:2.0.0")
 
     // gui
     implementation("dev.triumphteam:triumph-gui:3.1.11")
-    implementation("de.rapha149.signgui:signgui:2.5.0")
+    implementation("de.rapha149.signgui:signgui:2.5.2")
 
     // CDN
-    implementation("net.dzikoysk:cdn:1.14.8")
+    implementation("net.dzikoysk:cdn:1.14.9")
 
     // expressible
     implementation("org.panda-lang:expressible:1.3.6")
@@ -45,17 +47,17 @@ dependencies {
 
     // metrics and sentry
     implementation("org.bstats:bstats-bukkit:3.1.0")
-    implementation("io.sentry:sentry:8.0.0")
+    implementation("io.sentry:sentry:8.14.0")
 
     // database
     implementation("com.zaxxer:HikariCP:6.3.0")
     implementation("com.j256.ormlite:ormlite-jdbc:6.1")
     implementation("com.h2database:h2:2.3.232")
-    implementation("org.postgresql:postgresql:42.7.5")
+    implementation("org.postgresql:postgresql:42.7.7")
 
     // lombok
-    compileOnly("org.projectlombok:lombok:1.18.36")
-    annotationProcessor("org.projectlombok:lombok:1.18.36")
+    compileOnly("org.projectlombok:lombok:1.18.38")
+    annotationProcessor("org.projectlombok:lombok:1.18.38")
 
     // jetbrains annotations
     api("org.jetbrains:annotations:26.0.2")
@@ -76,12 +78,12 @@ dependencies {
     implementation("com.eternalcode:eternalcode-commons-adventure:1.1.6")
     implementation("com.eternalcode:eternalcode-commons-bukkit:1.1.6")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.4")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.11.4")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.4")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.1")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.13.1")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.13.1")
 
-    testImplementation("org.testcontainers:junit-jupiter:1.20.4")
-    testImplementation("org.testcontainers:mysql:1.20.4")
+    testImplementation("org.testcontainers:junit-jupiter:1.21.2")
+    testImplementation("org.testcontainers:mysql:1.21.2")
     testImplementation("mysql:mysql-connector-java:8.0.33")
 }
 
