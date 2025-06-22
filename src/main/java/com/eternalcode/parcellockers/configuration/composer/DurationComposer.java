@@ -55,7 +55,15 @@ public class DurationComposer implements SimpleComposer<Duration> {
 
             // For simple case: just a number (assume seconds)
             if (input.matches("\\d+(\\.\\d+)?")) {
-                return Result.ok(Duration.ofSeconds(Long.parseLong(input)));
+                if (input.contains(".")) {
+                    return Result.ok(Duration.ofSeconds((long) Double.parseDouble(input)));
+                } else {
+                    return Result.ok(Duration.ofSeconds(Long.parseLong(input)));
+                }
+            }
+
+            if (Duration.parse(input).isNegative()) {
+                return Result.error(new IllegalArgumentException("Negative durations are not allowed"));
             }
 
             // Parse custom format (e.g., "1d 2h 3m 4.5s")
