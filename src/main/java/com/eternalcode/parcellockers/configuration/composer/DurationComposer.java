@@ -9,10 +9,7 @@ import java.util.regex.Pattern;
 public class DurationComposer implements SimpleComposer<Duration> {
 
     // Regex to match each time component individually
-    private static final Pattern TIME_PATTERN = Pattern.compile(
-        "(\\d+(?:\\.\\d+)?)\\s*([dhms])",
-        Pattern.CASE_INSENSITIVE);
-
+    private static final Pattern TIME_PATTERN = Pattern.compile("(?:(\\d+)d)?\\s*(?:(\\d+)h)?\\s*(?:(\\d+)m)?\\s*(?:(\\d+)s)?", Pattern.CASE_INSENSITIVE);
     @Override
     public Result<String, Exception> serialize(Duration duration) {
         if (duration == null) {
@@ -56,58 +53,43 @@ public class DurationComposer implements SimpleComposer<Duration> {
             // For simple case: just a number (assume seconds)
             if (input.matches("\\d+(\\.\\d+)?")) {
                 if (input.contains(".")) {
-                    return Result.ok(Duration.ofSeconds((long) Double.parseDouble(input)));
+                    double seconds = Double.parseDouble(input);
+                    return Result.ok(Duration.ofMillis((long) (seconds * 1000)));
                 } else {
                     return Result.ok(Duration.ofSeconds(Long.parseLong(input)));
                 }
             }
 
-            if (Duration.parse(input).isNegative()) {
-                return Result.error(new IllegalArgumentException("Negative durations are not allowed"));
-            }
-
-            // Parse custom format (e.g., "1d 2h 3m 4.5s")
+            // Parse custom format (e.g., "1d 2h 30m 15s")
             Duration duration = Duration.ZERO;
             Matcher matcher = TIME_PATTERN.matcher(input);
 
-            boolean foundMatch = false;
-            while (matcher.find()) {
-                foundMatch = true;
-                String value = matcher.group(1);
-                String unit = matcher.group(2).toLowerCase();
+            if (matcher.matches()) {
+                String days = matcher.group(1);
+                String hours = matcher.group(2);
+                String minutes = matcher.group(3);
+                String seconds = matcher.group(4);
 
-                switch (unit) {
-                    case "d":
-                        duration = duration.plusDays(Long.parseLong(value));
-                        break;
-                    case "h":
-                        duration = duration.plusHours(Long.parseLong(value));
-                        break;
-                    case "m":
-                        duration = duration.plusMinutes(Long.parseLong(value));
-                        break;
-                    case "s":
-                        if (value.contains(".")) {
-                            double seconds = Double.parseDouble(value);
-                            long wholeSeconds = (long) seconds;
-                            long nanos = (long) ((seconds - wholeSeconds) * 1_000_000_000);
-                            duration = duration.plusSeconds(wholeSeconds).plusNanos(nanos);
-                        } else {
-                            duration = duration.plusSeconds(Long.parseLong(value));
-                        }
-                        break;
+                if (days != null) {
+                    duration = duration.plusDays(Long.parseLong(days));
                 }
+                if (hours != null) {
+                    duration = duration.plusHours(Long.parseLong(hours));
+                }
+                if (minutes != null) {
+                    duration = duration.plusMinutes(Long.parseLong(minutes));
+                }
+                if (seconds != null) {
+                    duration = duration.plusSeconds(Long.parseLong(seconds));
+                }
+
+                return Result.ok(duration);
             }
 
-            if (!foundMatch) {
-                return Result.error(new IllegalArgumentException(
-                    "Invalid duration format. Expected format like '1d 2h 3m 4s' or ISO-8601 duration."));
-            }
-
-            return Result.ok(duration);
-
+            return Result.error(new IllegalArgumentException(
+                "Invalid duration format. Expected format like '1d 2h 3m 4s' or ISO-8601 duration."));
         } catch (Exception e) {
-            return Result.error(new IllegalArgumentException("Failed to parse duration: " + e.getMessage(), e));
+            return Result.error(new IllegalArgumentException("Invalid duration format. Expected format like '1d 2h 3m 4s' or ISO-8601 duration."));
         }
     }
 }
