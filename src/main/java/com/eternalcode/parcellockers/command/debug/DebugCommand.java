@@ -11,6 +11,7 @@ import dev.rollczi.litecommands.annotations.context.Context;
 import dev.rollczi.litecommands.annotations.execute.Execute;
 import dev.rollczi.litecommands.annotations.permission.Permission;
 import org.bukkit.Material;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -37,44 +38,44 @@ public class DebugCommand {
         this.announcer = announcer;
     }
 
-    @Execute(name = "deleteparcels")
-    void deleteParcels(@Context Player player) {
+    @Execute(name = "delete parcels")
+    void deleteParcels(@Context CommandSender sender) {
         this.parcelRepository.removeAll().exceptionally(throwable -> {
-            this.announcer.sendMessage(player, "&cFailed to delete parcels");
+            this.announcer.sendMessage(sender, "&4Failed to delete parcels");
             return null;
-        }).thenRun(() -> this.announcer.sendMessage(player, "&aParcels deleted"));
+        }).thenRun(() -> this.announcer.sendMessage(sender, "&cParcels deleted"));
     }
 
-    @Execute(name = "deletelockers")
-    void deleteLockers(@Context Player player) {
+    @Execute(name = "delete lockers")
+    void deleteLockers(@Context CommandSender sender) {
         this.lockerRepository.removeAll().exceptionally(throwable -> {
-            this.announcer.sendMessage(player, "&cFailed to delete lockers");
+            this.announcer.sendMessage(sender, "&4Failed to delete lockers");
             return null;
-        }).thenRun(() -> this.announcer.sendMessage(player, "&aLockers deleted"));
+        }).thenRun(() -> this.announcer.sendMessage(sender, "&cLockers deleted"));
     }
 
-    @Execute(name = "deleteitemstorages")
-    void deleteItemStorages(@Context Player player) {
+    @Execute(name = "delete itemstorages")
+    void deleteItemStorages(@Context CommandSender sender) {
         this.itemStorageRepository.removeAll().exceptionally(throwable -> {
-            this.announcer.sendMessage(player, "&cFailed to delete item storages");
+            this.announcer.sendMessage(sender, "&4Failed to delete item storages");
             return null;
-        }).thenRun(() -> this.announcer.sendMessage(player, "&aItem storages deleted"));
+        }).thenRun(() -> this.announcer.sendMessage(sender, "&cItem storages deleted"));
     }
 
-    @Execute(name = "deleteparcelcontents")
-    void deleteParcelContents(@Context Player player) {
+    @Execute(name = "delete parcelcontents")
+    void deleteParcelContents(@Context CommandSender sender) {
         this.contentRepository.removeAll().exceptionally(throwable -> {
-            this.announcer.sendMessage(player, "&cFailed to delete parcel contents");
+            this.announcer.sendMessage(sender, "&4Failed to delete parcel contents");
             return null;
-        }).thenRun(() -> this.announcer.sendMessage(player, "&aParcel contents deleted"));
+        }).thenRun(() -> this.announcer.sendMessage(sender, "&cParcel contents deleted"));
     }
 
-    @Execute(name = "deleteall")
-    void deleteAll(@Context Player player) {
-        this.deleteItemStorages(player);
-        this.deleteLockers(player);
-        this.deleteParcels(player);
-        this.deleteParcelContents(player);
+    @Execute(name = "delete all")
+    void deleteAll(@Context CommandSender sender) {
+        this.deleteItemStorages(sender);
+        this.deleteLockers(sender);
+        this.deleteParcels(sender);
+        this.deleteParcelContents(sender);
     }
 
     @Execute(name = "getrandomitem")

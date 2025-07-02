@@ -10,6 +10,6 @@ public record Parcel(UUID uuid,
                      UUID receiver,
                      ParcelSize size,
                      UUID entryLocker,
-                     UUID destinationLocker) {
-
+                     UUID destinationLocker,
+                     ParcelStatus status) {
 }

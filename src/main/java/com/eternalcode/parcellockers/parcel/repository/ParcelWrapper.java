@@ -2,6 +2,7 @@ package com.eternalcode.parcellockers.parcel.repository;
 
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
+import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
@@ -37,10 +38,13 @@ class ParcelWrapper {
     @DatabaseField(columnName = "destinationLocker", index = true)
     private UUID destinationLocker;
 
+    @DatabaseField(columnName = "status")
+    private ParcelStatus status;
+
     ParcelWrapper() {
     }
 
-    ParcelWrapper(UUID uuid, UUID sender, String name, String description, boolean priority, UUID receiver, ParcelSize size, UUID entryLocker, UUID destinationLocker) {
+    ParcelWrapper(UUID uuid, UUID sender, String name, String description, boolean priority, UUID receiver, ParcelSize size, UUID entryLocker, UUID destinationLocker, ParcelStatus status) {
         this.uuid = uuid;
         this.sender = sender;
         this.name = name;
@@ -50,13 +54,14 @@ class ParcelWrapper {
         this.size = size;
         this.entryLocker = entryLocker;
         this.destinationLocker = destinationLocker;
+        this.status = status;
     }
 
     static ParcelWrapper from(Parcel parcel) {
-        return new ParcelWrapper(parcel.uuid(), parcel.sender(), parcel.name(), parcel.description(), parcel.priority(), parcel.receiver(), parcel.size(), parcel.entryLocker(), parcel.destinationLocker());
+        return new ParcelWrapper(parcel.uuid(), parcel.sender(), parcel.name(), parcel.description(), parcel.priority(), parcel.receiver(), parcel.size(), parcel.entryLocker(), parcel.destinationLocker(), parcel.status());
     }
 
     Parcel toParcel() {
-        return new Parcel(this.uuid, this.sender, this.name, this.description, this.priority, this.receiver, this.size, this.entryLocker, this.destinationLocker);
+        return new Parcel(this.uuid, this.sender, this.name, this.description, this.priority, this.receiver, this.size, this.entryLocker, this.destinationLocker, this.status);
     }
 }

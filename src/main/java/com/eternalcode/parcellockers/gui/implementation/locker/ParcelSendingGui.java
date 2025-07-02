@@ -3,7 +3,6 @@ package com.eternalcode.parcellockers.gui.implementation.locker;
 import com.eternalcode.commons.adventure.AdventureUtil;
 import com.eternalcode.parcellockers.configuration.implementation.ConfigItem;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
-import com.eternalcode.parcellockers.content.ParcelContent;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
@@ -13,7 +12,6 @@ import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelManager;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
-import com.eternalcode.parcellockers.shared.SentryExceptionHandler;
 import com.eternalcode.parcellockers.user.repository.UserRepository;
 import de.rapha149.signgui.SignGUI;
 import de.rapha149.signgui.SignGUIAction;
@@ -98,9 +96,8 @@ public class ParcelSendingGui implements GuiView {
         GuiItem cornerItem = guiSettings.cornerItem.toGuiItem();
         ConfigItem nameItem = guiSettings.parcelNameItem.clone();
         GuiItem nameGuiItem = nameItem.toGuiItem(event -> {
-            SignGUI nameSignGui = null;
             try {
-                nameSignGui = SignGUI.builder()
+                SignGUI nameSignGui = SignGUI.builder()
                     .setColor(DyeColor.BLACK)
                     .setType(Material.OAK_SIGN)
                     .setLine(0, "Enter parcel name:")
@@ -129,10 +126,11 @@ public class ParcelSendingGui implements GuiView {
                         return List.of(SignGUIAction.runSync((JavaPlugin) this.plugin, () -> this.gui.open(player)));
                     })
                     .build();
+                nameSignGui.open(player);
             } catch (SignGUIVersionException e) {
                 this.plugin.getLogger().severe("The server version is unsupported by SignGUI API!");
             }
-            nameSignGui.open(player);
+
         });
 
         ConfigItem descriptionItem = guiSettings.parcelDescriptionItem.clone();
@@ -203,34 +201,23 @@ public class ParcelSendingGui implements GuiView {
             this.itemStorageRepository.find(player.getUniqueId()).thenAccept(result -> {
                 if (result.isEmpty() || result.get().items().isEmpty()) {
                     this.announcer.sendMessage(player, settings.messages.parcelCannotBeEmpty);
-                    this.gui.close(player);
+                    player.playSound(player, this.config.settings.errorSound, this.config.settings.errorSoundVolume, this.config.settings.errorSoundPitch);
                     return;
                 }
 
                 if (this.state.getReceiver() == null) {
                     this.announcer.sendMessage(player, settings.messages.receiverNotSet);
+                    player.playSound(player, this.config.settings.errorSound, this.config.settings.errorSoundVolume, this.config.settings.errorSoundPitch);
                     return;
                 }
 
                 Parcel parcel = new Parcel(UUID.randomUUID(), player.getUniqueId(), this.state.getParcelName(),
                     this.state.getParcelDescription(), this.state.isPriority(), this.state.getReceiver(),
-                    this.state.getSize(), this.state.getEntryLocker(), this.state.getDestinationLocker());
+                    this.state.getSize(), this.state.getEntryLocker(), this.state.getDestinationLocker(), this.state.getStatus());
 
-                this.parcelRepository.save(parcel).thenAccept(unused -> {
-
-                    this.parcelContentRepository.save(new ParcelContent(parcel.uuid(), result.get().items())
-                    ).thenAccept(none -> this.itemStorageRepository.remove(player.getUniqueId()));
-
-                    this.announcer.sendMessage(player, settings.messages.parcelSent);
-                    this.gui.close(player);
-
-                }).whenComplete(SentryExceptionHandler.handler()
-                    .andThen((unused, throwable) -> {
-                            if (throwable != null) {
-                                this.announcer.sendMessage(player, settings.messages.parcelFailedToSend);
-                            }
-                        }
-                    ));
+                this.parcelManager.sendParcel(player, parcel, result.get().items())
+                    .thenRun(() -> this.itemStorageRepository.remove(player.getUniqueId()));
+                this.gui.close(player);
             }).orTimeout(5, TimeUnit.SECONDS));
 
         GuiItem closeItem = guiSettings.closeItem.toGuiItem(event ->
@@ -252,12 +239,13 @@ public class ParcelSendingGui implements GuiView {
         ConfigItem largeButton = guiSettings.largeParcelSizeItem;
         ConfigItem priorityItem = guiSettings.priorityItem;
 
+
+        int size = gui.getRows() * 9;
+        for (int i = 0; i < size; i++) {
+            gui.setItem(i, backgroundItem);
+        }
         for (int slot : CORNER_SLOTS) {
             this.gui.setItem(slot, cornerItem);
-        }
-
-        for (int slot : BORDER_SLOTS) {
-            this.gui.setItem(slot, backgroundItem);
         }
 
         this.gui.setItem(12, smallButton.toGuiItem(event -> this.setSelected(this.gui, ParcelSize.SMALL)));
