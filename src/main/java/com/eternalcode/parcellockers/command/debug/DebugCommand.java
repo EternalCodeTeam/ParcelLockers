@@ -70,7 +70,7 @@ public class DebugCommand {
         }).thenRun(() -> this.announcer.sendMessage(sender, "&cParcel contents deleted"));
     }
 
-    @Execute(name = "deleteall")
+    @Execute(name = "delete all")
     void deleteAll(@Context CommandSender sender) {
         this.deleteItemStorages(sender);
         this.deleteLockers(sender);
