@@ -95,7 +95,7 @@ public class ParcelManager {
 
             List<ItemStack> items = optional.get().items();
             if (items.size() > freeSlotsInInventory(player)) {
-                player.playSound(player.getLocation(), this.config.settings.errorSound, this.config.settings.errorSoundVolume, this.config.settings.errorSoundPitch;
+                player.playSound(player.getLocation(), this.config.settings.errorSound, this.config.settings.errorSoundVolume, this.config.settings.errorSoundPitch);
                 this.announcer.sendMessage(player, this.config.messages.notEnoughInventorySpace);
                 return;
             }
