@@ -84,7 +84,7 @@ public class ParcelSendingGuiState {
     }
 
     public ParcelStatus getStatus() {
-        return status;
+        return this.status;
     }
 
     public void setStatus(ParcelStatus status) {
