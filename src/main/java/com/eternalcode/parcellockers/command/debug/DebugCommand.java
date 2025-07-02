@@ -62,7 +62,7 @@ public class DebugCommand {
         }).thenRun(() -> this.announcer.sendMessage(sender, "&cItem storages deleted"));
     }
 
-    @Execute(name = "deleteparcelcontents")
+    @Execute(name = "delete parcelcontents")
     void deleteParcelContents(@Context CommandSender sender) {
         this.contentRepository.removeAll().exceptionally(throwable -> {
             this.announcer.sendMessage(sender, "&4Failed to delete parcel contents");
