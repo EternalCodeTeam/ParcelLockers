@@ -38,7 +38,7 @@ public class DebugCommand {
         this.announcer = announcer;
     }
 
-    @Execute(name = "deleteparcels")
+    @Execute(name = "delete parcels")
     void deleteParcels(@Context CommandSender sender) {
         this.parcelRepository.removeAll().exceptionally(throwable -> {
             this.announcer.sendMessage(sender, "&4Failed to delete parcels");
