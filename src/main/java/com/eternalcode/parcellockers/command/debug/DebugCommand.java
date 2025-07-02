@@ -54,7 +54,7 @@ public class DebugCommand {
         }).thenRun(() -> this.announcer.sendMessage(sender, "&cLockers deleted"));
     }
 
-    @Execute(name = "deleteitemstorages")
+    @Execute(name = "delete itemstorages")
     void deleteItemStorages(@Context CommandSender sender) {
         this.itemStorageRepository.removeAll().exceptionally(throwable -> {
             this.announcer.sendMessage(sender, "&4Failed to delete item storages");
