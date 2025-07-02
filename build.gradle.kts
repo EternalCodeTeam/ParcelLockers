@@ -2,7 +2,7 @@ plugins {
     `java-library`
     id("net.minecrell.plugin-yml.bukkit") version "0.6.0"
     id("xyz.jpenilla.run-paper") version "2.3.1"
-    id("com.gradleup.shadow") version "8.3.6"
+    id("com.gradleup.shadow") version "8.3.8"
 }
 
 group = "com.eternalcode"
@@ -36,7 +36,7 @@ dependencies {
 
     // gui
     implementation("dev.triumphteam:triumph-gui:3.1.11")
-    implementation("de.rapha149.signgui:signgui:2.5.2")
+    implementation("de.rapha149.signgui:signgui:2.5.3")
 
     // economy
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
@@ -52,7 +52,7 @@ dependencies {
 
     // metrics and sentry
     implementation("org.bstats:bstats-bukkit:3.1.0")
-    implementation("io.sentry:sentry:8.14.0")
+    implementation("io.sentry:sentry:8.16.0")
 
     // database
     implementation("com.zaxxer:HikariCP:6.3.0")
@@ -83,12 +83,12 @@ dependencies {
     implementation("com.eternalcode:eternalcode-commons-adventure:1.1.6")
     implementation("com.eternalcode:eternalcode-commons-bukkit:1.1.6")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.1")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.13.1")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.13.1")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.13.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.13.2")
 
-    testImplementation("org.testcontainers:junit-jupiter:1.21.2")
-    testImplementation("org.testcontainers:mysql:1.21.2")
+    testImplementation("org.testcontainers:junit-jupiter:1.21.3")
+    testImplementation("org.testcontainers:mysql:1.21.3")
     testImplementation("mysql:mysql-connector-java:8.0.33")
 }
 
