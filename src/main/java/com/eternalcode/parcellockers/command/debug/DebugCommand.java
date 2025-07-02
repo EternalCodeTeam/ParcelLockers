@@ -46,7 +46,7 @@ public class DebugCommand {
         }).thenRun(() -> this.announcer.sendMessage(sender, "&cParcels deleted"));
     }
 
-    @Execute(name = "deletelockers")
+    @Execute(name = "delete lockers")
     void deleteLockers(@Context CommandSender sender) {
         this.lockerRepository.removeAll().exceptionally(throwable -> {
             this.announcer.sendMessage(sender, "&4Failed to delete lockers");
