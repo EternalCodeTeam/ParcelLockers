@@ -23,7 +23,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
@@ -202,13 +201,13 @@ public class ParcelSendingGui implements GuiView {
             this.itemStorageRepository.find(player.getUniqueId()).thenAccept(result -> {
                 if (result.isEmpty() || result.get().items().isEmpty()) {
                     this.announcer.sendMessage(player, settings.messages.parcelCannotBeEmpty);
-                    player.playSound(player, Sound.ENTITY_ENDERMAN_AMBIENT, 1, 1);
+                    player.playSound(player, this.config.settings.errorSound, this.config.settings.errorSoundVolume, this.config.settings.errorSoundPitch);
                     return;
                 }
 
                 if (this.state.getReceiver() == null) {
                     this.announcer.sendMessage(player, settings.messages.receiverNotSet);
-                    player.playSound(player, Sound.ENTITY_ENDERMAN_AMBIENT, 1, 1);
+                    player.playSound(player, this.config.settings.errorSound, this.config.settings.errorSoundVolume, this.config.settings.errorSoundPitch);
                     return;
                 }
 
@@ -216,9 +215,8 @@ public class ParcelSendingGui implements GuiView {
                     this.state.getParcelDescription(), this.state.isPriority(), this.state.getReceiver(),
                     this.state.getSize(), this.state.getEntryLocker(), this.state.getDestinationLocker(), this.state.getStatus());
 
-                if (this.parcelManager.sendParcel(player, parcel, result.get().items()).isOk()) {
-                    this.itemStorageRepository.remove(player.getUniqueId());
-                }
+                this.parcelManager.sendParcel(player, parcel, result.get().items())
+                    .thenRun(() -> this.itemStorageRepository.remove(player.getUniqueId()));
                 this.gui.close(player);
             }).orTimeout(5, TimeUnit.SECONDS));
 

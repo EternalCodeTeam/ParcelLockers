@@ -19,8 +19,9 @@ import panda.std.Blank;
 import panda.std.Result;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.CompletableFuture;
 
 import static com.eternalcode.parcellockers.util.InventoryUtil.freeSlotsInInventory;
 
@@ -42,31 +43,35 @@ public class ParcelManager {
         this.scheduler = scheduler;
     }
 
-    public Result<Blank, Throwable> sendParcel(CommandSender sender, Parcel parcel, List<ItemStack> items) {
-        Duration delay = parcel.priority() ? this.config.settings.priorityParcelSendDuration : this.config.settings.parcelSendDuration;
-        this.parcelRepository.save(parcel);
-        AtomicReference<Throwable> error = new AtomicReference<>();
-        this.parcelContentRepository.save(new ParcelContent(parcel.uuid(), items)).whenComplete((content, throwable) -> {
-            if (throwable != null) {
-                this.announcer.sendMessage(sender, this.config.messages.parcelFailedToSend);
-                error.set(throwable);
-                return;
-            }
-            this.announcer.sendMessage(sender, this.config.messages.parcelSent);
-        });
+    public CompletableFuture<Result<Blank, Throwable>> sendParcel(CommandSender sender, Parcel parcel, List<ItemStack> items) {
+        Duration delay = parcel.priority()
+            ? config.settings.priorityParcelSendDuration
+            : config.settings.parcelSendDuration;
 
-        this.scheduler.runLaterAsync(new ParcelSendTask(parcel,
-            new Delivery(parcel.uuid(), System.currentTimeMillis() + delay.toMillis()),
-            this.parcelRepository,
-            this.deliveryRepository,
-            this.config),
-            delay);
+        parcelRepository.save(parcel);
 
-        if (error.get() != null) {
-            return Result.error(error.get());
-        }
+        return parcelContentRepository.save(new ParcelContent(parcel.uuid(), items))
+            .handle((content, throwable) -> {
+                if (throwable != null) {
+                    announcer.sendMessage(sender, config.messages.parcelFailedToSend);
+                    return Result.error(throwable);
+                }
 
-        return Result.ok();
+                announcer.sendMessage(sender, config.messages.parcelSent);
+
+                scheduler.runLaterAsync(
+                    new ParcelSendTask(
+                        parcel,
+                        new Delivery(parcel.uuid(), Instant.now().plus(delay)),
+                        parcelRepository,
+                        deliveryRepository,
+                        config
+                    ),
+                    delay
+                );
+
+                return Result.ok();
+            });
     }
 
     public void deleteParcel(CommandSender sender, Parcel parcel) {
@@ -83,14 +88,14 @@ public class ParcelManager {
     public void collectParcel(Player player, Parcel parcel) {
         this.parcelContentRepository.findByUUID(parcel.uuid()).thenAccept(optional -> {
             if (optional.isEmpty()) {
-                player.playSound(player.getLocation(), Sound.ITEM_CHORUS_FRUIT_TELEPORT, 0.5F, 1);
+                player.playSound(player.getLocation(), this.config.settings.errorSound, this.config.settings.errorSoundVolume, this.config.settings.errorSoundPitch);
                 this.announcer.sendMessage(player, this.config.messages.failedToCollectParcel);
                 return;
             }
 
             List<ItemStack> items = optional.get().items();
             if (items.size() > freeSlotsInInventory(player)) {
-                player.playSound(player.getLocation(), Sound.ITEM_CHORUS_FRUIT_TELEPORT, 0.5F, 1);
+                player.playSound(player.getLocation(), this.config.settings.errorSound, this.config.settings.errorSoundVolume, this.config.settings.errorSoundPitch;
                 this.announcer.sendMessage(player, this.config.messages.notEnoughInventorySpace);
                 return;
             }

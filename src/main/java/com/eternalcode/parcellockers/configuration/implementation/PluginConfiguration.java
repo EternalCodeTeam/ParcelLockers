@@ -7,6 +7,7 @@ import net.dzikoysk.cdn.entity.Description;
 import net.dzikoysk.cdn.source.Resource;
 import net.dzikoysk.cdn.source.Source;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 
 import java.io.File;
 import java.time.Duration;
@@ -75,6 +76,17 @@ public class PluginConfiguration implements ReloadableConfig {
 
         @Description({" ", "# Parcel sending duration for priority parcels"})
         public Duration priorityParcelSendDuration = Duration.ofSeconds(5);
+
+        @Description({" ", "# Error sound used in the plugin."})
+        public Sound errorSound = Sound.ENTITY_ENDERMAN_AMBIENT;
+
+        @Description({ " ", "# The sound volume for the error sound." })
+        public float errorSoundVolume = 1.0F;
+
+        @Description({ " ", "# The sound pitch for the error sound." })
+        public float errorSoundPitch = 1.0F;
+
+
     }
 
     @Contextual

@@ -12,7 +12,6 @@ import com.eternalcode.parcellockers.configuration.implementation.PluginConfigur
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepositoryOrmLite;
 import com.eternalcode.parcellockers.database.DatabaseManager;
-import com.eternalcode.parcellockers.delivery.Delivery;
 import com.eternalcode.parcellockers.delivery.repository.DeliveryRepositoryOrmLite;
 import com.eternalcode.parcellockers.gui.implementation.locker.LockerMainGui;
 import com.eternalcode.parcellockers.gui.implementation.remote.MainGui;
@@ -60,6 +59,7 @@ import org.bstats.bukkit.Metrics;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.slf4j.helpers.NOPLogger;
 
 import java.sql.SQLException;
 import java.time.Duration;
@@ -70,7 +70,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
-import org.slf4j.helpers.NOPLogger;
 
 public final class ParcelLockers extends JavaPlugin {
 
@@ -186,22 +185,22 @@ public final class ParcelLockers extends JavaPlugin {
         new Metrics(this, 17677);
         new UpdaterService(this.getDescription());
 
-        parcelRepository.findAll().thenAccept(optional -> {
-            List<Parcel> parcels = optional.orElse(new ArrayList<>());
-            parcels.removeIf(parcel -> parcel.status() == ParcelStatus.DELIVERED);
-            for (Parcel parcel : parcels) {
-                deliveryRepository.find(parcel.uuid()).thenAccept(optionalDelivery -> {
-                    Delivery delivery = optionalDelivery.get();
-                    long delay = delivery.deliveryTimestamp() - System.currentTimeMillis();
+        parcelRepository.findAll().thenAccept(optionalParcels -> {
+            List<Parcel> parcels = optionalParcels.orElseGet(ArrayList::new).stream()
+                .filter(parcel -> parcel.status() != ParcelStatus.DELIVERED)
+                .toList();
 
-                    if (delay < 0) {
-                        delay = 0;
-                    }
-
-                    System.out.println("scheduled parcel from db: " + parcel);
-                    scheduler.runLaterAsync(new ParcelSendTask(parcel, delivery, parcelRepository, deliveryRepository, config), Duration.ofMillis(delay));
-                });
-            }
+            parcels.forEach(parcel ->
+                deliveryRepository.find(parcel.uuid()).thenAccept(optionalDelivery ->
+                    optionalDelivery.ifPresent(delivery -> {
+                        long delay = Math.max(0, delivery.deliveryTimestamp().toEpochMilli() - System.currentTimeMillis());
+                        scheduler.runLaterAsync(
+                            new ParcelSendTask(parcel, delivery, parcelRepository, deliveryRepository, config),
+                            Duration.ofMillis(delay)
+                        );
+                    })
+                )
+            );
         });
 
         long millis = started.elapsed(TimeUnit.MILLISECONDS);

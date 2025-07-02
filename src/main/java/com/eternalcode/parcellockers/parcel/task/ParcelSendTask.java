@@ -39,8 +39,8 @@ public class ParcelSendTask extends BukkitRunnable {
             ParcelStatus.DELIVERED);
 
 
-        this.parcelRepository.update(updatedParcel);
-        this.deliveryRepository.remove(updatedParcel.uuid());
+        this.parcelRepository.update(updated);
+        this.deliveryRepository.remove(updated.uuid());
     }
 
 }

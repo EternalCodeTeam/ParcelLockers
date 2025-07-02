@@ -34,6 +34,8 @@ public class LockerMainGui implements GuiView {
     private final SkullAPI skullAPI;
     private final ParcelManager parcelManager;
 
+    private final UserManager userManager;
+
     public LockerMainGui(Plugin plugin,
                          MiniMessage miniMessage,
                          PluginConfiguration config,
@@ -54,6 +56,8 @@ public class LockerMainGui implements GuiView {
         this.userRepository = userRepository;
         this.skullAPI = skullAPI;
         this.parcelManager = parcelManager;
+
+        this.userManager = new UserManager(this.userRepository);
     }
 
     @Override
@@ -87,7 +91,7 @@ public class LockerMainGui implements GuiView {
             this.parcelRepository,
             this.miniMessage,
             this.parcelManager,
-            new UserManager(this.userRepository),
+            this.userManager,
             this.lockerRepository
         );
 

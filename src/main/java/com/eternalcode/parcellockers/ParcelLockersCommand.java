@@ -3,7 +3,6 @@ package com.eternalcode.parcellockers;
 import com.eternalcode.parcellockers.configuration.ConfigurationManager;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
-import dev.rollczi.litecommands.annotations.async.Async;
 import dev.rollczi.litecommands.annotations.command.Command;
 import dev.rollczi.litecommands.annotations.context.Context;
 import dev.rollczi.litecommands.annotations.execute.Execute;
@@ -26,7 +25,6 @@ public class ParcelLockersCommand {
         this.announcer = announcer;
     }
 
-    @Async
     @Execute(name = "reload")
     void reload(@Context CommandSender sender) {
         this.configManager.reload();
