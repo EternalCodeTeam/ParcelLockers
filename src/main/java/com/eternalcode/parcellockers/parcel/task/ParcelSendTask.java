@@ -26,7 +26,7 @@ public class ParcelSendTask extends BukkitRunnable {
 
     @Override
     public void run() {
-        Parcel updatedParcel = new Parcel(
+        Parcel updated = new Parcel(
             parcel.uuid(),
             parcel.sender(),
             parcel.name(),
