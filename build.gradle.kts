@@ -35,7 +35,7 @@ dependencies {
     implementation("dev.rollczi:liteskullapi:2.0.0")
 
     // gui
-    implementation("dev.triumphteam:triumph-gui:3.1.11")
+    implementation("dev.triumphteam:triumph-gui:3.1.12")
     implementation("de.rapha149.signgui:signgui:2.5.3")
 
     // economy
@@ -83,9 +83,9 @@ dependencies {
     implementation("com.eternalcode:eternalcode-commons-adventure:1.1.6")
     implementation("com.eternalcode:eternalcode-commons-bukkit:1.1.6")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.2")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.13.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.13.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.3")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.13.3")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.13.3")
 
     testImplementation("org.testcontainers:junit-jupiter:1.21.3")
     testImplementation("org.testcontainers:mysql:1.21.3")
