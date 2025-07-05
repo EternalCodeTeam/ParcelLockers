@@ -26,14 +26,14 @@ dependencies {
     compileOnly("org.spigotmc:spigot-api:1.21.7-R0.1-SNAPSHOT")
     implementation("net.kyori:adventure-platform-bukkit:4.4.0")
     implementation("net.kyori:adventure-text-minimessage:4.23.0")
-    implementation("dev.rollczi:litecommands-bukkit:3.10.0")
-    implementation("dev.rollczi:litecommands-adventure:3.10.0")
+    implementation("dev.rollczi:litecommands-bukkit:3.10.2")
+    implementation("dev.rollczi:litecommands-adventure:3.10.2")
 
     // skull api
     implementation("dev.rollczi:liteskullapi:2.0.0")
 
     // gui
-    implementation("dev.triumphteam:triumph-gui:3.1.11")
+    implementation("dev.triumphteam:triumph-gui:3.1.12")
     implementation("de.rapha149.signgui:signgui:2.5.3")
 
     // CDN
@@ -75,12 +75,12 @@ dependencies {
     implementation("com.spotify:completable-futures:0.3.6")
 
     // eternalcode-commons
-    implementation("com.eternalcode:eternalcode-commons-adventure:1.1.6")
-    implementation("com.eternalcode:eternalcode-commons-bukkit:1.1.6")
+    implementation("com.eternalcode:eternalcode-commons-adventure:1.1.7")
+    implementation("com.eternalcode:eternalcode-commons-bukkit:1.1.7")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.2")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.13.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.13.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.3")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.13.3")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.13.3")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     testImplementation("org.testcontainers:junit-jupiter:1.21.3")
