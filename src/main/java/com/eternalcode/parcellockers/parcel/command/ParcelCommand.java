@@ -10,6 +10,7 @@ import com.eternalcode.parcellockers.parcel.ParcelManager;
 import com.eternalcode.parcellockers.parcel.util.ParcelPlaceholderUtil;
 import com.eternalcode.parcellockers.user.UserManager;
 import dev.rollczi.litecommands.annotations.argument.Arg;
+import dev.rollczi.litecommands.annotations.async.Async;
 import dev.rollczi.litecommands.annotations.command.Command;
 import dev.rollczi.litecommands.annotations.context.Context;
 import dev.rollczi.litecommands.annotations.execute.Execute;
@@ -45,6 +46,7 @@ public class ParcelCommand {
         this.parcelListGUI.show(player);
     }
 
+    @Async
     @Execute(name = "info")
     void info(@Context Player player, @Arg Parcel parcel) {
         List<String> messagesToSend = ParcelPlaceholderUtil.replaceParcelPlaceholders(parcel, this.config.messages.parcelInfoMessages, this.userManager, this.lockerRepository);
