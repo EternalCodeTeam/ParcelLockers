@@ -17,15 +17,13 @@ repositories {
     maven { url = uri("https://hub.spigotmc.org/nexus/content/repositories/snapshots/") }
     maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots") }
     maven { url = uri("https://oss.sonatype.org/content/repositories/central") }
-    maven { url = uri("https://papermc.io/repo/repository/maven-public/") }
+    maven { url = uri("https://repo.papermc.io/repository/maven-public/") }
     maven { url = uri("https://repo.eternalcode.pl/releases") }
-    maven { url = uri("https://repository.minecodes.pl/releases") }
-    maven { url = uri("https://jitpack.io") }
 }
 
 dependencies {
     // minecraft development api
-    compileOnly("org.spigotmc:spigot-api:1.21.4-R0.1-SNAPSHOT")
+    compileOnly("org.spigotmc:spigot-api:1.21.7-R0.1-SNAPSHOT")
     implementation("net.kyori:adventure-platform-bukkit:4.4.0")
     implementation("net.kyori:adventure-text-minimessage:4.23.0")
     implementation("dev.rollczi:litecommands-bukkit:3.10.2")
@@ -37,9 +35,6 @@ dependencies {
     // gui
     implementation("dev.triumphteam:triumph-gui:3.1.12")
     implementation("de.rapha149.signgui:signgui:2.5.3")
-
-    // economy
-    compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
 
     // CDN
     implementation("net.dzikoysk:cdn:1.14.9")
@@ -86,6 +81,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.3")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.13.3")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.13.3")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     testImplementation("org.testcontainers:junit-jupiter:1.21.3")
     testImplementation("org.testcontainers:mysql:1.21.3")
@@ -119,17 +115,10 @@ tasks {
         minecraftVersion("1.21.4")
     }
 
-    cleanPaperPluginsCache {
+    clean {
         doLast {
             project.file("run/plugins").deleteRecursively()
-        }
-    }
-
-    cleanPaperCache {
-        doLast {
-            project.file("run/cache").deleteRecursively()
             project.file("run/logs").deleteRecursively()
-            project.file("run/versions").deleteRecursively()
         }
     }
 
@@ -138,7 +127,7 @@ tasks {
     }
 
     shadowJar {
-        archiveFileName.set("ParcelLockers v${project.version} (MC 1.21.3-1.21.4).jar")
+        archiveFileName.set("ParcelLockers v${project.version}.jar")
 
         exclude(
             "org/intellij/lang/annotations/**",

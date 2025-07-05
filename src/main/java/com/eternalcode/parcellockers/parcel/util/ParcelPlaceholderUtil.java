@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 public class ParcelPlaceholderUtil {
 
@@ -34,7 +35,9 @@ public class ParcelPlaceholderUtil {
             .register("{PRIORITY}", parcel.priority() ? "&aYes" : "&cNo")
             .register("{DESCRIPTION}", parcel.description() != null ? parcel.description() : "-");
 
-        Optional<Locker> lockerOptional = lockerRepository.findByUUID(parcel.destinationLocker()).join();
+        Optional<Locker> lockerOptional = lockerRepository.findByUUID(parcel.destinationLocker())
+            .orTimeout(3, TimeUnit.SECONDS)
+            .join();
 
         if (lockerOptional.isPresent()) {
             Locker locker = lockerOptional.get();

@@ -38,7 +38,16 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     @Override
     public CompletableFuture<Void> save(Parcel parcel) {
+        return this.saveIfNotExist(ParcelWrapper.class, ParcelWrapper.from(parcel)).thenApply(dao -> {
+            this.cache.put(parcel);
+            return null;
+        });
+    }
+
+    @Override
+    public CompletableFuture<Void> update(Parcel parcel) {
         return this.save(ParcelWrapper.class, ParcelWrapper.from(parcel)).thenApply(dao -> {
+            this.cache.remove(parcel.uuid());
             this.cache.put(parcel);
             return null;
         });

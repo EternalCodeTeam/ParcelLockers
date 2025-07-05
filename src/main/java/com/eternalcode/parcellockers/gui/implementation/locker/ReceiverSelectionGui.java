@@ -123,7 +123,7 @@ public class ReceiverSelectionGui implements GuiView {
                 : this.config.guiSettings.parcelReceiverNotSetLine;
 
             return ItemBuilder.skull()
-                .texture(skullData.getValue())
+                .texture(skullData.getTexture())
                 .name(this.miniMessage.deserialize(user.name()))
                 .lore(this.miniMessage.deserialize(lore))
                 .glow(uuid.equals(this.state.getReceiver()))

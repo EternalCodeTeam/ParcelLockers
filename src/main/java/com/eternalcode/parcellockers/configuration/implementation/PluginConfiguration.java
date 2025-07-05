@@ -7,8 +7,10 @@ import net.dzikoysk.cdn.entity.Description;
 import net.dzikoysk.cdn.source.Resource;
 import net.dzikoysk.cdn.source.Source;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 
 import java.io.File;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 
@@ -60,9 +62,6 @@ public class PluginConfiguration implements ReloadableConfig {
         @Description({ " ", "# The database port." })
         public String port = "3306";
 
-        @Description({ " ", "# Turn this on to enable SSL (Secure Sockets Layer)" })
-        public boolean useSSL = false;
-
         @Description({ " ", "# The database password." })
         public String password = "";
 
@@ -72,14 +71,22 @@ public class PluginConfiguration implements ReloadableConfig {
             .setType(Material.CHEST)
             .setLore(List.of("&bPlace to create a parcel locker."));
 
-        @Description({ " ", "# Small parcel cost." })
-        public double smallParcelCost = 5.0;
+        @Description({" ", "# Standard parcel sending duration"})
+        public Duration parcelSendDuration = Duration.ofSeconds(10);
 
-        @Description({ " ", "# Medium parcel cost." })
-        public double mediumParcelCost = 10.0;
+        @Description({" ", "# Parcel sending duration for priority parcels"})
+        public Duration priorityParcelSendDuration = Duration.ofSeconds(5);
 
-        @Description({ " ", "# Large parcel cost." })
-        public double largeParcelCost = 15.0;
+        @Description({" ", "# Error sound used in the plugin."})
+        public Sound errorSound = Sound.ENTITY_ENDERMAN_AMBIENT;
+
+        @Description({ " ", "# The sound volume for the error sound." })
+        public float errorSoundVolume = 1.0F;
+
+        @Description({ " ", "# The sound pitch for the error sound." })
+        public float errorSoundPitch = 1.0F;
+
+
     }
 
     @Contextual
@@ -91,8 +98,6 @@ public class PluginConfiguration implements ReloadableConfig {
         public String invalidUsage = "&4❣ &cCorrect usage: &6{USAGE}";
         public String reload = "&3❣ &bConfiguration has been successfully reloaded!";
         public String parcelCommandUsage = "&9ⓘ Correct usage: &3/parcel &b<list|info|send|cancel> &3[parcel]";
-        public String parcelSuccessfullyCreated = "&2✔ &aParcel created successfully.";
-        public String failedToCreateParcel = "&4✘ &cAn error occurred while creating the parcel.";
         public String parcelSuccessfullyDeleted = "&2✔ &aParcel deleted successfully.";
         public String failedToDeleteParcel = "&4✘ &cAn error occurred while deleting the parcel.";
         public String failedToCreateParcelLocker = "&4✘ &cCould not create the parcel locker.";
@@ -103,7 +108,7 @@ public class PluginConfiguration implements ReloadableConfig {
         public String broadcastParcelLockerRemoved = "&4❣ &cThe parcel locker at &4{X} {Y} {Z} &cin &4{WORLD} &chas been removed by &4{PLAYER}!";
         public String parcelSent = "&2✔ &aParcel sent successfully.";
         public String parcelFailedToSend = "&4✘ &cAn error occurred while sending the parcel. Check the console for more information.";
-        public String illegalItemFailedToSend = "&4✘ &cThe parcel contains illegal items that cannot be sent!";
+        public String illegalItemFailedToSend = "&4✘ &cThe parcel contains illegal items that cannot be sent. ({ITEMS})";
         public String parcelCannotBeEmpty = "&4✘ &cThe parcel cannot be empty!";
         public String parcelNameCannotBeEmpty = "&4✘ &cThe parcel name cannot be empty!";
         public String parcelNameSet = "&2✔ &aParcel name set successfully.";
@@ -119,13 +124,13 @@ public class PluginConfiguration implements ReloadableConfig {
         @Description({ " ", "# The parcel info message." })
         public List<String> parcelInfoMessages = List.of(
             "&7» &6Parcel info:",
-            "&6UUID: &e{UUID}",
-            "&6Sender: &e{SENDER}",
-            "&6Receiver: &e{RECEIVER}",
-            "&6Size: &e{SIZE}",
-            "&6Position: &6X: &e{POSITION_X}, &6Y: &e{POSITION_Y}, &6Z: &e{POSITION_Z}",
-            "&6Priority: &e{PRIORITY}",
-            "&6Description: &e{DESCRIPTION}"
+            "&f• &6UUID: &e{UUID}",
+            "&f• &6Sender: &e{SENDER}",
+            "&f• &6Receiver: &e{RECEIVER}",
+            "&f• &6Size: &e{SIZE}",
+            "&f• &6Position: &6X: &e{POSITION_X}, &6Y: &e{POSITION_Y}, &6Z: &e{POSITION_Z}",
+            "&f• &6Priority: &e{PRIORITY}",
+            "&f• &6Description: &e{DESCRIPTION}"
         );
     }
 
@@ -153,19 +158,19 @@ public class PluginConfiguration implements ReloadableConfig {
         @Description({ " ", "# The item of the small parcel size button" })
         public ConfigItem smallParcelSizeItem = new ConfigItem()
             .setName("&a➻ Small")
-            .setLore(List.of("&bClick to select the small parcel size."))
+            .setLore(List.of("&aClick to select the small parcel size."))
             .setType(Material.LIME_WOOL);
 
         @Description({ " ", "# The item of the medium parcel size button" })
         public ConfigItem mediumParcelSizeItem = new ConfigItem()
             .setName("&e➼ Medium")
-            .setLore(List.of("&bClick to select the medium parcel size."))
+            .setLore(List.of("&eClick to select the medium parcel size."))
             .setType(Material.YELLOW_WOOL);
 
         @Description({ " ", "# The item of the large parcel size button" })
         public ConfigItem largeParcelSizeItem = new ConfigItem()
             .setName("&c➽ Large")
-            .setLore(List.of("&bClick to select the large parcel size."))
+            .setLore(List.of("&cClick to select the large parcel size."))
             .setType(Material.RED_WOOL);
 
         @Description({ " ", "# The item represents selected small parcel size." })
@@ -191,15 +196,15 @@ public class PluginConfiguration implements ReloadableConfig {
 
         @Description({ " ", "# The item of the priority button" })
         public ConfigItem priorityItem = new ConfigItem()
-            .setName("&a❀ Priority")
-            .setLore(List.of("&bClick to select the priority."))
-            .setType(Material.REDSTONE);
+            .setName("&c\uD83D\uDE80 Priority")
+            .setLore(List.of("&cClick to select the priority."))
+            .setType(Material.FIREWORK_ROCKET);
 
         @Description({ " ", "# The item of the selected priority button" })
         public ConfigItem selectedPriorityItem = new ConfigItem()
-            .setName("&a✿ Priority")
-            .setLore(List.of("&aCurrently selected!", "&c&oClick to unselect."))
-            .setType(Material.REDSTONE_BLOCK)
+            .setName("&c\uD83D\uDE80 Priority")
+            .setLore(List.of("&4Currently selected!", "&7&oClick to unselect."))
+            .setType(Material.FIREWORK_ROCKET)
             .setGlow(true);
 
         @Description({ " ", "# The close button item" })
@@ -222,49 +227,42 @@ public class PluginConfiguration implements ReloadableConfig {
 
         @Description({ " ", "# The item of the parcel submit button" })
         public ConfigItem submitParcelItem = new ConfigItem()
-            .setName("&a&l✔ Submit parcel")
-            .setLore(List.of("<bold><gradient:#26BF68:#4CE275>Click to submit the parcel.</gradient>", "<bold><gradient:#C40E0E:#EC2465>Proceed with caution! This action is final and cannot be undone.</gradient>"))
-            .setType(Material.WAXED_OXIDIZED_COPPER)
+            .setName("&a✔ Submit")
+            .setLore(List.of("<gradient:#26BF68:#4CE275>Click to submit the parcel.</gradient>", "<gradient:#C40E0E:#EC2465>Proceed with caution! This action is final and cannot be undone.</gradient>"))
+            .setType(Material.ENDER_PEARL)
             .setGlow(true);
 
         @Description({ " ", "# The item of the parcel list button" })
         public ConfigItem myParcelsItem = new ConfigItem()
-            .setName("&3⌬ My parcels")
+            .setName("&3⛃ My parcels")
             .setLore(List.of("&bClick to open your parcels."))
             .setType(Material.ENDER_CHEST);
 
         @Description({ " ", "# The item of the sent parcels button" })
         public ConfigItem sentParcelsItem = new ConfigItem()
-            .setName("&6↪ Sent parcels")
+            .setName("&6\uD83D\uDCE6 Sent parcels")
             .setLore(List.of("&eClick to show parcels, which you sent.", "&eYou can also cancel them here, if you want to."))
-            .setType(Material.FILLED_MAP)
+            .setType(Material.YELLOW_SHULKER_BOX)
             .setGlow(true);
 
         @Description({ " ", "# The parcel archive item button." })
         public ConfigItem parcelArchiveItem = new ConfigItem()
-            .setName("&5♲ Parcel archive")
-            .setLore(List.of("&eClick to show all parcels, which you sent or received in the past."))
-            .setType(Material.WRITTEN_BOOK);
+            .setName("&5\uD83D\uDCDA Parcel archive")
+            .setLore(List.of("&eClick to show all parcels, which you sent or received in the past.", "&c&oNot implemented yet"))
+            .setType(Material.BOOKSHELF);
 
         @Description({ " ", "# The item of the parcel locker collect button" })
         public ConfigItem parcelLockerCollectItem = new ConfigItem()
-            .setName("&a✔ Collect parcels")
-            .setLore(List.of("&aClick to collect your parcels."))
-            .setType(Material.HOPPER)
+            .setName("&2⬇ Collect parcels")
+            .setLore(List.of("&2Click to collect your parcels."))
+            .setType(Material.CHEST)
             .setGlow(true);
 
         @Description({ " ", "# The item of the parcel locker send button" })
         public ConfigItem parcelLockerSendItem = new ConfigItem()
-            .setName("&b⛟ Send parcels")
-            .setLore(List.of("&bClick to send parcels."))
-            .setType(Material.SCULK_SHRIEKER)
-            .setGlow(true);
-
-        @Description({ " ", "# The item of the parcel locker status button" })
-        public ConfigItem parcelLockerStatusItem = new ConfigItem()
-            .setName("&3⌛ Parcel locker status")
-            .setLore(List.of("&bClick to show the status of your parcel locker."))
-            .setType(Material.END_PORTAL_FRAME)
+            .setName("&6⬆ Send parcels")
+            .setLore(List.of("&6Click to send parcels."))
+            .setType(Material.CHEST_MINECART)
             .setGlow(true);
 
         @Description({ " ", "# The item of the parcel" })
@@ -290,7 +288,7 @@ public class PluginConfiguration implements ReloadableConfig {
 
         @Description({ " ", "# The item of the parcel name button" })
         public ConfigItem parcelNameItem = new ConfigItem()
-            .setName("&4❁ &cParcel name")
+            .setName("&4✎ &cParcel name")
             .setLore(List.of("&cClick to edit the parcel name."))
             .setType(Material.NAME_TAG);
 
@@ -322,9 +320,9 @@ public class PluginConfiguration implements ReloadableConfig {
 
         @Description({ " ", "# The item of the parcel destination locker button" })
         public ConfigItem parcelDestinationLockerItem = new ConfigItem()
-            .setName("&3↠ &bDestination locker")
-            .setLore(List.of("&bClick to edit the parcel destination locker."))
-            .setType(Material.VAULT);
+            .setName("&3\uD83D\uDCCD Destination locker")
+            .setLore(List.of("&3Click to edit the parcel destination locker."))
+            .setType(Material.COMPASS);
 
         @Description({ " ", "# The item of the previous page button" })
         public ConfigItem previousPageItem = new ConfigItem()
@@ -345,13 +343,13 @@ public class PluginConfiguration implements ReloadableConfig {
             .setType(Material.LIME_WOOL);
 
         @Description({ " ", "# The name of the parcel small content GUI" })
-        public String parcelSmallContentGuiTitle = "&aSmall parcel content";
+        public String parcelSmallContentGuiTitle = "&2Small parcel content";
 
         @Description({ " ", "# The name of the parcel medium content GUI" })
-        public String parcelMediumContentGuiTitle = "&eMedium parcel content";
+        public String parcelMediumContentGuiTitle = "&6Medium parcel content";
 
         @Description({ " ", "# The name of the parcel large content GUI" })
-        public String parcelLargeContentGuiTitle = "&cLarge parcel content";
+        public String parcelLargeContentGuiTitle = "&4Large parcel content";
 
         @Description({ " ", "# The title of the parcel destination locker selection GUI" })
         public String parcelDestinationLockerSelectionGuiTitle = "&3Select destination locker";
@@ -383,7 +381,9 @@ public class PluginConfiguration implements ReloadableConfig {
             Material.JIGSAW,
             Material.DEBUG_STICK,
             Material.SPAWNER,
-            Material.BEDROCK
+            Material.BEDROCK,
+            Material.VAULT,
+            Material.END_PORTAL_FRAME
         );
 
         @Description({ " ", "# The item of the parcel item in the collection GUI" })

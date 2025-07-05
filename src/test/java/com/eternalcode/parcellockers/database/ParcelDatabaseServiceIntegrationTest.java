@@ -5,6 +5,7 @@ import com.eternalcode.parcellockers.configuration.ConfigurationManager;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
+import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import com.eternalcode.parcellockers.parcel.repository.ParcelCache;
 import com.eternalcode.parcellockers.parcel.repository.ParcelPageResult;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
@@ -47,7 +48,7 @@ class ParcelDatabaseServiceIntegrationTest extends ParcelLockerIntegrationSpec {
         UUID destinationLocker = UUID.randomUUID();
 
         parcelRepository.save(new Parcel(uuid, sender, "name", "description", true, receiver,
-            ParcelSize.SMALL, entryLocker, destinationLocker));
+            ParcelSize.SMALL, entryLocker, destinationLocker, ParcelStatus.PENDING));
 
         Optional<Parcel> parcel = this.await(parcelRepository.findByUUID(uuid));
         assertTrue(parcel.isPresent());

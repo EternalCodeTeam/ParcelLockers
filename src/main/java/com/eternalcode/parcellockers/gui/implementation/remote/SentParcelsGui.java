@@ -3,10 +3,10 @@ package com.eternalcode.parcellockers.gui.implementation.remote;
 import com.eternalcode.parcellockers.configuration.implementation.ConfigItem;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.gui.GuiView;
-import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
+import com.eternalcode.parcellockers.parcel.util.ParcelPlaceholderUtil;
 import com.eternalcode.parcellockers.shared.SentryExceptionHandler;
 import com.eternalcode.parcellockers.user.UserManager;
 import dev.triumphteam.gui.builder.item.ItemBuilder;
@@ -18,15 +18,9 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
-import org.jetbrains.annotations.Blocking;
-import panda.utilities.text.Formatter;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 public class SentParcelsGui implements GuiView {
 
@@ -80,7 +74,7 @@ public class SentParcelsGui implements GuiView {
             for (Parcel parcel : parcels) {
                 ItemBuilder item = parcelItem.toBuilder();
 
-                List<Component> newLore = this.replaceParcelPlaceholders(parcel, parcelItem.lore)
+                List<Component> newLore = ParcelPlaceholderUtil.replaceParcelPlaceholders(parcel, parcelItem.lore, this.userManager, this.lockerRepository)
                     .stream()
                     .map(line -> this.miniMessage.deserialize(line))
                     .toList();
@@ -92,52 +86,4 @@ public class SentParcelsGui implements GuiView {
             this.server.getScheduler().runTask(this.plugin, () -> gui.open(player));
         }).whenComplete(SentryExceptionHandler.handler());
     }
-
-    @Blocking
-    private List<String> replaceParcelPlaceholders(Parcel parcel, List<String> lore) {
-        if (lore == null || lore.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        String senderName = this.getName(parcel.sender()).join();
-        String receiver = this.getName(parcel.receiver()).join();
-
-        Formatter formatter = new Formatter()
-            .register("{UUID}", parcel.uuid().toString())
-            .register("{NAME}", parcel.name())
-            .register("{SENDER}", senderName)
-            .register("{RECEIVER}", receiver)
-            .register("{SIZE}", parcel.size().toString())
-            .register("{PRIORITY}", parcel.priority() ? "&aYes" : "&cNo")
-            .register("{DESCRIPTION}", parcel.description());
-
-        Optional<Locker> lockerOptional = this.lockerRepository.findByUUID(parcel.destinationLocker()).join();
-
-        if (lockerOptional.isPresent()) {
-            Locker locker = lockerOptional.get();
-            formatter.register("{POSITION_X}", locker.position().x())
-                .register("{POSITION_Y}", locker.position().y())
-                .register("{POSITION_Z}", locker.position().z());
-        } else {
-            formatter.register("{POSITION_X}", "-")
-                .register("{POSITION_Y}", "-")
-                .register("{POSITION_Z}", "-");
-        }
-
-        List<String> newLore = new ArrayList<>();
-
-        for (String line : lore) {
-            newLore.add(formatter.format(line));
-        }
-
-        return newLore;
-    }
-
-    private CompletableFuture<String> getName(UUID userUuid) {
-        return this.userManager.getUser(userUuid).thenApply(userOptional -> userOptional
-            .map(user -> user.name())
-            .orElse("Unknown")
-        );
-    }
-
 }
