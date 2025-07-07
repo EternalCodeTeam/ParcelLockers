@@ -33,7 +33,7 @@ dependencies {
     implementation("dev.rollczi:liteskullapi:2.0.0")
 
     // gui
-    implementation("dev.triumphteam:triumph-gui:3.1.12")
+    implementation("dev.triumphteam:triumph-gui:3.1.11")
     implementation("de.rapha149.signgui:signgui:2.5.3")
 
     // CDN
