@@ -11,13 +11,16 @@ import com.eternalcode.parcellockers.parcel.repository.ParcelPageResult;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryOrmLite;
 import com.eternalcode.parcellockers.shared.Page;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -28,16 +31,22 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Testcontainers
-class ParcelDatabaseServiceIntegrationTest extends ParcelLockerIntegrationSpec {
+class ParcelRepositoryIntegrationTest extends IntegrationTestSpec {
 
     @Container
     private static final MySQLContainer mySQLContainer = new MySQLContainer(DockerImageName.parse("mysql:latest"));
 
+    @TempDir
+    private Path tempDir;
+
+    private DatabaseManager databaseManager;
+
     @Test
     void test() {
-        File dataFolder = new File("run/plugins/ParcelLockers");
+        File dataFolder = tempDir.resolve("ParcelLockers").toFile();
         PluginConfiguration config = new ConfigurationManager(dataFolder).load(new PluginConfiguration());
         DatabaseManager databaseManager = new DatabaseManager(config, Logger.getLogger("ParcelLockers"), dataFolder);
+        this.databaseManager = databaseManager;
         ParcelCache cache = new ParcelCache();
 
         ParcelRepository parcelRepository = new ParcelRepositoryOrmLite(databaseManager, new TestScheduler(), cache);
@@ -69,5 +78,12 @@ class ParcelDatabaseServiceIntegrationTest extends ParcelLockerIntegrationSpec {
         this.await(parcelRepository.remove(uuid));
         Optional<Parcel> removedParcel = this.await(parcelRepository.findByUUID(uuid));
         assertTrue(removedParcel.isEmpty());
+    }
+
+    @AfterEach
+    void tearDown() {
+        if (this.databaseManager != null) {
+            this.databaseManager.disconnect();
+        }
     }
 }

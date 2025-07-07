@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Testcontainers
-class ParcelLockerDatabaseServiceIntegrationTest extends ParcelLockerIntegrationSpec {
+class LockerRepositoryIntegrationTest extends IntegrationTestSpec {
 
     @Container
     private static final MySQLContainer mySQLContainer = new MySQLContainer(DockerImageName.parse("mysql:latest"));
@@ -74,6 +74,8 @@ class ParcelLockerDatabaseServiceIntegrationTest extends ParcelLockerIntegration
 
     @AfterEach
     void tearDown() {
-        databaseManager.disconnect();
+        if (databaseManager != null) {
+            databaseManager.disconnect();
+        }
     }
 }
