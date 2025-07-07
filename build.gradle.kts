@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "com.eternalcode"
-version = "0.0.1-SNAPSHOT"
+version = "0.0.2-SNAPSHOT"
 description = "Plugin that provides functionality of parcel lockers in Minecraft, allowing players to send and receive parcels safely."
 
 repositories {
@@ -112,7 +112,7 @@ tasks.withType<JavaCompile> {
 
 tasks {
     runServer {
-        minecraftVersion("1.21.4")
+        minecraftVersion("1.21.7")
     }
 
     clean {
