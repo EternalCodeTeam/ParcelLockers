@@ -1,10 +1,12 @@
 package com.eternalcode.parcellockers.configuration;
 
 import com.eternalcode.parcellockers.configuration.composer.DurationComposer;
+import com.eternalcode.parcellockers.configuration.composer.OldEnumComposer;
 import com.eternalcode.parcellockers.configuration.composer.PositionComposer;
 import com.eternalcode.parcellockers.shared.Position;
 import net.dzikoysk.cdn.Cdn;
 import net.dzikoysk.cdn.CdnFactory;
+import org.bukkit.Sound;
 
 import java.io.File;
 import java.time.Duration;
@@ -18,6 +20,7 @@ public class ConfigurationManager {
         .getSettings()
         .withComposer(Position.class, new PositionComposer())
         .withComposer(Duration.class, new DurationComposer())
+        .withComposer(Sound.class, new OldEnumComposer())
         .build();
 
     private final Set<ReloadableConfig> configs = new HashSet<>();

@@ -1,5 +1,6 @@
 package com.eternalcode.parcellockers.delivery.repository;
 
+import com.eternalcode.parcellockers.database.persister.InstantPersister;
 import com.eternalcode.parcellockers.delivery.Delivery;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
@@ -13,7 +14,7 @@ class DeliveryWrapper {
     @DatabaseField(id = true)
     private UUID parcel;
 
-    @DatabaseField
+    @DatabaseField(persisterClass = InstantPersister.class)
     private Instant deliveryTimestamp;
 
     DeliveryWrapper() {
