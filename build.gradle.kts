@@ -33,7 +33,7 @@ dependencies {
     implementation("dev.rollczi:liteskullapi:2.0.0")
 
     // gui
-    implementation("dev.triumphteam:triumph-gui:3.1.11")
+    implementation("dev.triumphteam:triumph-gui:3.1.12")
     implementation("de.rapha149.signgui:signgui:2.5.3")
 
     // CDN
@@ -47,7 +47,7 @@ dependencies {
 
     // metrics and sentry
     implementation("org.bstats:bstats-bukkit:3.1.0")
-    implementation("io.sentry:sentry:8.16.0")
+    implementation("io.sentry:sentry:8.17.0")
 
     // database
     implementation("com.zaxxer:HikariCP:6.3.0")
