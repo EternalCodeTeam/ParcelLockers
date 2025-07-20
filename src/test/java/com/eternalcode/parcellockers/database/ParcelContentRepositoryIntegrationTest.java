@@ -11,6 +11,7 @@ import org.bukkit.inventory.ItemStack;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -22,6 +23,7 @@ import java.util.logging.Logger;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@Testcontainers
 class ParcelContentRepositoryIntegrationTest extends IntegrationTestSpec {
 
     @TempDir
