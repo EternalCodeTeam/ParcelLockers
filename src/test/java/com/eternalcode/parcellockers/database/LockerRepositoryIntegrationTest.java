@@ -52,7 +52,6 @@ class LockerRepositoryIntegrationTest extends IntegrationTestSpec {
         String description = "Parcel locker description.";
         Position position = new Position(1, 2, 3, "world");
 
-
         parcelLockerRepository.save(new Locker(uuid, description, position));
 
         Optional<Locker> parcelLocker = await(parcelLockerRepository.findByUUID(uuid));
