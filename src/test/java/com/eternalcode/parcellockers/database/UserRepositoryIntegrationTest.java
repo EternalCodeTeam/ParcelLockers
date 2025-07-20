@@ -5,6 +5,7 @@ import com.eternalcode.parcellockers.configuration.ConfigurationManager;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.user.User;
+import com.eternalcode.parcellockers.user.repository.UserPageResult;
 import com.eternalcode.parcellockers.user.repository.UserRepository;
 import com.eternalcode.parcellockers.user.repository.UserRepositoryOrmLite;
 import org.junit.jupiter.api.AfterEach;
@@ -53,8 +54,8 @@ class UserRepositoryIntegrationTest extends IntegrationTestSpec {
         User retrievedUser = userOptional.get();
         assertEquals(retrievedUser.uuid(), userUuid);
 
-        userRepository.getPage(new Page(0, 10))
-            .thenAccept(userPageResult -> assertTrue(userPageResult.users().stream().anyMatch(u -> u.uuid().equals(userUuid))));
+        UserPageResult pageResult = await(userRepository.getPage(new Page(0, 10)));
+        assertTrue(pageResult.users().stream().anyMatch(u -> u.uuid().equals(userUuid)));
     }
 
     @AfterEach
