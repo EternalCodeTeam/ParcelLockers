@@ -26,7 +26,7 @@ public class LockerInteractionController implements Listener {
     @EventHandler
     public void onInventoryOpen(PlayerInteractEvent event) {
         Player player = event.getPlayer();
-        Position blockPos = PositionAdapter.convert(player.getTargetBlock(Set.of(Material.AIR), 4).getLocation());
+        Position blockPos = PositionAdapter.convert(player.getTargetBlock(Set.of(Material.AIR), 5).getLocation());
 
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
             return;
