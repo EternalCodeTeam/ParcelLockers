@@ -38,9 +38,17 @@ import java.util.concurrent.TimeUnit;
 
 public class ParcelSendingGui implements GuiView {
 
+    private static final int RECEIVER_ITEM_SLOT = 23;
+    private static final int SMALL_BUTTON_SLOT = 12;
+    private static final int MEDIUM_BUTTON_SLOT = 13;
+    private static final int LARGE_BUTTON_SLOT = 14;
     private static final int NAME_ITEM_SLOT = 21;
     private static final int DESCRIPTION_ITEM_SLOT = 22;
-    private static final int RECEIVER_ITEM_SLOT = 23;
+    private static final int DESTINATION_ITEM_SLOT = 30;
+    private static final int STORAGE_ITEM_SLOT = 37;
+    private static final int PRIORITY_BUTTON_SLOT = 42;
+    private static final int SUBMIT_ITEM_SLOT = 43;
+    private static final int CLOSE_ITEM_SLOT = 49;
     private final Plugin plugin;
     private final BukkitScheduler scheduler;
     private final PluginConfiguration config;
@@ -251,9 +259,9 @@ public class ParcelSendingGui implements GuiView {
             this.gui.setItem(slot, cornerItem);
         }
 
-        this.gui.setItem(12, smallButton.toGuiItem(event -> this.setSelected(this.gui, ParcelSize.SMALL)));
-        this.gui.setItem(13, mediumButton.toGuiItem(event -> this.setSelected(this.gui, ParcelSize.MEDIUM)));
-        this.gui.setItem(14, largeButton.toGuiItem(event -> this.setSelected(this.gui, ParcelSize.LARGE)));
+        this.gui.setItem(SMALL_BUTTON_SLOT, smallButton.toGuiItem(event -> this.setSelected(this.gui, ParcelSize.SMALL)));
+        this.gui.setItem(MEDIUM_BUTTON_SLOT, mediumButton.toGuiItem(event -> this.setSelected(this.gui, ParcelSize.MEDIUM)));
+        this.gui.setItem(LARGE_BUTTON_SLOT, largeButton.toGuiItem(event -> this.setSelected(this.gui, ParcelSize.LARGE)));
         this.gui.setItem(NAME_ITEM_SLOT, nameGuiItem);
         this.gui.setItem(DESCRIPTION_ITEM_SLOT, descriptionGuiItem);
         this.gui.setItem(RECEIVER_ITEM_SLOT, guiSettings.parcelReceiverItem.toGuiItem(event -> new ReceiverSelectionGui(
@@ -267,7 +275,7 @@ public class ParcelSendingGui implements GuiView {
             this.state
         ).show(player)));
 
-        this.gui.setItem(30, guiSettings.parcelDestinationLockerItem.toGuiItem(event -> new DestinationSelectionGui(
+        this.gui.setItem(DESTINATION_ITEM_SLOT, guiSettings.parcelDestinationLockerItem.toGuiItem(event -> new DestinationSelectionGui(
             this.plugin,
             this.scheduler,
             this.config,
@@ -277,10 +285,10 @@ public class ParcelSendingGui implements GuiView {
             this.state
         ).show(player)));
 
-        this.gui.setItem(37, storageItem);
-        this.gui.setItem(43, submitItem);
-        this.gui.setItem(42, priorityItem.toGuiItem(event -> this.setSelected(this.gui, !this.state.isPriority())));
-        this.gui.setItem(49, closeItem);
+        this.gui.setItem(STORAGE_ITEM_SLOT, storageItem);
+        this.gui.setItem(SUBMIT_ITEM_SLOT, submitItem);
+        this.gui.setItem(PRIORITY_BUTTON_SLOT, priorityItem.toGuiItem(event -> this.setSelected(this.gui, !this.state.isPriority())));
+        this.gui.setItem(CLOSE_ITEM_SLOT, closeItem);
 
         this.setSelected(this.gui, this.state.getSize() == null ? ParcelSize.SMALL : this.state.getSize());
 
@@ -306,10 +314,10 @@ public class ParcelSendingGui implements GuiView {
         ConfigItem largeButton = size == ParcelSize.LARGE ? settings.selectedLargeParcelSizeItem : settings.largeParcelSizeItem;
         ConfigItem priorityButton = this.state.isPriority() ? settings.selectedPriorityItem : settings.priorityItem;
 
-        gui.updateItem(12, smallButton.toItemStack());
-        gui.updateItem(13, mediumButton.toItemStack());
-        gui.updateItem(14, largeButton.toItemStack());
-        gui.updateItem(42, priorityButton.toItemStack());
+        gui.updateItem(SMALL_BUTTON_SLOT, smallButton.toItemStack());
+        gui.updateItem(MEDIUM_BUTTON_SLOT, mediumButton.toItemStack());
+        gui.updateItem(LARGE_BUTTON_SLOT, largeButton.toItemStack());
+        gui.updateItem(PRIORITY_BUTTON_SLOT, priorityButton.toItemStack());
     }
 
     private void setSelected(Gui gui, boolean priority) {
@@ -318,7 +326,7 @@ public class ParcelSendingGui implements GuiView {
 
         ConfigItem priorityButton = priority ? settings.selectedPriorityItem : settings.priorityItem;
 
-        gui.updateItem(42, priorityButton.toItemStack());
+        gui.updateItem(PRIORITY_BUTTON_SLOT, priorityButton.toItemStack());
     }
 
     public void updateNameItem() {
@@ -357,12 +365,12 @@ public class ParcelSendingGui implements GuiView {
         this.announcer.sendMessage(player, this.config.messages.parcelDestinationSet);
 
         if (destinationLockerDesc == null || destinationLockerDesc.isEmpty()) {
-            this.gui.updateItem(30, this.config.guiSettings.parcelDestinationLockerItem.toItemStack());
+            this.gui.updateItem(DESTINATION_ITEM_SLOT, this.config.guiSettings.parcelDestinationLockerItem.toItemStack());
             return;
         }
 
         String line = this.config.guiSettings.parcelDestinationLockerSetLine.replace("{DESCRIPTION}", destinationLockerDesc);
-        this.gui.updateItem(30, this.createActiveItem(this.config.guiSettings.parcelDestinationLockerItem, line));
+        this.gui.updateItem(DESTINATION_ITEM_SLOT, this.createActiveItem(this.config.guiSettings.parcelDestinationLockerItem, line));
     }
 
     private @NotNull ItemStack createActiveItem(ConfigItem item, String appendLore) {
