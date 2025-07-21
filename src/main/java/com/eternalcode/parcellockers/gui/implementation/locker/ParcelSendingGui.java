@@ -104,7 +104,7 @@ public class ParcelSendingGui implements GuiView {
                     .setHandler((p, result) -> {
                         String name = result.getLineWithoutColor(1);
 
-                        if (name.isEmpty() || name.isBlank()) {
+                        if (name.isBlank()) {
                             this.announcer.sendMessage(player, settings.messages.parcelNameCannotBeEmpty);
                             return Collections.emptyList();
                         }
@@ -281,6 +281,16 @@ public class ParcelSendingGui implements GuiView {
 
         this.setSelected(this.gui, this.state.getSize() == null ? ParcelSize.SMALL : this.state.getSize());
 
+        this.updateNameItem();
+        this.updateDescriptionItem();
+        this.userRepository.getUser(this.state.getReceiver()).thenAccept(userOptional -> {
+            userOptional.ifPresent(user -> this.updateReceiverItem(player, user.name()));
+        });
+        this.lockerRepository.findByUUID(this.state.getDestinationLocker()).thenAccept(lockerOptional -> {
+            lockerOptional.ifPresent(locker -> this.updateDestinationItem(player, locker.description()));
+        });
+
+
         this.gui.open(player);
     }
 
@@ -306,6 +316,26 @@ public class ParcelSendingGui implements GuiView {
         ConfigItem priorityButton = priority ? settings.selectedPriorityItem : settings.priorityItem;
 
         gui.updateItem(42, priorityButton.toItemStack());
+    }
+
+    public void updateNameItem() {
+        if (this.state.getParcelName() == null || this.state.getParcelName().isEmpty()) {
+            this.gui.updateItem(21, this.config.guiSettings.parcelNameItem.toItemStack());
+            return;
+        }
+
+        String line = this.config.guiSettings.parcelNameSetLine.replace("{NAME}", this.state.getParcelName());
+        this.gui.updateItem(21, this.createActiveItem(this.config.guiSettings.parcelNameItem, line));
+    }
+
+    public void updateDescriptionItem() {
+        if (this.state.getParcelDescription() == null || this.state.getParcelDescription().isEmpty()) {
+            this.gui.updateItem(22, this.config.guiSettings.parcelDescriptionItem.toItemStack());
+            return;
+        }
+
+        String line = this.config.guiSettings.parcelDescriptionSetLine.replace("{DESCRIPTION}", this.state.getParcelDescription());
+        this.gui.updateItem(22, this.createActiveItem(this.config.guiSettings.parcelDescriptionItem, line));
     }
 
     public void updateReceiverItem(Player player, String receiverName) {
