@@ -11,8 +11,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 
-import java.util.Set;
-
 public class LockerInteractionController implements Listener {
 
     private final LockerCache cache;
@@ -26,7 +24,7 @@ public class LockerInteractionController implements Listener {
     @EventHandler
     public void onInventoryOpen(PlayerInteractEvent event) {
         Player player = event.getPlayer();
-        Position blockPos = PositionAdapter.convert(player.getTargetBlock(Set.of(Material.AIR), 5).getLocation());
+        Position blockPos = PositionAdapter.convert(event.getClickedBlock().getLocation());
 
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
             return;
