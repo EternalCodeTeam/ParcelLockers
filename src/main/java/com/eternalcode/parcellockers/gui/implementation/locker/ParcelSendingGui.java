@@ -38,6 +38,9 @@ import java.util.concurrent.TimeUnit;
 
 public class ParcelSendingGui implements GuiView {
 
+    private static final int NAME_ITEM_SLOT = 21;
+    private static final int DESCRIPTION_ITEM_SLOT = 22;
+    private static final int RECEIVER_ITEM_SLOT = 23;
     private final Plugin plugin;
     private final BukkitScheduler scheduler;
     private final PluginConfiguration config;
@@ -120,7 +123,7 @@ public class ParcelSendingGui implements GuiView {
                         lore.add(this.config.guiSettings.parcelNameSetLine.replace("{NAME}", this.state.getParcelName() == null
                             ? "None" : this.state.getParcelName()));
 
-                        this.gui.updateItem(21, nameItem
+                        this.gui.updateItem(NAME_ITEM_SLOT, nameItem
                             .setLore(lore)
                             .toItemStack());
                         return List.of(SignGUIAction.runSync((JavaPlugin) this.plugin, () -> this.gui.open(player)));
@@ -154,7 +157,7 @@ public class ParcelSendingGui implements GuiView {
 
                         lore.add(this.config.guiSettings.parcelDescriptionSetLine.replace("{DESCRIPTION}", description));
 
-                        this.gui.updateItem(22, descriptionItem
+                        this.gui.updateItem(DESCRIPTION_ITEM_SLOT, descriptionItem
                             .setLore(lore)
                             .toItemStack());
                         return List.of(SignGUIAction.runSync((JavaPlugin) this.plugin, () -> this.gui.open(player)));
@@ -251,9 +254,9 @@ public class ParcelSendingGui implements GuiView {
         this.gui.setItem(12, smallButton.toGuiItem(event -> this.setSelected(this.gui, ParcelSize.SMALL)));
         this.gui.setItem(13, mediumButton.toGuiItem(event -> this.setSelected(this.gui, ParcelSize.MEDIUM)));
         this.gui.setItem(14, largeButton.toGuiItem(event -> this.setSelected(this.gui, ParcelSize.LARGE)));
-        this.gui.setItem(21, nameGuiItem);
-        this.gui.setItem(22, descriptionGuiItem);
-        this.gui.setItem(23, guiSettings.parcelReceiverItem.toGuiItem(event -> new ReceiverSelectionGui(
+        this.gui.setItem(NAME_ITEM_SLOT, nameGuiItem);
+        this.gui.setItem(DESCRIPTION_ITEM_SLOT, descriptionGuiItem);
+        this.gui.setItem(RECEIVER_ITEM_SLOT, guiSettings.parcelReceiverItem.toGuiItem(event -> new ReceiverSelectionGui(
             this.plugin,
             this.scheduler,
             this.config,
@@ -320,34 +323,34 @@ public class ParcelSendingGui implements GuiView {
 
     public void updateNameItem() {
         if (this.state.getParcelName() == null || this.state.getParcelName().isEmpty()) {
-            this.gui.updateItem(21, this.config.guiSettings.parcelNameItem.toItemStack());
+            this.gui.updateItem(NAME_ITEM_SLOT, this.config.guiSettings.parcelNameItem.toItemStack());
             return;
         }
 
         String line = this.config.guiSettings.parcelNameSetLine.replace("{NAME}", this.state.getParcelName());
-        this.gui.updateItem(21, this.createActiveItem(this.config.guiSettings.parcelNameItem, line));
+        this.gui.updateItem(NAME_ITEM_SLOT, this.createActiveItem(this.config.guiSettings.parcelNameItem, line));
     }
 
     public void updateDescriptionItem() {
         if (this.state.getParcelDescription() == null || this.state.getParcelDescription().isEmpty()) {
-            this.gui.updateItem(22, this.config.guiSettings.parcelDescriptionItem.toItemStack());
+            this.gui.updateItem(DESCRIPTION_ITEM_SLOT, this.config.guiSettings.parcelDescriptionItem.toItemStack());
             return;
         }
 
         String line = this.config.guiSettings.parcelDescriptionSetLine.replace("{DESCRIPTION}", this.state.getParcelDescription());
-        this.gui.updateItem(22, this.createActiveItem(this.config.guiSettings.parcelDescriptionItem, line));
+        this.gui.updateItem(DESCRIPTION_ITEM_SLOT, this.createActiveItem(this.config.guiSettings.parcelDescriptionItem, line));
     }
 
     public void updateReceiverItem(Player player, String receiverName) {
         this.announcer.sendMessage(player, this.config.messages.parcelReceiverSet);
 
         if (receiverName == null || receiverName.isEmpty()) {
-            this.gui.updateItem(23, this.config.guiSettings.parcelReceiverItem.toItemStack());
+            this.gui.updateItem(RECEIVER_ITEM_SLOT, this.config.guiSettings.parcelReceiverItem.toItemStack());
             return;
         }
 
         String line = this.config.guiSettings.parcelReceiverGuiSetLine.replace("{RECEIVER}", receiverName);
-        this.gui.updateItem(23, this.createActiveItem(this.config.guiSettings.parcelReceiverItem, line));
+        this.gui.updateItem(RECEIVER_ITEM_SLOT, this.createActiveItem(this.config.guiSettings.parcelReceiverItem, line));
     }
 
     public void updateDestinationItem(Player player, String destinationLockerDesc) {
