@@ -11,7 +11,10 @@ import org.bukkit.inventory.ItemStack;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -25,6 +28,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Testcontainers
 class ParcelContentRepositoryIntegrationTest extends IntegrationTestSpec {
+
+    @Container
+    private static final MySQLContainer mySQLContainer = new MySQLContainer(DockerImageName.parse("mysql:latest"));
 
     @TempDir
     private Path tempDir;
