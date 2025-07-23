@@ -33,7 +33,7 @@ dependencies {
     implementation("dev.rollczi:liteskullapi:2.0.0")
 
     // gui
-    implementation("dev.triumphteam:triumph-gui:3.1.11")
+    implementation("dev.triumphteam:triumph-gui:3.1.12")
     implementation("de.rapha149.signgui:signgui:2.5.3")
 
     // CDN
@@ -47,10 +47,10 @@ dependencies {
 
     // metrics and sentry
     implementation("org.bstats:bstats-bukkit:3.1.0")
-    implementation("io.sentry:sentry:8.16.0")
+    implementation("io.sentry:sentry:8.17.0")
 
     // database
-    implementation("com.zaxxer:HikariCP:6.3.0")
+    implementation("com.zaxxer:HikariCP:6.3.2")
     implementation("com.j256.ormlite:ormlite-jdbc:6.1")
     implementation("com.h2database:h2:2.3.232")
     implementation("org.postgresql:postgresql:42.7.7")
@@ -78,9 +78,9 @@ dependencies {
     implementation("com.eternalcode:eternalcode-commons-adventure:1.1.7")
     implementation("com.eternalcode:eternalcode-commons-bukkit:1.1.7")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.3")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.13.3")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.13.3")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.4")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.13.4")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.13.4")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     testImplementation("org.testcontainers:junit-jupiter:1.21.3")
