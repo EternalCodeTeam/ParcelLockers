@@ -2,7 +2,7 @@ plugins {
     `java-library`
     id("net.minecrell.plugin-yml.bukkit") version "0.6.0"
     id("xyz.jpenilla.run-paper") version "2.3.1"
-    id("com.gradleup.shadow") version "8.3.8"
+    id("com.gradleup.shadow") version "9.0.1"
 }
 
 group = "com.eternalcode"
@@ -23,18 +23,18 @@ repositories {
 
 dependencies {
     // minecraft development api
-    compileOnly("org.spigotmc:spigot-api:1.21.5-R0.1-SNAPSHOT")
-    implementation("net.kyori:adventure-platform-bukkit:4.4.0")
-    implementation("net.kyori:adventure-text-minimessage:4.23.0")
-    implementation("dev.rollczi:litecommands-bukkit:3.10.2")
-    implementation("dev.rollczi:litecommands-adventure:3.10.2")
+    compileOnly("org.spigotmc:spigot-api:1.21.7-R0.1-SNAPSHOT")
+    implementation("net.kyori:adventure-platform-bukkit:4.4.1")
+    implementation("net.kyori:adventure-text-minimessage:4.24.0")
+    implementation("dev.rollczi:litecommands-bukkit:3.10.4")
+    implementation("dev.rollczi:litecommands-adventure:3.10.4")
 
     // skull api
     implementation("dev.rollczi:liteskullapi:2.0.0")
 
     // gui
     implementation("dev.triumphteam:triumph-gui:3.1.11")
-    implementation("de.rapha149.signgui:signgui:2.5.3")
+    implementation("de.rapha149.signgui:signgui:2.5.4")
 
     // CDN
     implementation("net.dzikoysk:cdn:1.14.9")
@@ -47,10 +47,10 @@ dependencies {
 
     // metrics and sentry
     implementation("org.bstats:bstats-bukkit:3.1.0")
-    implementation("io.sentry:sentry:8.16.0")
+    implementation("io.sentry:sentry:8.18.0")
 
     // database
-    implementation("com.zaxxer:HikariCP:6.3.0")
+    implementation("com.zaxxer:HikariCP:7.0.1")
     implementation("com.j256.ormlite:ormlite-jdbc:6.1")
     implementation("com.h2database:h2:2.3.232")
     implementation("org.postgresql:postgresql:42.7.7")
@@ -75,20 +75,20 @@ dependencies {
     implementation("com.spotify:completable-futures:0.3.6")
 
     // eternalcode-commons
-    implementation("com.eternalcode:eternalcode-commons-adventure:1.1.7")
-    implementation("com.eternalcode:eternalcode-commons-bukkit:1.1.7")
+    implementation("com.eternalcode:eternalcode-commons-adventure:1.2.0")
+    implementation("com.eternalcode:eternalcode-commons-bukkit:1.2.0")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.3")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.13.3")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.13.3")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.4")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.13.4")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.13.4")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("org.testcontainers:junit-jupiter:1.21.3")
     testImplementation("org.testcontainers:mysql:1.21.3")
     testImplementation("mysql:mysql-connector-java:8.0.33")
 
     testImplementation("org.spigotmc:spigot-api:1.21.5-R0.1-SNAPSHOT")
-    testImplementation("net.kyori:adventure-platform-bukkit:4.4.0")
-    testImplementation("net.kyori:adventure-text-minimessage:4.23.0")
+    testImplementation("net.kyori:adventure-platform-bukkit:4.4.1")
+    testImplementation("net.kyori:adventure-text-minimessage:4.24.0")
     testImplementation("net.dzikoysk:cdn:1.14.9")
 }
 
@@ -116,7 +116,7 @@ tasks.withType<JavaCompile> {
 
 tasks {
     runServer {
-        minecraftVersion("1.21.5")
+        minecraftVersion("1.21.7")
     }
 
     clean {
