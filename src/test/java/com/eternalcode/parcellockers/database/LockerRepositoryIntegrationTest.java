@@ -42,6 +42,7 @@ class LockerRepositoryIntegrationTest extends IntegrationTestSpec {
     void test() {
         File dataFolder = tempDir.resolve("ParcelLockers").toFile();
         PluginConfiguration config = new ConfigurationManager(dataFolder).load(new PluginConfiguration());
+        config.settings.databaseType = DatabaseType.MYSQL;
         DatabaseManager databaseManager = new DatabaseManager(config, Logger.getLogger("ParcelLockers"), dataFolder);
         this.databaseManager = databaseManager;
         LockerCache cache = new LockerCache();
@@ -51,7 +52,6 @@ class LockerRepositoryIntegrationTest extends IntegrationTestSpec {
         UUID uuid = UUID.randomUUID();
         String description = "Parcel locker description.";
         Position position = new Position(1, 2, 3, "world");
-
 
         parcelLockerRepository.save(new Locker(uuid, description, position));
 
