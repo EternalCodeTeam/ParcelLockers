@@ -2,7 +2,7 @@ plugins {
     `java-library`
     id("net.minecrell.plugin-yml.bukkit") version "0.6.0"
     id("xyz.jpenilla.run-paper") version "2.3.1"
-    id("com.gradleup.shadow") version "9.0.1"
+    id("com.gradleup.shadow") version "9.0.2"
 }
 
 group = "com.eternalcode"
@@ -33,7 +33,7 @@ dependencies {
     implementation("dev.rollczi:liteskullapi:2.0.0")
 
     // gui
-    implementation("dev.triumphteam:triumph-gui:3.1.11")
+    implementation("dev.triumphteam:triumph-gui:3.1.12")
     implementation("de.rapha149.signgui:signgui:2.5.4")
 
     // CDN
@@ -47,7 +47,7 @@ dependencies {
 
     // metrics and sentry
     implementation("org.bstats:bstats-bukkit:3.1.0")
-    implementation("io.sentry:sentry:8.18.0")
+    implementation("io.sentry:sentry:8.19.1")
 
     // database
     implementation("com.zaxxer:HikariCP:7.0.1")
@@ -75,8 +75,8 @@ dependencies {
     implementation("com.spotify:completable-futures:0.3.6")
 
     // eternalcode-commons
-    implementation("com.eternalcode:eternalcode-commons-adventure:1.2.0")
-    implementation("com.eternalcode:eternalcode-commons-bukkit:1.2.0")
+    implementation("com.eternalcode:eternalcode-commons-adventure:1.3.0")
+    implementation("com.eternalcode:eternalcode-commons-bukkit:1.3.0")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.4")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.13.4")
