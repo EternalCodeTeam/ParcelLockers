@@ -3,7 +3,6 @@ package com.eternalcode.parcellockers.locker.repository;
 import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.Position;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -15,9 +14,9 @@ public interface LockerRepository {
 
     CompletableFuture<List<Locker>> findAll();
 
-    CompletableFuture<Optional<Locker>> findByUUID(UUID uuid);
+    CompletableFuture<Optional<Locker>> find(UUID uuid);
 
-    CompletableFuture<Optional<Locker>> findByPosition(Position position);
+    CompletableFuture<Optional<Locker>> find(Position position);
 
     CompletableFuture<Integer> remove(UUID uuid);
 

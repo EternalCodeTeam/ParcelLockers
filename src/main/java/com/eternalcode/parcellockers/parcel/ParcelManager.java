@@ -1,5 +1,7 @@
 package com.eternalcode.parcellockers.parcel;
 
+import static com.eternalcode.parcellockers.util.InventoryUtil.freeSlotsInInventory;
+
 import com.eternalcode.commons.bukkit.ItemUtil;
 import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
@@ -11,19 +13,16 @@ import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.parcel.task.ParcelSendTask;
 import com.eternalcode.parcellockers.shared.SentryExceptionHandler;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import panda.std.Blank;
 import panda.std.Result;
-
-import java.time.Duration;
-import java.time.Instant;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-
-import static com.eternalcode.parcellockers.util.InventoryUtil.freeSlotsInInventory;
 
 public class ParcelManager {
 
@@ -93,7 +92,7 @@ public class ParcelManager {
     }
 
     public void collectParcel(Player player, Parcel parcel) {
-        this.parcelContentRepository.findByUUID(parcel.uuid()).thenAccept(optional -> {
+        this.parcelContentRepository.find(parcel.uuid()).thenAccept(optional -> {
             if (optional.isEmpty()) {
                 player.playSound(player.getLocation(), this.config.settings.errorSound, this.config.settings.errorSoundVolume, this.config.settings.errorSoundPitch);
                 this.announcer.sendMessage(player, this.config.messages.failedToCollectParcel);

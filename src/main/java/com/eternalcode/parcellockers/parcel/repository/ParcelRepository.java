@@ -2,7 +2,6 @@ package com.eternalcode.parcellockers.parcel.repository;
 
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.shared.Page;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -16,7 +15,7 @@ public interface ParcelRepository {
 
     CompletableFuture<Optional<List<Parcel>>> findAll();
 
-    CompletableFuture<Optional<Parcel>> findByUUID(UUID uuid);
+    CompletableFuture<Optional<Parcel>> findById(UUID uuid);
 
     CompletableFuture<Optional<List<Parcel>>> findBySender(UUID sender);
 

@@ -4,12 +4,11 @@ import com.eternalcode.parcellockers.database.persister.InstantPersister;
 import com.eternalcode.parcellockers.delivery.Delivery;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
-
 import java.time.Instant;
 import java.util.UUID;
 
 @DatabaseTable(tableName = "deliveries")
-class DeliveryWrapper {
+class DeliveryTable {
 
     @DatabaseField(id = true)
     private UUID parcel;
@@ -17,16 +16,16 @@ class DeliveryWrapper {
     @DatabaseField(persisterClass = InstantPersister.class)
     private Instant deliveryTimestamp;
 
-    DeliveryWrapper() {
+    DeliveryTable() {
     }
 
-    DeliveryWrapper(UUID parcel, Instant deliveryTimestamp) {
+    DeliveryTable(UUID parcel, Instant deliveryTimestamp) {
         this.parcel = parcel;
         this.deliveryTimestamp = deliveryTimestamp;
     }
 
-    public static DeliveryWrapper from(Delivery delivery) {
-        return new DeliveryWrapper(delivery.parcel(), delivery.deliveryTimestamp());
+    public static DeliveryTable from(Delivery delivery) {
+        return new DeliveryTable(delivery.parcel(), delivery.deliveryTimestamp());
     }
 
     Delivery toDelivery() {

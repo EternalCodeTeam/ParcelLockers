@@ -8,7 +8,6 @@ import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.Position;
 import com.j256.ormlite.table.TableUtils;
 import io.sentry.Sentry;
-
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +26,7 @@ public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implement
         this.cache = cache;
 
         try {
-            TableUtils.createTableIfNotExists(databaseManager.connectionSource(), LockerWrapper.class);
+            TableUtils.createTableIfNotExists(databaseManager.connectionSource(), LockerTable.class);
         } catch (SQLException ex) {
             Sentry.captureException(ex);
             ex.printStackTrace();
@@ -37,7 +36,7 @@ public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     @Override
     public CompletableFuture<Void> save(Locker locker) {
-        return this.save(LockerWrapper.class, LockerWrapper.from(locker)).thenApply(dao -> {
+        return this.save(LockerTable.class, LockerTable.from(locker)).thenApply(dao -> {
             this.cache.put(locker);
             return null;
         });
@@ -45,28 +44,29 @@ public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     @Override
     public CompletableFuture<List<Locker>> findAll() {
-        return this.selectAll(LockerWrapper.class).thenApply(lockers -> lockers.stream()
-            .map(LockerWrapper::toLocker)
+        return this.selectAll(LockerTable.class).thenApply(lockers -> lockers.stream()
+            .map(LockerTable::toLocker)
             .collect(Collectors.toList()));
     }
 
     @Override
-    public CompletableFuture<Optional<Locker>> findByUUID(UUID uuid) {
-        return this.selectSafe(LockerWrapper.class, uuid).thenApply(optional -> optional.map(LockerWrapper::toLocker));
+    public CompletableFuture<Optional<Locker>> find(UUID uuid) {
+        return this.selectSafe(LockerTable.class, uuid).thenApply(optional -> optional.map(LockerTable::toLocker));
     }
 
     @Override
-    public CompletableFuture<Optional<Locker>> findByPosition(Position position) {
+    public CompletableFuture<Optional<Locker>> find(Position position) {
         // We have to assume that there is only one locker per position
-        return this.action(LockerWrapper.class, dao -> {
-            List<LockerWrapper> lockers = dao.queryForEq("position", position);
+        return this.action(
+                LockerTable.class, dao -> {
+            List<LockerTable> lockers = dao.queryForEq("position", position);
             return lockers.isEmpty() ? Optional.empty() : Optional.of(lockers.getFirst().toLocker());
         });
     }
 
     @Override
     public CompletableFuture<Integer> remove(UUID uuid) {
-        return this.deleteById(LockerWrapper.class, uuid)
+        return this.deleteById(LockerTable.class, uuid)
             .thenApply(result -> {
                 if (result > 0) {
                     this.cache.remove(uuid);
@@ -82,12 +82,13 @@ public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     @Override
     public CompletableFuture<LockerPageResult> findPage(Page page) {
-        return this.action(LockerWrapper.class, dao -> {
+        return this.action(
+                LockerTable.class, dao -> {
             List<Locker> lockers = dao.queryBuilder()
                 .offset((long) page.getOffset())
                 .limit((long) page.getLimit() + 1)
                 .query()
-                .stream().map(LockerWrapper::toLocker)
+                .stream().map(LockerTable::toLocker)
                 .collect(Collectors.toList());
 
             boolean hasNext = lockers.size() > page.getLimit();
@@ -101,7 +102,7 @@ public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     @Override
     public CompletableFuture<Integer> removeAll() {
-        return this.deleteAll(LockerWrapper.class);
+        return this.deleteAll(LockerTable.class);
     }
 
     public void updateCaches() {

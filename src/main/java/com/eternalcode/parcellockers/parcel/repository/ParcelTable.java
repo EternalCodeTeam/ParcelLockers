@@ -5,11 +5,10 @@ import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
-
 import java.util.UUID;
 
 @DatabaseTable(tableName = "parcels")
-class ParcelWrapper {
+class ParcelTable {
 
     @DatabaseField(columnName = "uuid", id = true)
     private UUID uuid;
@@ -32,19 +31,19 @@ class ParcelWrapper {
     @DatabaseField(columnName = "size")
     private ParcelSize size;
 
-    @DatabaseField(columnName = "entryLocker", index = true)
+    @DatabaseField(columnName = "entry_locker", index = true)
     private UUID entryLocker;
 
-    @DatabaseField(columnName = "destinationLocker", index = true)
+    @DatabaseField(columnName = "destination_locker", index = true)
     private UUID destinationLocker;
 
     @DatabaseField(columnName = "status")
     private ParcelStatus status;
 
-    ParcelWrapper() {
+    ParcelTable() {
     }
 
-    ParcelWrapper(UUID uuid, UUID sender, String name, String description, boolean priority, UUID receiver, ParcelSize size, UUID entryLocker, UUID destinationLocker, ParcelStatus status) {
+    ParcelTable(UUID uuid, UUID sender, String name, String description, boolean priority, UUID receiver, ParcelSize size, UUID entryLocker, UUID destinationLocker, ParcelStatus status) {
         this.uuid = uuid;
         this.sender = sender;
         this.name = name;
@@ -57,8 +56,8 @@ class ParcelWrapper {
         this.status = status;
     }
 
-    static ParcelWrapper from(Parcel parcel) {
-        return new ParcelWrapper(parcel.uuid(), parcel.sender(), parcel.name(), parcel.description(), parcel.priority(), parcel.receiver(), parcel.size(), parcel.entryLocker(), parcel.destinationLocker(), parcel.status());
+    static ParcelTable from(Parcel parcel) {
+        return new ParcelTable(parcel.uuid(), parcel.sender(), parcel.name(), parcel.description(), parcel.priority(), parcel.receiver(), parcel.size(), parcel.entryLocker(), parcel.destinationLocker(), parcel.status());
     }
 
     Parcel toParcel() {

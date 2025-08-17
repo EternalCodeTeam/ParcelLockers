@@ -1,5 +1,8 @@
 package com.eternalcode.parcellockers.database;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.eternalcode.parcellockers.TestScheduler;
 import com.eternalcode.parcellockers.configuration.ConfigurationManager;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
@@ -11,14 +14,6 @@ import com.eternalcode.parcellockers.parcel.repository.ParcelPageResult;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryOrmLite;
 import com.eternalcode.parcellockers.shared.Page;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
-
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -26,9 +21,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Logger;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
 @Testcontainers
 class ParcelRepositoryIntegrationTest extends IntegrationTestSpec {
@@ -59,7 +58,7 @@ class ParcelRepositoryIntegrationTest extends IntegrationTestSpec {
         parcelRepository.save(new Parcel(uuid, sender, "name", "description", true, receiver,
             ParcelSize.SMALL, entryLocker, destinationLocker, ParcelStatus.PENDING));
 
-        Optional<Parcel> parcel = this.await(parcelRepository.findByUUID(uuid));
+        Optional<Parcel> parcel = this.await(parcelRepository.findById(uuid));
         assertTrue(parcel.isPresent());
         assertEquals(uuid, parcel.get().uuid());
 
@@ -76,7 +75,7 @@ class ParcelRepositoryIntegrationTest extends IntegrationTestSpec {
         assertEquals(uuid, pageResult.parcels().getFirst().uuid());
 
         this.await(parcelRepository.remove(uuid));
-        Optional<Parcel> removedParcel = this.await(parcelRepository.findByUUID(uuid));
+        Optional<Parcel> removedParcel = this.await(parcelRepository.findById(uuid));
         assertTrue(removedParcel.isEmpty());
     }
 

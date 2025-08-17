@@ -19,6 +19,11 @@ import de.rapha149.signgui.exception.SignGUIVersionException;
 import dev.rollczi.liteskullapi.SkullAPI;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.DyeColor;
@@ -29,12 +34,6 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 public class ParcelSendingGui implements GuiView {
 
@@ -299,10 +298,10 @@ public class ParcelSendingGui implements GuiView {
 
         this.updateNameItem();
         this.updateDescriptionItem();
-        this.userRepository.getUser(this.state.getReceiver()).thenAccept(userOptional -> {
+        this.userRepository.find(this.state.getReceiver()).thenAccept(userOptional -> {
             userOptional.ifPresent(user -> this.updateReceiverItem(player, user.name()));
         });
-        this.lockerRepository.findByUUID(this.state.getDestinationLocker()).thenAccept(lockerOptional -> {
+        this.lockerRepository.find(this.state.getDestinationLocker()).thenAccept(lockerOptional -> {
             lockerOptional.ifPresent(locker -> this.updateDestinationItem(player, locker.description()));
         });
 

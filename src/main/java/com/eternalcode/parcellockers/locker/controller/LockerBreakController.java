@@ -6,6 +6,7 @@ import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.shared.Position;
 import com.eternalcode.parcellockers.shared.PositionAdapter;
+import java.util.UUID;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -18,8 +19,6 @@ import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.BlockIgniteEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import panda.utilities.text.Formatter;
-
-import java.util.UUID;
 
 
 public class LockerBreakController implements Listener {
@@ -58,7 +57,7 @@ public class LockerBreakController implements Listener {
             return;
         }
 
-        this.lockerRepository.findByPosition(position).thenAccept((locker) -> {
+        this.lockerRepository.find(position).thenAccept((locker) -> {
             if (locker.isEmpty()) {
                 return;
             }

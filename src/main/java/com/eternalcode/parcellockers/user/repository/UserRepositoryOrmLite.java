@@ -7,7 +7,6 @@ import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.user.User;
 import com.j256.ormlite.table.TableUtils;
 import io.sentry.Sentry;
-
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
@@ -21,7 +20,7 @@ public class UserRepositoryOrmLite extends AbstractRepositoryOrmLite implements 
         super(databaseManager, scheduler);
 
         try {
-            TableUtils.createTableIfNotExists(databaseManager.connectionSource(), UserWrapper.class);
+            TableUtils.createTableIfNotExists(databaseManager.connectionSource(), UserTable.class);
         } catch (SQLException exception) {
             Sentry.captureException(exception);
             exception.printStackTrace();
@@ -29,43 +28,46 @@ public class UserRepositoryOrmLite extends AbstractRepositoryOrmLite implements 
     }
 
     @Override
-    public CompletableFuture<Optional<User>> getUser(UUID uuid) {
-        return this.select(UserWrapper.class, uuid).thenApply(userWrapper -> Optional.ofNullable(userWrapper)
-            .map(UserWrapper::toUser)
+    public CompletableFuture<Optional<User>> find(UUID uuid) {
+        return this.select(UserTable.class, uuid).thenApply(userTable -> Optional.ofNullable(userTable)
+            .map(UserTable::toUser)
         );
     }
 
     @Override
-    public CompletableFuture<Optional<User>> getUser(String name) {
-        return this.action(UserWrapper.class, dao -> {
-            UserWrapper userWrapper = dao.queryForEq("username", name).stream().findFirst().orElse(null);
-            return Optional.ofNullable(userWrapper).map(UserWrapper::toUser);
+    public CompletableFuture<Optional<User>> find(String name) {
+        return this.action(
+            UserTable.class, dao -> {
+            UserTable userTable = dao.queryForEq("username", name).stream().findFirst().orElse(null);
+            return Optional.ofNullable(userTable).map(UserTable::toUser);
         });
     }
 
     @Override
     public CompletableFuture<Void> save(User user) {
-        return this.save(UserWrapper.class, UserWrapper.from(user)).thenApply(dao -> null);
+        return this.save(UserTable.class, UserTable.from(user)).thenApply(dao -> null);
     }
 
     @Override
     public CompletableFuture<Void> changeName(UUID uuid, String newName) {
-        return this.action(UserWrapper.class, dao -> {
-            UserWrapper userWrapper = dao.queryForId(uuid);
-            userWrapper.setUsername(newName);
-            dao.update(userWrapper);
+        return this.action(
+            UserTable.class, dao -> {
+            UserTable userTable = dao.queryForId(uuid);
+            userTable.setUsername(newName);
+            dao.update(userTable);
             return null;
         });
     }
 
     @Override
-    public CompletableFuture<UserPageResult> getPage(Page page) {
-        return this.action(UserWrapper.class, dao -> {
+    public CompletableFuture<UserPageResult> findPage(Page page) {
+        return this.action(
+            UserTable.class, dao -> {
             List<User> users = dao.queryBuilder()
                 .offset((long) page.getOffset())
                 .limit((long) page.getLimit())
                 .query()
-                .stream().map(UserWrapper::toUser)
+                .stream().map(UserTable::toUser)
                 .collect(Collectors.toList());
 
             boolean hasNext = users.size() > page.getLimit();

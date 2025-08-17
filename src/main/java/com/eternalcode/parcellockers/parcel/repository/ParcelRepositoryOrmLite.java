@@ -7,7 +7,6 @@ import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.shared.Page;
 import com.j256.ormlite.table.TableUtils;
 import io.sentry.Sentry;
-
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +28,7 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
         this.cache = cache;
 
         try {
-            TableUtils.createTableIfNotExists(databaseManager.connectionSource(), ParcelWrapper.class);
+            TableUtils.createTableIfNotExists(databaseManager.connectionSource(), ParcelTable.class);
         } catch (SQLException ex) {
             Sentry.captureException(ex);
             throw new RuntimeException("Failed to initialize parcel table", ex);
@@ -38,7 +37,7 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     @Override
     public CompletableFuture<Void> save(Parcel parcel) {
-        return this.saveIfNotExist(ParcelWrapper.class, ParcelWrapper.from(parcel)).thenApply(dao -> {
+        return this.saveIfNotExist(ParcelTable.class, ParcelTable.from(parcel)).thenApply(dao -> {
             this.cache.put(parcel);
             return null;
         });
@@ -46,7 +45,7 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     @Override
     public CompletableFuture<Void> update(Parcel parcel) {
-        return this.save(ParcelWrapper.class, ParcelWrapper.from(parcel)).thenApply(dao -> {
+        return this.save(ParcelTable.class, ParcelTable.from(parcel)).thenApply(dao -> {
             this.cache.remove(parcel.uuid());
             this.cache.put(parcel);
             return null;
@@ -54,28 +53,31 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     }
 
     @Override
-    public CompletableFuture<Optional<Parcel>> findByUUID(UUID uuid) {
-        return this.selectSafe(ParcelWrapper.class, uuid).thenApply(optional -> optional.map(ParcelWrapper::toParcel));
+    public CompletableFuture<Optional<Parcel>> findById(UUID uuid) {
+        return this.selectSafe(ParcelTable.class, uuid).thenApply(optional -> optional.map(ParcelTable::toParcel));
     }
 
     @Override
     public CompletableFuture<Optional<List<Parcel>>> findBySender(UUID sender) {
-        return this.action(ParcelWrapper.class, dao -> Optional.of(dao.queryForEq(SENDER_COLUMN, sender)
+        return this.action(
+                ParcelTable.class, dao -> Optional.of(dao.queryForEq(SENDER_COLUMN, sender)
             .stream()
-            .map(ParcelWrapper::toParcel)
+            .map(ParcelTable::toParcel)
             .toList()));
     }
 
     @Override
     public CompletableFuture<Optional<List<Parcel>>> findByReceiver(UUID receiver) {
-        return this.action(ParcelWrapper.class, dao -> Optional.of(dao.queryForEq(RECEIVER_COLUMN, receiver)
+        return this.action(
+                ParcelTable.class, dao -> Optional.of(dao.queryForEq(RECEIVER_COLUMN, receiver)
             .stream()
-            .map(ParcelWrapper::toParcel)
+            .map(ParcelTable::toParcel)
             .toList()));
     }
 
     public CompletableFuture<ParcelPageResult> findByReceiver(UUID receiver, Page page) {
-        return this.action(ParcelWrapper.class, dao -> {
+        return this.action(
+                ParcelTable.class, dao -> {
             List<Parcel> parcels = dao.queryBuilder()
                 .limit((long) page.getLimit() + 1)
                 .offset((long) page.getOffset())
@@ -83,7 +85,7 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
                 .eq(RECEIVER_COLUMN, receiver)
                 .query()
                 .stream()
-                .map(ParcelWrapper::toParcel)
+                .map(ParcelTable::toParcel)
                 .toList();
 
             boolean hasNext = parcels.size() > page.getLimit();
@@ -101,7 +103,7 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     @Override
     public CompletableFuture<Integer> remove(UUID uuid) {
-        CompletableFuture<Integer> removeFuture = this.deleteById(ParcelWrapper.class, uuid);
+        CompletableFuture<Integer> removeFuture = this.deleteById(ParcelTable.class, uuid);
         removeFuture.thenAccept(deletedCount -> {
             if (deletedCount > 0) {
                 this.cache.remove(uuid);
@@ -112,12 +114,13 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     @Override
     public CompletableFuture<ParcelPageResult> findPage(Page page) {
-        return this.action(ParcelWrapper.class, dao -> {
+        return this.action(
+                ParcelTable.class, dao -> {
             List<Parcel> parcels = dao.queryBuilder()
                 .limit((long) page.getLimit() + 1)
                 .offset((long) page.getOffset())
                 .query()
-                .stream().map(ParcelWrapper::toParcel)
+                .stream().map(ParcelTable::toParcel)
                 .collect(Collectors.toList());
 
             boolean hasNext = parcels.size() > page.getLimit();
@@ -130,14 +133,14 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     @Override
     public CompletableFuture<Optional<List<Parcel>>> findAll() {
-        return this.selectAll(ParcelWrapper.class).thenApply(parcels -> Optional.of(parcels.stream()
-            .map(ParcelWrapper::toParcel)
+        return this.selectAll(ParcelTable.class).thenApply(parcels -> Optional.of(parcels.stream()
+            .map(ParcelTable::toParcel)
             .toList()));
     }
 
     @Override
     public CompletableFuture<Integer> removeAll() {
-        return this.deleteAll(ParcelWrapper.class);
+        return this.deleteAll(ParcelTable.class);
     }
 
     public void updateCaches() {

@@ -15,15 +15,14 @@ import dev.triumphteam.gui.builder.item.ItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitScheduler;
-
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitScheduler;
 
 
 public class ReceiverSelectionGui implements GuiView {
@@ -89,7 +88,7 @@ public class ReceiverSelectionGui implements GuiView {
 
         gui.setItem(49, closeItem);
 
-        this.userRepository.getPage(page).thenAccept(result -> {
+        this.userRepository.findPage(page).thenAccept(result -> {
             if (result.hasNextPage()) {
                 gui.setItem(51, nextPageItem);
             }

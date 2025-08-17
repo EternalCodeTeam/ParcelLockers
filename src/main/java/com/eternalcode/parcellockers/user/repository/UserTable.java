@@ -3,11 +3,10 @@ package com.eternalcode.parcellockers.user.repository;
 import com.eternalcode.parcellockers.user.User;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
-
 import java.util.UUID;
 
 @DatabaseTable(tableName = "users")
-class UserWrapper {
+class UserTable {
 
     @DatabaseField(id = true)
     private UUID uuid;
@@ -15,16 +14,16 @@ class UserWrapper {
     @DatabaseField(index = true, unique = true, canBeNull = false)
     private String username;
 
-    UserWrapper() {
+    UserTable() {
     }
 
-    UserWrapper(UUID uuid, String username) {
+    UserTable(UUID uuid, String username) {
         this.uuid = uuid;
         this.username = username;
     }
 
-    static UserWrapper from(User user) {
-        return new UserWrapper(user.uuid(), user.name());
+    static UserTable from(User user) {
+        return new UserTable(user.uuid(), user.name());
     }
 
     public void setUsername(String username) {

@@ -1,7 +1,6 @@
 package com.eternalcode.parcellockers.user;
 
 import com.eternalcode.parcellockers.user.repository.UserRepository;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,7 +27,7 @@ public class UserManager {
             return CompletableFuture.completedFuture(Optional.of(user));
         }
 
-        return this.userRepository.getUser(uuid);
+        return this.userRepository.find(uuid);
     }
 
     public CompletableFuture<Optional<User>> getUser(String name) {
@@ -38,7 +37,7 @@ public class UserManager {
             return CompletableFuture.completedFuture(Optional.of(user));
         }
 
-        return this.userRepository.getUser(name);
+        return this.userRepository.find(name);
     }
 
     public User getOrCreate(UUID uuid, String name) {

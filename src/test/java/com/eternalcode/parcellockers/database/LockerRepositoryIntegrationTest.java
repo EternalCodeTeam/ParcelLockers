@@ -1,5 +1,8 @@
 package com.eternalcode.parcellockers.database;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.eternalcode.parcellockers.TestScheduler;
 import com.eternalcode.parcellockers.configuration.ConfigurationManager;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
@@ -10,6 +13,11 @@ import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.locker.repository.LockerRepositoryOrmLite;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.Position;
+import java.io.File;
+import java.nio.file.Path;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.logging.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -17,15 +25,6 @@ import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
-
-import java.io.File;
-import java.nio.file.Path;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.logging.Logger;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Testcontainers
 class LockerRepositoryIntegrationTest extends IntegrationTestSpec {
@@ -55,11 +54,11 @@ class LockerRepositoryIntegrationTest extends IntegrationTestSpec {
 
         parcelLockerRepository.save(new Locker(uuid, description, position));
 
-        Optional<Locker> parcelLocker = await(parcelLockerRepository.findByUUID(uuid));
+        Optional<Locker> parcelLocker = await(parcelLockerRepository.find(uuid));
         assertTrue(parcelLocker.isPresent());
         assertEquals(uuid, parcelLocker.get().uuid());
 
-        Optional<Locker> byPosition = await(parcelLockerRepository.findByPosition(position));
+        Optional<Locker> byPosition = await(parcelLockerRepository.find(position));
         assertTrue(byPosition.isPresent());
         assertEquals(uuid, byPosition.get().uuid());
 
@@ -68,7 +67,7 @@ class LockerRepositoryIntegrationTest extends IntegrationTestSpec {
         assertEquals(uuid, pageResult.lockers().getFirst().uuid());
 
         await(parcelLockerRepository.remove(uuid));
-        Optional<Locker> removed = await(parcelLockerRepository.findByUUID(uuid));
+        Optional<Locker> removed = await(parcelLockerRepository.find(uuid));
         assertTrue(removed.isEmpty());
     }
 

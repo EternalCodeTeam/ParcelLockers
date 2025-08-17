@@ -6,7 +6,6 @@ import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.eternalcode.parcellockers.database.wrapper.AbstractRepositoryOrmLite;
 import com.j256.ormlite.table.TableUtils;
 import io.sentry.Sentry;
-
 import java.sql.SQLException;
 import java.util.Optional;
 import java.util.UUID;
@@ -18,7 +17,7 @@ public class ParcelContentRepositoryOrmLite extends AbstractRepositoryOrmLite im
         super(databaseManager, scheduler);
 
         try {
-            TableUtils.createTableIfNotExists(databaseManager.connectionSource(), ParcelContentWrapper.class);
+            TableUtils.createTableIfNotExists(databaseManager.connectionSource(), ParcelContentTable.class);
         } catch (SQLException exception) {
             Sentry.captureException(exception);
             throw new RuntimeException("Failed to create ParcelContent table", exception);
@@ -27,21 +26,22 @@ public class ParcelContentRepositoryOrmLite extends AbstractRepositoryOrmLite im
 
     @Override
     public CompletableFuture<Void> save(ParcelContent parcelContent) {
-        return this.saveIfNotExist(ParcelContentWrapper.class, ParcelContentWrapper.from(parcelContent)).thenApply(dao -> null);
+        return this.saveIfNotExist(ParcelContentTable.class, ParcelContentTable.from(parcelContent)).thenApply(dao -> null);
     }
 
     @Override
     public CompletableFuture<Integer> remove(UUID uniqueId) {
-        return this.deleteById(ParcelContentWrapper.class, uniqueId);
+        return this.deleteById(ParcelContentTable.class, uniqueId);
     }
 
     @Override
     public CompletableFuture<Integer> removeAll() {
-        return this.deleteAll(ParcelContentWrapper.class);
+        return this.deleteAll(ParcelContentTable.class);
     }
 
     @Override
-    public CompletableFuture<Optional<ParcelContent>> findByUUID(UUID uniqueId) {
-        return this.select(ParcelContentWrapper.class, uniqueId).thenApply(parcelContentWrapper -> Optional.ofNullable(parcelContentWrapper.toParcelContent()));
+    public CompletableFuture<Optional<ParcelContent>> find(UUID uniqueId) {
+        return this.select(ParcelContentTable.class, uniqueId).thenApply(parcelContentTable -> Optional.ofNullable(
+            parcelContentTable.toParcelContent()));
     }
 }
