@@ -1,5 +1,7 @@
 package com.eternalcode.parcellockers.gui.implementation.remote;
 
+import static com.eternalcode.commons.adventure.AdventureUtil.resetItalic;
+
 import com.eternalcode.parcellockers.configuration.implementation.ConfigItem;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.gui.GuiView;
@@ -9,20 +11,17 @@ import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.parcel.util.ParcelPlaceholderUtil;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.SentryExceptionHandler;
-import com.eternalcode.parcellockers.user.UserManager;
+import com.eternalcode.parcellockers.user.UserService;
 import dev.triumphteam.gui.builder.item.ItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
+import java.util.List;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
-
-import java.util.List;
-
-import static com.eternalcode.commons.adventure.AdventureUtil.resetItalic;
 
 public class ParcelListGui implements GuiView {
 
@@ -35,7 +34,7 @@ public class ParcelListGui implements GuiView {
     private final PluginConfiguration config;
     private final ParcelRepository parcelRepository;
     private final LockerRepository lockerRepository;
-    private final UserManager userManager;
+    private final UserService userService;
     private final MainGui mainGUI;
 
     public ParcelListGui(
@@ -45,7 +44,7 @@ public class ParcelListGui implements GuiView {
         PluginConfiguration config,
         ParcelRepository parcelRepository,
         LockerRepository lockerRepository,
-        UserManager userManager,
+        UserService userService,
         MainGui mainGUI
     ) {
         this.plugin = plugin;
@@ -54,7 +53,7 @@ public class ParcelListGui implements GuiView {
         this.config = config;
         this.parcelRepository = parcelRepository;
         this.lockerRepository = lockerRepository;
-        this.userManager = userManager;
+        this.userService = userService;
         this.mainGUI = mainGUI;
     }
 
@@ -94,7 +93,7 @@ public class ParcelListGui implements GuiView {
             for (Parcel parcel : result.parcels()) {
                 ItemBuilder parcelItem = item.toBuilder();
 
-                List<Component> newLore = ParcelPlaceholderUtil.replaceParcelPlaceholders(parcel, item.lore, this.userManager, this.lockerRepository).stream()
+                List<Component> newLore = ParcelPlaceholderUtil.replaceParcelPlaceholders(parcel, item.lore, this.userService, this.lockerRepository).stream()
                     .map(line -> resetItalic(this.miniMessage.deserialize(line)))
                     .toList();
                 parcelItem.lore(newLore);

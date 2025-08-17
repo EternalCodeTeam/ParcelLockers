@@ -7,7 +7,7 @@ import com.eternalcode.parcellockers.itemstorage.ItemStorage;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
-import com.eternalcode.parcellockers.parcel.ParcelManager;
+import com.eternalcode.parcellockers.parcel.ParcelService;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.shared.SentryExceptionHandler;
@@ -16,16 +16,15 @@ import dev.rollczi.liteskullapi.SkullAPI;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.StorageGui;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.IntStream;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.IntStream;
 
 public class ParcelItemStorageGui {
 
@@ -40,7 +39,7 @@ public class ParcelItemStorageGui {
     private final UserRepository userRepository;
     private final SkullAPI skullAPI;
     private final ParcelSendingGuiState state;
-    private final ParcelManager parcelManager;
+    private final ParcelService parcelService;
 
     public ParcelItemStorageGui(
         Plugin plugin,
@@ -53,7 +52,7 @@ public class ParcelItemStorageGui {
         ParcelContentRepository parcelContentRepository,
         UserRepository userRepository,
         SkullAPI skullAPI,
-        ParcelSendingGuiState state, ParcelManager parcelManager
+        ParcelSendingGuiState state, ParcelService parcelService
     ) {
         this.plugin = plugin;
         this.config = config;
@@ -66,7 +65,7 @@ public class ParcelItemStorageGui {
         this.userRepository = userRepository;
         this.skullAPI = skullAPI;
         this.state = state;
-        this.parcelManager = parcelManager;
+        this.parcelService = parcelService;
     }
 
     void show(Player player, ParcelSize size) {
@@ -86,7 +85,7 @@ public class ParcelItemStorageGui {
             this.parcelContentRepository,
             this.userRepository,
             this.skullAPI,
-            this.parcelManager,
+            this.parcelService,
             this.state
         ).show(player));
 
@@ -134,7 +133,7 @@ public class ParcelItemStorageGui {
                 items.add(item);
             }
 
-            this.itemStorageRepository.remove(player.getUniqueId()).thenAccept(unused -> {
+            this.itemStorageRepository.delete(player.getUniqueId()).thenAccept(unused -> {
                 this.itemStorageRepository.save(new ItemStorage(player.getUniqueId(), items));
             }).whenComplete(SentryExceptionHandler.handler());
         });

@@ -42,7 +42,7 @@ public class DeliveryRepositoryOrmLite extends AbstractRepositoryOrmLite impleme
     }
 
     @Override
-    public CompletableFuture<Integer> remove(UUID parcel) {
+    public CompletableFuture<Integer> delete(UUID parcel) {
         return this.deleteById(DeliveryTable.class, parcel);
     }
 }

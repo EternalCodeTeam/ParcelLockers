@@ -2,17 +2,30 @@ package com.eternalcode.parcellockers.locker.repository;
 
 import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.shared.Position;
-
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class LockerCache {
 
-    private final Map<UUID, Locker> cache = new ConcurrentHashMap<>();
-    private final Map<Position, Locker> positionCache = new ConcurrentHashMap<>();
+    private final Cache<UUID, Locker> cache;
+    private final Cache<Position, Locker> positionCache;
+
+    public LockerCache() {
+        this.cache = Caffeine.newBuilder()
+                .maximumSize(10_000)
+                .expireAfterAccess(Duration.ofHours(2))
+                .build();
+
+        this.positionCache = Caffeine.newBuilder()
+                .maximumSize(10_000)
+                .expireAfterAccess(Duration.ofHours(2))
+                .build();
+    }
 
     public void put(Locker locker) {
         this.cache.put(locker.uuid(), locker);
@@ -25,33 +38,38 @@ public class LockerCache {
     }
 
     public Locker remove(UUID uuid) {
-        this.positionCache.remove(this.cache.get(uuid).position());
-        return this.cache.remove(uuid);
+        Locker locker = this.cache.getIfPresent(uuid);
+        if (locker != null) {
+            this.positionCache.invalidate(locker.position());
+            this.cache.invalidate(uuid);
+        }
+        return locker;
     }
 
     public Locker remove(Locker locker) {
-        this.positionCache.remove(locker.position());
-        return this.cache.remove(locker.uuid());
+        this.positionCache.invalidate(locker.position());
+        this.cache.invalidate(locker.uuid());
+        return locker;
     }
 
     public Map<UUID, Locker> cache() {
-        return Collections.unmodifiableMap(this.cache);
+        return Collections.unmodifiableMap(this.cache.asMap());
     }
 
     public Map<Position, Locker> positionCache() {
-        return Collections.unmodifiableMap(this.positionCache);
+        return Collections.unmodifiableMap(this.positionCache.asMap());
     }
 
     public Optional<Locker> get(UUID uuid) {
-        return Optional.ofNullable(this.cache.get(uuid));
+        return Optional.ofNullable(this.cache.getIfPresent(uuid));
     }
 
     public Optional<Locker> get(Position position) {
-        return Optional.ofNullable(this.positionCache.get(position));
+        return Optional.ofNullable(this.positionCache.getIfPresent(position));
     }
 
     public void clear() {
-        this.cache.clear();
-        this.positionCache.clear();
+        this.cache.invalidateAll();
+        this.positionCache.invalidateAll();
     }
 }

@@ -43,7 +43,17 @@ class ParcelTable {
     ParcelTable() {
     }
 
-    ParcelTable(UUID uuid, UUID sender, String name, String description, boolean priority, UUID receiver, ParcelSize size, UUID entryLocker, UUID destinationLocker, ParcelStatus status) {
+    ParcelTable(
+        UUID uuid,
+        UUID sender,
+        String name,
+        String description,
+        boolean priority,
+        UUID receiver,
+        ParcelSize size,
+        UUID entryLocker,
+        UUID destinationLocker,
+        ParcelStatus status) {
         this.uuid = uuid;
         this.sender = sender;
         this.name = name;
@@ -57,10 +67,30 @@ class ParcelTable {
     }
 
     static ParcelTable from(Parcel parcel) {
-        return new ParcelTable(parcel.uuid(), parcel.sender(), parcel.name(), parcel.description(), parcel.priority(), parcel.receiver(), parcel.size(), parcel.entryLocker(), parcel.destinationLocker(), parcel.status());
+        return new ParcelTable(
+            parcel.uuid(),
+            parcel.sender(),
+            parcel.name(),
+            parcel.description(),
+            parcel.priority(),
+            parcel.receiver(),
+            parcel.size(),
+            parcel.entryLocker(),
+            parcel.destinationLocker(),
+            parcel.status());
     }
 
     Parcel toParcel() {
-        return new Parcel(this.uuid, this.sender, this.name, this.description, this.priority, this.receiver, this.size, this.entryLocker, this.destinationLocker, this.status);
+        return new Parcel(
+            this.uuid,
+            this.sender,
+            this.name,
+            this.description,
+            this.priority,
+            this.receiver,
+            this.size,
+            this.entryLocker,
+            this.destinationLocker,
+            this.status);
     }
 }

@@ -12,17 +12,17 @@ public interface LockerRepository {
 
     CompletableFuture<Void> save(Locker locker);
 
-    CompletableFuture<List<Locker>> findAll();
+    CompletableFuture<Optional<List<Locker>>> findAll();
 
     CompletableFuture<Optional<Locker>> find(UUID uuid);
 
     CompletableFuture<Optional<Locker>> find(Position position);
 
-    CompletableFuture<Integer> remove(UUID uuid);
+    CompletableFuture<Integer> delete(UUID uuid);
 
-    CompletableFuture<Integer> remove(Locker locker);
+    CompletableFuture<Integer> delete(Locker locker);
 
-    CompletableFuture<Integer> removeAll();
+    CompletableFuture<Integer> deleteAll();
 
     CompletableFuture<LockerPageResult> findPage(Page page);
 }

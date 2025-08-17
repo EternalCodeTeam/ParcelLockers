@@ -63,7 +63,7 @@ public class LockerBreakController implements Listener {
             }
 
             UUID toRemove = this.cache.get(position).get().uuid();
-            this.lockerRepository.remove(toRemove);
+            this.lockerRepository.delete(toRemove);
 
             this.announcer.sendMessage(player, this.messages.parcelLockerSuccessfullyDeleted);
 

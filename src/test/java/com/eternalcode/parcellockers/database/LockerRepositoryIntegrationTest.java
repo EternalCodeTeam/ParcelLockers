@@ -66,7 +66,7 @@ class LockerRepositoryIntegrationTest extends IntegrationTestSpec {
         assertEquals(1, pageResult.lockers().size());
         assertEquals(uuid, pageResult.lockers().getFirst().uuid());
 
-        await(parcelLockerRepository.remove(uuid));
+        await(parcelLockerRepository.delete(uuid));
         Optional<Locker> removed = await(parcelLockerRepository.find(uuid));
         assertTrue(removed.isEmpty());
     }

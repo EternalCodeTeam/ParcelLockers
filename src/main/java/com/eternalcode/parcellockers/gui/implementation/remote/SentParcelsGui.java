@@ -8,19 +8,18 @@ import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.parcel.util.ParcelPlaceholderUtil;
 import com.eternalcode.parcellockers.shared.SentryExceptionHandler;
-import com.eternalcode.parcellockers.user.UserManager;
+import com.eternalcode.parcellockers.user.UserService;
 import dev.triumphteam.gui.builder.item.ItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
+import java.util.Collections;
+import java.util.List;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
-
-import java.util.Collections;
-import java.util.List;
 
 public class SentParcelsGui implements GuiView {
 
@@ -31,7 +30,7 @@ public class SentParcelsGui implements GuiView {
     private final ParcelRepository parcelRepository;
     private final LockerRepository lockerRepository;
     private final MainGui mainGUI;
-    private final UserManager userManager;
+    private final UserService userService;
 
     public SentParcelsGui(
         Plugin plugin,
@@ -41,7 +40,7 @@ public class SentParcelsGui implements GuiView {
         ParcelRepository parcelRepository,
         LockerRepository lockerRepository,
         MainGui mainGUI,
-        UserManager userManager
+        UserService userService
     ) {
         this.plugin = plugin;
         this.server = server;
@@ -50,7 +49,7 @@ public class SentParcelsGui implements GuiView {
         this.parcelRepository = parcelRepository;
         this.lockerRepository = lockerRepository;
         this.mainGUI = mainGUI;
-        this.userManager = userManager;
+        this.userService = userService;
     }
 
     @Override
@@ -83,7 +82,7 @@ public class SentParcelsGui implements GuiView {
             for (Parcel parcel : parcels) {
                 ItemBuilder item = parcelItem.toBuilder();
 
-                List<Component> newLore = ParcelPlaceholderUtil.replaceParcelPlaceholders(parcel, parcelItem.lore, this.userManager, this.lockerRepository)
+                List<Component> newLore = ParcelPlaceholderUtil.replaceParcelPlaceholders(parcel, parcelItem.lore, this.userService, this.lockerRepository)
                     .stream()
                     .map(line -> this.miniMessage.deserialize(line))
                     .toList();

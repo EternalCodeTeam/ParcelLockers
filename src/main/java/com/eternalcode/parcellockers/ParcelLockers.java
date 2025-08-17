@@ -27,7 +27,7 @@ import com.eternalcode.parcellockers.locker.repository.LockerCache;
 import com.eternalcode.parcellockers.locker.repository.LockerRepositoryOrmLite;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.Parcel;
-import com.eternalcode.parcellockers.parcel.ParcelManager;
+import com.eternalcode.parcellockers.parcel.ParcelService;
 import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import com.eternalcode.parcellockers.parcel.command.ParcelCommand;
 import com.eternalcode.parcellockers.parcel.command.argument.ParcelArgument;
@@ -35,7 +35,7 @@ import com.eternalcode.parcellockers.parcel.repository.ParcelCache;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryOrmLite;
 import com.eternalcode.parcellockers.parcel.task.ParcelSendTask;
 import com.eternalcode.parcellockers.updater.UpdaterService;
-import com.eternalcode.parcellockers.user.UserManager;
+import com.eternalcode.parcellockers.user.UserService;
 import com.eternalcode.parcellockers.user.controller.LoadUserController;
 import com.eternalcode.parcellockers.user.controller.PrepareUserController;
 import com.eternalcode.parcellockers.user.repository.UserRepository;
@@ -53,14 +53,6 @@ import dev.rollczi.liteskullapi.SkullAPI;
 import io.papermc.lib.PaperLib;
 import io.papermc.lib.environments.Environment;
 import io.sentry.Sentry;
-import net.kyori.adventure.platform.bukkit.BukkitAudiences;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bstats.bukkit.Metrics;
-import org.bukkit.Server;
-import org.bukkit.command.CommandSender;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.slf4j.helpers.NOPLogger;
-
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -70,6 +62,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bstats.bukkit.Metrics;
+import org.bukkit.Server;
+import org.bukkit.command.CommandSender;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.slf4j.helpers.NOPLogger;
 
 public final class ParcelLockers extends JavaPlugin {
 
@@ -147,15 +146,17 @@ public final class ParcelLockers extends JavaPlugin {
         DeliveryRepositoryOrmLite deliveryRepository = new DeliveryRepositoryOrmLite(databaseManager, scheduler);
 
         ParcelContentRepository parcelContentRepository = new ParcelContentRepositoryOrmLite(databaseManager, scheduler);
-        ParcelManager parcelManager = new ParcelManager(config, announcer, parcelRepository, deliveryRepository, parcelContentRepository, scheduler);
+        ParcelService parcelService = new ParcelService(config, announcer, parcelRepository, deliveryRepository, parcelContentRepository, scheduler);
 
         ItemStorageRepository itemStorageRepository = new ItemStorageRepositoryOrmLite(databaseManager, scheduler);
 
         UserRepository userRepository = new UserRepositoryOrmLite(databaseManager, scheduler);
-        UserManager userManager = new UserManager(userRepository);
+        UserService userService = new UserService(userRepository);
 
-        MainGui mainGUI = new MainGui(this, server, miniMessage, config, parcelRepository, lockerRepository, userManager);
-        ParcelListGui parcelListGUI = new ParcelListGui(this, server, miniMessage, config, parcelRepository, lockerRepository, userManager, mainGUI);
+        MainGui mainGUI = new MainGui(this, server, miniMessage, config, parcelRepository, lockerRepository,
+            userService);
+        ParcelListGui parcelListGUI = new ParcelListGui(this, server, miniMessage, config, parcelRepository, lockerRepository,
+            userService, mainGUI);
 
         this.liteCommands = LiteBukkitFactory.builder(this.getName(), this)
             .argument(Parcel.class, new ParcelArgument(parcelCache))
@@ -164,7 +165,8 @@ public final class ParcelLockers extends JavaPlugin {
             .message(LiteBukkitMessages.PLAYER_ONLY, config.messages.onlyForPlayers)
             .message(LiteBukkitMessages.PLAYER_NOT_FOUND, config.messages.cantFindPlayer)
             .commands(LiteCommandsAnnotations.of(
-                new ParcelCommand(lockerRepository, announcer, config, mainGUI, parcelListGUI, parcelManager, userManager),
+                new ParcelCommand(lockerRepository, announcer, config, mainGUI, parcelListGUI,
+                    parcelService, userService),
                 new ParcelLockersCommand(configManager, config, announcer),
                 new DebugCommand(parcelRepository, lockerRepository, itemStorageRepository, parcelContentRepository, announcer)
             ))
@@ -172,14 +174,15 @@ public final class ParcelLockers extends JavaPlugin {
             .missingPermission(new PermissionMessage(announcer, config))
             .build();
 
-        LockerMainGui lockerMainGUI = new LockerMainGui(this, miniMessage, config, itemStorageRepository, parcelRepository, lockerRepository, announcer, parcelContentRepository, userRepository, this.skullAPI, parcelManager);
+        LockerMainGui lockerMainGUI = new LockerMainGui(this, miniMessage, config, itemStorageRepository, parcelRepository, lockerRepository, announcer, parcelContentRepository, userRepository, this.skullAPI,
+            parcelService);
 
         Stream.of(
             new LockerInteractionController(lockerCache, lockerMainGUI),
             new LockerPlaceController(config, this, lockerRepository, announcer),
             new LockerBreakController(lockerRepository, lockerCache, announcer, config.messages),
-            new PrepareUserController(userManager),
-            new LoadUserController(userManager, server)
+            new PrepareUserController(userService),
+            new LoadUserController(userService, server)
         ).forEach(controller -> server.getPluginManager().registerEvents(controller, this));
 
         new Metrics(this, 17677);
@@ -231,17 +234,7 @@ public final class ParcelLockers extends JavaPlugin {
         if (!environment.isPaper()) {
             logger.warning("Your server running on unsupported software, please use Paper or its forks");
             logger.warning("You can easily download Paper from https://papermc.io/downloads");
-            logger.warning("WARNING: Supported MC versions are 1.17.x-1.21.x");
-            return;
         }
-
-        if (!environment.isVersion(17)) {
-            logger.warning("ParcelLockers no longer supports your version, be aware that there may be bugs!");
-            return;
-        }
-
-        logger.info("Your server is running on supported software, congratulations!");
-        logger.info("Server version: " + this.getServer().getVersion());
     }
 }
 

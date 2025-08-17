@@ -1,38 +1,50 @@
 package com.eternalcode.parcellockers.parcel.repository;
 
 import com.eternalcode.parcellockers.parcel.Parcel;
-
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class ParcelCache {
 
-    private final Map<UUID, Parcel> cache = new ConcurrentHashMap<>();
+    private final Cache<UUID, Parcel> cache;
+
+    public ParcelCache() {
+        this.cache = Caffeine.newBuilder()
+                .maximumSize(10_000)
+                .expireAfterAccess(Duration.ofHours(2))
+                .build();
+    }
 
     public void put(Parcel parcel) {
-        cache.put(parcel.uuid(), parcel);
+        this.cache.put(parcel.uuid(), parcel);
     }
 
     public void putAll(Map<UUID, Parcel> parcels) {
-        cache.putAll(parcels);
+        this.cache.putAll(parcels);
     }
 
     public Optional<Parcel> get(UUID uuid) {
-        return Optional.ofNullable(cache.get(uuid));
+        return Optional.ofNullable(this.cache.getIfPresent(uuid));
     }
 
-    public void remove(UUID uuid) {
-        cache.remove(uuid);
+    public Parcel remove(UUID uuid) {
+        Parcel parcel = this.cache.getIfPresent(uuid);
+        if (parcel != null) {
+            this.cache.invalidate(uuid);
+        }
+        return parcel;
     }
 
     public void clear() {
-        cache.clear();
+        this.cache.invalidateAll();
     }
 
     public Map<UUID, Parcel> cache() {
-        return Collections.unmodifiableMap(cache);
+        return Collections.unmodifiableMap(this.cache.asMap());
     }
 }

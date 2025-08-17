@@ -10,15 +10,14 @@ import dev.rollczi.litecommands.annotations.command.Command;
 import dev.rollczi.litecommands.annotations.context.Context;
 import dev.rollczi.litecommands.annotations.execute.Execute;
 import dev.rollczi.litecommands.annotations.permission.Permission;
-import org.bukkit.Material;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
+import org.bukkit.Material;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 @Command(name = "parcel debug")
 @Permission("parcellockers.debug")
@@ -54,7 +53,7 @@ public class DebugCommand {
 
     @Execute(name = "delete lockers")
     void deleteLockers(@Context CommandSender sender) {
-        this.lockerRepository.removeAll().exceptionally(throwable -> {
+        this.lockerRepository.deleteAll().exceptionally(throwable -> {
             this.announcer.sendMessage(sender, "&4Failed to delete lockers");
             return null;
         }).thenRun(() -> this.announcer.sendMessage(sender, "&cLockers deleted"));
@@ -62,7 +61,7 @@ public class DebugCommand {
 
     @Execute(name = "delete itemstorages")
     void deleteItemStorages(@Context CommandSender sender) {
-        this.itemStorageRepository.removeAll().exceptionally(throwable -> {
+        this.itemStorageRepository.deleteAll().exceptionally(throwable -> {
             this.announcer.sendMessage(sender, "&4Failed to delete item storages");
             return null;
         }).thenRun(() -> this.announcer.sendMessage(sender, "&cItem storages deleted"));
@@ -70,7 +69,7 @@ public class DebugCommand {
 
     @Execute(name = "delete parcelcontents")
     void deleteParcelContents(@Context CommandSender sender) {
-        this.contentRepository.removeAll().exceptionally(throwable -> {
+        this.contentRepository.deleteAll().exceptionally(throwable -> {
             this.announcer.sendMessage(sender, "&4Failed to delete parcel contents");
             return null;
         }).thenRun(() -> this.announcer.sendMessage(sender, "&cParcel contents deleted"));

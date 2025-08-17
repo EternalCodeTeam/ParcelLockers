@@ -6,19 +6,19 @@ import com.eternalcode.parcellockers.gui.implementation.remote.ParcelListGui;
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.Parcel;
-import com.eternalcode.parcellockers.parcel.ParcelManager;
+import com.eternalcode.parcellockers.parcel.ParcelService;
 import com.eternalcode.parcellockers.parcel.util.ParcelPlaceholderUtil;
-import com.eternalcode.parcellockers.user.UserManager;
+import com.eternalcode.parcellockers.user.UserService;
 import dev.rollczi.litecommands.annotations.argument.Arg;
 import dev.rollczi.litecommands.annotations.async.Async;
 import dev.rollczi.litecommands.annotations.command.Command;
 import dev.rollczi.litecommands.annotations.context.Context;
 import dev.rollczi.litecommands.annotations.execute.Execute;
 import dev.rollczi.litecommands.annotations.permission.Permission;
+import java.util.List;
 import org.bukkit.entity.Player;
 
-import java.util.List;
-
+@SuppressWarnings({"unused", "ClassCanBeRecord"})
 @Command(name = "parcel")
 @Permission("parcellockers.command.parcel")
 public class ParcelCommand {
@@ -28,8 +28,8 @@ public class ParcelCommand {
     private final PluginConfiguration config;
     private final MainGui mainGUI;
     private final ParcelListGui parcelListGUI;
-    private final ParcelManager parcelManager;
-    private final UserManager userManager;
+    private final ParcelService parcelService;
+    private final UserService userService;
 
     public ParcelCommand(
             LockerRepository lockerRepository,
@@ -37,16 +37,16 @@ public class ParcelCommand {
             PluginConfiguration config,
             MainGui mainGUI,
             ParcelListGui parcelListGUI,
-            ParcelManager parcelManager,
-            UserManager userManager
+            ParcelService parcelService,
+            UserService userService
     ) {
         this.lockerRepository = lockerRepository;
         this.announcer = announcer;
         this.config = config;
         this.mainGUI = mainGUI;
         this.parcelListGUI = parcelListGUI;
-        this.parcelManager = parcelManager;
-        this.userManager = userManager;
+        this.parcelService = parcelService;
+        this.userService = userService;
     }
 
     @Execute(name = "list")
@@ -57,13 +57,13 @@ public class ParcelCommand {
     @Async
     @Execute(name = "info")
     void info(@Context Player player, @Arg Parcel parcel) {
-        List<String> messagesToSend = ParcelPlaceholderUtil.replaceParcelPlaceholders(parcel, this.config.messages.parcelInfoMessages, this.userManager, this.lockerRepository);
+        List<String> messagesToSend = ParcelPlaceholderUtil.replaceParcelPlaceholders(parcel, this.config.messages.parcelInfoMessages, this.userService, this.lockerRepository);
         messagesToSend.forEach(message -> this.announcer.sendMessage(player, message));
     }
 
     @Execute(name = "delete")
     void delete(@Context Player player, @Arg Parcel parcel) {
-        this.parcelManager.deleteParcel(player, parcel);
+        this.parcelService.remove(player, parcel);
     }
 
     @Execute(name = "gui")

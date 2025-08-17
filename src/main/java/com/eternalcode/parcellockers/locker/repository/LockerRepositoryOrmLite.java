@@ -9,12 +9,12 @@ import com.eternalcode.parcellockers.shared.Position;
 import com.j256.ormlite.table.TableUtils;
 import io.sentry.Sentry;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implements LockerRepository {
@@ -43,10 +43,10 @@ public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     }
 
     @Override
-    public CompletableFuture<List<Locker>> findAll() {
-        return this.selectAll(LockerTable.class).thenApply(lockers -> lockers.stream()
+    public CompletableFuture<Optional<List<Locker>>> findAll() {
+        return this.selectAll(LockerTable.class).thenApply(lockers -> Optional.of(lockers.stream()
             .map(LockerTable::toLocker)
-            .collect(Collectors.toList()));
+            .collect(Collectors.toList())));
     }
 
     @Override
@@ -65,7 +65,7 @@ public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     }
 
     @Override
-    public CompletableFuture<Integer> remove(UUID uuid) {
+    public CompletableFuture<Integer> delete(UUID uuid) {
         return this.deleteById(LockerTable.class, uuid)
             .thenApply(result -> {
                 if (result > 0) {
@@ -76,8 +76,8 @@ public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     }
 
     @Override
-    public CompletableFuture<Integer> remove(Locker locker) {
-        return this.remove(locker.uuid());
+    public CompletableFuture<Integer> delete(Locker locker) {
+        return this.delete(locker.uuid());
     }
 
     @Override
@@ -101,16 +101,18 @@ public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     }
 
     @Override
-    public CompletableFuture<Integer> removeAll() {
+    public CompletableFuture<Integer> deleteAll() {
         return this.deleteAll(LockerTable.class);
     }
 
     public void updateCaches() {
         this.findAll().thenAccept(lockers -> {
-            Map<UUID, Locker> newCache = new ConcurrentHashMap<>();
-            lockers.forEach(locker -> newCache.put(locker.uuid(), locker));
-            this.cache.clear();
-            this.cache.putAll(newCache);
+            Map<UUID, Locker> newCache = new HashMap<>();
+            if (lockers.isPresent()) {
+                lockers.get().forEach(locker -> newCache.put(locker.uuid(), locker));
+                this.cache.clear();
+                this.cache.putAll(newCache);
+            }
         });
     }
 }

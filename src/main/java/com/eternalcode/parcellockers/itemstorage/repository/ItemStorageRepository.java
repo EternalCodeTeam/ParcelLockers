@@ -1,7 +1,6 @@
 package com.eternalcode.parcellockers.itemstorage.repository;
 
 import com.eternalcode.parcellockers.itemstorage.ItemStorage;
-
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -12,7 +11,7 @@ public interface ItemStorageRepository {
 
     CompletableFuture<Optional<ItemStorage>> find(UUID uuid);
 
-    CompletableFuture<Integer> remove(UUID uuid);
+    CompletableFuture<Integer> delete(UUID uuid);
 
-    CompletableFuture<Integer> removeAll();
+    CompletableFuture<Integer> deleteAll();
 }

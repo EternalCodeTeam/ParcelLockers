@@ -1,22 +1,20 @@
 package com.eternalcode.parcellockers.user;
 
 import com.eternalcode.parcellockers.user.repository.UserRepository;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-public class UserManager {
+public class UserService {
 
     private final UserRepository userRepository;
 
     private final Map<UUID, User> usersByUUID = new HashMap<>();
     private final Map<String, User> usersByName = new HashMap<>();
 
-    public UserManager(UserRepository userRepository) {
+    public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
@@ -67,9 +65,5 @@ public class UserManager {
         this.userRepository.save(user);
 
         return user;
-    }
-
-    public Collection<User> getUsers() {
-        return Collections.unmodifiableCollection(this.usersByUUID.values());
     }
 }

@@ -1,14 +1,16 @@
 package com.eternalcode.parcellockers.gui.implementation.locker;
 
+import static com.eternalcode.commons.adventure.AdventureUtil.resetItalic;
+
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
-import com.eternalcode.parcellockers.parcel.ParcelManager;
+import com.eternalcode.parcellockers.parcel.ParcelService;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
-import com.eternalcode.parcellockers.user.UserManager;
+import com.eternalcode.parcellockers.user.UserService;
 import com.eternalcode.parcellockers.user.repository.UserRepository;
 import dev.rollczi.liteskullapi.SkullAPI;
 import dev.triumphteam.gui.guis.Gui;
@@ -17,8 +19,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
-
-import static com.eternalcode.commons.adventure.AdventureUtil.resetItalic;
 
 public class LockerMainGui implements GuiView {
 
@@ -32,9 +32,9 @@ public class LockerMainGui implements GuiView {
     private final ParcelContentRepository parcelContentRepository;
     private final UserRepository userRepository;
     private final SkullAPI skullAPI;
-    private final ParcelManager parcelManager;
+    private final ParcelService parcelService;
 
-    private final UserManager userManager;
+    private final UserService userService;
 
     public LockerMainGui(
         Plugin plugin,
@@ -47,7 +47,7 @@ public class LockerMainGui implements GuiView {
         ParcelContentRepository parcelContentRepository,
         UserRepository userRepository,
         SkullAPI skullAPI,
-        ParcelManager parcelManager
+        ParcelService parcelService
     ) {
         this.plugin = plugin;
         this.miniMessage = miniMessage;
@@ -59,9 +59,9 @@ public class LockerMainGui implements GuiView {
         this.parcelContentRepository = parcelContentRepository;
         this.userRepository = userRepository;
         this.skullAPI = skullAPI;
-        this.parcelManager = parcelManager;
+        this.parcelService = parcelService;
 
-        this.userManager = new UserManager(this.userRepository);
+        this.userService = new UserService(this.userRepository);
     }
 
     @Override
@@ -94,8 +94,8 @@ public class LockerMainGui implements GuiView {
             this.plugin.getServer().getScheduler(),
             this.parcelRepository,
             this.miniMessage,
-            this.parcelManager,
-            this.userManager,
+            this.parcelService,
+            this.userService,
             this.lockerRepository
         );
 
@@ -110,7 +110,7 @@ public class LockerMainGui implements GuiView {
             this.parcelContentRepository,
             this.userRepository,
             this.skullAPI,
-            this.parcelManager,
+            this.parcelService,
             new ParcelSendingGuiState()
         ).show(player)));
 

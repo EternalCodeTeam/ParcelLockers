@@ -3,7 +3,7 @@ package com.eternalcode.parcellockers.parcel.util;
 import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.parcel.Parcel;
-import com.eternalcode.parcellockers.user.UserManager;
+import com.eternalcode.parcellockers.user.UserService;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -17,13 +17,13 @@ import panda.utilities.text.Formatter;
 public class ParcelPlaceholderUtil {
 
     @Blocking
-    public static List<String> replaceParcelPlaceholders(Parcel parcel, List<String> lore, UserManager userManager, LockerRepository lockerRepository) {
+    public static List<String> replaceParcelPlaceholders(Parcel parcel, List<String> lore, UserService userService, LockerRepository lockerRepository) {
         if (lore == null || lore.isEmpty()) {
             return Collections.emptyList();
         }
 
-        String senderName = getName(parcel.sender(), userManager).join();
-        String receiver = getName(parcel.receiver(), userManager).join();
+        String senderName = getName(parcel.sender(), userService).join();
+        String receiver = getName(parcel.receiver(), userService).join();
 
         Formatter formatter = new Formatter()
             .register("{UUID}", parcel.uuid().toString())
@@ -58,8 +58,8 @@ public class ParcelPlaceholderUtil {
         return newLore;
     }
 
-    private static CompletableFuture<String> getName(UUID userUuid, UserManager userManager) {
-        return userManager.get(userUuid).thenApply(userOptional -> userOptional
+    private static CompletableFuture<String> getName(UUID userUuid, UserService userService) {
+        return userService.get(userUuid).thenApply(userOptional -> userOptional
             .map(user -> user.name())
             .orElse("Unknown")
         );
