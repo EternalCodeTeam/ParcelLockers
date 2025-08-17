@@ -55,7 +55,11 @@ public class SentParcelsGui implements GuiView {
 
     @Override
     public void show(Player player) {
-        PaginatedGui gui = Gui.paginated().title(this.miniMessage.deserialize(this.config.guiSettings.sentParcelsTitle)).rows(6).disableAllInteractions().create();
+        PaginatedGui gui = Gui.paginated()
+            .title(this.miniMessage.deserialize(this.config.guiSettings.sentParcelsTitle))
+            .rows(6)
+            .disableAllInteractions()
+            .create();
 
         ConfigItem parcelItem = this.config.guiSettings.parcelItem;
         GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem();
