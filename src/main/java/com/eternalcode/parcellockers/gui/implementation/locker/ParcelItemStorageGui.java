@@ -42,17 +42,19 @@ public class ParcelItemStorageGui {
     private final ParcelSendingGuiState state;
     private final ParcelManager parcelManager;
 
-    public ParcelItemStorageGui(Plugin plugin,
-                                PluginConfiguration config,
-                                MiniMessage miniMessage,
-                                ItemStorageRepository itemStorageRepository,
-                                ParcelRepository parcelRepository,
-                                LockerRepository lockerRepository,
-                                NotificationAnnouncer announcer,
-                                ParcelContentRepository parcelContentRepository,
-                                UserRepository userRepository,
-                                SkullAPI skullAPI,
-                                ParcelSendingGuiState state, ParcelManager parcelManager) {
+    public ParcelItemStorageGui(
+        Plugin plugin,
+        PluginConfiguration config,
+        MiniMessage miniMessage,
+        ItemStorageRepository itemStorageRepository,
+        ParcelRepository parcelRepository,
+        LockerRepository lockerRepository,
+        NotificationAnnouncer announcer,
+        ParcelContentRepository parcelContentRepository,
+        UserRepository userRepository,
+        SkullAPI skullAPI,
+        ParcelSendingGuiState state, ParcelManager parcelManager
+    ) {
         this.plugin = plugin;
         this.config = config;
         this.miniMessage = miniMessage;

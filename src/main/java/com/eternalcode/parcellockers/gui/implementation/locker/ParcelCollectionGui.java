@@ -37,7 +37,16 @@ public class ParcelCollectionGui implements GuiView {
     private final UserManager userManager;
     private final LockerRepository lockerRepository;
 
-    public ParcelCollectionGui(Plugin plugin, PluginConfiguration config, BukkitScheduler scheduler, ParcelRepository parcelRepository, MiniMessage miniMessage, ParcelManager parcelManager, UserManager userManager, LockerRepository lockerRepository) {
+    public ParcelCollectionGui(
+        Plugin plugin,
+        PluginConfiguration config,
+        BukkitScheduler scheduler,
+        ParcelRepository parcelRepository,
+        MiniMessage miniMessage,
+        ParcelManager parcelManager,
+        UserManager userManager,
+        LockerRepository lockerRepository
+    ) {
         this.plugin = plugin;
         this.config = config;
         this.scheduler = scheduler;

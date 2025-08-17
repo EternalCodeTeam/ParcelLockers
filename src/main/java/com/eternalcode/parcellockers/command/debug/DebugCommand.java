@@ -30,7 +30,13 @@ public class DebugCommand {
     private final ParcelContentRepository contentRepository;
     private final NotificationAnnouncer announcer;
 
-    public DebugCommand(ParcelRepository parcelRepository, LockerRepository lockerRepository, ItemStorageRepository itemStorageRepository, ParcelContentRepository contentRepository, NotificationAnnouncer announcer) {
+    public DebugCommand(
+            ParcelRepository parcelRepository,
+            LockerRepository lockerRepository,
+            ItemStorageRepository itemStorageRepository,
+            ParcelContentRepository contentRepository,
+            NotificationAnnouncer announcer
+    ) {
         this.parcelRepository = parcelRepository;
         this.lockerRepository = lockerRepository;
         this.itemStorageRepository = itemStorageRepository;

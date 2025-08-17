@@ -16,7 +16,13 @@ public class ParcelSendTask extends BukkitRunnable {
     private final DeliveryRepository deliveryRepository;
     private final PluginConfiguration config;
 
-    public ParcelSendTask(Parcel parcel, Delivery delivery, ParcelRepository parcelRepository, DeliveryRepository deliveryRepository, PluginConfiguration config) {
+    public ParcelSendTask(
+            Parcel parcel,
+            Delivery delivery,
+            ParcelRepository parcelRepository,
+            DeliveryRepository deliveryRepository,
+            PluginConfiguration config
+    ) {
         this.parcel = parcel;
         this.delivery = delivery;
         this.parcelRepository = parcelRepository;
@@ -27,16 +33,16 @@ public class ParcelSendTask extends BukkitRunnable {
     @Override
     public void run() {
         Parcel updated = new Parcel(
-            parcel.uuid(),
-            parcel.sender(),
-            parcel.name(),
-            parcel.description(),
-            parcel.priority(),
-            parcel.receiver(),
-            parcel.size(),
-            parcel.entryLocker(),
-            parcel.destinationLocker(),
-            ParcelStatus.DELIVERED);
+                parcel.uuid(),
+                parcel.sender(),
+                parcel.name(),
+                parcel.description(),
+                parcel.priority(),
+                parcel.receiver(),
+                parcel.size(),
+                parcel.entryLocker(),
+                parcel.destinationLocker(),
+                ParcelStatus.DELIVERED);
 
 
         this.parcelRepository.update(updated);

@@ -34,7 +34,14 @@ public class ParcelManager {
     private final ParcelContentRepository parcelContentRepository;
     private final Scheduler scheduler;
 
-    public ParcelManager(PluginConfiguration config, NotificationAnnouncer announcer, ParcelRepository parcelRepository, DeliveryRepository deliveryRepository, ParcelContentRepository parcelContentRepository, Scheduler scheduler) {
+    public ParcelManager(
+            PluginConfiguration config,
+            NotificationAnnouncer announcer,
+            ParcelRepository parcelRepository,
+            DeliveryRepository deliveryRepository,
+            ParcelContentRepository parcelContentRepository,
+            Scheduler scheduler
+    ) {
         this.config = config;
         this.announcer = announcer;
         this.parcelRepository = parcelRepository;

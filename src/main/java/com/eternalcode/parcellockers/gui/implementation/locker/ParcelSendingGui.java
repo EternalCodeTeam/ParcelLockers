@@ -66,15 +66,20 @@ public class ParcelSendingGui implements GuiView {
 
     private Gui gui;
 
-    public ParcelSendingGui(Plugin plugin,
-                            PluginConfiguration config,
-                            MiniMessage miniMessage,
-                            ItemStorageRepository itemStorageRepository,
-                            ParcelRepository parcelRepository, LockerRepository lockerRepository,
-                            NotificationAnnouncer announcer,
-                            ParcelContentRepository parcelContentRepository,
-                            UserRepository userRepository,
-                            SkullAPI skullAPI, ParcelManager parcelManager, ParcelSendingGuiState state) {
+    public ParcelSendingGui(
+            Plugin plugin,
+            PluginConfiguration config,
+            MiniMessage miniMessage,
+            ItemStorageRepository itemStorageRepository,
+            ParcelRepository parcelRepository,
+            LockerRepository lockerRepository,
+            NotificationAnnouncer announcer,
+            ParcelContentRepository parcelContentRepository,
+            UserRepository userRepository,
+            SkullAPI skullAPI,
+            ParcelManager parcelManager,
+            ParcelSendingGuiState state
+    ) {
         this.plugin = plugin;
         this.config = config;
         this.miniMessage = miniMessage;

@@ -38,14 +38,16 @@ public class ParcelListGui implements GuiView {
     private final UserManager userManager;
     private final MainGui mainGUI;
 
-    public ParcelListGui(Plugin plugin,
-                         Server server,
-                         MiniMessage miniMessage,
-                         PluginConfiguration config,
-                         ParcelRepository parcelRepository,
-                         LockerRepository lockerRepository,
-                         UserManager userManager,
-                         MainGui mainGUI) {
+    public ParcelListGui(
+        Plugin plugin,
+        Server server,
+        MiniMessage miniMessage,
+        PluginConfiguration config,
+        ParcelRepository parcelRepository,
+        LockerRepository lockerRepository,
+        UserManager userManager,
+        MainGui mainGUI
+    ) {
         this.plugin = plugin;
         this.server = server;
         this.miniMessage = miniMessage;

@@ -33,7 +33,16 @@ public class SentParcelsGui implements GuiView {
     private final MainGui mainGUI;
     private final UserManager userManager;
 
-    public SentParcelsGui(Plugin plugin, Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelRepository parcelRepository, LockerRepository lockerRepository, MainGui mainGUI, UserManager userManager) {
+    public SentParcelsGui(
+        Plugin plugin,
+        Server server,
+        MiniMessage miniMessage,
+        PluginConfiguration config,
+        ParcelRepository parcelRepository,
+        LockerRepository lockerRepository,
+        MainGui mainGUI,
+        UserManager userManager
+    ) {
         this.plugin = plugin;
         this.server = server;
         this.miniMessage = miniMessage;
@@ -46,11 +55,7 @@ public class SentParcelsGui implements GuiView {
 
     @Override
     public void show(Player player) {
-        PaginatedGui gui = Gui.paginated()
-            .title(this.miniMessage.deserialize(this.config.guiSettings.sentParcelsTitle))
-            .rows(6)
-            .disableAllInteractions()
-            .create();
+        PaginatedGui gui = Gui.paginated().title(this.miniMessage.deserialize(this.config.guiSettings.sentParcelsTitle)).rows(6).disableAllInteractions().create();
 
         ConfigItem parcelItem = this.config.guiSettings.parcelItem;
         GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem();
@@ -74,10 +79,7 @@ public class SentParcelsGui implements GuiView {
             for (Parcel parcel : parcels) {
                 ItemBuilder item = parcelItem.toBuilder();
 
-                List<Component> newLore = ParcelPlaceholderUtil.replaceParcelPlaceholders(parcel, parcelItem.lore, this.userManager, this.lockerRepository)
-                    .stream()
-                    .map(line -> this.miniMessage.deserialize(line))
-                    .toList();
+                List<Component> newLore = ParcelPlaceholderUtil.replaceParcelPlaceholders(parcel, parcelItem.lore, this.userManager, this.lockerRepository).stream().map(line -> this.miniMessage.deserialize(line)).toList();
                 item.lore(newLore);
                 item.name(this.miniMessage.deserialize(parcelItem.name.replace("{NAME}", parcel.name())));
 
