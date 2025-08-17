@@ -28,6 +28,7 @@ import com.eternalcode.parcellockers.locker.repository.LockerRepositoryOrmLite;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelService;
+import com.eternalcode.parcellockers.parcel.ParcelServiceImpl;
 import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import com.eternalcode.parcellockers.parcel.command.ParcelCommand;
 import com.eternalcode.parcellockers.parcel.command.argument.ParcelArgument;
@@ -36,6 +37,7 @@ import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryOrmLite;
 import com.eternalcode.parcellockers.parcel.task.ParcelSendTask;
 import com.eternalcode.parcellockers.updater.UpdaterService;
 import com.eternalcode.parcellockers.user.UserService;
+import com.eternalcode.parcellockers.user.UserServiceImpl;
 import com.eternalcode.parcellockers.user.controller.LoadUserController;
 import com.eternalcode.parcellockers.user.controller.PrepareUserController;
 import com.eternalcode.parcellockers.user.repository.UserRepository;
@@ -146,12 +148,12 @@ public final class ParcelLockers extends JavaPlugin {
         DeliveryRepositoryOrmLite deliveryRepository = new DeliveryRepositoryOrmLite(databaseManager, scheduler);
 
         ParcelContentRepository parcelContentRepository = new ParcelContentRepositoryOrmLite(databaseManager, scheduler);
-        ParcelService parcelService = new ParcelService(config, announcer, parcelRepository, deliveryRepository, parcelContentRepository, scheduler);
+        ParcelService parcelService = new ParcelServiceImpl(config, announcer, parcelRepository, deliveryRepository, parcelContentRepository, scheduler);
 
         ItemStorageRepository itemStorageRepository = new ItemStorageRepositoryOrmLite(databaseManager, scheduler);
 
         UserRepository userRepository = new UserRepositoryOrmLite(databaseManager, scheduler);
-        UserService userService = new UserService(userRepository);
+        UserService userService = new UserServiceImpl(userRepository);
 
         MainGui mainGUI = new MainGui(this, server, miniMessage, config, parcelRepository, lockerRepository,
             userService);

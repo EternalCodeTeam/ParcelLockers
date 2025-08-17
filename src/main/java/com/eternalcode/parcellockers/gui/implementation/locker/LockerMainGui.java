@@ -11,6 +11,7 @@ import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.ParcelService;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.user.UserService;
+import com.eternalcode.parcellockers.user.UserServiceImpl;
 import com.eternalcode.parcellockers.user.repository.UserRepository;
 import dev.rollczi.liteskullapi.SkullAPI;
 import dev.triumphteam.gui.guis.Gui;
@@ -61,7 +62,7 @@ public class LockerMainGui implements GuiView {
         this.skullAPI = skullAPI;
         this.parcelService = parcelService;
 
-        this.userService = new UserService(this.userRepository);
+        this.userService = new UserServiceImpl(this.userRepository);
     }
 
     @Override
