@@ -59,7 +59,7 @@ public class ParcelPlaceholderUtil {
     }
 
     private static CompletableFuture<String> getName(UUID userUuid, UserManager userManager) {
-        return userManager.getUser(userUuid).thenApply(userOptional -> userOptional
+        return userManager.get(userUuid).thenApply(userOptional -> userOptional
             .map(user -> user.name())
             .orElse("Unknown")
         );

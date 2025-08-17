@@ -20,24 +20,24 @@ public class UserManager {
         this.userRepository = userRepository;
     }
 
-    public CompletableFuture<Optional<User>> getUser(UUID uuid) {
-        User user = this.usersByUUID.get(uuid);
+    public CompletableFuture<Optional<User>> get(UUID uniqueId) {
+        User user = this.usersByUUID.get(uniqueId);
 
         if (user != null) {
             return CompletableFuture.completedFuture(Optional.of(user));
         }
 
-        return this.userRepository.find(uuid);
+        return this.userRepository.find(uniqueId);
     }
 
-    public CompletableFuture<Optional<User>> getUser(String name) {
-        User user = this.usersByName.get(name);
+    public CompletableFuture<Optional<User>> get(String username) {
+        User user = this.usersByName.get(username);
 
         if (user != null) {
             return CompletableFuture.completedFuture(Optional.of(user));
         }
 
-        return this.userRepository.find(name);
+        return this.userRepository.find(username);
     }
 
     public User getOrCreate(UUID uuid, String name) {

@@ -78,6 +78,9 @@ dependencies {
     implementation("com.eternalcode:eternalcode-commons-adventure:1.3.0")
     implementation("com.eternalcode:eternalcode-commons-bukkit:1.3.0")
 
+    // caffeine
+    implementation("com.github.ben-manes.caffeine:caffeine:3.2.2")
+
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.4")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.13.4")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.13.4")
@@ -155,14 +158,14 @@ tasks {
             "io.sentry",
             "dev.rollczi",
             "de.eldoria",
-            "com.eternalcode.commons",
-            "com.eternalcode.gitcheck",
+            "com.eternalcode",
             "com.fasterxml",
             "com.j256",
             "com.spotify",
             "com.zaxxer",
             "de.rapha149",
-            "dev.triumphteam"
+            "dev.triumphteam",
+            "com.github.benmanes.caffeine"
         ).forEach { relocate(it, "$relocationPrefix.$it") }
     }
 }
