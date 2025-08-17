@@ -79,7 +79,10 @@ public class SentParcelsGui implements GuiView {
             for (Parcel parcel : parcels) {
                 ItemBuilder item = parcelItem.toBuilder();
 
-                List<Component> newLore = ParcelPlaceholderUtil.replaceParcelPlaceholders(parcel, parcelItem.lore, this.userManager, this.lockerRepository).stream().map(line -> this.miniMessage.deserialize(line)).toList();
+                List<Component> newLore = ParcelPlaceholderUtil.replaceParcelPlaceholders(parcel, parcelItem.lore, this.userManager, this.lockerRepository)
+                    .stream()
+                    .map(line -> this.miniMessage.deserialize(line))
+                    .toList();
                 item.lore(newLore);
                 item.name(this.miniMessage.deserialize(parcelItem.name.replace("{NAME}", parcel.name())));
 
