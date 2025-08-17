@@ -42,12 +42,16 @@ public class ReceiverSelectionGui implements GuiView {
     private final ParcelSendingGuiState state;
 
 
-    public ReceiverSelectionGui(Plugin plugin,
-                                BukkitScheduler scheduler,
-                                PluginConfiguration config,
-                                MiniMessage miniMessage,
-                                UserRepository userRepository,
-                                ParcelSendingGui sendingGUI, SkullAPI skullAPI, ParcelSendingGuiState state) {
+    public ReceiverSelectionGui(
+            Plugin plugin,
+            BukkitScheduler scheduler,
+            PluginConfiguration config,
+            MiniMessage miniMessage,
+            UserRepository userRepository,
+            ParcelSendingGui sendingGUI,
+            SkullAPI skullAPI,
+            ParcelSendingGuiState state
+    ) {
         this.plugin = plugin;
         this.scheduler = scheduler;
         this.config = config;

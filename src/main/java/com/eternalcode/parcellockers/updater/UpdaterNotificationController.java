@@ -21,7 +21,12 @@ public class UpdaterNotificationController implements Listener {
     private final AudienceProvider audienceProvider;
     private final MiniMessage miniMessage;
 
-    public UpdaterNotificationController(UpdaterService updaterService, PluginConfiguration pluginConfig, AudienceProvider audienceProvider, MiniMessage miniMessage) {
+    public UpdaterNotificationController(
+            UpdaterService updaterService,
+            PluginConfiguration pluginConfig,
+            AudienceProvider audienceProvider,
+            MiniMessage miniMessage
+    ) {
         this.updaterService = updaterService;
         this.pluginConfig = pluginConfig;
         this.audienceProvider = audienceProvider;

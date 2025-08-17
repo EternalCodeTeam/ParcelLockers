@@ -5,7 +5,6 @@ import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.user.UserManager;
-import dev.triumphteam.gui.components.GuiType;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -25,11 +24,15 @@ public class MainGui implements GuiView {
     private final LockerRepository lockerRepository;
     private final UserManager userManager;
 
-    public MainGui(Plugin plugin,
-                   Server server,
-                   MiniMessage miniMessage,
-                   PluginConfiguration config,
-                   ParcelRepository parcelRepository, LockerRepository lockerRepository, UserManager userManager) {
+    public MainGui(
+        Plugin plugin,
+        Server server,
+        MiniMessage miniMessage,
+        PluginConfiguration config,
+        ParcelRepository parcelRepository,
+        LockerRepository lockerRepository,
+        UserManager userManager
+    ) {
         this.plugin = plugin;
         this.server = server;
         this.miniMessage = miniMessage;
@@ -44,10 +47,9 @@ public class MainGui implements GuiView {
         PluginConfiguration.GuiSettings guiSettings = this.config.guiSettings;
 
         Gui gui = Gui.gui()
-            .type(GuiType.CHEST)
             .title(resetItalic(this.miniMessage.deserialize(guiSettings.mainGuiTitle)))
-            .disableAllInteractions()
             .rows(6)
+            .disableAllInteractions()
             .create();
 
         GuiItem backgroundItem = guiSettings.mainGuiBackgroundItem.toGuiItem();

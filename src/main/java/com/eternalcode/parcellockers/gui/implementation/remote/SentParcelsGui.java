@@ -33,7 +33,16 @@ public class SentParcelsGui implements GuiView {
     private final MainGui mainGUI;
     private final UserManager userManager;
 
-    public SentParcelsGui(Plugin plugin, Server server, MiniMessage miniMessage, PluginConfiguration config, ParcelRepository parcelRepository, LockerRepository lockerRepository, MainGui mainGUI, UserManager userManager) {
+    public SentParcelsGui(
+        Plugin plugin,
+        Server server,
+        MiniMessage miniMessage,
+        PluginConfiguration config,
+        ParcelRepository parcelRepository,
+        LockerRepository lockerRepository,
+        MainGui mainGUI,
+        UserManager userManager
+    ) {
         this.plugin = plugin;
         this.server = server;
         this.miniMessage = miniMessage;

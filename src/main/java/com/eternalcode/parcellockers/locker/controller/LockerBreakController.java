@@ -29,7 +29,12 @@ public class LockerBreakController implements Listener {
     private final NotificationAnnouncer announcer;
     private final PluginConfiguration.Messages messages;
 
-    public LockerBreakController(LockerRepository lockerRepository, LockerCache cache, NotificationAnnouncer announcer, PluginConfiguration.Messages messages) {
+    public LockerBreakController(
+            LockerRepository lockerRepository,
+            LockerCache cache,
+            NotificationAnnouncer announcer,
+            PluginConfiguration.Messages messages
+    ) {
         this.lockerRepository = lockerRepository;
         this.cache = cache;
         this.announcer = announcer;
@@ -64,11 +69,11 @@ public class LockerBreakController implements Listener {
             this.announcer.sendMessage(player, this.messages.parcelLockerSuccessfullyDeleted);
 
             Formatter formatter = new Formatter()
-                .register("{X}", position.x())
-                .register("{Y}", position.y())
-                .register("{Z}", position.z())
-                .register("{WORLD}", position.world())
-                .register("{PLAYER}", player.getName());
+                    .register("{X}", position.x())
+                    .register("{Y}", position.y())
+                    .register("{Z}", position.z())
+                    .register("{WORLD}", position.world())
+                    .register("{PLAYER}", player.getName());
 
             this.announcer.broadcast(formatter.format(this.messages.broadcastParcelLockerRemoved));
         });

@@ -36,7 +36,15 @@ public class DestinationSelectionGui implements GuiView {
     private final ParcelSendingGui sendingGUI;
     private final ParcelSendingGuiState state;
 
-    public DestinationSelectionGui(Plugin plugin, BukkitScheduler scheduler, PluginConfiguration config, MiniMessage miniMessage, LockerRepository lockerRepository, ParcelSendingGui sendingGUI, ParcelSendingGuiState state) {
+    public DestinationSelectionGui(
+        Plugin plugin,
+        BukkitScheduler scheduler,
+        PluginConfiguration config,
+        MiniMessage miniMessage,
+        LockerRepository lockerRepository,
+        ParcelSendingGui sendingGUI,
+        ParcelSendingGuiState state
+    ) {
         this.plugin = plugin;
         this.scheduler = scheduler;
         this.config = config;

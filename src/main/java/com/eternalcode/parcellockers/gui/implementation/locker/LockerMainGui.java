@@ -36,15 +36,19 @@ public class LockerMainGui implements GuiView {
 
     private final UserManager userManager;
 
-    public LockerMainGui(Plugin plugin,
-                         MiniMessage miniMessage,
-                         PluginConfiguration config,
-                         ItemStorageRepository itemStorageRepository,
-                         ParcelRepository parcelRepository, LockerRepository lockerRepository,
-                         NotificationAnnouncer announcer,
-                         ParcelContentRepository parcelContentRepository,
-                         UserRepository userRepository,
-                         SkullAPI skullAPI, ParcelManager parcelManager) {
+    public LockerMainGui(
+        Plugin plugin,
+        MiniMessage miniMessage,
+        PluginConfiguration config,
+        ItemStorageRepository itemStorageRepository,
+        ParcelRepository parcelRepository,
+        LockerRepository lockerRepository,
+        NotificationAnnouncer announcer,
+        ParcelContentRepository parcelContentRepository,
+        UserRepository userRepository,
+        SkullAPI skullAPI,
+        ParcelManager parcelManager
+    ) {
         this.plugin = plugin;
         this.miniMessage = miniMessage;
         this.config = config;

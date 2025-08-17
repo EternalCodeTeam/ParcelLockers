@@ -31,7 +31,15 @@ public class ParcelCommand {
     private final ParcelManager parcelManager;
     private final UserManager userManager;
 
-    public ParcelCommand(LockerRepository lockerRepository, NotificationAnnouncer announcer, PluginConfiguration config, MainGui mainGUI, ParcelListGui parcelListGUI, ParcelManager parcelManager, UserManager userManager) {
+    public ParcelCommand(
+            LockerRepository lockerRepository,
+            NotificationAnnouncer announcer,
+            PluginConfiguration config,
+            MainGui mainGUI,
+            ParcelListGui parcelListGUI,
+            ParcelManager parcelManager,
+            UserManager userManager
+    ) {
         this.lockerRepository = lockerRepository;
         this.announcer = announcer;
         this.config = config;
