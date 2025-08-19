@@ -17,14 +17,12 @@ import java.util.Collections;
 import java.util.List;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 public class SentParcelsGui implements GuiView {
 
     private final Plugin plugin;
-    private final Server server;
     private final MiniMessage miniMessage;
     private final PluginConfiguration config;
     private final ParcelRepository parcelRepository;
@@ -34,7 +32,6 @@ public class SentParcelsGui implements GuiView {
 
     public SentParcelsGui(
         Plugin plugin,
-        Server server,
         MiniMessage miniMessage,
         PluginConfiguration config,
         ParcelRepository parcelRepository,
@@ -43,7 +40,6 @@ public class SentParcelsGui implements GuiView {
         UserService userService
     ) {
         this.plugin = plugin;
-        this.server = server;
         this.miniMessage = miniMessage;
         this.config = config;
         this.parcelRepository = parcelRepository;
@@ -91,7 +87,7 @@ public class SentParcelsGui implements GuiView {
 
                 gui.addItem(item.asGuiItem());
             }
-            this.server.getScheduler().runTask(this.plugin, () -> gui.open(player));
+            this.plugin.getServer().getScheduler().runTask(this.plugin, () -> gui.open(player));
         }).whenComplete(SentryExceptionHandler.handler());
     }
 }
