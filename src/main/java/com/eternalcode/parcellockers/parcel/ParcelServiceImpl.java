@@ -64,7 +64,9 @@ public class ParcelServiceImpl implements ParcelService {
 
             Delivery delivery = new Delivery(parcel.uuid(), Instant.now().plus(delay));
             ParcelSendTask task = new ParcelSendTask(parcel, delivery, parcelRepository, deliveryRepository, config);
+
             scheduler.runLaterAsync(task, delay);
+
             return true;
         });
         return true;
