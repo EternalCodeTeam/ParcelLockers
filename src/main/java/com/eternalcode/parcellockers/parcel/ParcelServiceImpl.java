@@ -9,14 +9,13 @@ import com.eternalcode.parcellockers.content.ParcelContent;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.delivery.Delivery;
 import com.eternalcode.parcellockers.delivery.repository.DeliveryRepository;
-import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
+import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.parcel.task.ParcelSendTask;
 import com.eternalcode.parcellockers.shared.ParcelLockersException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -24,7 +23,7 @@ import org.bukkit.inventory.ItemStack;
 public class ParcelServiceImpl implements ParcelService {
 
     private final PluginConfig config;
-    private final NotificationAnnouncer announcer;
+    private final NoticeService noticeService;
     private final ParcelRepository parcelRepository;
     private final DeliveryRepository deliveryRepository;
     private final ParcelContentRepository parcelContentRepository;
@@ -32,14 +31,14 @@ public class ParcelServiceImpl implements ParcelService {
 
     public ParcelServiceImpl(
         PluginConfig config,
-        NotificationAnnouncer announcer,
+        NoticeService noticeService,
         ParcelRepository parcelRepository,
         DeliveryRepository deliveryRepository,
         ParcelContentRepository parcelContentRepository,
         Scheduler scheduler
     ) {
         this.config = config;
-        this.announcer = announcer;
+        this.noticeService = noticeService;
         this.parcelRepository = parcelRepository;
         this.deliveryRepository = deliveryRepository;
         this.parcelContentRepository = parcelContentRepository;
@@ -54,17 +53,25 @@ public class ParcelServiceImpl implements ParcelService {
 
         this.parcelRepository.save(parcel);
 
-        parcelContentRepository.save(new ParcelContent(parcel.uuid(), items)).handle((content, throwable) -> {
+        this.parcelContentRepository.save(new ParcelContent(parcel.uuid(), items)).handle((content, throwable) -> {
             if (throwable != null) {
-                announcer.sendMessage(sender, config.messages.parcelFailedToSend);
+                this.noticeService.create()
+                    .notice(messages -> messages.parcelFailedToSend)
+                    .player(sender.getUniqueId())
+                    .send();
+
                 throw new ParcelLockersException("Failed to save parcel content", throwable);
             }
-            announcer.sendMessage(sender, config.messages.parcelSent);
+
+            this.noticeService.create()
+                .notice(messages -> messages.parcelSent)
+                .player(sender.getUniqueId())
+                .send();
 
             Delivery delivery = new Delivery(parcel.uuid(), Instant.now().plus(delay));
             ParcelSendTask task = new ParcelSendTask(parcel, delivery, parcelRepository, deliveryRepository, config);
 
-            scheduler.runLaterAsync(task, delay);
+            this.scheduler.runLaterAsync(task, delay);
 
             return true;
         });
@@ -74,11 +81,17 @@ public class ParcelServiceImpl implements ParcelService {
     @Override
     public void remove(CommandSender sender, Parcel parcel) {
         this.parcelRepository.remove(parcel)
-            .thenAccept(v -> announcer.sendMessage(sender, config.messages.parcelSuccessfullyDeleted))
-            .whenComplete((v, throwable) -> {
-                if (throwable != null) {
-                    announcer.sendMessage(sender, config.messages.failedToDeleteParcel);
-                }
+            .thenAccept(v ->
+                this.noticeService.create()
+                    .notice(messages -> messages.parcelSuccessfullyDeleted)
+                    .viewer(sender)
+                    .send())
+            .exceptionally(throwable -> {
+                this.noticeService.create()
+                    .notice(messages -> messages.failedToDeleteParcel)
+                    .viewer(sender)
+                    .send();
+                return null;
             });
     }
 
@@ -86,43 +99,39 @@ public class ParcelServiceImpl implements ParcelService {
     public void collect(Player player, Parcel parcel) {
         this.parcelContentRepository.find(parcel.uuid()).thenAccept(optional -> {
             if (optional.isEmpty()) {
-                playErrorSound(player);
-                this.announcer.sendMessage(player, this.config.messages.failedToCollectParcel);
+                this.noticeService.create()
+                    .notice(messages -> messages.failedToCollectParcel)
+                    .player(player.getUniqueId())
+                    .send();
                 return;
             }
 
             List<ItemStack> items = optional.get().items();
             if (items.size() > freeSlotsInInventory(player)) {
-                playErrorSound(player);
-                this.announcer.sendMessage(player, this.config.messages.notEnoughInventorySpace);
+                this.noticeService.create()
+                    .notice(messages -> messages.notEnoughInventorySpace)
+                    .player(player.getUniqueId())
+                    .send();
                 return;
             }
 
             items.forEach(item -> this.scheduler.run(() -> ItemUtil.giveItem(player, item)));
 
             this.parcelRepository.remove(parcel)
-                .thenCompose(v -> this.parcelContentRepository.delete(optional.get().uniqueId()))
+                .thenAccept(v -> this.parcelContentRepository.delete(optional.get().uniqueId()))
                 .whenComplete((v, throwable) -> {
                     if (throwable != null) {
-                        this.announcer.sendMessage(player, this.config.messages.failedToCollectParcel);
-                    } else {
-                        playSuccessSound(player);
-                        this.announcer.sendMessage(player, this.config.messages.parcelSuccessfullyCollected);
+                        this.noticeService.create()
+                            .notice(messages -> messages.failedToCollectParcel)
+                            .player(player.getUniqueId())
+                            .send();
+                        return;
                     }
+                    this.noticeService.create()
+                        .notice(messages -> messages.parcelSuccessfullyCollected)
+                        .player(player.getUniqueId())
+                        .send();
                 });
         });
-    }
-
-    private void playErrorSound(Player player) {
-        player.playSound(
-            player.getLocation(),
-            this.config.settings.errorSound,
-            this.config.settings.errorSoundVolume,
-            this.config.settings.errorSoundPitch
-        );
-    }
-
-    private void playSuccessSound(Player player) {
-        player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5F, 1);
     }
 }

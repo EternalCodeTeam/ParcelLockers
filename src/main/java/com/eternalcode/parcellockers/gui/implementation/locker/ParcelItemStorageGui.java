@@ -1,12 +1,13 @@
 package com.eternalcode.parcellockers.gui.implementation.locker;
 
 import com.eternalcode.commons.bukkit.ItemUtil;
+import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.itemstorage.ItemStorage;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
-import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
+import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.parcel.ParcelService;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
@@ -20,20 +21,18 @@ import java.util.List;
 import java.util.stream.IntStream;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.Plugin;
 
 public class ParcelItemStorageGui {
 
-    private final Plugin plugin;
+    private final Scheduler scheduler;
     private final PluginConfig config;
     private final MiniMessage miniMessage;
     private final ItemStorageRepository itemStorageRepository;
     private final ParcelRepository parcelRepository;
     private final LockerRepository lockerRepository;
-    private final NotificationAnnouncer announcer;
+    private final NoticeService noticeService;
     private final ParcelContentRepository parcelContentRepository;
     private final UserRepository userRepository;
     private final SkullAPI skullAPI;
@@ -41,25 +40,25 @@ public class ParcelItemStorageGui {
     private final ParcelService parcelService;
 
     public ParcelItemStorageGui(
-        Plugin plugin,
+        Scheduler scheduler,
         PluginConfig config,
         MiniMessage miniMessage,
         ItemStorageRepository itemStorageRepository,
         ParcelRepository parcelRepository,
         LockerRepository lockerRepository,
-        NotificationAnnouncer announcer,
+        NoticeService noticeService,
         ParcelContentRepository parcelContentRepository,
         UserRepository userRepository,
         SkullAPI skullAPI,
         ParcelSendingGuiState state, ParcelService parcelService
     ) {
-        this.plugin = plugin;
+        this.scheduler = scheduler;
         this.config = config;
         this.miniMessage = miniMessage;
         this.itemStorageRepository = itemStorageRepository;
         this.parcelRepository = parcelRepository;
         this.lockerRepository = lockerRepository;
-        this.announcer = announcer;
+        this.noticeService = noticeService;
         this.parcelContentRepository = parcelContentRepository;
         this.userRepository = userRepository;
         this.skullAPI = skullAPI;
@@ -74,13 +73,13 @@ public class ParcelItemStorageGui {
         GuiItem backgroundItem = guiSettings.mainGuiBackgroundItem.toGuiItem(event -> event.setCancelled(true));
 
         GuiItem confirmItem = guiSettings.confirmItemsItem.toGuiItem(event -> new ParcelSendingGui(
-            this.plugin,
+            this.scheduler,
             this.config,
             this.miniMessage,
             this.itemStorageRepository,
             this.parcelRepository,
             this.lockerRepository,
-            this.announcer,
+            this.noticeService,
             this.parcelContentRepository,
             this.userRepository,
             this.skullAPI,
@@ -124,8 +123,12 @@ public class ParcelItemStorageGui {
                     if (item.getType() == type) {
                         ItemUtil.giveItem(player, item);
                         gui.removeItem(item);
-                        player.playSound(player.getLocation(), Sound.ENTITY_ENDERMAN_AMBIENT, 1, 1);
-                        this.announcer.sendMessage(player, this.config.messages.illegalItemFailedToSend.replace("{ITEMS}", item.getType().name()));
+                        // player.playSound(player.getLocation(), Sound.ENTITY_ENDERMAN_AMBIENT, 1, 1);
+                        this.noticeService.create()
+                            .notice(messages -> messages.illegalItemFailedToSend)
+                            .placeholder("{ITEMS}", item.getType().name())
+                            .player(player.getUniqueId())
+                            .send();
                     }
                 }
 
@@ -146,7 +149,7 @@ public class ParcelItemStorageGui {
                 }
             }
 
-            this.plugin.getServer().getScheduler().runTask(this.plugin, () -> gui.open(player));
+            this.scheduler.run(() -> gui.open(player));
         });
     }
 }

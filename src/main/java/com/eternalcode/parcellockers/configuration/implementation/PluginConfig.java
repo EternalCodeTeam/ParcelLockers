@@ -15,9 +15,6 @@ public class PluginConfig extends OkaeriConfig {
     @Comment({" ", "# Parcel Lockers plugin configuration file." })
     public Settings settings = new Settings();
 
-    @Comment({ " ", "# The plugin messages." })
-    public Messages messages = new Messages();
-
     @Comment({ " ", "# The plugin GUI settings." })
     public GuiSettings guiSettings = new GuiSettings();
 
@@ -66,50 +63,6 @@ public class PluginConfig extends OkaeriConfig {
         public float errorSoundPitch = 1.0F;
 
 
-    }
-    
-    public static class Messages extends OkaeriConfig {
-
-        public String onlyForPlayers = "&4✘ &cThis command is only available to players!";
-        public String noPermission = "&4✘ &cYou don't have permission to perform this command! &6(&c{PERMISSION}&6)";
-        public String cantFindPlayer = "&4✘ &cThe specified player could not be found!";
-        public String invalidUsage = "&4❣ &cCorrect usage: &6{USAGE}";
-        public String reload = "&3❣ &bConfiguration has been successfully reloaded!";
-        public String parcelCommandUsage = "&9ⓘ Correct usage: &3/parcel &b<list|info|send|cancel> &3[parcel]";
-        public String parcelSuccessfullyDeleted = "&2✔ &aParcel deleted successfully.";
-        public String failedToDeleteParcel = "&4✘ &cAn error occurred while deleting the parcel.";
-        public String failedToCreateParcelLocker = "&4✘ &cCould not create the parcel locker.";
-        public String parcelLockerSuccessfullyCreated = "&7» &aParcel locker created successfully.";
-        public String enterDescriptionPrompt = "&6↵ &eEnter a description for the parcel locker:";
-        public String cannotBreakParcelLocker = "&4✘ &cYou have no permission to break the parcel locker.";
-        public String parcelLockerSuccessfullyDeleted = "&2✔ &aParcel locker deleted successfully.";
-        public String broadcastParcelLockerRemoved = "&4❣ &cThe parcel locker at &4{X} {Y} {Z} &cin &4{WORLD} &chas been removed by &4{PLAYER}!";
-        public String parcelSent = "&2✔ &aParcel sent successfully.";
-        public String parcelFailedToSend = "&4✘ &cAn error occurred while sending the parcel. Check the console for more information.";
-        public String illegalItemFailedToSend = "&4✘ &cThe parcel contains illegal items that cannot be sent. ({ITEMS})";
-        public String parcelCannotBeEmpty = "&4✘ &cThe parcel cannot be empty!";
-        public String parcelNameCannotBeEmpty = "&4✘ &cThe parcel name cannot be empty!";
-        public String parcelNameSet = "&2✔ &aParcel name set successfully.";
-        public String parcelDescriptionSet = "&2✔ &aParcel description set successfully.";
-        public String parcelReceiverSet = "&2✔ &aParcel receiver set successfully.";
-        public String parcelDestinationSet = "&2✔ &aParcel destination locker set successfully.";
-        public String alreadyCreatingLocker = "&4✘ &cYou are already creating a parcel locker!";
-        public String receiverNotSet = "&4✘ &cThe parcel receiver is not set!";
-        public String parcelSuccessfullyCollected = "&2✔ &aParcel collected successfully.";
-        public String failedToCollectParcel = "&4✘ &cAn error occurred while collecting the parcel.";
-        public String notEnoughInventorySpace = "&4✘ &cYou don't have enough space in your inventory to collect the parcel!";
-
-        @Comment({ " ", "# The parcel info message." })
-        public List<String> parcelInfoMessages = List.of(
-            "&7» &6Parcel info:",
-            "&f• &6UUID: &e{UUID}",
-            "&f• &6Sender: &e{SENDER}",
-            "&f• &6Receiver: &e{RECEIVER}",
-            "&f• &6Size: &e{SIZE}",
-            "&f• &6Position: &6X: &e{POSITION_X}, &6Y: &e{POSITION_Y}, &6Z: &e{POSITION_Z}",
-            "&f• &6Priority: &e{PRIORITY}",
-            "&f• &6Description: &e{DESCRIPTION}"
-        );
     }
 
     public static class GuiSettings extends OkaeriConfig {

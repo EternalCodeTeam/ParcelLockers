@@ -5,10 +5,10 @@ import com.eternalcode.commons.adventure.AdventureLegacyColorPreProcessor;
 import com.eternalcode.commons.bukkit.scheduler.BukkitSchedulerImpl;
 import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.command.debug.DebugCommand;
-import com.eternalcode.parcellockers.command.handler.InvalidUsageImpl;
-import com.eternalcode.parcellockers.command.handler.PermissionMessage;
+import com.eternalcode.parcellockers.command.handler.InvalidUsageHandlerImpl;
+import com.eternalcode.parcellockers.command.handler.MissingPermissionsHandlerImpl;
 import com.eternalcode.parcellockers.configuration.ConfigService;
-import com.eternalcode.parcellockers.configuration.implementation.MessagesConfig;
+import com.eternalcode.parcellockers.configuration.implementation.MessageConfig;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepositoryOrmLite;
@@ -91,9 +91,10 @@ public final class ParcelLockers extends JavaPlugin {
 
         ConfigService configManager = new ConfigService();
         PluginConfig config = configManager.create(PluginConfig.class, new File(this.getDataFolder(), "config.yml"));
-        MessagesConfig messagesConfig = configManager.create(MessagesConfig.class, new File(this.getDataFolder(), "messages.yml"));
+        MessageConfig
+            messageConfig = configManager.create(MessageConfig.class, new File(this.getDataFolder(), "messages.yml"));
         Server server = this.getServer();
-        NoticeService noticeService = new NoticeService(messagesConfig, miniMessage, this.audiences);
+        NoticeService noticeService = new NoticeService(messageConfig, miniMessage, this.audiences);
         Scheduler scheduler = new BukkitSchedulerImpl(this);
 
         DatabaseManager databaseManager = new DatabaseManager(config, this.getLogger(), this.getDataFolder());
@@ -124,41 +125,41 @@ public final class ParcelLockers extends JavaPlugin {
         DeliveryRepositoryOrmLite deliveryRepository = new DeliveryRepositoryOrmLite(databaseManager, scheduler);
 
         ParcelContentRepository parcelContentRepository = new ParcelContentRepositoryOrmLite(databaseManager, scheduler);
-        ParcelService parcelService = new ParcelServiceImpl(config, announcer, parcelRepository, deliveryRepository, parcelContentRepository, scheduler);
+        ParcelService parcelService = new ParcelServiceImpl(config,
+            noticeService, parcelRepository, deliveryRepository, parcelContentRepository, scheduler);
 
         ItemStorageRepository itemStorageRepository = new ItemStorageRepositoryOrmLite(databaseManager, scheduler);
 
         UserRepository userRepository = new UserRepositoryOrmLite(databaseManager, scheduler);
         UserManager userManager = new UserManagerImpl(userRepository);
 
-        MainGui mainGUI = new MainGui(this, server, miniMessage, config, parcelRepository, lockerRepository,
+        MainGui mainGUI = new MainGui(scheduler, miniMessage, config, parcelRepository, lockerRepository,
             userManager);
-        ParcelListGui parcelListGUI = new ParcelListGui(this, miniMessage, config, parcelRepository, lockerRepository,
+        ParcelListGui parcelListGUI = new ParcelListGui(scheduler, miniMessage, config, parcelRepository, lockerRepository,
             userManager, mainGUI);
 
         this.liteCommands = LiteBukkitFactory.builder(this.getName(), this)
             .argument(Parcel.class, new ParcelArgument(parcelCache))
             .argument(Locker.class, new LockerArgument(lockerCache))
             .extension(new LiteAdventureExtension<>())
-            .message(LiteBukkitMessages.PLAYER_ONLY, config.messages.onlyForPlayers)
-            .message(LiteBukkitMessages.PLAYER_NOT_FOUND, config.messages.cantFindPlayer)
+            .message(LiteBukkitMessages.PLAYER_ONLY, messageConfig.playerOnlyCommand)
+            .message(LiteBukkitMessages.PLAYER_NOT_FOUND, messageConfig.playerNotFound)
             .commands(LiteCommandsAnnotations.of(
-                new ParcelCommand(lockerRepository, announcer, config, mainGUI, parcelListGUI,
-                    parcelService, userManager),
-                new ParcelLockersCommand(configManager, config, announcer),
-                new DebugCommand(parcelRepository, lockerRepository, itemStorageRepository, parcelContentRepository, announcer)
+                new ParcelCommand(mainGUI, parcelListGUI, parcelService),
+                new ParcelLockersCommand(configManager, config, noticeService),
+                new DebugCommand(parcelRepository, lockerRepository, itemStorageRepository, parcelContentRepository, noticeService)
             ))
-            .invalidUsage(new InvalidUsageImpl(announcer, config))
-            .missingPermission(new PermissionMessage(announcer, config))
+            .invalidUsage(new InvalidUsageHandlerImpl(noticeService))
+            .missingPermission(new MissingPermissionsHandlerImpl(noticeService))
             .build();
 
-        LockerMainGui lockerMainGUI = new LockerMainGui(this, miniMessage, config, itemStorageRepository, parcelRepository, lockerRepository, announcer, parcelContentRepository, userRepository, this.skullAPI,
+        LockerMainGui lockerMainGUI = new LockerMainGui(miniMessage, scheduler, config, itemStorageRepository, parcelRepository, lockerRepository, noticeService, parcelContentRepository, userRepository, this.skullAPI,
             parcelService);
 
         Stream.of(
             new LockerInteractionController(lockerCache, lockerMainGUI),
-            new LockerPlaceController(config, this, lockerRepository, announcer),
-            new LockerBreakController(lockerRepository, lockerCache, announcer, config.messages),
+            new LockerPlaceController(config, this, lockerRepository, noticeService),
+            new LockerBreakController(lockerRepository, lockerCache, noticeService),
             new PrepareUserController(userManager),
             new LoadUserController(userManager, server)
         ).forEach(controller -> server.getPluginManager().registerEvents(controller, this));

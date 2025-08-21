@@ -1,5 +1,6 @@
 package com.eternalcode.parcellockers.gui.implementation.locker;
 
+import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.configuration.serializable.ConfigItem;
 import com.eternalcode.parcellockers.gui.GuiView;
@@ -17,8 +18,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitScheduler;
 
 public class DestinationSelectionGui implements GuiView {
 
@@ -26,8 +25,7 @@ public class DestinationSelectionGui implements GuiView {
     private static final int HEIGHT = 4;
     private static final Page FIRST_PAGE = new Page(0, WIDTH * HEIGHT);
 
-    private final Plugin plugin;
-    private final BukkitScheduler scheduler;
+    private final Scheduler scheduler;
     private final PluginConfig config;
     private final MiniMessage miniMessage;
     private final LockerRepository lockerRepository;
@@ -35,15 +33,13 @@ public class DestinationSelectionGui implements GuiView {
     private final ParcelSendingGuiState state;
 
     public DestinationSelectionGui(
-        Plugin plugin,
-        BukkitScheduler scheduler,
+        Scheduler scheduler,
         PluginConfig config,
         MiniMessage miniMessage,
         LockerRepository lockerRepository,
         ParcelSendingGui sendingGUI,
         ParcelSendingGuiState state
     ) {
-        this.plugin = plugin;
         this.scheduler = scheduler;
         this.config = config;
         this.miniMessage = miniMessage;
@@ -91,7 +87,7 @@ public class DestinationSelectionGui implements GuiView {
                 }
 
                 this.loadLockers(player, result, refresher).forEach(refresher::addItem);
-                this.scheduler.runTask(this.plugin, () -> gui.open(player));
+                this.scheduler.run(() -> gui.open(player));
             }).orTimeout(5, TimeUnit.SECONDS);
     }
 
@@ -107,7 +103,7 @@ public class DestinationSelectionGui implements GuiView {
 
         return () -> {
             String name = parcelItem.name().replace("{DESCRIPTION}", locker.description());
-            boolean isLockerSelected = uuid.equals(this.state.getDestinationLocker());
+            boolean isLockerSelected = uuid.equals(this.state.destinationLocker());
             String oneLineLore = isLockerSelected
                 ? this.config.guiSettings.parcelDestinationSetLine
                 : this.config.guiSettings.parcelDestinationNotSetLine;
@@ -118,13 +114,13 @@ public class DestinationSelectionGui implements GuiView {
                 .lore(List.of(oneLineLore))
                 .toGuiItem(event -> {
                     if (isLockerSelected) {
-                        this.state.setDestinationLocker(null);
+                        this.state.destinationLocker(null);
                         this.sendingGUI.updateDestinationItem(player, "");
                         refresher.refresh();
                         return;
                     }
 
-                    this.state.setDestinationLocker(uuid);
+                    this.state.destinationLocker(uuid);
                     this.sendingGUI.updateDestinationItem(player, locker.description());
                     refresher.refresh();
                 });

@@ -20,45 +20,31 @@ public abstract class AbstractRepositoryOrmLite {
     }
 
     protected <T> CompletableFuture<Dao.CreateOrUpdateStatus> save(Class<T> type, T entity) {
-        return this.action(type, dao -> {
-            return dao.createOrUpdate(entity);
-        });
+        return this.action(type, dao -> dao.createOrUpdate(entity));
     }
 
     protected <T> CompletableFuture<T> saveIfNotExist(Class<T> type, T entity) {
-        return this.action(type, dao -> {
-            return dao.createIfNotExists(entity);
-        });
+        return this.action(type, dao -> dao.createIfNotExists(entity));
     }
 
     protected <T, ID> CompletableFuture<T> select(Class<T> type, ID id) {
-        return this.action(type, dao -> {
-            return dao.queryForId(id);
-        });
+        return this.action(type, dao -> dao.queryForId(id));
     }
 
     protected <T, ID> CompletableFuture<Optional<T>> selectSafe(Class<T> type, ID id) {
-        return this.action(type, dao -> {
-            return Optional.ofNullable(dao.queryForId(id));
-        });
+        return this.action(type, dao -> Optional.ofNullable(dao.queryForId(id)));
     }
 
     protected <T> CompletableFuture<Integer> delete(Class<T> type, T entity) {
-        return this.action(type, dao -> {
-            return dao.delete(entity);
-        });
+        return this.action(type, dao -> dao.delete(entity));
     }
 
     protected <T> CompletableFuture<Integer> deleteAll(Class<T> type) {
-        return this.action(type, dao -> {
-            return dao.deleteBuilder().delete();
-        });
+        return this.action(type, dao -> dao.deleteBuilder().delete());
     }
 
     protected <T, ID> CompletableFuture<Integer> deleteById(Class<T> type, ID id) {
-        return this.action(type, dao -> {
-            return dao.deleteById(id);
-        });
+        return this.action(type, dao -> dao.deleteById(id));
     }
 
     protected <T> CompletableFuture<List<T>> selectAll(Class<T> type) {

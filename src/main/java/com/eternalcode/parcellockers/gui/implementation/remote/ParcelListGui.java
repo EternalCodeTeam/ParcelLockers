@@ -2,6 +2,7 @@ package com.eternalcode.parcellockers.gui.implementation.remote;
 
 import static com.eternalcode.commons.adventure.AdventureUtil.resetItalic;
 
+import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.configuration.serializable.ConfigItem;
 import com.eternalcode.parcellockers.gui.GuiView;
@@ -19,14 +20,13 @@ import java.util.List;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 
 public class ParcelListGui implements GuiView {
 
     private static final int WIDTH = 7;
     private static final int HEIGHT = 4;
     private static final Page FIRST_PAGE = new Page(0, WIDTH * HEIGHT);
-    private final Plugin plugin;
+    private final Scheduler scheduler;
     private final MiniMessage miniMessage;
     private final PluginConfig config;
     private final ParcelRepository parcelRepository;
@@ -35,7 +35,7 @@ public class ParcelListGui implements GuiView {
     private final MainGui mainGUI;
 
     public ParcelListGui(
-        Plugin plugin,
+        Scheduler scheduler,
         MiniMessage miniMessage,
         PluginConfig config,
         ParcelRepository parcelRepository,
@@ -43,7 +43,7 @@ public class ParcelListGui implements GuiView {
         UserManager userManager,
         MainGui mainGUI
     ) {
-        this.plugin = plugin;
+        this.scheduler = scheduler;
         this.miniMessage = miniMessage;
         this.config = config;
         this.parcelRepository = parcelRepository;
@@ -88,11 +88,11 @@ public class ParcelListGui implements GuiView {
             for (Parcel parcel : result.parcels()) {
                 ItemBuilder parcelItem = item.toBuilder();
 
-                List<Component> newLore = ParcelPlaceholderUtil.replaceParcelPlaceholders(parcel, item.lore, this.userManager, this.lockerRepository).stream()
+                List<Component> newLore = ParcelPlaceholderUtil.replaceParcelPlaceholders(parcel, item.lore(), this.userManager, this.lockerRepository).stream()
                     .map(line -> resetItalic(this.miniMessage.deserialize(line)))
                     .toList();
                 parcelItem.lore(newLore);
-                parcelItem.name(this.miniMessage.deserialize(item.name.replace("{NAME}", parcel.name())));
+                parcelItem.name(this.miniMessage.deserialize(item.name().replace("{NAME}", parcel.name())));
 
                 gui.addItem(parcelItem.asGuiItem());
             }
@@ -107,7 +107,7 @@ public class ParcelListGui implements GuiView {
                 gui.setItem(47, previousPageItem);
             }
 
-            this.plugin.getServer().getScheduler().runTask(this.plugin, () -> gui.open(player));
+            this.scheduler.run(() -> gui.open(player));
         });
 
     }

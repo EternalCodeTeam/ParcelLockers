@@ -1,5 +1,6 @@
 package com.eternalcode.parcellockers.gui.implementation.locker;
 
+import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.gui.PaginatedGuiRefresher;
@@ -20,8 +21,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitScheduler;
 
 
 public class ReceiverSelectionGui implements GuiView {
@@ -30,8 +29,7 @@ public class ReceiverSelectionGui implements GuiView {
     private static final int HEIGHT = 4;
     private static final Page FIRST_PAGE = new Page(0, WIDTH * HEIGHT);
 
-    private final Plugin plugin;
-    private final BukkitScheduler scheduler;
+    private final Scheduler scheduler;
     private final PluginConfig config;
     private final MiniMessage miniMessage;
     private final UserRepository userRepository;
@@ -41,8 +39,7 @@ public class ReceiverSelectionGui implements GuiView {
 
 
     public ReceiverSelectionGui(
-            Plugin plugin,
-            BukkitScheduler scheduler,
+            Scheduler scheduler,
             PluginConfig config,
             MiniMessage miniMessage,
             UserRepository userRepository,
@@ -50,7 +47,6 @@ public class ReceiverSelectionGui implements GuiView {
             SkullAPI skullAPI,
             ParcelSendingGuiState state
     ) {
-        this.plugin = plugin;
         this.scheduler = scheduler;
         this.config = config;
         this.miniMessage = miniMessage;
@@ -103,7 +99,7 @@ public class ReceiverSelectionGui implements GuiView {
                     refresh.addItem(item);
                 }
 
-                this.scheduler.runTask(this.plugin, () -> gui.open(player));
+                this.scheduler.run(() -> gui.open(player));
             });
         });
     }
@@ -119,7 +115,7 @@ public class ReceiverSelectionGui implements GuiView {
         UUID uuid = user.uuid();
 
         return () -> {
-            boolean isReceiverSelected = uuid.equals(this.state.getReceiver());
+            boolean isReceiverSelected = uuid.equals(this.state.receiver());
             String lore = isReceiverSelected
                 ? this.config.guiSettings.parcelReceiverSetLine
                 : this.config.guiSettings.parcelReceiverNotSetLine;
@@ -128,17 +124,17 @@ public class ReceiverSelectionGui implements GuiView {
                 .texture(skullData.getTexture())
                 .name(this.miniMessage.deserialize(user.name()))
                 .lore(this.miniMessage.deserialize(lore))
-                .glow(uuid.equals(this.state.getReceiver()))
+                .glow(uuid.equals(this.state.receiver()))
                 .asGuiItem(event -> {
-                    if (uuid.equals(this.state.getReceiver())) {
+                    if (uuid.equals(this.state.receiver())) {
                         refresher.refresh();
                         this.sendingGUI.updateReceiverItem(player, "");
-                        this.state.setReceiver(null);
+                        this.state.receiver(null);
                         return;
                     }
 
                     this.sendingGUI.updateReceiverItem(player, user.name());
-                    this.state.setReceiver(uuid);
+                    this.state.receiver(uuid);
                     refresher.refresh();
                 });
         };

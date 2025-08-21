@@ -2,7 +2,7 @@ package com.eternalcode.parcellockers;
 
 import com.eternalcode.parcellockers.configuration.ConfigService;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
-import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
+import com.eternalcode.parcellockers.notification.NoticeService;
 import dev.rollczi.litecommands.annotations.command.Command;
 import dev.rollczi.litecommands.annotations.context.Sender;
 import dev.rollczi.litecommands.annotations.execute.Execute;
@@ -17,18 +17,21 @@ public class ParcelLockersCommand {
 
     private final ConfigService configManager;
     private final PluginConfig config;
-    private final NotificationAnnouncer announcer;
+    private final NoticeService noticeService;
 
-    public ParcelLockersCommand(ConfigService configManager, PluginConfig config, NotificationAnnouncer announcer) {
+    public ParcelLockersCommand(ConfigService configManager, PluginConfig config, NoticeService noticeService) {
         this.configManager = configManager;
         this.config = config;
-        this.announcer = announcer;
+        this.noticeService = noticeService;
     }
 
     @Execute(name = "reload")
     void reload(@Sender CommandSender sender) {
         this.configManager.reload();
-        this.announcer.sendMessage(sender, this.config.messages.reload);
+        this.noticeService.create()
+            .viewer(sender)
+            .notice(messages -> messages.reload)
+            .send();
     }
 
     @Execute(name = "give")

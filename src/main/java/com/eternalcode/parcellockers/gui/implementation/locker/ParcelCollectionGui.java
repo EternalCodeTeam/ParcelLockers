@@ -1,5 +1,6 @@
 package com.eternalcode.parcellockers.gui.implementation.locker;
 
+import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.configuration.serializable.ConfigItem;
 import com.eternalcode.parcellockers.gui.GuiView;
@@ -18,8 +19,6 @@ import dev.triumphteam.gui.guis.PaginatedGui;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitScheduler;
 
 public class ParcelCollectionGui implements GuiView {
 
@@ -27,9 +26,8 @@ public class ParcelCollectionGui implements GuiView {
     private static final int HEIGHT = 4;
     private static final Page FIRST_PAGE = new Page(0, WIDTH * HEIGHT);
 
-    private final Plugin plugin;
     private final PluginConfig config;
-    private final BukkitScheduler scheduler;
+    private final Scheduler scheduler;
     private final ParcelRepository parcelRepository;
     private final MiniMessage miniMessage;
     private final ParcelService parcelService;
@@ -37,16 +35,14 @@ public class ParcelCollectionGui implements GuiView {
     private final LockerRepository lockerRepository;
 
     public ParcelCollectionGui(
-        Plugin plugin,
         PluginConfig config,
-        BukkitScheduler scheduler,
+        Scheduler scheduler,
         ParcelRepository parcelRepository,
         MiniMessage miniMessage,
         ParcelService parcelService,
         UserManager userManager,
         LockerRepository lockerRepository
     ) {
-        this.plugin = plugin;
         this.config = config;
         this.scheduler = scheduler;
         this.parcelRepository = parcelRepository;
@@ -129,7 +125,7 @@ public class ParcelCollectionGui implements GuiView {
                 }));
             }
 
-            this.scheduler.runTask(this.plugin, () -> gui.open(player));
+            this.scheduler.run(() -> gui.open(player));
         });
     }
 }
