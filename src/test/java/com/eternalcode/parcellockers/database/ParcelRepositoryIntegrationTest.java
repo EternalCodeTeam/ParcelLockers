@@ -43,7 +43,7 @@ class ParcelRepositoryIntegrationTest extends IntegrationTestSpec {
     @Test
     void test() {
         File dataFolder = tempDir.resolve("ParcelLockers").toFile();
-        PluginConfig config = new ConfigService(dataFolder).load(new PluginConfig());
+        PluginConfig config = new ConfigService().create(PluginConfig.class, new File(dataFolder, "config.yml"));
         DatabaseManager databaseManager = new DatabaseManager(config, Logger.getLogger("ParcelLockers"), dataFolder);
         this.databaseManager = databaseManager;
         ParcelCache cache = new ParcelCache();

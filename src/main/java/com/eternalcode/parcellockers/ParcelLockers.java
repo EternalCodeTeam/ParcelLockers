@@ -51,8 +51,6 @@ import dev.rollczi.litecommands.bukkit.LiteBukkitFactory;
 import dev.rollczi.litecommands.bukkit.LiteBukkitMessages;
 import dev.rollczi.liteskullapi.LiteSkullFactory;
 import dev.rollczi.liteskullapi.SkullAPI;
-import io.papermc.lib.PaperLib;
-import io.papermc.lib.environments.Environment;
 import java.io.File;
 import java.sql.SQLException;
 import java.time.Duration;
@@ -60,7 +58,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Stream;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -81,8 +78,6 @@ public final class ParcelLockers extends JavaPlugin {
     public void onEnable() {
         Stopwatch started = Stopwatch.createStarted();
 
-        this.softwareCheck();
-
         this.audiences = BukkitAudiences.create(this);
         MiniMessage miniMessage = MiniMessage.builder()
             .preProcessor(new AdventureLegacyColorPreProcessor())
@@ -91,8 +86,7 @@ public final class ParcelLockers extends JavaPlugin {
 
         ConfigService configManager = new ConfigService();
         PluginConfig config = configManager.create(PluginConfig.class, new File(this.getDataFolder(), "config.yml"));
-        MessageConfig
-            messageConfig = configManager.create(MessageConfig.class, new File(this.getDataFolder(), "messages.yml"));
+        MessageConfig messageConfig = configManager.create(MessageConfig.class, new File(this.getDataFolder(), "messages.yml"));
         Server server = this.getServer();
         NoticeService noticeService = new NoticeService(messageConfig, miniMessage, this.audiences);
         Scheduler scheduler = new BukkitSchedulerImpl(this);
@@ -133,10 +127,23 @@ public final class ParcelLockers extends JavaPlugin {
         UserRepository userRepository = new UserRepositoryOrmLite(databaseManager, scheduler);
         UserManager userManager = new UserManagerImpl(userRepository);
 
-        MainGui mainGUI = new MainGui(scheduler, miniMessage, config, parcelRepository, lockerRepository,
-            userManager);
-        ParcelListGui parcelListGUI = new ParcelListGui(scheduler, miniMessage, config, parcelRepository, lockerRepository,
-            userManager, mainGUI);
+        MainGui mainGUI = new MainGui(
+            scheduler,
+            miniMessage,
+            config,
+            parcelRepository,
+            lockerRepository,
+            userManager
+        );
+        ParcelListGui parcelListGUI = new ParcelListGui(
+            scheduler,
+            miniMessage,
+            config,
+            parcelRepository,
+            lockerRepository,
+            userManager,
+            mainGUI
+        );
 
         this.liteCommands = LiteBukkitFactory.builder(this.getName(), this)
             .argument(Parcel.class, new ParcelArgument(parcelCache))
@@ -153,8 +160,19 @@ public final class ParcelLockers extends JavaPlugin {
             .missingPermission(new MissingPermissionsHandlerImpl(noticeService))
             .build();
 
-        LockerMainGui lockerMainGUI = new LockerMainGui(miniMessage, scheduler, config, itemStorageRepository, parcelRepository, lockerRepository, noticeService, parcelContentRepository, userRepository, this.skullAPI,
-            parcelService);
+        LockerMainGui lockerMainGUI = new LockerMainGui(
+            miniMessage,
+            scheduler,
+            config,
+            itemStorageRepository,
+            parcelRepository,
+            lockerRepository,
+            noticeService,
+            parcelContentRepository,
+            userRepository,
+            this.skullAPI,
+            parcelService
+        );
 
         Stream.of(
             new LockerInteractionController(lockerCache, lockerMainGUI),
@@ -204,16 +222,6 @@ public final class ParcelLockers extends JavaPlugin {
         }
 
         this.skullAPI.shutdown();
-    }
-
-    private void softwareCheck() {
-        Logger logger = this.getLogger();
-        Environment environment = PaperLib.getEnvironment();
-
-        if (!environment.isPaper()) {
-            logger.warning("Your server running on unsupported software, please use Paper or its forks");
-            logger.warning("You can easily download Paper from https://papermc.io/downloads");
-        }
     }
 }
 

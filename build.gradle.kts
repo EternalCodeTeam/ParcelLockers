@@ -1,7 +1,7 @@
 plugins {
     `java-library`
-    id("net.minecrell.plugin-yml.bukkit") version "0.6.0"
-    id("xyz.jpenilla.run-paper") version "2.3.1"
+    id("de.eldoria.plugin-yml.bukkit") version "0.7.1"
+    id("xyz.jpenilla.run-paper") version "3.0.0-beta.1"
     id("com.gradleup.shadow") version "9.0.2"
 }
 
@@ -24,9 +24,7 @@ repositories {
 
 dependencies {
     // minecraft development api
-    compileOnly("org.spigotmc:spigot-api:1.21.5-R0.1-SNAPSHOT")
-    implementation("net.kyori:adventure-platform-bukkit:4.4.1")
-    implementation("net.kyori:adventure-text-minimessage:4.24.0")
+    compileOnly("io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT")
     implementation("dev.rollczi:litecommands-bukkit:3.10.4")
     implementation("dev.rollczi:litecommands-adventure:3.10.4")
 
@@ -64,9 +62,6 @@ dependencies {
     // jetbrains annotations
     api("org.jetbrains:annotations:26.0.2")
 
-    // paperlib
-    implementation("io.papermc:paperlib:1.0.8")
-
     // panda-utilities
     implementation("org.panda-lang:panda-utilities:0.5.2-alpha")
 
@@ -76,13 +71,13 @@ dependencies {
     // completable-futures
     implementation("com.spotify:completable-futures:0.3.6")
 
-    // eternalcode-commons
+    // eternalcode commons
     implementation("com.eternalcode:eternalcode-commons-adventure:1.3.0")
     implementation("com.eternalcode:eternalcode-commons-bukkit:1.3.0")
 
-    // notification library
+    // multification
     implementation("com.eternalcode:multification-bukkit:1.2.2")
-    implementation("com.eternalcode:multification-okaeri:1.1.4")
+    implementation("com.eternalcode:multification-okaeri:1.2.2")
 
     // caffeine
     implementation("com.github.ben-manes.caffeine:caffeine:3.2.2")
@@ -102,14 +97,14 @@ java {
 }
 
 bukkit {
-    main = "com.eternalcode.parcellockers.ParcelLockers"
-    apiVersion = "1.13"
-    prefix = "ParcelLockers"
-    author = "EternalCodeTeam"
     name = "ParcelLockers"
-    description = project.description
-    website = "https://github.com/EternalCodeTeam/ParcelLockers"
+    main = "com.eternalcode.parcellockers.ParcelLockers"
     version = project.version.toString()
+    apiVersion = "1.21"
+    description = project.description
+    author = "EternalCodeTeam"
+    website = "https://github.com/EternalCodeTeam/ParcelLockers"
+
 }
 
 tasks.withType<JavaCompile> {
@@ -121,14 +116,7 @@ tasks.withType<JavaCompile> {
 
 tasks {
     runServer {
-        minecraftVersion("1.21.5")
-    }
-
-    clean {
-        doLast {
-            project.file("run/plugins").deleteRecursively()
-            project.file("run/logs").deleteRecursively()
-        }
+        minecraftVersion("1.21.8")
     }
 
     test {
