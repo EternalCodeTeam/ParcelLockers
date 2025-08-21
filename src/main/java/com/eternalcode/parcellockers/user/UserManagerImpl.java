@@ -7,14 +7,14 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-public class UserServiceImpl implements UserService {
+public class UserManagerImpl implements UserManager {
 
     private final UserRepository userRepository;
 
     private final Map<UUID, User> usersByUUID = new HashMap<>();
     private final Map<String, User> usersByName = new HashMap<>();
 
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserManagerImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 

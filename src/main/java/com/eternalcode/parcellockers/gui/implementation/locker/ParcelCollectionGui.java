@@ -11,7 +11,7 @@ import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.parcel.util.ParcelPlaceholderUtil;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.SentryExceptionHandler;
-import com.eternalcode.parcellockers.user.UserService;
+import com.eternalcode.parcellockers.user.UserManager;
 import com.eternalcode.parcellockers.util.InventoryUtil;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
@@ -34,7 +34,7 @@ public class ParcelCollectionGui implements GuiView {
     private final ParcelRepository parcelRepository;
     private final MiniMessage miniMessage;
     private final ParcelService parcelService;
-    private final UserService userService;
+    private final UserManager userManager;
     private final LockerRepository lockerRepository;
 
     public ParcelCollectionGui(
@@ -44,7 +44,7 @@ public class ParcelCollectionGui implements GuiView {
         ParcelRepository parcelRepository,
         MiniMessage miniMessage,
         ParcelService parcelService,
-        UserService userService,
+        UserManager userManager,
         LockerRepository lockerRepository
     ) {
         this.plugin = plugin;
@@ -53,7 +53,7 @@ public class ParcelCollectionGui implements GuiView {
         this.parcelRepository = parcelRepository;
         this.miniMessage = miniMessage;
         this.parcelService = parcelService;
-        this.userService = userService;
+        this.userManager = userManager;
         this.lockerRepository = lockerRepository;
     }
 
@@ -118,7 +118,7 @@ public class ParcelCollectionGui implements GuiView {
 
                 ConfigItem item = parcelItem.clone();
                 item.name = item.name.replace("{NAME}", parcel.name());
-                item.lore = ParcelPlaceholderUtil.replaceParcelPlaceholders(parcel, item.lore, this.userService, this.lockerRepository);
+                item.lore = ParcelPlaceholderUtil.replaceParcelPlaceholders(parcel, item.lore, this.userManager, this.lockerRepository);
 
                 item.setGlow(true);
 

@@ -10,8 +10,8 @@ import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.ParcelService;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
-import com.eternalcode.parcellockers.user.UserService;
-import com.eternalcode.parcellockers.user.UserServiceImpl;
+import com.eternalcode.parcellockers.user.UserManager;
+import com.eternalcode.parcellockers.user.UserManagerImpl;
 import com.eternalcode.parcellockers.user.repository.UserRepository;
 import dev.rollczi.liteskullapi.SkullAPI;
 import dev.triumphteam.gui.guis.Gui;
@@ -35,7 +35,7 @@ public class LockerMainGui implements GuiView {
     private final SkullAPI skullAPI;
     private final ParcelService parcelService;
 
-    private final UserService userService;
+    private final UserManager userManager;
 
     public LockerMainGui(
         Plugin plugin,
@@ -62,7 +62,7 @@ public class LockerMainGui implements GuiView {
         this.skullAPI = skullAPI;
         this.parcelService = parcelService;
 
-        this.userService = new UserServiceImpl(this.userRepository);
+        this.userManager = new UserManagerImpl(this.userRepository);
     }
 
     @Override
@@ -96,7 +96,7 @@ public class LockerMainGui implements GuiView {
             this.parcelRepository,
             this.miniMessage,
             this.parcelService,
-            this.userService,
+            this.userManager,
             this.lockerRepository
         );
 

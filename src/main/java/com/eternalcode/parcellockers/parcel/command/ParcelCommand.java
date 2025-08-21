@@ -8,7 +8,7 @@ import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelService;
 import com.eternalcode.parcellockers.parcel.util.ParcelPlaceholderUtil;
-import com.eternalcode.parcellockers.user.UserService;
+import com.eternalcode.parcellockers.user.UserManager;
 import dev.rollczi.litecommands.annotations.argument.Arg;
 import dev.rollczi.litecommands.annotations.async.Async;
 import dev.rollczi.litecommands.annotations.command.Command;
@@ -29,7 +29,7 @@ public class ParcelCommand {
     private final MainGui mainGUI;
     private final ParcelListGui parcelListGUI;
     private final ParcelService parcelService;
-    private final UserService userService;
+    private final UserManager userManager;
 
     public ParcelCommand(
             LockerRepository lockerRepository,
@@ -38,7 +38,7 @@ public class ParcelCommand {
             MainGui mainGUI,
             ParcelListGui parcelListGUI,
             ParcelService parcelService,
-            UserService userService
+            UserManager userManager
     ) {
         this.lockerRepository = lockerRepository;
         this.announcer = announcer;
@@ -46,7 +46,7 @@ public class ParcelCommand {
         this.mainGUI = mainGUI;
         this.parcelListGUI = parcelListGUI;
         this.parcelService = parcelService;
-        this.userService = userService;
+        this.userManager = userManager;
     }
 
     @Execute(name = "list")
@@ -57,7 +57,7 @@ public class ParcelCommand {
     @Async
     @Execute(name = "info")
     void info(@Context Player player, @Arg Parcel parcel) {
-        List<String> messagesToSend = ParcelPlaceholderUtil.replaceParcelPlaceholders(parcel, this.config.messages.parcelInfoMessages, this.userService, this.lockerRepository);
+        List<String> messagesToSend = ParcelPlaceholderUtil.replaceParcelPlaceholders(parcel, this.config.messages.parcelInfoMessages, this.userManager, this.lockerRepository);
         messagesToSend.forEach(message -> this.announcer.sendMessage(player, message));
     }
 

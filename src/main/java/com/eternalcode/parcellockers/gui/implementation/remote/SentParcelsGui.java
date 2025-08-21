@@ -8,7 +8,7 @@ import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.parcel.util.ParcelPlaceholderUtil;
 import com.eternalcode.parcellockers.shared.SentryExceptionHandler;
-import com.eternalcode.parcellockers.user.UserService;
+import com.eternalcode.parcellockers.user.UserManager;
 import dev.triumphteam.gui.builder.item.ItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
@@ -28,7 +28,7 @@ public class SentParcelsGui implements GuiView {
     private final ParcelRepository parcelRepository;
     private final LockerRepository lockerRepository;
     private final MainGui mainGUI;
-    private final UserService userService;
+    private final UserManager userManager;
 
     public SentParcelsGui(
         Plugin plugin,
@@ -37,7 +37,7 @@ public class SentParcelsGui implements GuiView {
         ParcelRepository parcelRepository,
         LockerRepository lockerRepository,
         MainGui mainGUI,
-        UserService userService
+        UserManager userManager
     ) {
         this.plugin = plugin;
         this.miniMessage = miniMessage;
@@ -45,7 +45,7 @@ public class SentParcelsGui implements GuiView {
         this.parcelRepository = parcelRepository;
         this.lockerRepository = lockerRepository;
         this.mainGUI = mainGUI;
-        this.userService = userService;
+        this.userManager = userManager;
     }
 
     @Override
@@ -78,7 +78,7 @@ public class SentParcelsGui implements GuiView {
             for (Parcel parcel : parcels) {
                 ItemBuilder item = parcelItem.toBuilder();
 
-                List<Component> newLore = ParcelPlaceholderUtil.replaceParcelPlaceholders(parcel, parcelItem.lore, this.userService, this.lockerRepository)
+                List<Component> newLore = ParcelPlaceholderUtil.replaceParcelPlaceholders(parcel, parcelItem.lore, this.userManager, this.lockerRepository)
                     .stream()
                     .map(line -> this.miniMessage.deserialize(line))
                     .toList();

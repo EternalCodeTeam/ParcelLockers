@@ -11,7 +11,7 @@ import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.parcel.util.ParcelPlaceholderUtil;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.SentryExceptionHandler;
-import com.eternalcode.parcellockers.user.UserService;
+import com.eternalcode.parcellockers.user.UserManager;
 import dev.triumphteam.gui.builder.item.ItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
@@ -19,7 +19,6 @@ import dev.triumphteam.gui.guis.PaginatedGui;
 import java.util.List;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
@@ -29,31 +28,28 @@ public class ParcelListGui implements GuiView {
     private static final int HEIGHT = 4;
     private static final Page FIRST_PAGE = new Page(0, WIDTH * HEIGHT);
     private final Plugin plugin;
-    private final Server server;
     private final MiniMessage miniMessage;
     private final PluginConfiguration config;
     private final ParcelRepository parcelRepository;
     private final LockerRepository lockerRepository;
-    private final UserService userService;
+    private final UserManager userManager;
     private final MainGui mainGUI;
 
     public ParcelListGui(
         Plugin plugin,
-        Server server,
         MiniMessage miniMessage,
         PluginConfiguration config,
         ParcelRepository parcelRepository,
         LockerRepository lockerRepository,
-        UserService userService,
+        UserManager userManager,
         MainGui mainGUI
     ) {
         this.plugin = plugin;
-        this.server = server;
         this.miniMessage = miniMessage;
         this.config = config;
         this.parcelRepository = parcelRepository;
         this.lockerRepository = lockerRepository;
-        this.userService = userService;
+        this.userManager = userManager;
         this.mainGUI = mainGUI;
     }
 
@@ -93,7 +89,7 @@ public class ParcelListGui implements GuiView {
             for (Parcel parcel : result.parcels()) {
                 ItemBuilder parcelItem = item.toBuilder();
 
-                List<Component> newLore = ParcelPlaceholderUtil.replaceParcelPlaceholders(parcel, item.lore, this.userService, this.lockerRepository).stream()
+                List<Component> newLore = ParcelPlaceholderUtil.replaceParcelPlaceholders(parcel, item.lore, this.userManager, this.lockerRepository).stream()
                     .map(line -> resetItalic(this.miniMessage.deserialize(line)))
                     .toList();
                 parcelItem.lore(newLore);
@@ -112,7 +108,7 @@ public class ParcelListGui implements GuiView {
                 gui.setItem(47, previousPageItem);
             }
 
-            this.server.getScheduler().runTask(this.plugin, () -> gui.open(player));
+            this.plugin.getServer().getScheduler().runTask(this.plugin, () -> gui.open(player));
         }).whenComplete(SentryExceptionHandler.handler());
 
     }

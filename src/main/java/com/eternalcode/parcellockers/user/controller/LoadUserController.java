@@ -1,6 +1,6 @@
 package com.eternalcode.parcellockers.user.controller;
 
-import com.eternalcode.parcellockers.user.UserService;
+import com.eternalcode.parcellockers.user.UserManager;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -9,18 +9,18 @@ import org.bukkit.event.server.ServerLoadEvent;
 
 public class LoadUserController implements Listener {
 
-    private final UserService userService;
+    private final UserManager userManager;
     private final Server server;
 
-    public LoadUserController(UserService userService, Server server) {
-        this.userService = userService;
+    public LoadUserController(UserManager userManager, Server server) {
+        this.userManager = userManager;
         this.server = server;
     }
 
     @EventHandler
     void onLoad(ServerLoadEvent event) {
         for (Player player : this.server.getOnlinePlayers()) {
-            this.userService.create(player.getUniqueId(), player.getName());
+            this.userManager.create(player.getUniqueId(), player.getName());
         }
     }
 }

@@ -4,7 +4,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-public interface UserService {
+public interface UserManager {
+
     User create(UUID uuid, String name);
 
     User getOrCreate(UUID uuid, String name);
