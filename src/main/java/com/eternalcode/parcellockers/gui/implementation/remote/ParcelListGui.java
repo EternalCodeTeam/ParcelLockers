@@ -12,7 +12,7 @@ import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.parcel.util.ParcelPlaceholderUtil;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.user.UserManager;
-import dev.triumphteam.gui.builder.item.ItemBuilder;
+import dev.triumphteam.gui.builder.item.PaperItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
@@ -86,7 +86,7 @@ public class ParcelListGui implements GuiView {
             ConfigItem item = this.config.guiSettings.parcelItem;
 
             for (Parcel parcel : result.parcels()) {
-                ItemBuilder parcelItem = item.toBuilder();
+                PaperItemBuilder parcelItem = item.toBuilder();
 
                 List<Component> newLore = ParcelPlaceholderUtil.replaceParcelPlaceholders(parcel, item.lore(), this.userManager, this.lockerRepository).stream()
                     .map(line -> resetItalic(this.miniMessage.deserialize(line)))

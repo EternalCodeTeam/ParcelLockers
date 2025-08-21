@@ -9,7 +9,7 @@ import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.parcel.util.ParcelPlaceholderUtil;
 import com.eternalcode.parcellockers.user.UserManager;
-import dev.triumphteam.gui.builder.item.ItemBuilder;
+import dev.triumphteam.gui.builder.item.PaperItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
@@ -75,7 +75,7 @@ public class SentParcelsGui implements GuiView {
             List<Parcel> parcels = optionalParcels.orElse(Collections.emptyList());
 
             for (Parcel parcel : parcels) {
-                ItemBuilder item = parcelItem.toBuilder();
+                PaperItemBuilder item = parcelItem.toBuilder();
 
                 List<Component> newLore = ParcelPlaceholderUtil.replaceParcelPlaceholders(parcel, parcelItem.lore(), this.userManager, this.lockerRepository)
                     .stream()
