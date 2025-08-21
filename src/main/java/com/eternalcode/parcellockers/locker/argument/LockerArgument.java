@@ -10,11 +10,11 @@ import dev.rollczi.litecommands.suggestion.SuggestionContext;
 import dev.rollczi.litecommands.suggestion.SuggestionResult;
 import org.bukkit.command.CommandSender;
 
-public class ParcelLockerArgument extends ArgumentResolver<CommandSender, Locker> {
+public class LockerArgument extends ArgumentResolver<CommandSender, Locker> {
 
     private final LockerCache cache;
 
-    public ParcelLockerArgument(LockerCache cache) {
+    public LockerArgument(LockerCache cache) {
         this.cache = cache;
     }
 

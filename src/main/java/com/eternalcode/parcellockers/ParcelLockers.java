@@ -20,7 +20,7 @@ import com.eternalcode.parcellockers.gui.implementation.remote.ParcelListGui;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepositoryOrmLite;
 import com.eternalcode.parcellockers.locker.Locker;
-import com.eternalcode.parcellockers.locker.argument.ParcelLockerArgument;
+import com.eternalcode.parcellockers.locker.argument.LockerArgument;
 import com.eternalcode.parcellockers.locker.controller.LockerBreakController;
 import com.eternalcode.parcellockers.locker.controller.LockerInteractionController;
 import com.eternalcode.parcellockers.locker.controller.LockerPlaceController;
@@ -138,7 +138,7 @@ public final class ParcelLockers extends JavaPlugin {
 
         this.liteCommands = LiteBukkitFactory.builder(this.getName(), this)
             .argument(Parcel.class, new ParcelArgument(parcelCache))
-            .argument(Locker.class, new ParcelLockerArgument(lockerCache))
+            .argument(Locker.class, new LockerArgument(lockerCache))
             .extension(new LiteAdventureExtension<>())
             .message(LiteBukkitMessages.PLAYER_ONLY, config.messages.onlyForPlayers)
             .message(LiteBukkitMessages.PLAYER_NOT_FOUND, config.messages.cantFindPlayer)
