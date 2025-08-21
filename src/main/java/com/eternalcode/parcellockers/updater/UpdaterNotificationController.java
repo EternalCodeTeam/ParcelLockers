@@ -1,11 +1,10 @@
 package com.eternalcode.parcellockers.updater;
 
+import com.eternalcode.multification.notice.Notice;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
+import com.eternalcode.parcellockers.notification.NoticeService;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.platform.AudienceProvider;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -17,25 +16,21 @@ public class UpdaterNotificationController implements Listener {
 
     private final UpdaterService updaterService;
     private final PluginConfig pluginConfig;
-    private final AudienceProvider audienceProvider;
-    private final MiniMessage miniMessage;
+    private final NoticeService noticeService;
 
     public UpdaterNotificationController(
             UpdaterService updaterService,
             PluginConfig pluginConfig,
-            AudienceProvider audienceProvider,
-            MiniMessage miniMessage
+            NoticeService noticeService
     ) {
         this.updaterService = updaterService;
         this.pluginConfig = pluginConfig;
-        this.audienceProvider = audienceProvider;
-        this.miniMessage = miniMessage;
+        this.noticeService = noticeService;
     }
 
     @EventHandler
     void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        Audience audience = this.audienceProvider.player(player.getUniqueId());
 
         if (!player.hasPermission("parcellockers.receiveupdates") || !this.pluginConfig.settings.receiveUpdates) {
             return;
@@ -45,7 +40,10 @@ public class UpdaterNotificationController implements Listener {
 
         upToDate.thenAccept(isUpToDate -> {
             if (!isUpToDate) {
-                audience.sendMessage(this.miniMessage.deserialize(NEW_VERSION_AVAILABLE));
+                this.noticeService.create()
+                    .player(player.getUniqueId())
+                    .notice(Notice.chat(NEW_VERSION_AVAILABLE))
+                    .send();
             }
         }).orTimeout(5, TimeUnit.SECONDS);
     }

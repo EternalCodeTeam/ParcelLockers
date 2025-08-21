@@ -114,7 +114,7 @@ public class ParcelSendingGui implements GuiView {
                         String name = result.getLineWithoutColor(1);
                         if (name.isBlank()) {
                             this.noticeService.create()
-                                .notice(messages -> messages.parcelNameCannotBeEmpty)
+                                .notice(messages -> messages.parcel.emptyName)
                                 .player(player.getUniqueId())
                                 .send();
                             return Collections.emptyList();
@@ -122,7 +122,7 @@ public class ParcelSendingGui implements GuiView {
 
                         this.state.parcelName(name);
                         this.noticeService.create()
-                            .notice(messages -> messages.parcelNameSet)
+                            .notice(messages -> messages.parcel.nameSet)
                             .player(player.getUniqueId())
                             .send();
 
@@ -163,7 +163,7 @@ public class ParcelSendingGui implements GuiView {
 
                         this.state.parcelDescription(description);
                         this.noticeService.create()
-                            .notice(messages -> messages.parcelDescriptionSet)
+                            .notice(messages -> messages.parcel.descriptionSet)
                             .player(player.getUniqueId())
                             .send();
 
@@ -222,7 +222,7 @@ public class ParcelSendingGui implements GuiView {
             this.itemStorageRepository.find(player.getUniqueId()).thenAccept(result -> {
                 if (result.isEmpty() || result.get().items().isEmpty()) {
                     this.noticeService.create()
-                        .notice(messages -> messages.parcelCannotBeEmpty)
+                        .notice(messages -> messages.parcel.empty)
                         .player(player.getUniqueId())
                         .send();
                     // TODO player.playSound(player, this.config.settings.errorSound, this.config.settings.errorSoundVolume, this.config.settings.errorSoundPitch);
@@ -231,7 +231,7 @@ public class ParcelSendingGui implements GuiView {
 
                 if (this.state.receiver() == null) {
                     this.noticeService.create()
-                        .notice(messages -> messages.receiverNotSet)
+                        .notice(messages -> messages.parcel.receiverNotSet)
                         .player(player.getUniqueId())
                         .send();
                     player.playSound(player, this.config.settings.errorSound, this.config.settings.errorSoundVolume, this.config.settings.errorSoundPitch);
@@ -367,7 +367,7 @@ public class ParcelSendingGui implements GuiView {
 
     public void updateReceiverItem(Player player, String receiverName) {
         this.noticeService.create()
-            .notice(messages -> messages.parcelReceiverSet)
+            .notice(messages -> messages.parcel.receiverSet)
             .player(player.getUniqueId())
             .send();
 
@@ -382,7 +382,7 @@ public class ParcelSendingGui implements GuiView {
 
     public void updateDestinationItem(Player player, String destinationLockerDesc) {
         this.noticeService.create()
-            .notice(messages -> messages.parcelDestinationSet)
+            .notice(messages -> messages.parcel.destinationSet)
             .player(player.getUniqueId())
             .send();
 

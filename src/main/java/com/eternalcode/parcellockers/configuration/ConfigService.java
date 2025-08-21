@@ -4,6 +4,7 @@ import com.eternalcode.multification.bukkit.notice.resolver.sound.SoundBukkitRes
 import com.eternalcode.multification.notice.resolver.NoticeResolverDefaults;
 import com.eternalcode.multification.notice.resolver.NoticeResolverRegistry;
 import com.eternalcode.multification.okaeri.MultificationSerdesPack;
+import com.eternalcode.parcellockers.configuration.transformer.SoundTransformer;
 import eu.okaeri.configs.ConfigManager;
 import eu.okaeri.configs.OkaeriConfig;
 import eu.okaeri.configs.serdes.OkaeriSerdesPack;
@@ -14,6 +15,7 @@ import eu.okaeri.configs.yaml.bukkit.serdes.SerdesBukkit;
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
+import lombok.NonNull;
 
 public class ConfigService {
 
@@ -51,8 +53,8 @@ public class ConfigService {
 
     private static class DefaultSerdesPack implements OkaeriSerdesPack {
         @Override
-        public void register(SerdesRegistry config) {
-
+        public void register(@NonNull SerdesRegistry registry) {
+            registry.register(new SoundTransformer());
         }
     }
 }

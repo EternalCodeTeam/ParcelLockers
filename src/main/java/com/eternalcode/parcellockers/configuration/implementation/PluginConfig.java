@@ -4,12 +4,22 @@ import com.eternalcode.parcellockers.configuration.serializable.ConfigItem;
 import com.eternalcode.parcellockers.database.DatabaseType;
 import eu.okaeri.configs.OkaeriConfig;
 import eu.okaeri.configs.annotation.Comment;
+import eu.okaeri.configs.annotation.Header;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 
+@Header({
+    " ",
+    "# Parcel Lockers plugin configuration file.",
+    "#",
+    "# This file is used to configure the ParcelLockers plugin.",
+    "# You can change the settings here to customize the plugin behavior.",
+    "#",
+    "# If you want to change the settings, you can do it in-game using the /parcellockers reload command."
+})
 public class PluginConfig extends OkaeriConfig {
 
     @Comment({" ", "# Parcel Lockers plugin configuration file." })
@@ -61,8 +71,6 @@ public class PluginConfig extends OkaeriConfig {
 
         @Comment({ " ", "# The sound pitch for the error sound." })
         public float errorSoundPitch = 1.0F;
-
-
     }
 
     public static class GuiSettings extends OkaeriConfig {

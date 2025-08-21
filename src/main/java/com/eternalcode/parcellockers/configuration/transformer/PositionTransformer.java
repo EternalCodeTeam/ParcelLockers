@@ -1,4 +1,4 @@
-package com.eternalcode.parcellockers.configuration.composer;
+package com.eternalcode.parcellockers.configuration.transformer;
 
 import com.eternalcode.parcellockers.shared.Position;
 import eu.okaeri.configs.schema.GenericsPair;

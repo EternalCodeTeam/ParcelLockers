@@ -50,7 +50,7 @@ public class LockerBreakController implements Listener {
             event.setCancelled(true);
             this.noticeService.create()
                 .player(player.getUniqueId())
-                .notice(messages -> messages.cannotBreakParcelLocker)
+                .notice(messages -> messages.locker.cannotBreak)
                 .send();
             return;
         }
@@ -65,7 +65,7 @@ public class LockerBreakController implements Listener {
 
             this.noticeService.create()
                 .player(player.getUniqueId())
-                .notice(messages -> messages.parcelLockerSuccessfullyDeleted)
+                .notice(messages -> messages.locker.deleted)
                 .send();
 
             Formatter formatter = new Formatter()
@@ -77,7 +77,7 @@ public class LockerBreakController implements Listener {
 
             this.noticeService.create()
                 .player(player.getUniqueId())
-                .notice(messages -> messages.parcelLockerSuccessfullyDeleted)
+                .notice(messages -> messages.locker.deleted)
                 .formatter(formatter)
                 .send();
         });

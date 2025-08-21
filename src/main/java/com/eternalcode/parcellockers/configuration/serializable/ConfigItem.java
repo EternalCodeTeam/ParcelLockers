@@ -6,7 +6,7 @@ import com.eternalcode.commons.adventure.AdventureUtil;
 import dev.triumphteam.gui.builder.item.ItemBuilder;
 import dev.triumphteam.gui.components.GuiAction;
 import dev.triumphteam.gui.guis.GuiItem;
-import eu.okaeri.configs.OkaeriConfig;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
@@ -22,9 +22,9 @@ import org.jetbrains.annotations.NotNull;
 @Getter
 @Setter
 @Accessors(fluent = true)
-public class ConfigItem extends OkaeriConfig implements Cloneable {
+public class ConfigItem implements Serializable, Cloneable {
 
-    private static final MiniMessage MINI_MESSAGE = MiniMessage.builder()
+    private final transient MiniMessage MINI_MESSAGE = MiniMessage.builder()
         .preProcessor(new AdventureLegacyColorPreProcessor())
         .postProcessor(new AdventureLegacyColorPostProcessor())
         .build();
@@ -67,10 +67,10 @@ public class ConfigItem extends OkaeriConfig implements Cloneable {
     public ConfigItem clone() {
         try {
             ConfigItem cloned = (ConfigItem) super.clone();
-            cloned.lore = new ArrayList<>(this.lore); // Deep copy of the list
+            cloned.lore = new ArrayList<>(this.lore);
             return cloned;
         } catch (CloneNotSupportedException e) {
-            throw new AssertionError("Failed to clone " + this); // Should never happen
+            throw new AssertionError("Failed to clone " + this);
         }
     }
 }

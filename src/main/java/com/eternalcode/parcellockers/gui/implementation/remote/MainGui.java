@@ -73,6 +73,5 @@ public class MainGui implements GuiView {
         gui.addSlotAction(22, event -> new SentParcelsGui(this.scheduler, this.miniMessage, this.config, this.parcelRepository, this.lockerRepository, this, this.userManager).show(player));
         gui.setDefaultClickAction(event -> event.setCancelled(true));
         gui.open(player);
-
     }
 }

@@ -9,11 +9,12 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.jetbrains.annotations.NotNull;
 
 public class LockerCache {
 
-    private final Cache<UUID, Locker> cache;
-    private final Cache<Position, Locker> positionCache;
+    private final Cache<@NotNull UUID, Locker> cache;
+    private final Cache<@NotNull Position, Locker> positionCache;
 
     public LockerCache() {
         this.cache = Caffeine.newBuilder()

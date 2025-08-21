@@ -1,13 +1,12 @@
 package com.eternalcode.parcellockers.updater;
 
+import com.eternalcode.commons.Lazy;
 import com.eternalcode.gitcheck.GitCheck;
 import com.eternalcode.gitcheck.GitCheckResult;
 import com.eternalcode.gitcheck.git.GitRepository;
 import com.eternalcode.gitcheck.git.GitTag;
-import org.bukkit.plugin.PluginDescriptionFile;
-import panda.std.Lazy;
-
 import java.util.concurrent.CompletableFuture;
+import org.bukkit.plugin.PluginDescriptionFile;
 
 public class UpdaterService {
 

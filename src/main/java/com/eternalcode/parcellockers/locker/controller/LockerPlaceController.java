@@ -83,7 +83,7 @@ public class LockerPlaceController implements Listener {
             event.setCancelled(true);
             this.noticeService.create()
                 .player(player.getUniqueId())
-                .notice(messages -> messages.alreadyCreatingLocker)
+                .notice(messages -> messages.locker.alreadyCreating)
                 .send();
             return;
         }
@@ -106,13 +106,13 @@ public class LockerPlaceController implements Listener {
                             throwable.printStackTrace();
                             this.noticeService.create()
                                 .player(player.getUniqueId())
-                                .notice(messages -> messages.failedToCreateParcelLocker)
+                                .notice(messages -> messages.locker.cannotCreate)
                                 .send();
                             return;
                         }
                         this.noticeService.create()
                             .player(player.getUniqueId())
-                            .notice(messages -> messages.parcelLockerSuccessfullyCreated)
+                            .notice(messages -> messages.locker.created)
                             .send();
                     });
 

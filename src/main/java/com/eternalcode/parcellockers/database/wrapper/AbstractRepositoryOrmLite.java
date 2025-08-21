@@ -1,5 +1,6 @@
 package com.eternalcode.parcellockers.database.wrapper;
 
+import com.eternalcode.commons.ThrowingFunction;
 import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.j256.ormlite.dao.Dao;
@@ -7,7 +8,6 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import panda.std.function.ThrowingFunction;
 
 public abstract class AbstractRepositoryOrmLite {
 

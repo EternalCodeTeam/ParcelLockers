@@ -1,5 +1,6 @@
 package com.eternalcode.parcellockers.parcel.util;
 
+import com.eternalcode.multification.shared.Formatter;
 import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.parcel.Parcel;
@@ -12,7 +13,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import org.jetbrains.annotations.Blocking;
-import panda.utilities.text.Formatter;
 
 public class ParcelPlaceholderUtil {
 

@@ -56,7 +56,7 @@ public class ParcelServiceImpl implements ParcelService {
         this.parcelContentRepository.save(new ParcelContent(parcel.uuid(), items)).handle((content, throwable) -> {
             if (throwable != null) {
                 this.noticeService.create()
-                    .notice(messages -> messages.parcelFailedToSend)
+                    .notice(messages -> messages.parcel.cannotSend)
                     .player(sender.getUniqueId())
                     .send();
 
@@ -64,7 +64,7 @@ public class ParcelServiceImpl implements ParcelService {
             }
 
             this.noticeService.create()
-                .notice(messages -> messages.parcelSent)
+                .notice(messages -> messages.parcel.sent)
                 .player(sender.getUniqueId())
                 .send();
 
@@ -83,12 +83,12 @@ public class ParcelServiceImpl implements ParcelService {
         this.parcelRepository.remove(parcel)
             .thenAccept(v ->
                 this.noticeService.create()
-                    .notice(messages -> messages.parcelSuccessfullyDeleted)
+                    .notice(messages -> messages.parcel.deleted)
                     .viewer(sender)
                     .send())
             .exceptionally(throwable -> {
                 this.noticeService.create()
-                    .notice(messages -> messages.failedToDeleteParcel)
+                    .notice(messages -> messages.parcel.cannotDelete)
                     .viewer(sender)
                     .send();
                 return null;
@@ -100,7 +100,7 @@ public class ParcelServiceImpl implements ParcelService {
         this.parcelContentRepository.find(parcel.uuid()).thenAccept(optional -> {
             if (optional.isEmpty()) {
                 this.noticeService.create()
-                    .notice(messages -> messages.failedToCollectParcel)
+                    .notice(messages -> messages.parcel.cannotCollect)
                     .player(player.getUniqueId())
                     .send();
                 return;
@@ -109,7 +109,7 @@ public class ParcelServiceImpl implements ParcelService {
             List<ItemStack> items = optional.get().items();
             if (items.size() > freeSlotsInInventory(player)) {
                 this.noticeService.create()
-                    .notice(messages -> messages.notEnoughInventorySpace)
+                    .notice(messages -> messages.parcel.noInventorySpace)
                     .player(player.getUniqueId())
                     .send();
                 return;
@@ -122,13 +122,13 @@ public class ParcelServiceImpl implements ParcelService {
                 .whenComplete((v, throwable) -> {
                     if (throwable != null) {
                         this.noticeService.create()
-                            .notice(messages -> messages.failedToCollectParcel)
+                            .notice(messages -> messages.parcel.cannotCollect)
                             .player(player.getUniqueId())
                             .send();
                         return;
                     }
                     this.noticeService.create()
-                        .notice(messages -> messages.parcelSuccessfullyCollected)
+                        .notice(messages -> messages.parcel.collected)
                         .player(player.getUniqueId())
                         .send();
                 });

@@ -59,7 +59,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.stream.Stream;
-import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Server;
@@ -69,7 +68,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 public final class ParcelLockers extends JavaPlugin {
 
     private LiteCommands<CommandSender> liteCommands;
-    private BukkitAudiences audiences;
     private SkullAPI skullAPI;
 
     private DatabaseManager databaseManager;
@@ -78,7 +76,6 @@ public final class ParcelLockers extends JavaPlugin {
     public void onEnable() {
         Stopwatch started = Stopwatch.createStarted();
 
-        this.audiences = BukkitAudiences.create(this);
         MiniMessage miniMessage = MiniMessage.builder()
             .preProcessor(new AdventureLegacyColorPreProcessor())
             .postProcessor(new AdventureLegacyColorPostProcessor())
@@ -88,7 +85,7 @@ public final class ParcelLockers extends JavaPlugin {
         PluginConfig config = configManager.create(PluginConfig.class, new File(this.getDataFolder(), "config.yml"));
         MessageConfig messageConfig = configManager.create(MessageConfig.class, new File(this.getDataFolder(), "messages.yml"));
         Server server = this.getServer();
-        NoticeService noticeService = new NoticeService(messageConfig, miniMessage, this.audiences);
+        NoticeService noticeService = new NoticeService(messageConfig, miniMessage);
         Scheduler scheduler = new BukkitSchedulerImpl(this);
 
         DatabaseManager databaseManager = new DatabaseManager(config, this.getLogger(), this.getDataFolder());
@@ -217,11 +214,9 @@ public final class ParcelLockers extends JavaPlugin {
             this.liteCommands.unregister();
         }
 
-        if (this.audiences != null) {
-            this.audiences.close();
+        if (this.skullAPI != null) {
+            this.skullAPI.shutdown();
         }
-
-        this.skullAPI.shutdown();
     }
 }
 
