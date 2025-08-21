@@ -1,6 +1,6 @@
 package com.eternalcode.parcellockers.locker.controller;
 
-import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.locker.repository.LockerCache;
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
@@ -26,13 +26,13 @@ public class LockerBreakController implements Listener {
     private final LockerRepository lockerRepository;
     private final LockerCache cache;
     private final NotificationAnnouncer announcer;
-    private final PluginConfiguration.Messages messages;
+    private final PluginConfig.Messages messages;
 
     public LockerBreakController(
             LockerRepository lockerRepository,
             LockerCache cache,
             NotificationAnnouncer announcer,
-            PluginConfiguration.Messages messages
+            PluginConfig.Messages messages
     ) {
         this.lockerRepository = lockerRepository;
         this.cache = cache;

@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.eternalcode.parcellockers.TestScheduler;
-import com.eternalcode.parcellockers.configuration.ConfigurationManager;
-import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.configuration.ConfigService;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.ParcelStatus;
@@ -43,7 +43,7 @@ class ParcelRepositoryIntegrationTest extends IntegrationTestSpec {
     @Test
     void test() {
         File dataFolder = tempDir.resolve("ParcelLockers").toFile();
-        PluginConfiguration config = new ConfigurationManager(dataFolder).load(new PluginConfiguration());
+        PluginConfig config = new ConfigService(dataFolder).load(new PluginConfig());
         DatabaseManager databaseManager = new DatabaseManager(config, Logger.getLogger("ParcelLockers"), dataFolder);
         this.databaseManager = databaseManager;
         ParcelCache cache = new ParcelCache();

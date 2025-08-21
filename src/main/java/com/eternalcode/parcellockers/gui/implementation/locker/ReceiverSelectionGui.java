@@ -1,10 +1,9 @@
 package com.eternalcode.parcellockers.gui.implementation.locker;
 
-import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.gui.PaginatedGuiRefresher;
 import com.eternalcode.parcellockers.shared.Page;
-import com.eternalcode.parcellockers.shared.SentryExceptionHandler;
 import com.eternalcode.parcellockers.user.User;
 import com.eternalcode.parcellockers.user.repository.UserPageResult;
 import com.eternalcode.parcellockers.user.repository.UserRepository;
@@ -33,7 +32,7 @@ public class ReceiverSelectionGui implements GuiView {
 
     private final Plugin plugin;
     private final BukkitScheduler scheduler;
-    private final PluginConfiguration config;
+    private final PluginConfig config;
     private final MiniMessage miniMessage;
     private final UserRepository userRepository;
     private final ParcelSendingGui sendingGUI;
@@ -44,7 +43,7 @@ public class ReceiverSelectionGui implements GuiView {
     public ReceiverSelectionGui(
             Plugin plugin,
             BukkitScheduler scheduler,
-            PluginConfiguration config,
+            PluginConfig config,
             MiniMessage miniMessage,
             UserRepository userRepository,
             ParcelSendingGui sendingGUI,
@@ -105,8 +104,8 @@ public class ReceiverSelectionGui implements GuiView {
                 }
 
                 this.scheduler.runTask(this.plugin, () -> gui.open(player));
-            }).whenComplete(SentryExceptionHandler.handler());
-        }).whenComplete(SentryExceptionHandler.handler());
+            });
+        });
     }
 
     private CompletableFuture<List<Supplier<GuiItem>>> loadSkulls(Player player, UserPageResult result, PaginatedGuiRefresher refresh) {

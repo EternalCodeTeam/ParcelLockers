@@ -1,5 +1,6 @@
 package com.eternalcode.parcellockers.notification;
 
+@Deprecated
 public enum NotificationType {
 
     ACTION_BAR,

@@ -1,8 +1,8 @@
 package com.eternalcode.parcellockers.gui.implementation.locker;
 
 import com.eternalcode.commons.adventure.AdventureUtil;
-import com.eternalcode.parcellockers.configuration.implementation.ConfigItem;
-import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
+import com.eternalcode.parcellockers.configuration.serializable.ConfigItem;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
@@ -50,7 +50,7 @@ public class ParcelSendingGui implements GuiView {
     private static final int CLOSE_ITEM_SLOT = 49;
     private final Plugin plugin;
     private final BukkitScheduler scheduler;
-    private final PluginConfiguration config;
+    private final PluginConfig config;
     private final MiniMessage miniMessage;
     private final ItemStorageRepository itemStorageRepository;
     private final ParcelRepository parcelRepository;
@@ -67,7 +67,7 @@ public class ParcelSendingGui implements GuiView {
 
     public ParcelSendingGui(
             Plugin plugin,
-            PluginConfiguration config,
+            PluginConfig config,
             MiniMessage miniMessage,
             ItemStorageRepository itemStorageRepository,
             ParcelRepository parcelRepository,
@@ -96,8 +96,8 @@ public class ParcelSendingGui implements GuiView {
 
     @Override
     public void show(Player player) {
-        PluginConfiguration settings = this.config;
-        PluginConfiguration.GuiSettings guiSettings = settings.guiSettings;
+        PluginConfig settings = this.config;
+        PluginConfig.GuiSettings guiSettings = settings.guiSettings;
 
         Component guiTitle = this.miniMessage.deserialize(guiSettings.parcelLockerSendingGuiTitle);
 
@@ -136,7 +136,7 @@ public class ParcelSendingGui implements GuiView {
                             ? "None" : this.state.getParcelName()));
 
                         this.gui.updateItem(NAME_ITEM_SLOT, nameItem
-                            .setLore(lore)
+                            .lore(lore)
                             .toItemStack());
                         return List.of(SignGUIAction.runSync((JavaPlugin) this.plugin, () -> this.gui.open(player)));
                     })
@@ -170,7 +170,7 @@ public class ParcelSendingGui implements GuiView {
                         lore.add(this.config.guiSettings.parcelDescriptionSetLine.replace("{DESCRIPTION}", description));
 
                         this.gui.updateItem(DESCRIPTION_ITEM_SLOT, descriptionItem
-                            .setLore(lore)
+                            .lore(lore)
                             .toItemStack());
                         return List.of(SignGUIAction.runSync((JavaPlugin) this.plugin, () -> this.gui.open(player)));
                     })
@@ -312,7 +312,7 @@ public class ParcelSendingGui implements GuiView {
     }
 
     private void setSelected(Gui gui, ParcelSize size) {
-        PluginConfiguration.GuiSettings settings = this.config.guiSettings;
+        PluginConfig.GuiSettings settings = this.config.guiSettings;
         this.state.setSize(size);
 
         ConfigItem smallButton = size == ParcelSize.SMALL ? settings.selectedSmallParcelSizeItem : settings.smallParcelSizeItem;
@@ -327,7 +327,7 @@ public class ParcelSendingGui implements GuiView {
     }
 
     private void setSelected(Gui gui, boolean priority) {
-        PluginConfiguration.GuiSettings settings = this.config.guiSettings;
+        PluginConfig.GuiSettings settings = this.config.guiSettings;
         this.state.setPriority(priority);
 
         ConfigItem priorityButton = priority ? settings.selectedPriorityItem : settings.priorityItem;

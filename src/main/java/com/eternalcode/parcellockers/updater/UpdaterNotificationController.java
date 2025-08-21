@@ -1,7 +1,8 @@
 package com.eternalcode.parcellockers.updater;
 
-import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
-import com.eternalcode.parcellockers.shared.SentryExceptionHandler;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.AudienceProvider;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -10,20 +11,18 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
-import java.util.concurrent.CompletableFuture;
-
 public class UpdaterNotificationController implements Listener {
 
     private static final String NEW_VERSION_AVAILABLE = "<b><gradient:#8a1212:#fc6b03>ParcelLockers:</gradient></b> <color:#fce303>New version of ParcelLockers is available, please update!";
 
     private final UpdaterService updaterService;
-    private final PluginConfiguration pluginConfig;
+    private final PluginConfig pluginConfig;
     private final AudienceProvider audienceProvider;
     private final MiniMessage miniMessage;
 
     public UpdaterNotificationController(
             UpdaterService updaterService,
-            PluginConfiguration pluginConfig,
+            PluginConfig pluginConfig,
             AudienceProvider audienceProvider,
             MiniMessage miniMessage
     ) {
@@ -48,6 +47,6 @@ public class UpdaterNotificationController implements Listener {
             if (!isUpToDate) {
                 audience.sendMessage(this.miniMessage.deserialize(NEW_VERSION_AVAILABLE));
             }
-        }).whenComplete(SentryExceptionHandler.handler());
+        }).orTimeout(5, TimeUnit.SECONDS);
     }
 }

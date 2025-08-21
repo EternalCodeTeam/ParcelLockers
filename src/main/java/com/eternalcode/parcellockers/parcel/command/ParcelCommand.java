@@ -1,6 +1,6 @@
 package com.eternalcode.parcellockers.parcel.command;
 
-import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.gui.implementation.remote.MainGui;
 import com.eternalcode.parcellockers.gui.implementation.remote.ParcelListGui;
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
@@ -25,7 +25,7 @@ public class ParcelCommand {
 
     private final LockerRepository lockerRepository;
     private final NotificationAnnouncer announcer;
-    private final PluginConfiguration config;
+    private final PluginConfig config;
     private final MainGui mainGUI;
     private final ParcelListGui parcelListGUI;
     private final ParcelService parcelService;
@@ -34,7 +34,7 @@ public class ParcelCommand {
     public ParcelCommand(
             LockerRepository lockerRepository,
             NotificationAnnouncer announcer,
-            PluginConfiguration config,
+            PluginConfig config,
             MainGui mainGUI,
             ParcelListGui parcelListGUI,
             ParcelService parcelService,

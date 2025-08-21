@@ -4,8 +4,8 @@ import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.content.ParcelContent;
 import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.eternalcode.parcellockers.database.wrapper.AbstractRepositoryOrmLite;
+import com.eternalcode.parcellockers.shared.ParcelLockersException;
 import com.j256.ormlite.table.TableUtils;
-import io.sentry.Sentry;
 import java.sql.SQLException;
 import java.util.Optional;
 import java.util.UUID;
@@ -19,8 +19,7 @@ public class ParcelContentRepositoryOrmLite extends AbstractRepositoryOrmLite im
         try {
             TableUtils.createTableIfNotExists(databaseManager.connectionSource(), ParcelContentTable.class);
         } catch (SQLException exception) {
-            Sentry.captureException(exception);
-            throw new RuntimeException("Failed to create ParcelContent table", exception);
+            throw new ParcelLockersException("Failed to create ParcelContent table", exception);
         }
     }
 

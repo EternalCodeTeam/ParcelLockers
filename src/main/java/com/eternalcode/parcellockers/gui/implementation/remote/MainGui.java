@@ -2,7 +2,7 @@ package com.eternalcode.parcellockers.gui.implementation.remote;
 
 import static com.eternalcode.commons.adventure.AdventureUtil.resetItalic;
 
-import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
@@ -19,7 +19,7 @@ public class MainGui implements GuiView {
     private final Plugin plugin;
     private final Server server;
     private final MiniMessage miniMessage;
-    private final PluginConfiguration config;
+    private final PluginConfig config;
     private final ParcelRepository parcelRepository;
     private final LockerRepository lockerRepository;
     private final UserManager userManager;
@@ -28,7 +28,7 @@ public class MainGui implements GuiView {
         Plugin plugin,
         Server server,
         MiniMessage miniMessage,
-        PluginConfiguration config,
+        PluginConfig config,
         ParcelRepository parcelRepository,
         LockerRepository lockerRepository,
         UserManager userManager
@@ -44,7 +44,7 @@ public class MainGui implements GuiView {
 
     @Override
     public void show(Player player) {
-        PluginConfiguration.GuiSettings guiSettings = this.config.guiSettings;
+        PluginConfig.GuiSettings guiSettings = this.config.guiSettings;
 
         Gui gui = Gui.gui()
             .title(resetItalic(this.miniMessage.deserialize(guiSettings.mainGuiTitle)))

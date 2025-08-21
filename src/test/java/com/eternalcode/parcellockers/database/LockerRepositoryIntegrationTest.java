@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.eternalcode.parcellockers.TestScheduler;
-import com.eternalcode.parcellockers.configuration.ConfigurationManager;
-import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.configuration.ConfigService;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.locker.repository.LockerCache;
 import com.eternalcode.parcellockers.locker.repository.LockerPageResult;
@@ -40,7 +40,7 @@ class LockerRepositoryIntegrationTest extends IntegrationTestSpec {
     @Test
     void test() {
         File dataFolder = tempDir.resolve("ParcelLockers").toFile();
-        PluginConfiguration config = new ConfigurationManager(dataFolder).load(new PluginConfiguration());
+        PluginConfig config = new ConfigService(dataFolder).load(new PluginConfig());
         DatabaseManager databaseManager = new DatabaseManager(config, Logger.getLogger("ParcelLockers"), dataFolder);
         this.databaseManager = databaseManager;
         LockerCache cache = new LockerCache();

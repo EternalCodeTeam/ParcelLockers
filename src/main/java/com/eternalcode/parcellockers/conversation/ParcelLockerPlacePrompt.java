@@ -1,6 +1,6 @@
 package com.eternalcode.parcellockers.conversation;
 
-import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import org.bukkit.ChatColor;
 import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.Prompt;
@@ -9,9 +9,9 @@ import org.jetbrains.annotations.Nullable;
 
 public class ParcelLockerPlacePrompt implements Prompt {
 
-    private final PluginConfiguration config;
+    private final PluginConfig config;
 
-    public ParcelLockerPlacePrompt(PluginConfiguration config) {
+    public ParcelLockerPlacePrompt(PluginConfig config) {
         this.config = config;
     }
 

@@ -2,7 +2,7 @@ package com.eternalcode.parcellockers.gui.implementation.locker;
 
 import static com.eternalcode.commons.adventure.AdventureUtil.resetItalic;
 
-import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
@@ -25,7 +25,7 @@ public class LockerMainGui implements GuiView {
 
     private final Plugin plugin;
     private final MiniMessage miniMessage;
-    private final PluginConfiguration config;
+    private final PluginConfig config;
     private final ItemStorageRepository itemStorageRepository;
     private final ParcelRepository parcelRepository;
     private final LockerRepository lockerRepository;
@@ -40,7 +40,7 @@ public class LockerMainGui implements GuiView {
     public LockerMainGui(
         Plugin plugin,
         MiniMessage miniMessage,
-        PluginConfiguration config,
+        PluginConfig config,
         ItemStorageRepository itemStorageRepository,
         ParcelRepository parcelRepository,
         LockerRepository lockerRepository,

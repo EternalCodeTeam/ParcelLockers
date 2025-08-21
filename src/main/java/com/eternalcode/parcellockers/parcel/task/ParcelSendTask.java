@@ -1,6 +1,6 @@
 package com.eternalcode.parcellockers.parcel.task;
 
-import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.delivery.Delivery;
 import com.eternalcode.parcellockers.delivery.repository.DeliveryRepository;
 import com.eternalcode.parcellockers.parcel.Parcel;
@@ -14,14 +14,14 @@ public class ParcelSendTask extends BukkitRunnable {
     private final Delivery delivery;
     private final ParcelRepository parcelRepository;
     private final DeliveryRepository deliveryRepository;
-    private final PluginConfiguration config;
+    private final PluginConfig config;
 
     public ParcelSendTask(
             Parcel parcel,
             Delivery delivery,
             ParcelRepository parcelRepository,
             DeliveryRepository deliveryRepository,
-            PluginConfiguration config
+            PluginConfig config
     ) {
         this.parcel = parcel;
         this.delivery = delivery;

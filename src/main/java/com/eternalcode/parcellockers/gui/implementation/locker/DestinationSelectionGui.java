@@ -1,26 +1,24 @@
 package com.eternalcode.parcellockers.gui.implementation.locker;
 
-import com.eternalcode.parcellockers.configuration.implementation.ConfigItem;
-import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
+import com.eternalcode.parcellockers.configuration.serializable.ConfigItem;
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.gui.PaginatedGuiRefresher;
 import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.locker.repository.LockerPageResult;
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.shared.Page;
-import com.eternalcode.parcellockers.shared.SentryExceptionHandler;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitScheduler;
-
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitScheduler;
 
 public class DestinationSelectionGui implements GuiView {
 
@@ -30,7 +28,7 @@ public class DestinationSelectionGui implements GuiView {
 
     private final Plugin plugin;
     private final BukkitScheduler scheduler;
-    private final PluginConfiguration config;
+    private final PluginConfig config;
     private final MiniMessage miniMessage;
     private final LockerRepository lockerRepository;
     private final ParcelSendingGui sendingGUI;
@@ -39,7 +37,7 @@ public class DestinationSelectionGui implements GuiView {
     public DestinationSelectionGui(
         Plugin plugin,
         BukkitScheduler scheduler,
-        PluginConfiguration config,
+        PluginConfig config,
         MiniMessage miniMessage,
         LockerRepository lockerRepository,
         ParcelSendingGui sendingGUI,
@@ -94,8 +92,7 @@ public class DestinationSelectionGui implements GuiView {
 
                 this.loadLockers(player, result, refresher).forEach(refresher::addItem);
                 this.scheduler.runTask(this.plugin, () -> gui.open(player));
-            }).whenComplete(SentryExceptionHandler.handler())
-            .orTimeout(5, TimeUnit.SECONDS);
+            }).orTimeout(5, TimeUnit.SECONDS);
     }
 
     private List<Supplier<GuiItem>> loadLockers(Player player, LockerPageResult result, PaginatedGuiRefresher refresh) {
@@ -109,16 +106,16 @@ public class DestinationSelectionGui implements GuiView {
         ConfigItem parcelItem = this.config.guiSettings.destinationLockerItem.clone();
 
         return () -> {
-            String name = parcelItem.getName().replace("{DESCRIPTION}", locker.description());
+            String name = parcelItem.name().replace("{DESCRIPTION}", locker.description());
             boolean isLockerSelected = uuid.equals(this.state.getDestinationLocker());
             String oneLineLore = isLockerSelected
                 ? this.config.guiSettings.parcelDestinationSetLine
                 : this.config.guiSettings.parcelDestinationNotSetLine;
 
             return parcelItem
-                .setName(name)
-                .setGlow(isLockerSelected)
-                .setLore(List.of(oneLineLore))
+                .name(name)
+                .glow(isLockerSelected)
+                .lore(List.of(oneLineLore))
                 .toGuiItem(event -> {
                     if (isLockerSelected) {
                         this.state.setDestinationLocker(null);

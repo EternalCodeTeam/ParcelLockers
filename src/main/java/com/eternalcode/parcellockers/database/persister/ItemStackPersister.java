@@ -9,7 +9,6 @@ import com.j256.ormlite.field.SqlType;
 import com.j256.ormlite.field.types.BaseDataType;
 import com.j256.ormlite.support.DatabaseResults;
 import de.eldoria.jacksonbukkit.JacksonPaper;
-import io.sentry.Sentry;
 import java.sql.SQLException;
 import java.util.List;
 import org.bukkit.inventory.ItemStack;
@@ -40,7 +39,6 @@ public class ItemStackPersister extends BaseDataType {
         try {
             return JSON.writeValueAsString(stacks);
         } catch (JsonProcessingException e) {
-            Sentry.captureException(e);
             throw new ParcelLockersException("Failed to serialize itemstacks", e);
         }
     }
@@ -62,7 +60,6 @@ public class ItemStackPersister extends BaseDataType {
         try {
             return JSON.readValue(string, JSON.getTypeFactory().constructCollectionType(List.class, ItemStack.class));
         } catch (JsonProcessingException exception) {
-            Sentry.captureException(exception);
             throw new ParcelLockersException("Failed to deserialize itemstacks", exception);
         }
     }

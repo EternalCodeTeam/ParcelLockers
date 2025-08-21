@@ -2,15 +2,14 @@ package com.eternalcode.parcellockers.gui.implementation.remote;
 
 import static com.eternalcode.commons.adventure.AdventureUtil.resetItalic;
 
-import com.eternalcode.parcellockers.configuration.implementation.ConfigItem;
-import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
+import com.eternalcode.parcellockers.configuration.serializable.ConfigItem;
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.parcel.util.ParcelPlaceholderUtil;
 import com.eternalcode.parcellockers.shared.Page;
-import com.eternalcode.parcellockers.shared.SentryExceptionHandler;
 import com.eternalcode.parcellockers.user.UserManager;
 import dev.triumphteam.gui.builder.item.ItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
@@ -29,7 +28,7 @@ public class ParcelListGui implements GuiView {
     private static final Page FIRST_PAGE = new Page(0, WIDTH * HEIGHT);
     private final Plugin plugin;
     private final MiniMessage miniMessage;
-    private final PluginConfiguration config;
+    private final PluginConfig config;
     private final ParcelRepository parcelRepository;
     private final LockerRepository lockerRepository;
     private final UserManager userManager;
@@ -38,7 +37,7 @@ public class ParcelListGui implements GuiView {
     public ParcelListGui(
         Plugin plugin,
         MiniMessage miniMessage,
-        PluginConfiguration config,
+        PluginConfig config,
         ParcelRepository parcelRepository,
         LockerRepository lockerRepository,
         UserManager userManager,
@@ -109,7 +108,7 @@ public class ParcelListGui implements GuiView {
             }
 
             this.plugin.getServer().getScheduler().runTask(this.plugin, () -> gui.open(player));
-        }).whenComplete(SentryExceptionHandler.handler());
+        });
 
     }
 }

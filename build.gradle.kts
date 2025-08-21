@@ -19,6 +19,7 @@ repositories {
     maven { url = uri("https://oss.sonatype.org/content/repositories/central") }
     maven { url = uri("https://repo.papermc.io/repository/maven-public/") }
     maven { url = uri("https://repo.eternalcode.pl/releases") }
+    maven { url  = uri("https://storehouse.okaeri.eu/repository/maven-public/") }
 }
 
 dependencies {
@@ -36,8 +37,10 @@ dependencies {
     implementation("dev.triumphteam:triumph-gui:3.1.12")
     implementation("de.rapha149.signgui:signgui:2.5.4")
 
-    // CDN
-    implementation("net.dzikoysk:cdn:1.14.9")
+    // configs
+    implementation("eu.okaeri:okaeri-configs-serdes-commons:5.0.9")
+    implementation("eu.okaeri:okaeri-configs-serdes-bukkit:5.0.9")
+    implementation("eu.okaeri:okaeri-configs-yaml-bukkit:5.0.9")
 
     // expressible
     implementation("org.panda-lang:expressible:1.3.6")
@@ -47,7 +50,6 @@ dependencies {
 
     // metrics and sentry
     implementation("org.bstats:bstats-bukkit:3.1.0")
-    implementation("io.sentry:sentry:8.19.1")
 
     // database
     implementation("com.zaxxer:HikariCP:7.0.1")
@@ -77,6 +79,10 @@ dependencies {
     // eternalcode-commons
     implementation("com.eternalcode:eternalcode-commons-adventure:1.3.0")
     implementation("com.eternalcode:eternalcode-commons-bukkit:1.3.0")
+
+    // notification library
+    implementation("com.eternalcode:multification-bukkit:1.2.2")
+    implementation("com.eternalcode:multification-okaeri:1.1.4")
 
     // caffeine
     implementation("com.github.ben-manes.caffeine:caffeine:3.2.2")
@@ -152,7 +158,7 @@ tasks {
             "org.bstats",
             "org.json",
             "org.postgresql",
-            "net.dzikoysk",
+            "eu.okaeri",
             "net.kyori",
             "io.papermc",
             "io.sentry",

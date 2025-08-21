@@ -1,7 +1,7 @@
 package com.eternalcode.parcellockers.gui.implementation.locker;
 
-import com.eternalcode.parcellockers.configuration.implementation.ConfigItem;
-import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
+import com.eternalcode.parcellockers.configuration.serializable.ConfigItem;
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.parcel.Parcel;
@@ -10,7 +10,6 @@ import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.parcel.util.ParcelPlaceholderUtil;
 import com.eternalcode.parcellockers.shared.Page;
-import com.eternalcode.parcellockers.shared.SentryExceptionHandler;
 import com.eternalcode.parcellockers.user.UserManager;
 import com.eternalcode.parcellockers.util.InventoryUtil;
 import dev.triumphteam.gui.guis.Gui;
@@ -29,7 +28,7 @@ public class ParcelCollectionGui implements GuiView {
     private static final Page FIRST_PAGE = new Page(0, WIDTH * HEIGHT);
 
     private final Plugin plugin;
-    private final PluginConfiguration config;
+    private final PluginConfig config;
     private final BukkitScheduler scheduler;
     private final ParcelRepository parcelRepository;
     private final MiniMessage miniMessage;
@@ -39,7 +38,7 @@ public class ParcelCollectionGui implements GuiView {
 
     public ParcelCollectionGui(
         Plugin plugin,
-        PluginConfiguration config,
+        PluginConfig config,
         BukkitScheduler scheduler,
         ParcelRepository parcelRepository,
         MiniMessage miniMessage,
@@ -63,7 +62,7 @@ public class ParcelCollectionGui implements GuiView {
     }
 
     private void show(Player player, Page page) {
-        PluginConfiguration.GuiSettings guiSettings = this.config.guiSettings;
+        PluginConfig.GuiSettings guiSettings = this.config.guiSettings;
 
         Component guiTitle = this.miniMessage.deserialize(guiSettings.parcelCollectionGuiTitle);
 
@@ -117,20 +116,20 @@ public class ParcelCollectionGui implements GuiView {
                 }
 
                 ConfigItem item = parcelItem.clone();
-                item.name = item.name.replace("{NAME}", parcel.name());
-                item.lore = ParcelPlaceholderUtil.replaceParcelPlaceholders(parcel, item.lore, this.userManager, this.lockerRepository);
+                item.name(item.name().replace("{NAME}", parcel.name()));
+                item.lore(ParcelPlaceholderUtil.replaceParcelPlaceholders(parcel, item.lore(), this.userManager, this.lockerRepository));
 
-                item.setGlow(true);
+                item.glow(true);
 
                 gui.addItem(item.toGuiItem(event -> {
                     this.parcelService.collect(player, parcel);
                     gui.removeItem(event.getSlot());
-                    InventoryUtil.shiftItems(event.getSlot(), gui, item.type);
+                    InventoryUtil.shiftItems(event.getSlot(), gui, item.type());
                     gui.update();
                 }));
             }
 
             this.scheduler.runTask(this.plugin, () -> gui.open(player));
-        }).whenComplete(SentryExceptionHandler.handler());
+        });
     }
 }

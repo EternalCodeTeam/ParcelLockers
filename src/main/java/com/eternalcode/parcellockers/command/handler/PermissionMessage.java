@@ -1,6 +1,6 @@
 package com.eternalcode.parcellockers.command.handler;
 
-import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import dev.rollczi.litecommands.handler.result.ResultHandlerChain;
 import dev.rollczi.litecommands.invocation.Invocation;
@@ -12,9 +12,9 @@ import panda.utilities.text.Formatter;
 public class PermissionMessage implements MissingPermissionsHandler<CommandSender> {
 
     private final NotificationAnnouncer announcer;
-    private final PluginConfiguration config;
+    private final PluginConfig config;
 
-    public PermissionMessage(NotificationAnnouncer announcer, PluginConfiguration config) {
+    public PermissionMessage(NotificationAnnouncer announcer, PluginConfig config) {
         this.announcer = announcer;
         this.config = config;
     }

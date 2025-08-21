@@ -1,11 +1,15 @@
 package com.eternalcode.parcellockers.locker.controller;
 
-import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.conversation.ParcelLockerPlacePrompt;
 import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.shared.PositionAdapter;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.UUID;
 import org.bukkit.Location;
 import org.bukkit.conversations.ConversationFactory;
 import org.bukkit.conversations.NullConversationPrefix;
@@ -18,21 +22,16 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.UUID;
-
 public class LockerPlaceController implements Listener {
 
-    private final PluginConfiguration config;
+    private final PluginConfig config;
     private final Plugin plugin;
     private final LockerRepository databaseService;
     private final NotificationAnnouncer announcer;
     private final Map<UUID, Boolean> lockerCreators = new HashMap<>();
 
     public LockerPlaceController(
-            PluginConfiguration config,
+            PluginConfig config,
             Plugin plugin,
             LockerRepository databaseService,
             NotificationAnnouncer announcer

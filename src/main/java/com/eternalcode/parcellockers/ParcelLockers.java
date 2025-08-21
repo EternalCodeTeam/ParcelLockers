@@ -7,8 +7,9 @@ import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.command.debug.DebugCommand;
 import com.eternalcode.parcellockers.command.handler.InvalidUsageImpl;
 import com.eternalcode.parcellockers.command.handler.PermissionMessage;
-import com.eternalcode.parcellockers.configuration.ConfigurationManager;
-import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.configuration.ConfigService;
+import com.eternalcode.parcellockers.configuration.implementation.MessagesConfig;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepositoryOrmLite;
 import com.eternalcode.parcellockers.database.DatabaseManager;
@@ -25,7 +26,7 @@ import com.eternalcode.parcellockers.locker.controller.LockerInteractionControll
 import com.eternalcode.parcellockers.locker.controller.LockerPlaceController;
 import com.eternalcode.parcellockers.locker.repository.LockerCache;
 import com.eternalcode.parcellockers.locker.repository.LockerRepositoryOrmLite;
-import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
+import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelService;
 import com.eternalcode.parcellockers.parcel.ParcelServiceImpl;
@@ -43,8 +44,6 @@ import com.eternalcode.parcellockers.user.controller.PrepareUserController;
 import com.eternalcode.parcellockers.user.repository.UserRepository;
 import com.eternalcode.parcellockers.user.repository.UserRepositoryOrmLite;
 import com.google.common.base.Stopwatch;
-import com.j256.ormlite.logger.LoggerFactory;
-import com.j256.ormlite.logger.NullLogBackend;
 import dev.rollczi.litecommands.LiteCommands;
 import dev.rollczi.litecommands.adventure.LiteAdventureExtension;
 import dev.rollczi.litecommands.annotations.LiteCommandsAnnotations;
@@ -54,11 +53,10 @@ import dev.rollczi.liteskullapi.LiteSkullFactory;
 import dev.rollczi.liteskullapi.SkullAPI;
 import io.papermc.lib.PaperLib;
 import io.papermc.lib.environments.Environment;
-import io.sentry.Sentry;
+import java.io.File;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -70,11 +68,8 @@ import org.bstats.bukkit.Metrics;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.slf4j.helpers.NOPLogger;
 
 public final class ParcelLockers extends JavaPlugin {
-
-    public static org.slf4j.Logger DEBUG_LOGGER = NOPLogger.NOP_LOGGER;
 
     private LiteCommands<CommandSender> liteCommands;
     private BukkitAudiences audiences;
@@ -93,32 +88,13 @@ public final class ParcelLockers extends JavaPlugin {
             .preProcessor(new AdventureLegacyColorPreProcessor())
             .postProcessor(new AdventureLegacyColorPostProcessor())
             .build();
-        NotificationAnnouncer announcer = new NotificationAnnouncer(this.audiences, miniMessage);
 
-        ConfigurationManager configManager = new ConfigurationManager(this.getDataFolder());
-        PluginConfiguration config = configManager.load(new PluginConfiguration());
+        ConfigService configManager = new ConfigService();
+        PluginConfig config = configManager.create(PluginConfig.class, new File(this.getDataFolder(), "config.yml"));
+        MessagesConfig messagesConfig = configManager.create(MessagesConfig.class, new File(this.getDataFolder(), "messages.yml"));
         Server server = this.getServer();
+        NoticeService noticeService = new NoticeService(messagesConfig, miniMessage, this.audiences);
         Scheduler scheduler = new BukkitSchedulerImpl(this);
-
-        if (config.settings.enableSentry) {
-            Sentry.init(options -> {
-                this.getLogger().info("Initializing Sentry...");
-                options.setDsn("https://1dffb5bec4484aaaaca5fcb4c3157a99@o4505014505177088.ingest.sentry.io/4505019784888320");
-                options.setTracesSampleRate(1.0);
-                options.setRelease(this.getDescription().getVersion());
-                options.setTag("serverVersion", this.getServer().getVersion());
-                options.setTag("serverSoftware", PaperLib.getEnvironment().getName());
-                options.setTag("plugins", Arrays.stream(server.getPluginManager().getPlugins()).toList().toString());
-                options.setEnabled(false);
-                this.getLogger().info("Sentry initialized successfully!");
-            });
-        }
-
-        if (config.settings.debug) {
-            DEBUG_LOGGER = org.slf4j.LoggerFactory.getLogger("ParcelLockers] [DEBUG");
-        }
-
-        LoggerFactory.setLogBackendFactory(new NullLogBackend.NullLogBackendFactory());
 
         DatabaseManager databaseManager = new DatabaseManager(config, this.getLogger(), this.getDataFolder());
         this.databaseManager = databaseManager;

@@ -1,5 +1,7 @@
 package com.eternalcode.parcellockers.notification;
 
+import java.util.Map;
+import java.util.function.BiConsumer;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.AudienceProvider;
 import net.kyori.adventure.text.Component;
@@ -8,9 +10,7 @@ import net.kyori.adventure.title.Title;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.Map;
-import java.util.function.BiConsumer;
-
+@Deprecated
 public class NotificationAnnouncer {
 
     private static final Map<NotificationType, BiConsumer<Audience, Component>> NOTIFICATION_HANDLERS = Map.of(

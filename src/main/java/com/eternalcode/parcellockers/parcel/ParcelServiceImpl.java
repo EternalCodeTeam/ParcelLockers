@@ -4,7 +4,7 @@ import static com.eternalcode.parcellockers.util.InventoryUtil.freeSlotsInInvent
 
 import com.eternalcode.commons.bukkit.ItemUtil;
 import com.eternalcode.commons.scheduler.Scheduler;
-import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.content.ParcelContent;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.delivery.Delivery;
@@ -13,7 +13,6 @@ import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.parcel.task.ParcelSendTask;
 import com.eternalcode.parcellockers.shared.ParcelLockersException;
-import com.eternalcode.parcellockers.shared.SentryExceptionHandler;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -24,7 +23,7 @@ import org.bukkit.inventory.ItemStack;
 
 public class ParcelServiceImpl implements ParcelService {
 
-    private final PluginConfiguration config;
+    private final PluginConfig config;
     private final NotificationAnnouncer announcer;
     private final ParcelRepository parcelRepository;
     private final DeliveryRepository deliveryRepository;
@@ -32,7 +31,7 @@ public class ParcelServiceImpl implements ParcelService {
     private final Scheduler scheduler;
 
     public ParcelServiceImpl(
-        PluginConfiguration config,
+        PluginConfig config,
         NotificationAnnouncer announcer,
         ParcelRepository parcelRepository,
         DeliveryRepository deliveryRepository,
@@ -103,14 +102,14 @@ public class ParcelServiceImpl implements ParcelService {
 
             this.parcelRepository.remove(parcel)
                 .thenCompose(v -> this.parcelContentRepository.delete(optional.get().uniqueId()))
-                .whenComplete(SentryExceptionHandler.handler().andThen((v, throwable) -> {
+                .whenComplete((v, throwable) -> {
                     if (throwable != null) {
                         this.announcer.sendMessage(player, this.config.messages.failedToCollectParcel);
                     } else {
                         playSuccessSound(player);
                         this.announcer.sendMessage(player, this.config.messages.parcelSuccessfullyCollected);
                     }
-                }));
+                });
         });
     }
 

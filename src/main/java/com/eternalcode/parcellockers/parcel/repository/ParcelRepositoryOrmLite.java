@@ -6,7 +6,6 @@ import com.eternalcode.parcellockers.database.wrapper.AbstractRepositoryOrmLite;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.shared.Page;
 import com.j256.ormlite.table.TableUtils;
-import io.sentry.Sentry;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +29,6 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
         try {
             TableUtils.createTableIfNotExists(databaseManager.connectionSource(), ParcelTable.class);
         } catch (SQLException ex) {
-            Sentry.captureException(ex);
             throw new RuntimeException("Failed to initialize parcel table", ex);
         }
     }

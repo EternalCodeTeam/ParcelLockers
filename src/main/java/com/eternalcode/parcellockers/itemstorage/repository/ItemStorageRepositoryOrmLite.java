@@ -5,7 +5,6 @@ import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.eternalcode.parcellockers.database.wrapper.AbstractRepositoryOrmLite;
 import com.eternalcode.parcellockers.itemstorage.ItemStorage;
 import com.j256.ormlite.table.TableUtils;
-import io.sentry.Sentry;
 import java.sql.SQLException;
 import java.util.Optional;
 import java.util.UUID;
@@ -19,7 +18,6 @@ public class ItemStorageRepositoryOrmLite extends AbstractRepositoryOrmLite impl
         try {
             TableUtils.createTableIfNotExists(databaseManager.connectionSource(), ItemStorageTable.class);
         } catch (SQLException ex) {
-            Sentry.captureException(ex);
             ex.printStackTrace();
         }
     }

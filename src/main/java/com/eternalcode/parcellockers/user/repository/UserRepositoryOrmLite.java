@@ -6,7 +6,6 @@ import com.eternalcode.parcellockers.database.wrapper.AbstractRepositoryOrmLite;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.user.User;
 import com.j256.ormlite.table.TableUtils;
-import io.sentry.Sentry;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
@@ -22,7 +21,6 @@ public class UserRepositoryOrmLite extends AbstractRepositoryOrmLite implements 
         try {
             TableUtils.createTableIfNotExists(databaseManager.connectionSource(), UserTable.class);
         } catch (SQLException exception) {
-            Sentry.captureException(exception);
             exception.printStackTrace();
         }
     }

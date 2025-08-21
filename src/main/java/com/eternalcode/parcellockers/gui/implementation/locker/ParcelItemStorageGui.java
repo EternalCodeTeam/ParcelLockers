@@ -1,7 +1,7 @@
 package com.eternalcode.parcellockers.gui.implementation.locker;
 
 import com.eternalcode.commons.bukkit.ItemUtil;
-import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.itemstorage.ItemStorage;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
@@ -10,7 +10,6 @@ import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
 import com.eternalcode.parcellockers.parcel.ParcelService;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
-import com.eternalcode.parcellockers.shared.SentryExceptionHandler;
 import com.eternalcode.parcellockers.user.repository.UserRepository;
 import dev.rollczi.liteskullapi.SkullAPI;
 import dev.triumphteam.gui.guis.Gui;
@@ -29,7 +28,7 @@ import org.bukkit.plugin.Plugin;
 public class ParcelItemStorageGui {
 
     private final Plugin plugin;
-    private final PluginConfiguration config;
+    private final PluginConfig config;
     private final MiniMessage miniMessage;
     private final ItemStorageRepository itemStorageRepository;
     private final ParcelRepository parcelRepository;
@@ -43,7 +42,7 @@ public class ParcelItemStorageGui {
 
     public ParcelItemStorageGui(
         Plugin plugin,
-        PluginConfiguration config,
+        PluginConfig config,
         MiniMessage miniMessage,
         ItemStorageRepository itemStorageRepository,
         ParcelRepository parcelRepository,
@@ -70,7 +69,7 @@ public class ParcelItemStorageGui {
 
     void show(Player player, ParcelSize size) {
         StorageGui gui;
-        PluginConfiguration.GuiSettings guiSettings = this.config.guiSettings;
+        PluginConfig.GuiSettings guiSettings = this.config.guiSettings;
 
         GuiItem backgroundItem = guiSettings.mainGuiBackgroundItem.toGuiItem(event -> event.setCancelled(true));
 
@@ -135,7 +134,7 @@ public class ParcelItemStorageGui {
 
             this.itemStorageRepository.delete(player.getUniqueId()).thenAccept(unused -> {
                 this.itemStorageRepository.save(new ItemStorage(player.getUniqueId(), items));
-            }).whenComplete(SentryExceptionHandler.handler());
+            });
         });
 
         this.itemStorageRepository.find(player.getUniqueId()).thenAccept(optional -> {
@@ -148,6 +147,6 @@ public class ParcelItemStorageGui {
             }
 
             this.plugin.getServer().getScheduler().runTask(this.plugin, () -> gui.open(player));
-        }).whenComplete(SentryExceptionHandler.handler());
+        });
     }
 }

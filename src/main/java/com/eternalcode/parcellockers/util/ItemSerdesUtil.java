@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import de.eldoria.jacksonbukkit.JacksonPaper;
-import io.sentry.Sentry;
 import java.util.List;
 import org.bukkit.inventory.ItemStack;
 
@@ -26,7 +25,6 @@ public class ItemSerdesUtil {
         try {
             return JSON.writeValueAsString(stack);
         } catch (JsonProcessingException e) {
-            Sentry.captureException(e);
             throw new ParcelLockersException("Failed to serialize itemstack", e);
         }
     }
@@ -35,7 +33,6 @@ public class ItemSerdesUtil {
         try {
             return JSON.writeValueAsString(stack);
         } catch (JsonProcessingException e) {
-            Sentry.captureException(e);
             throw new ParcelLockersException("Failed to serialize itemstack", e);
         }
     }
@@ -44,7 +41,6 @@ public class ItemSerdesUtil {
         try {
             return JSON.readValue(string, ItemStack.class);
         } catch (JsonProcessingException e) {
-            Sentry.captureException(e);
             throw new ParcelLockersException("Failed to deserialize itemstack", e);
         }
     }
@@ -53,7 +49,6 @@ public class ItemSerdesUtil {
         try {
             return JSON.readValue(string, JSON.getTypeFactory().constructCollectionType(List.class, ItemStack.class));
         } catch (JsonProcessingException exception) {
-            Sentry.captureException(exception);
             throw new ParcelLockersException("Failed to deserialize itemstack", exception);
         }
     }
