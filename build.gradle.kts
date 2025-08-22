@@ -85,6 +85,7 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter:1.21.3")
     testImplementation("org.testcontainers:mysql:1.21.3")
     testImplementation("mysql:mysql-connector-java:8.0.33")
+    testImplementation("com.eternalcode:eternalcode-commons-shared:1.3.0")
 }
 
 java {

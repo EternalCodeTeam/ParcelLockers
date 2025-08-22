@@ -106,7 +106,6 @@ public class ParcelCollectionGui implements GuiView {
             }
 
             for (Parcel parcel : result.parcels()) {
-
                 if (parcel.status() != ParcelStatus.DELIVERED) {
                     continue;
                 }

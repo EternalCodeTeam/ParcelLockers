@@ -78,8 +78,6 @@ public class LockerMainGui implements GuiView {
         GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem();
         GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(event -> gui.close(player));
 
-        //gui.setDefaultClickAction(event -> event.setCancelled(true));
-
         int size = gui.getRows() * 9;
         for (int i = 0; i < size; i++) {
             gui.setItem(i, backgroundItem);

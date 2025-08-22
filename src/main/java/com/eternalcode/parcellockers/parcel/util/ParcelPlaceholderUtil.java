@@ -4,6 +4,7 @@ import com.eternalcode.multification.shared.Formatter;
 import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.parcel.Parcel;
+import com.eternalcode.parcellockers.user.User;
 import com.eternalcode.parcellockers.user.UserManager;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -60,7 +61,7 @@ public class ParcelPlaceholderUtil {
 
     private static CompletableFuture<String> getName(UUID userUuid, UserManager userManager) {
         return userManager.get(userUuid).thenApply(userOptional -> userOptional
-            .map(user -> user.name())
+            .map(User::name)
             .orElse("Unknown")
         );
     }
