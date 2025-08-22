@@ -2,6 +2,7 @@ package com.eternalcode.parcellockers.gui.implementation.locker;
 
 import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig.GuiSettings;
 import com.eternalcode.parcellockers.configuration.serializable.ConfigItem;
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
@@ -58,7 +59,7 @@ public class ParcelCollectionGui implements GuiView {
     }
 
     private void show(Player player, Page page) {
-        PluginConfig.GuiSettings guiSettings = this.config.guiSettings;
+        GuiSettings guiSettings = this.config.guiSettings;
 
         Component guiTitle = this.miniMessage.deserialize(guiSettings.parcelCollectionGuiTitle);
 

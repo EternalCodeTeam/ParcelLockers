@@ -54,7 +54,7 @@ public class MessageConfig extends OkaeriConfig {
             .build();
         public Notice empty = Notice.builder()
             .chat("&4✘ &cThe parcel cannot be empty!")
-            .sound(Sound.ENTITY_VILLAGER_NO.key())
+            .sound(Sound.ENTITY_ENDERMAN_AMBIENT.key())
             .build();
         public Notice receiverSet = Notice.builder()
             .chat("&2✔ &aParcel receiver set successfully.")
@@ -86,7 +86,7 @@ public class MessageConfig extends OkaeriConfig {
             .build();
         public Notice illegalItem = Notice.builder()
             .chat("&4✘ &cThe parcel contains illegal items that cannot be sent. ({ITEMS})")
-            .sound(Sound.ENTITY_VILLAGER_NO.key())
+            .sound(Sound.ENTITY_ENDERMAN_AMBIENT.key())
             .build();
         public Notice cannotDelete = Notice.builder()
             .chat("&4✘ &cAn error occurred while deleting the parcel.")

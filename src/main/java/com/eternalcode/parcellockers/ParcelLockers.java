@@ -149,7 +149,7 @@ public final class ParcelLockers extends JavaPlugin {
             .message(LiteBukkitMessages.PLAYER_ONLY, messageConfig.playerOnlyCommand)
             .message(LiteBukkitMessages.PLAYER_NOT_FOUND, messageConfig.playerNotFound)
             .commands(LiteCommandsAnnotations.of(
-                new ParcelCommand(mainGUI, parcelListGUI, parcelService),
+                new ParcelCommand(mainGUI),
                 new ParcelLockersCommand(configManager, config, noticeService),
                 new DebugCommand(parcelRepository, lockerRepository, itemStorageRepository, parcelContentRepository, noticeService)
             ))

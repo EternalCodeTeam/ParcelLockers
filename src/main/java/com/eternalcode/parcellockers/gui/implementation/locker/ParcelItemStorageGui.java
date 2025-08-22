@@ -3,6 +3,7 @@ package com.eternalcode.parcellockers.gui.implementation.locker;
 import com.eternalcode.commons.bukkit.ItemUtil;
 import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig.GuiSettings;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.itemstorage.ItemStorage;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
@@ -69,7 +70,7 @@ public class ParcelItemStorageGui {
 
     void show(Player player, ParcelSize size) {
         StorageGui gui;
-        PluginConfig.GuiSettings guiSettings = this.config.guiSettings;
+        GuiSettings guiSettings = this.config.guiSettings;
 
         GuiItem backgroundItem = guiSettings.mainGuiBackgroundItem.toGuiItem(event -> event.setCancelled(true));
 
@@ -105,8 +106,8 @@ public class ParcelItemStorageGui {
         }
 
         // Set background items and confirm/cancel items + close gui action
-        IntStream.rangeClosed(2, 9).forEach(i -> gui.setItem(gui.getRows(), i, backgroundItem));
-        gui.setItem(gui.getRows(), 1, confirmItem);
+        IntStream.rangeClosed(1, 9).forEach(i -> gui.setItem(gui.getRows(), i, backgroundItem));
+        gui.setItem(gui.getRows(), 5, confirmItem);
 
         gui.setCloseGuiAction(event -> {
             ItemStack[] contents = gui.getInventory().getContents();
@@ -124,7 +125,6 @@ public class ParcelItemStorageGui {
                     if (item.getType() == type) {
                         ItemUtil.giveItem(player, item);
                         gui.removeItem(item);
-                        // player.playSound(player.getLocation(), Sound.ENTITY_ENDERMAN_AMBIENT, 1, 1);
                         this.noticeService.create()
                             .notice(messages -> messages.parcel.illegalItem)
                             .placeholder("{ITEMS}", MaterialUtil.format(item.getType()))

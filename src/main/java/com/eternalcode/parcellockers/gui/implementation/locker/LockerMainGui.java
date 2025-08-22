@@ -4,6 +4,7 @@ import static com.eternalcode.commons.adventure.AdventureUtil.resetItalic;
 
 import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig.GuiSettings;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
@@ -66,7 +67,8 @@ public class LockerMainGui implements GuiView {
 
     @Override
     public void show(Player player) {
-        Component guiTitle = this.miniMessage.deserialize(this.config.guiSettings.mainGuiTitle);
+        GuiSettings guiSettings = this.config.guiSettings;
+        Component guiTitle = this.miniMessage.deserialize(guiSettings.mainGuiTitle);
 
         Gui gui = Gui.gui()
             .title(resetItalic(guiTitle))
@@ -74,9 +76,9 @@ public class LockerMainGui implements GuiView {
             .disableAllInteractions()
             .create();
 
-        GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem();
-        GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem();
-        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(event -> gui.close(player));
+        GuiItem backgroundItem = guiSettings.mainGuiBackgroundItem.toGuiItem();
+        GuiItem cornerItem = guiSettings.cornerItem.toGuiItem();
+        GuiItem closeItem = guiSettings.closeItem.toGuiItem(event -> gui.close(player));
 
         int size = gui.getRows() * 9;
         for (int i = 0; i < size; i++) {
@@ -97,8 +99,8 @@ public class LockerMainGui implements GuiView {
             this.lockerRepository
         );
 
-        gui.setItem(21, this.config.guiSettings.parcelLockerCollectItem.toGuiItem(event -> collectionGui.show(player)));
-        gui.setItem(23, this.config.guiSettings.parcelLockerSendItem.toGuiItem(event -> new ParcelSendingGui(
+        gui.setItem(21, guiSettings.parcelLockerCollectItem.toGuiItem(event -> collectionGui.show(player)));
+        gui.setItem(23, guiSettings.parcelLockerSendItem.toGuiItem(event -> new ParcelSendingGui(
             this.scheduler,
             this.config,
             this.miniMessage,

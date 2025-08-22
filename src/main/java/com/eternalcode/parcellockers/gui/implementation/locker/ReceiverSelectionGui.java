@@ -2,6 +2,7 @@ package com.eternalcode.parcellockers.gui.implementation.locker;
 
 import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig.GuiSettings;
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.gui.PaginatedGuiRefresher;
 import com.eternalcode.parcellockers.shared.Page;
@@ -62,17 +63,18 @@ public class ReceiverSelectionGui implements GuiView {
     }
 
     private void show(Player player, Page page) {
+        GuiSettings settings = this.config.guiSettings;
         PaginatedGui gui = Gui.paginated()
-            .title(this.miniMessage.deserialize(this.config.guiSettings.parcelReceiverSelectionGuiTitle))
+            .title(this.miniMessage.deserialize(settings.parcelReceiverSelectionGuiTitle))
             .rows(6)
             .disableAllInteractions()
             .create();
 
-        GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem();
-        GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem();
-        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(event -> this.sendingGUI.show(player));
-        GuiItem previousPageItem = this.config.guiSettings.previousPageItem.toGuiItem(event -> this.show(player, page.previous()));
-        GuiItem nextPageItem = this.config.guiSettings.nextPageItem.toGuiItem(event -> this.show(player, page.next()));
+        GuiItem backgroundItem = settings.mainGuiBackgroundItem.toGuiItem();
+        GuiItem cornerItem = settings.cornerItem.toGuiItem();
+        GuiItem closeItem = settings.closeItem.toGuiItem(event -> this.sendingGUI.show(player));
+        GuiItem previousPageItem = settings.previousPageItem.toGuiItem(event -> this.show(player, page.previous()));
+        GuiItem nextPageItem = settings.nextPageItem.toGuiItem(event -> this.show(player, page.next()));
 
         for (int slot : CORNER_SLOTS) {
             gui.setItem(slot, cornerItem);
@@ -116,9 +118,10 @@ public class ReceiverSelectionGui implements GuiView {
 
         return () -> {
             boolean isReceiverSelected = uuid.equals(this.state.receiver());
+            GuiSettings settings = this.config.guiSettings;
             String lore = isReceiverSelected
-                ? this.config.guiSettings.parcelReceiverSetLine
-                : this.config.guiSettings.parcelReceiverNotSetLine;
+                ? settings.parcelReceiverSetLine
+                : settings.parcelReceiverNotSetLine;
 
             return ItemBuilder.skull()
                 .texture(skullData.getTexture())

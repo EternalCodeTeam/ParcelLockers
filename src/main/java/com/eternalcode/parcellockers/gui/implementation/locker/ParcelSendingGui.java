@@ -3,6 +3,7 @@ package com.eternalcode.parcellockers.gui.implementation.locker;
 import com.eternalcode.commons.adventure.AdventureUtil;
 import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig.GuiSettings;
 import com.eternalcode.parcellockers.configuration.serializable.ConfigItem;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.gui.GuiView;
@@ -63,7 +64,8 @@ public class ParcelSendingGui implements GuiView {
     private Gui gui;
 
     public ParcelSendingGui(
-        Scheduler scheduler, PluginConfig config,
+            Scheduler scheduler,
+            PluginConfig config,
             MiniMessage miniMessage,
             ItemStorageRepository itemStorageRepository,
             ParcelRepository parcelRepository,
@@ -91,7 +93,7 @@ public class ParcelSendingGui implements GuiView {
 
     @Override
     public void show(Player player) {
-        PluginConfig.GuiSettings guiSettings = this.config.guiSettings;
+        GuiSettings guiSettings = this.config.guiSettings;
 
         Component guiTitle = this.miniMessage.deserialize(guiSettings.parcelLockerSendingGuiTitle);
 
@@ -172,7 +174,7 @@ public class ParcelSendingGui implements GuiView {
                             lore.remove(1);
                         }
 
-                        lore.add(this.config.guiSettings.parcelDescriptionSetLine.replace("{DESCRIPTION}", description));
+                        lore.add(guiSettings.parcelDescriptionSetLine.replace("{DESCRIPTION}", description));
 
                         this.gui.updateItem(DESCRIPTION_ITEM_SLOT, descriptionItem
                             .lore(lore)
@@ -225,7 +227,6 @@ public class ParcelSendingGui implements GuiView {
                         .notice(messages -> messages.parcel.empty)
                         .player(player.getUniqueId())
                         .send();
-                    // TODO player.playSound(player, this.config.settings.errorSound, this.config.settings.errorSoundVolume, this.config.settings.errorSoundPitch);
                     return;
                 }
 
@@ -234,7 +235,6 @@ public class ParcelSendingGui implements GuiView {
                         .notice(messages -> messages.parcel.receiverNotSet)
                         .player(player.getUniqueId())
                         .send();
-                    player.playSound(player, this.config.settings.errorSound, this.config.settings.errorSoundVolume, this.config.settings.errorSoundPitch);
                     return;
                 }
 
@@ -346,23 +346,25 @@ public class ParcelSendingGui implements GuiView {
     }
 
     public void updateNameItem() {
+        GuiSettings settings = this.config.guiSettings;
         if (this.state.parcelName() == null || this.state.parcelName().isEmpty()) {
-            this.gui.updateItem(NAME_ITEM_SLOT, this.config.guiSettings.parcelNameItem.toItemStack());
+            this.gui.updateItem(NAME_ITEM_SLOT, settings.parcelNameItem.toItemStack());
             return;
         }
 
-        String line = this.config.guiSettings.parcelNameSetLine.replace("{NAME}", this.state.parcelName());
-        this.gui.updateItem(NAME_ITEM_SLOT, this.createActiveItem(this.config.guiSettings.parcelNameItem, line));
+        String line = settings.parcelNameSetLine.replace("{NAME}", this.state.parcelName());
+        this.gui.updateItem(NAME_ITEM_SLOT, this.createActiveItem(settings.parcelNameItem, line));
     }
 
     public void updateDescriptionItem() {
+        GuiSettings settings = this.config.guiSettings;
         if (this.state.parcelDescription() == null || this.state.parcelDescription().isEmpty()) {
-            this.gui.updateItem(DESCRIPTION_ITEM_SLOT, this.config.guiSettings.parcelDescriptionItem.toItemStack());
+            this.gui.updateItem(DESCRIPTION_ITEM_SLOT, settings.parcelDescriptionItem.toItemStack());
             return;
         }
 
-        String line = this.config.guiSettings.parcelDescriptionSetLine.replace("{DESCRIPTION}", this.state.parcelDescription());
-        this.gui.updateItem(DESCRIPTION_ITEM_SLOT, this.createActiveItem(this.config.guiSettings.parcelDescriptionItem, line));
+        String line = settings.parcelDescriptionSetLine.replace("{DESCRIPTION}", this.state.parcelDescription());
+        this.gui.updateItem(DESCRIPTION_ITEM_SLOT, this.createActiveItem(settings.parcelDescriptionItem, line));
     }
 
     public void updateReceiverItem(Player player, String receiverName) {
@@ -371,13 +373,14 @@ public class ParcelSendingGui implements GuiView {
             .player(player.getUniqueId())
             .send();
 
+        GuiSettings settings = this.config.guiSettings;
         if (receiverName == null || receiverName.isEmpty()) {
-            this.gui.updateItem(RECEIVER_ITEM_SLOT, this.config.guiSettings.parcelReceiverItem.toItemStack());
+            this.gui.updateItem(RECEIVER_ITEM_SLOT, settings.parcelReceiverItem.toItemStack());
             return;
         }
 
-        String line = this.config.guiSettings.parcelReceiverGuiSetLine.replace("{RECEIVER}", receiverName);
-        this.gui.updateItem(RECEIVER_ITEM_SLOT, this.createActiveItem(this.config.guiSettings.parcelReceiverItem, line));
+        String line = settings.parcelReceiverGuiSetLine.replace("{RECEIVER}", receiverName);
+        this.gui.updateItem(RECEIVER_ITEM_SLOT, this.createActiveItem(settings.parcelReceiverItem, line));
     }
 
     public void updateDestinationItem(Player player, String destinationLockerDesc) {
@@ -386,13 +389,14 @@ public class ParcelSendingGui implements GuiView {
             .player(player.getUniqueId())
             .send();
 
+        GuiSettings settings = this.config.guiSettings;
         if (destinationLockerDesc == null || destinationLockerDesc.isEmpty()) {
-            this.gui.updateItem(DESTINATION_ITEM_SLOT, this.config.guiSettings.parcelDestinationLockerItem.toItemStack());
+            this.gui.updateItem(DESTINATION_ITEM_SLOT, settings.parcelDestinationLockerItem.toItemStack());
             return;
         }
 
-        String line = this.config.guiSettings.parcelDestinationLockerSetLine.replace("{DESCRIPTION}", destinationLockerDesc);
-        this.gui.updateItem(DESTINATION_ITEM_SLOT, this.createActiveItem(this.config.guiSettings.parcelDestinationLockerItem, line));
+        String line = settings.parcelDestinationLockerSetLine.replace("{DESCRIPTION}", destinationLockerDesc);
+        this.gui.updateItem(DESTINATION_ITEM_SLOT, this.createActiveItem(settings.parcelDestinationLockerItem, line));
     }
 
     private @NotNull ItemStack createActiveItem(ConfigItem item, String appendLore) {
