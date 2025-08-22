@@ -38,9 +38,7 @@ public class ConfigItem implements Serializable, Cloneable {
         return PaperItemBuilder.from(this.type)
             .name(AdventureUtil.resetItalic(MINI_MESSAGE.deserialize(this.name)))
             .lore(this.lore.stream().map(element -> AdventureUtil.resetItalic(MINI_MESSAGE.deserialize(element))).toList())
-            .flags(ItemFlag.HIDE_ATTRIBUTES)
             .flags(ItemFlag.HIDE_ENCHANTS)
-            .flags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP)
             .glow(this.glow)
             .asGuiItem(action);
     }
@@ -49,9 +47,7 @@ public class ConfigItem implements Serializable, Cloneable {
         return PaperItemBuilder.from(this.type)
             .name(AdventureUtil.resetItalic(MINI_MESSAGE.deserialize(this.name)))
             .lore(this.lore.stream().map(element -> AdventureUtil.resetItalic(MINI_MESSAGE.deserialize(element))).toList())
-            .flags(ItemFlag.HIDE_ATTRIBUTES)
             .flags(ItemFlag.HIDE_ENCHANTS)
-            .flags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP)
             .glow(this.glow);
     }
 

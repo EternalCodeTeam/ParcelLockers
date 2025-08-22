@@ -90,8 +90,8 @@ public class DebugCommand {
                 .send());
     }
 
-    @Execute(name = "delete parcelcontents")
-    void deleteParcelContents(@Sender CommandSender sender) {
+    @Execute(name = "delete items")
+    void deleteItems(@Sender CommandSender sender) {
         this.contentRepository.deleteAll().exceptionally(throwable -> {
             this.noticeService.create()
                 .notice(Notice.chat("&4Failed to delete parcel contents"))
@@ -109,7 +109,7 @@ public class DebugCommand {
         this.deleteItemStorages(sender);
         this.deleteLockers(sender);
         this.deleteParcels(sender);
-        this.deleteParcelContents(sender);
+        this.deleteItems(sender);
     }
 
     @Execute(name = "getrandomitem")
