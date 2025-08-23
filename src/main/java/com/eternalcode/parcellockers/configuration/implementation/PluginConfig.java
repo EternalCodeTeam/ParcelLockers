@@ -156,7 +156,7 @@ public class PluginConfig extends OkaeriConfig {
         @Comment({ "", "# The item of the parcel submit button" })
         public ConfigItem submitParcelItem = new ConfigItem()
             .name("&2✔ &aSubmit")
-            .lore(List.of("<gradient:#089F49:#32D25E>Before submitting, check if everything has been filled correctly!</gradient>", "<gradient:#CD2D2D:#EC2465>Before submitting, check if everything has been filled correctly!</gradient>"))
+            .lore(List.of("<gradient:#089F49:#32D25E>Click to send your parcel.</gradient>", "<gradient:#CD2D2D:#EC2465>Before submitting, check if everything has been filled correctly!</gradient>"))
             .type(Material.EMERALD_BLOCK)
             .glow(true);
 
@@ -224,8 +224,8 @@ public class PluginConfig extends OkaeriConfig {
 
         @Comment({ "", "# The item of the parcel name button" })
         public ConfigItem parcelDescriptionItem = new ConfigItem()
-            .name("&2\uD83D\uDDC9 &aParcel name")
-            .lore(List.of("&2» &aClick to add parcel name."))
+            .name("&2\uD83D\uDDC9 &aParcel description")
+            .lore(List.of("&2» &aClick to add parcel description."))
             .type(Material.OAK_SIGN);
 
         public String parcelDescriptionSetLine = "&2» &aCurrent parcel name: &2{DESCRIPTION}";

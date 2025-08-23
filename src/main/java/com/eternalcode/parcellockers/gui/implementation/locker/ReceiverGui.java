@@ -18,6 +18,7 @@ import dev.triumphteam.gui.guis.PaginatedGui;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
@@ -66,29 +67,10 @@ public class ReceiverGui implements GuiView {
             .disableAllInteractions()
             .create();
 
-        GuiItem backgroundItem = this.guiSettings.mainGuiBackgroundItem.toGuiItem();
-        GuiItem cornerItem = this.guiSettings.cornerItem.toGuiItem();
-        GuiItem closeItem = this.guiSettings.closeItem.toGuiItem(event -> this.sendingGUI.show(player));
-        GuiItem previousPageItem = this.guiSettings.previousPageItem.toGuiItem(event -> this.show(player, page.previous()));
-        GuiItem nextPageItem = this.guiSettings.nextPageItem.toGuiItem(event -> this.show(player, page.next()));
-
-        for (int slot : CORNER_SLOTS) {
-            gui.setItem(slot, cornerItem);
-        }
-        for (int slot : BORDER_SLOTS) {
-            gui.setItem(slot, backgroundItem);
-        }
-
-        gui.setItem(49, closeItem);
+        this.setupStaticItems(gui, player);
 
         this.guiManager.getUsers(page).thenAccept(result -> {
-            if (result.hasNextPage()) {
-                gui.setItem(51, nextPageItem);
-            }
-
-            if (page.hasPrevious()) {
-                gui.setItem(47, previousPageItem);
-            }
+            this.setupNavigation(gui, page, result, player);
 
             PaginatedGuiRefresher refresh = new PaginatedGuiRefresher(gui);
 
@@ -106,7 +88,8 @@ public class ReceiverGui implements GuiView {
         return result.items().stream()
 //            .filter(user -> !user.uuid().equals(player.getUniqueId()))
             .map(user -> this.skullAPI.getSkullData(user.uuid()).thenApply(skullData -> this.toItem(player, user, skullData, refresh)))
-            .collect(CompletableFutures.joinList());
+            .collect(CompletableFutures.joinList())
+            .orTimeout(10, TimeUnit.SECONDS);
     }
 
     private Supplier<GuiItem> toItem(Player player, User user, SkullData skullData, PaginatedGuiRefresher refresher) {
@@ -136,5 +119,31 @@ public class ReceiverGui implements GuiView {
                     refresher.refresh();
                 });
         };
+    }
+
+    private void setupStaticItems(PaginatedGui gui, Player player) {
+        GuiItem backgroundItem = this.guiSettings.mainGuiBackgroundItem.toGuiItem();
+        GuiItem cornerItem = this.guiSettings.cornerItem.toGuiItem();
+        GuiItem closeItem = this.guiSettings.closeItem.toGuiItem(event -> this.sendingGUI.show(player));
+
+        for (int slot : CORNER_SLOTS) {
+            gui.setItem(slot, cornerItem);
+        }
+        for (int slot : BORDER_SLOTS) {
+            gui.setItem(slot, backgroundItem);
+        }
+        gui.setItem(49, closeItem);
+    }
+
+    private void setupNavigation(PaginatedGui gui, Page page, PageResult<User> result, Player player) {
+        if (result.hasNextPage()) {
+            GuiItem nextPageItem = this.guiSettings.nextPageItem.toGuiItem(event -> this.show(player, page.next()));
+            gui.setItem(51, nextPageItem);
+        }
+
+        if (page.hasPrevious()) {
+            GuiItem previousPageItem = this.guiSettings.previousPageItem.toGuiItem(event -> this.show(player, page.previous()));
+            gui.setItem(47, previousPageItem);
+        }
     }
 }

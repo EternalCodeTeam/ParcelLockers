@@ -70,6 +70,11 @@ public class SendingGui implements GuiView {
         this.state = state;
     }
 
+    public void show(Player player, UUID entryLocker) {
+        this.state.entryLocker(entryLocker);
+        this.show(player);
+    }
+
     @Override
     public void show(Player player) {
 
@@ -236,7 +241,7 @@ public class SendingGui implements GuiView {
                 this.guiManager,
                 this.noticeService,
                 this.skullAPI
-            ).show(player));
+            ).show(player, this.state.entryLocker()));
 
         ConfigItem smallButton = this.guiSettings.smallParcelSizeItem;
         ConfigItem mediumButton = this.guiSettings.mediumParcelSizeItem;
@@ -288,11 +293,13 @@ public class SendingGui implements GuiView {
         this.guiManager.getUser(this.state.receiver()).thenAccept(userOptional ->
             userOptional.ifPresent(user -> this.updateReceiverItem(player, user.name())));
 
-        this.guiManager.getLocker(this.state.destinationLocker()).thenAccept(lockerOptional ->
-            lockerOptional.ifPresent(locker -> {
-                System.out.println(locker);
-                this.updateDestinationItem(player, locker.name());
-            }));
+
+        if (this.state.destinationLocker() != null) {
+            this.guiManager.getLocker(this.state.destinationLocker()).thenAccept(lockerOptional ->
+                lockerOptional.ifPresent(locker -> {
+                    this.updateDestinationItem(player, locker.name());
+                }));
+        }
 
         this.scheduler.run(() -> this.gui.open(player));
     }

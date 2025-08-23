@@ -33,6 +33,10 @@ public class LockerManager {
     }
 
     public CompletableFuture<Optional<Locker>> get(UUID uniqueId) {
+        if (uniqueId == null) {
+            return CompletableFuture.completedFuture(Optional.empty());
+        }
+
         Locker locker = this.lockersByUUID.getIfPresent(uniqueId);
 
         if (locker != null) {
