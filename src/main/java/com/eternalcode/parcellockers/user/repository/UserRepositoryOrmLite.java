@@ -42,8 +42,8 @@ public class UserRepositoryOrmLite extends AbstractRepositoryOrmLite implements 
     }
 
     @Override
-    public CompletableFuture<Void> save(User user) {
-        return this.save(UserTable.class, UserTable.from(user)).thenApply(dao -> null);
+    public void save(User user) {
+        this.save(UserTable.class, UserTable.from(user)).thenApply(dao -> null);
     }
 
     @Override
@@ -70,7 +70,7 @@ public class UserRepositoryOrmLite extends AbstractRepositoryOrmLite implements 
 
             boolean hasNext = users.size() > page.getLimit();
             if (hasNext) {
-                users.remove(users.size() - 1);
+                users.removeLast();
             }
             return new UserPageResult(users, hasNext);
         });

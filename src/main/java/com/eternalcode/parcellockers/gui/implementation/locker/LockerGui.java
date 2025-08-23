@@ -14,7 +14,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 
-@SuppressWarnings("ClassCanBeRecord")
 public class LockerGui implements GuiView {
 
     private final MiniMessage miniMessage;
@@ -40,7 +39,7 @@ public class LockerGui implements GuiView {
 
     @Override
     public void show(Player player) {
-        Component guiTitle = this.miniMessage.deserialize(guiSettings.mainGuiTitle);
+        Component guiTitle = this.miniMessage.deserialize(this.guiSettings.mainGuiTitle);
 
         Gui gui = Gui.gui()
             .title(resetItalic(guiTitle))
@@ -48,9 +47,9 @@ public class LockerGui implements GuiView {
             .disableAllInteractions()
             .create();
 
-        GuiItem backgroundItem = guiSettings.mainGuiBackgroundItem.toGuiItem();
-        GuiItem cornerItem = guiSettings.cornerItem.toGuiItem();
-        GuiItem closeItem = guiSettings.closeItem.toGuiItem(event -> gui.close(player));
+        GuiItem backgroundItem = this.guiSettings.mainGuiBackgroundItem.toGuiItem();
+        GuiItem cornerItem = this.guiSettings.cornerItem.toGuiItem();
+        GuiItem closeItem = this.guiSettings.closeItem.toGuiItem(event -> gui.close(player));
 
         int size = gui.getRows() * 9;
         for (int i = 0; i < size; i++) {
@@ -68,8 +67,8 @@ public class LockerGui implements GuiView {
             this.miniMessage
         );
 
-        gui.setItem(21, guiSettings.parcelLockerCollectItem.toGuiItem(event -> collectionGui.show(player)));
-        gui.setItem(23, guiSettings.parcelLockerSendItem.toGuiItem(event -> new SendingGui(
+        gui.setItem(21, this.guiSettings.parcelLockerCollectItem.toGuiItem(event -> collectionGui.show(player)));
+        gui.setItem(23, this.guiSettings.parcelLockerSendItem.toGuiItem(event -> new SendingGui(
             this.scheduler,
             this.guiSettings,
             this.miniMessage,

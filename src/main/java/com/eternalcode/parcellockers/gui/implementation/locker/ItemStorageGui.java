@@ -20,7 +20,6 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-@SuppressWarnings("ClassCanBeRecord")
 public class ItemStorageGui {
 
     private final Scheduler scheduler;

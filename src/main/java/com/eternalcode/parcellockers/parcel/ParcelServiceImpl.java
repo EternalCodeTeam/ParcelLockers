@@ -13,9 +13,13 @@ import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.parcel.task.ParcelSendTask;
 import com.eternalcode.parcellockers.shared.ParcelLockersException;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -28,6 +32,11 @@ public class ParcelServiceImpl implements ParcelService {
     private final DeliveryRepository deliveryRepository;
     private final ParcelContentRepository parcelContentRepository;
     private final Scheduler scheduler;
+
+    private final Cache<UUID, Parcel> cache = Caffeine.newBuilder()
+        .expireAfterWrite(6, TimeUnit.HOURS)
+        .maximumSize(10_000)
+        .build();
 
     public ParcelServiceImpl(
         PluginConfig config,
@@ -48,8 +57,8 @@ public class ParcelServiceImpl implements ParcelService {
     @Override
     public boolean send(Player sender, Parcel parcel, List<ItemStack> items) {
         Duration delay = parcel.priority()
-            ? config.settings.priorityParcelSendDuration
-            : config.settings.parcelSendDuration;
+            ? this.config.settings.priorityParcelSendDuration
+            : this.config.settings.parcelSendDuration;
 
         this.parcelRepository.save(parcel);
 
@@ -71,13 +80,19 @@ public class ParcelServiceImpl implements ParcelService {
 
             Delivery delivery = new Delivery(parcel.uuid(), Instant.now().plus(delay));
             this.deliveryRepository.save(delivery);
-            ParcelSendTask task = new ParcelSendTask(parcel, delivery, parcelRepository, deliveryRepository, config);
+            ParcelSendTask task = new ParcelSendTask(parcel, this, this.deliveryRepository
+            );
 
             this.scheduler.runLaterAsync(task, delay);
 
             return true;
         });
         return true;
+    }
+
+    @Override
+    public void update(Parcel updated) {
+        this.parcelRepository.update(updated) ;
     }
 
     @Override

@@ -5,6 +5,7 @@ import com.eternalcode.parcellockers.shared.Position;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -59,6 +60,20 @@ public class LockerManager {
         });
     }
 
+    public CompletableFuture<Optional<List<Locker>>> getAll() {
+        List<Locker> lockers = List.copyOf(this.lockersByUUID.asMap().values());
+        if (!lockers.isEmpty()) {
+            return CompletableFuture.completedFuture(Optional.of(lockers));
+        }
+        return this.lockerRepository.findAll().thenApply(optionalLockers -> {
+            optionalLockers.ifPresent(lockers1 -> lockers1.forEach(locker -> {
+                this.lockersByUUID.put(locker.uuid(), locker);
+                this.lockersByPosition.put(locker.position(), locker);
+            }));
+            return optionalLockers;
+        });
+    }
+
     public Locker getOrCreate(UUID uniqueId, String name, Position position) {
         Locker lockerByUUID = this.lockersByUUID.getIfPresent(uniqueId);
         if (lockerByUUID != null) {
@@ -90,9 +105,9 @@ public class LockerManager {
         return locker;
     }
 
-    public CompletableFuture<Integer> delete(UUID uniqueId) {
+    public void delete(UUID uniqueId) {
         this.lockersByUUID.invalidate(uniqueId);
-        return this.lockerRepository.delete(uniqueId).thenApply(deleted -> {
+        this.lockerRepository.delete(uniqueId).thenApply(deleted -> {
             if (deleted > 0) {
                 this.lockersByPosition.asMap().values().removeIf(locker -> locker.uuid().equals(uniqueId));
             }

@@ -17,7 +17,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 
-@SuppressWarnings("ClassCanBeRecord")
 public class CollectionGui implements GuiView {
 
     private static final int WIDTH = 7;

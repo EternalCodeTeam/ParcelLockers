@@ -17,8 +17,7 @@ public class ParcelLockerPlacePrompt implements Prompt {
     @NotNull
     @Override
     public String getPromptText(@NotNull ConversationContext context) {
-        // TODO do not hardcode this
-        return ChatColor.translateAlternateColorCodes('&', "&6↵ &eEnter a description for the parcel locker:");
+        return ChatColor.translateAlternateColorCodes('&', "&6↵ &eEnter a name for the parcel locker:");
     }
 
     @Override

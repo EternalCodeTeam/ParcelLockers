@@ -24,7 +24,7 @@ import org.jetbrains.annotations.NotNull;
 @Accessors(fluent = true)
 public class ConfigItem implements Serializable, Cloneable {
 
-    private final transient MiniMessage MINI_MESSAGE = MiniMessage.builder()
+    private final transient MiniMessage miniMessage = MiniMessage.builder()
         .preProcessor(new AdventureLegacyColorPreProcessor())
         .postProcessor(new AdventureLegacyColorPostProcessor())
         .build();
@@ -36,8 +36,8 @@ public class ConfigItem implements Serializable, Cloneable {
 
     public GuiItem toGuiItem(GuiAction<InventoryClickEvent> action) {
         return PaperItemBuilder.from(this.type)
-            .name(AdventureUtil.resetItalic(MINI_MESSAGE.deserialize(this.name)))
-            .lore(this.lore.stream().map(element -> AdventureUtil.resetItalic(MINI_MESSAGE.deserialize(element))).toList())
+            .name(AdventureUtil.resetItalic(this.miniMessage.deserialize(this.name)))
+            .lore(this.lore.stream().map(element -> AdventureUtil.resetItalic(this.miniMessage.deserialize(element))).toList())
             .flags(ItemFlag.HIDE_ENCHANTS)
             .glow(this.glow)
             .asGuiItem(action);
@@ -45,8 +45,8 @@ public class ConfigItem implements Serializable, Cloneable {
 
     public @NotNull PaperItemBuilder toBuilder() {
         return PaperItemBuilder.from(this.type)
-            .name(AdventureUtil.resetItalic(MINI_MESSAGE.deserialize(this.name)))
-            .lore(this.lore.stream().map(element -> AdventureUtil.resetItalic(MINI_MESSAGE.deserialize(element))).toList())
+            .name(AdventureUtil.resetItalic(this.miniMessage.deserialize(this.name)))
+            .lore(this.lore.stream().map(element -> AdventureUtil.resetItalic(this.miniMessage.deserialize(element))).toList())
             .flags(ItemFlag.HIDE_ENCHANTS)
             .glow(this.glow);
     }

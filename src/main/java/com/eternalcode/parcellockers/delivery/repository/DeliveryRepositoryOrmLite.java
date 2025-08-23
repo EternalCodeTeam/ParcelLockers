@@ -24,8 +24,8 @@ public class DeliveryRepositoryOrmLite extends AbstractRepositoryOrmLite impleme
     }
 
     @Override
-    public CompletableFuture<Void> save(Delivery delivery) {
-        return this.saveIfNotExist(DeliveryTable.class, DeliveryTable.from(delivery)).thenApply(dao -> null);
+    public void save(Delivery delivery) {
+        this.saveIfNotExist(DeliveryTable.class, DeliveryTable.from(delivery)).thenApply(dao -> null);
     }
 
     @Override
@@ -42,7 +42,7 @@ public class DeliveryRepositoryOrmLite extends AbstractRepositoryOrmLite impleme
     }
 
     @Override
-    public CompletableFuture<Integer> delete(UUID parcel) {
-        return this.deleteById(DeliveryTable.class, parcel);
+    public void delete(UUID parcel) {
+        this.deleteById(DeliveryTable.class, parcel);
     }
 }

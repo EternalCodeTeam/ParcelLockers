@@ -8,7 +8,7 @@ import java.util.concurrent.CompletableFuture;
 
 public interface UserRepository {
 
-    CompletableFuture<Void> save(User user);
+    void save(User user);
 
     CompletableFuture<Void> changeName(UUID uuid, String newName);
 

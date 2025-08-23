@@ -8,11 +8,11 @@ import java.util.concurrent.CompletableFuture;
 
 public interface DeliveryRepository {
 
-    CompletableFuture<Void> save(Delivery delivery);
+    void save(Delivery delivery);
 
     CompletableFuture<Optional<Delivery>> find(UUID parcel);
 
-    CompletableFuture<Integer> delete(UUID parcel);
+    void delete(UUID parcel);
 
     CompletableFuture<Optional<List<Delivery>>> findAll();
 }

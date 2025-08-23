@@ -10,9 +10,9 @@ import java.util.concurrent.CompletableFuture;
 
 public interface ParcelRepository {
 
-    CompletableFuture<Void> save(Parcel parcel);
+    void save(Parcel parcel);
 
-    CompletableFuture<Void> update(Parcel parcel);
+    void update(Parcel parcel);
 
     CompletableFuture<Optional<List<Parcel>>> findAll();
 

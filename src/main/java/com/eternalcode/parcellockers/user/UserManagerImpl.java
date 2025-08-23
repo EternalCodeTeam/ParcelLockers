@@ -43,20 +43,20 @@ public class UserManagerImpl implements UserManager {
     }
 
     @Override
-    public User getOrCreate(UUID uuid, String name) {
+    public void getOrCreate(UUID uuid, String name) {
         User userByUUID = this.usersByUUID.get(uuid);
 
         if (userByUUID != null) {
-            return userByUUID;
+            return;
         }
 
         User userByName = this.usersByName.get(name);
 
         if (userByName != null) {
-            return userByName;
+            return;
         }
 
-        return this.create(uuid, name);
+        this.create(uuid, name);
     }
 
     @Override

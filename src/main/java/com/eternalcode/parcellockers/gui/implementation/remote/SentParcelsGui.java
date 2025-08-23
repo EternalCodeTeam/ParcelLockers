@@ -17,7 +17,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 
-@SuppressWarnings({"Convert2MethodRef", "ClassCanBeRecord"})
 public class SentParcelsGui implements GuiView {
 
     private final Scheduler scheduler;

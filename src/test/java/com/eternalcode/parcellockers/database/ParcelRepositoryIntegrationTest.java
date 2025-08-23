@@ -9,7 +9,6 @@ import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.ParcelStatus;
-import com.eternalcode.parcellockers.parcel.repository.ParcelCache;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryOrmLite;
 import com.eternalcode.parcellockers.shared.Page;
@@ -42,7 +41,7 @@ class ParcelRepositoryIntegrationTest extends IntegrationTestSpec {
 
     @Test
     void test() {
-        File dataFolder = tempDir.resolve("ParcelLockers").toFile();
+        File dataFolder = this.tempDir.resolve("ParcelLockers").toFile();
         PluginConfig config = new ConfigService().create(PluginConfig.class, new File(dataFolder, "config.yml"));
         DatabaseManager databaseManager = new DatabaseManager(config, Logger.getLogger("ParcelLockers"), dataFolder);
         this.databaseManager = databaseManager;
@@ -70,7 +69,7 @@ class ParcelRepositoryIntegrationTest extends IntegrationTestSpec {
         assertEquals(1, bySender.size());
         assertEquals(uuid, bySender.getFirst().uuid());
 
-        PageResult pageResult = this.await(parcelRepository.findPage(new Page(0, 28)));
+        PageResult<Parcel> pageResult = this.await(parcelRepository.findPage(new Page(0, 28)));
         assertEquals(1, pageResult.parcels().size());
         assertEquals(uuid, pageResult.parcels().getFirst().uuid());
 

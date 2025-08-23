@@ -87,8 +87,8 @@ public class GuiManager {
         this.parcelService.collect(player, parcel);
     }
 
-    public CompletableFuture<Void> saveItemStorage(ItemStorage itemStorage) {
-        return this.itemStorageRepository.save(itemStorage);
+    public void saveItemStorage(ItemStorage itemStorage) {
+        this.itemStorageRepository.save(itemStorage);
     }
 
     public CompletableFuture<Integer> deleteItemStorage(UUID owner) {

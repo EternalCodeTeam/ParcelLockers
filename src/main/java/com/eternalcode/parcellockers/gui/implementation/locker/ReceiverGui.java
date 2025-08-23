@@ -22,7 +22,6 @@ import java.util.function.Supplier;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 
-@SuppressWarnings("ClassCanBeRecord")
 public class ReceiverGui implements GuiView {
 
     private static final int WIDTH = 7;

@@ -22,12 +22,12 @@ class ParcelCacheTest {
 
     @BeforeEach
     void setUp() {
-        parcelCache = new ParcelCache();
-        testParcel = new Parcel(
+        this.parcelCache = new ParcelCache();
+        this.testParcel = new Parcel(
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 "Test Package",
-                "Test package description",
+                "Test package name",
                 false,
                 UUID.randomUUID(),
                 ParcelSize.MEDIUM,
@@ -40,20 +40,20 @@ class ParcelCacheTest {
     @Test
     void shouldPutAndGetParcel() {
         // given
-        parcelCache.put(testParcel);
+        this.parcelCache.put(this.testParcel);
 
         // when
-        Optional<Parcel> result = parcelCache.get(testParcel.uuid());
+        Optional<Parcel> result = this.parcelCache.get(this.testParcel.uuid());
 
         // then
         assertTrue(result.isPresent());
-        assertEquals(testParcel, result.get());
+        assertEquals(this.testParcel, result.get());
     }
 
     @Test
     void shouldReturnEmptyWhenParcelNotFound() {
         // when
-        Optional<Parcel> result = parcelCache.get(UUID.randomUUID());
+        Optional<Parcel> result = this.parcelCache.get(UUID.randomUUID());
 
         // then
         assertFalse(result.isPresent());
@@ -62,20 +62,20 @@ class ParcelCacheTest {
     @Test
     void shouldRemoveParcel() {
         // given
-        parcelCache.put(testParcel);
+        this.parcelCache.put(this.testParcel);
 
         // when
-        Parcel removed = parcelCache.remove(testParcel.uuid());
+        Parcel removed = this.parcelCache.remove(this.testParcel.uuid());
 
         // then
-        assertEquals(testParcel, removed);
-        assertFalse(parcelCache.get(testParcel.uuid()).isPresent());
+        assertEquals(this.testParcel, removed);
+        assertFalse(this.parcelCache.get(this.testParcel.uuid()).isPresent());
     }
 
     @Test
     void shouldReturnNullWhenRemovingNonExistentParcel() {
         // when
-        Parcel removed = parcelCache.remove(UUID.randomUUID());
+        Parcel removed = this.parcelCache.remove(UUID.randomUUID());
 
         // then
         assertNull(removed);
@@ -116,48 +116,48 @@ class ParcelCacheTest {
         );
 
         // when
-        parcelCache.putAll(parcels);
+        this.parcelCache.putAll(parcels);
 
         // then
-        assertTrue(parcelCache.get(parcel1.uuid()).isPresent());
-        assertTrue(parcelCache.get(parcel2.uuid()).isPresent());
-        assertEquals(2, parcelCache.cache().size());
+        assertTrue(this.parcelCache.get(parcel1.uuid()).isPresent());
+        assertTrue(this.parcelCache.get(parcel2.uuid()).isPresent());
+        assertEquals(2, this.parcelCache.cache().size());
     }
 
     @Test
     void shouldClearCache() {
         // given
-        parcelCache.put(testParcel);
+        this.parcelCache.put(this.testParcel);
 
         // when
-        parcelCache.clear();
+        this.parcelCache.clear();
 
         // then
-        assertFalse(parcelCache.get(testParcel.uuid()).isPresent());
-        assertEquals(0, parcelCache.cache().size());
+        assertFalse(this.parcelCache.get(this.testParcel.uuid()).isPresent());
+        assertEquals(0, this.parcelCache.cache().size());
     }
 
     @Test
     void shouldReturnCorrectSize() {
         // given
-        parcelCache.put(testParcel);
+        this.parcelCache.put(this.testParcel);
 
         // when & then
-        assertEquals(1, parcelCache.cache().size());
+        assertEquals(1, this.parcelCache.cache().size());
     }
 
     @Test
     void shouldReturnUnmodifiableMap() {
         // given
-        parcelCache.put(testParcel);
+        this.parcelCache.put(this.testParcel);
 
         // when
-        Map<UUID, Parcel> cache = parcelCache.cache();
+        Map<UUID, Parcel> cache = this.parcelCache.cache();
 
         // then
         assertThrows(UnsupportedOperationException.class, () -> cache.clear());
         assertEquals(1, cache.size());
-        assertTrue(cache.containsKey(testParcel.uuid()));
+        assertTrue(cache.containsKey(this.testParcel.uuid()));
     }
 
     @Test
@@ -166,10 +166,10 @@ class ParcelCacheTest {
         ParcelCache cache = new ParcelCache();
 
         // when
-        cache.put(testParcel);
+        cache.put(this.testParcel);
 
         // then
-        assertTrue(cache.get(testParcel.uuid()).isPresent());
+        assertTrue(cache.get(this.testParcel.uuid()).isPresent());
         assertEquals(1, cache.cache().size());
     }
 }

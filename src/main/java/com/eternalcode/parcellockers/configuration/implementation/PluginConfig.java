@@ -223,13 +223,13 @@ public class PluginConfig extends OkaeriConfig {
         @Comment({ "", "# The value of the GUI line, when parcel name is set" })
         public String parcelNameSetLine = "&4» &cCurrent parcel name: &e{NAME}";
 
-        @Comment({ "", "# The item of the parcel description button" })
+        @Comment({ "", "# The item of the parcel name button" })
         public ConfigItem parcelDescriptionItem = new ConfigItem()
-            .name("&2\uD83D\uDDC9 &aParcel description")
-            .lore(List.of("&2» &aClick to add parcel description."))
+            .name("&2\uD83D\uDDC9 &aParcel name")
+            .lore(List.of("&2» &aClick to add parcel name."))
             .type(Material.OAK_SIGN);
 
-        public String parcelDescriptionSetLine = "&2» &aCurrent parcel description: &2{DESCRIPTION}";
+        public String parcelDescriptionSetLine = "&2» &aCurrent parcel name: &2{DESCRIPTION}";
 
         @Comment({ "", "# The item of the parcel receiver button" })
         public ConfigItem parcelReceiverItem = new ConfigItem()

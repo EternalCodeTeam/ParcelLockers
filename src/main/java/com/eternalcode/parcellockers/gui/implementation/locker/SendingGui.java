@@ -136,7 +136,7 @@ public class SendingGui implements GuiView {
                 descriptionSignGui = SignGUI.builder()
                     .setColor(DyeColor.BLACK)
                     .setType(Material.OAK_SIGN)
-                    .setLine(0, "Enter parcel description:")
+                    .setLine(0, "Enter parcel name:")
                     .setHandler((p, result) -> {
                         String description = result.getLineWithoutColor(1);
 
@@ -240,9 +240,9 @@ public class SendingGui implements GuiView {
         ConfigItem priorityItem = this.guiSettings.priorityItem;
 
 
-        int size = gui.getRows() * 9;
+        int size = this.gui.getRows() * 9;
         for (int i = 0; i < size; i++) {
-            gui.setItem(i, backgroundItem);
+            this.gui.setItem(i, backgroundItem);
         }
         for (int slot : CORNER_SLOTS) {
             this.gui.setItem(slot, cornerItem);
@@ -285,7 +285,7 @@ public class SendingGui implements GuiView {
             userOptional.ifPresent(user -> this.updateReceiverItem(player, user.name())));
 
         this.guiManager.getLocker(this.state.destinationLocker()).thenAccept(lockerOptional ->
-            lockerOptional.ifPresent(locker -> this.updateDestinationItem(player, locker.description())));
+            lockerOptional.ifPresent(locker -> this.updateDestinationItem(player, locker.name())));
 
 
         this.gui.open(player);

@@ -19,7 +19,6 @@ import java.util.function.Supplier;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 
-@SuppressWarnings("ClassCanBeRecord")
 public class DestinationGui implements GuiView {
 
     private static final int WIDTH = 7;
@@ -103,7 +102,7 @@ public class DestinationGui implements GuiView {
         ConfigItem parcelItem = this.guiSettings.destinationLockerItem.clone();
 
         return () -> {
-            String name = parcelItem.name().replace("{DESCRIPTION}", locker.description());
+            String name = parcelItem.name().replace("{DESCRIPTION}", locker.name());
             boolean isLockerSelected = uuid.equals(this.state.destinationLocker());
             String oneLineLore = isLockerSelected
                 ? this.guiSettings.parcelDestinationSetLine
@@ -122,7 +121,7 @@ public class DestinationGui implements GuiView {
                     }
 
                     this.state.destinationLocker(uuid);
-                    this.sendingGUI.updateDestinationItem(player, locker.description());
+                    this.sendingGUI.updateDestinationItem(player, locker.name());
                     refresher.refresh();
                 });
         };

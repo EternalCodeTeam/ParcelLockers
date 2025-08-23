@@ -61,7 +61,7 @@ public class MessageConfig extends OkaeriConfig {
             .sound(Sound.ENTITY_EXPERIENCE_ORB_PICKUP.key())
             .build();
         public Notice descriptionSet = Notice.builder()
-            .chat("&2✔ &aParcel description set successfully.")
+            .chat("&2✔ &aParcel name set successfully.")
             .sound(Sound.ENTITY_EXPERIENCE_ORB_PICKUP.key())
             .build();
         public Notice destinationSet = Notice.builder()
@@ -123,7 +123,7 @@ public class MessageConfig extends OkaeriConfig {
             .sound(Sound.BLOCK_ANVIL_USE.key())
             .build();
         public Notice descriptionPrompt = Notice.builder()
-            .chat("&6\uD83D\uDDC8 &eEnter a description for the parcel locker:")
+            .chat("&6\uD83D\uDDC8 &eEnter a name for the parcel locker:")
             .sound(Sound.BLOCK_NOTE_BLOCK_PLING.key())
             .build();
         public Notice cannotBreak = Notice.builder()

@@ -19,12 +19,9 @@ import com.eternalcode.parcellockers.gui.implementation.remote.MainGui;
 import com.eternalcode.parcellockers.gui.implementation.remote.ParcelListGui;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepositoryOrmLite;
-import com.eternalcode.parcellockers.locker.Locker;
-import com.eternalcode.parcellockers.locker.argument.LockerArgument;
 import com.eternalcode.parcellockers.locker.controller.LockerBreakController;
 import com.eternalcode.parcellockers.locker.controller.LockerInteractionController;
 import com.eternalcode.parcellockers.locker.controller.LockerPlaceController;
-import com.eternalcode.parcellockers.locker.repository.LockerCache;
 import com.eternalcode.parcellockers.locker.repository.LockerRepositoryOrmLite;
 import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.parcel.Parcel;
@@ -32,8 +29,6 @@ import com.eternalcode.parcellockers.parcel.ParcelService;
 import com.eternalcode.parcellockers.parcel.ParcelServiceImpl;
 import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import com.eternalcode.parcellockers.parcel.command.ParcelCommand;
-import com.eternalcode.parcellockers.parcel.command.argument.ParcelArgument;
-import com.eternalcode.parcellockers.parcel.repository.ParcelCache;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryOrmLite;
 import com.eternalcode.parcellockers.parcel.task.ParcelSendTask;
 import com.eternalcode.parcellockers.updater.UpdaterService;
@@ -104,14 +99,9 @@ public final class ParcelLockers extends JavaPlugin {
             .threadPool(20)
             .build();
 
-        LockerCache lockerCache = new LockerCache();
-        ParcelCache parcelCache = new ParcelCache();
-
-        LockerRepositoryOrmLite lockerRepository = new LockerRepositoryOrmLite(databaseManager, scheduler, lockerCache);
-        lockerRepository.updateCaches();
+        LockerRepositoryOrmLite lockerRepository = new LockerRepositoryOrmLite(databaseManager, scheduler);
 
         ParcelRepositoryOrmLite parcelRepository = new ParcelRepositoryOrmLite(databaseManager, scheduler, parcelCache);
-        parcelRepository.updateCaches();
 
         DeliveryRepositoryOrmLite deliveryRepository = new DeliveryRepositoryOrmLite(databaseManager, scheduler);
 
@@ -128,22 +118,17 @@ public final class ParcelLockers extends JavaPlugin {
             scheduler,
             miniMessage,
             config.guiSettings,
-            parcelRepository,
-            lockerRepository
+            guiManager
         );
         ParcelListGui parcelListGUI = new ParcelListGui(
             scheduler,
             miniMessage,
             config.guiSettings,
-            parcelRepository,
-            lockerRepository,
-            userManager,
+            guiManager,
             mainGUI
         );
 
         this.liteCommands = LiteBukkitFactory.builder(this.getName(), this)
-            .argument(Parcel.class, new ParcelArgument(parcelCache))
-            .argument(Locker.class, new LockerArgument(lockerCache))
             .extension(new LiteAdventureExtension<>())
             .message(LiteBukkitMessages.PLAYER_ONLY, messageConfig.playerOnlyCommand)
             .message(LiteBukkitMessages.PLAYER_NOT_FOUND, messageConfig.playerNotFound)
@@ -191,7 +176,7 @@ public final class ParcelLockers extends JavaPlugin {
                     optionalDelivery.ifPresent(delivery -> {
                         long delay = Math.max(0, delivery.deliveryTimestamp().toEpochMilli() - System.currentTimeMillis());
                         scheduler.runLaterAsync(
-                            new ParcelSendTask(parcel, delivery, parcelRepository, deliveryRepository, config),
+                            new ParcelSendTask(parcel, parcelService, deliveryRepository),
                             Duration.ofMillis(delay)
                         );
                     })

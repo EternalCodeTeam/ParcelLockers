@@ -8,7 +8,6 @@ import com.eternalcode.parcellockers.configuration.serializable.ConfigItem;
 import com.eternalcode.parcellockers.gui.GuiManager;
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.parcel.Parcel;
-import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.parcel.util.PlaceholderUtil;
 import com.eternalcode.parcellockers.shared.Page;
 import dev.triumphteam.gui.builder.item.PaperItemBuilder;
@@ -20,7 +19,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 
-@SuppressWarnings("ClassCanBeRecord")
 public class ParcelListGui implements GuiView {
 
     private static final int WIDTH = 7;
@@ -29,7 +27,6 @@ public class ParcelListGui implements GuiView {
     private final Scheduler scheduler;
     private final MiniMessage miniMessage;
     private final GuiSettings guiSettings;
-    private final ParcelRepository parcelRepository;
     private final GuiManager guiManager;
     private final MainGui mainGUI;
 
@@ -37,14 +34,12 @@ public class ParcelListGui implements GuiView {
         Scheduler scheduler,
         MiniMessage miniMessage,
         GuiSettings guiSettings,
-        ParcelRepository parcelRepository,
         GuiManager guiManager,
         MainGui mainGUI
     ) {
         this.scheduler = scheduler;
         this.miniMessage = miniMessage;
         this.guiSettings = guiSettings;
-        this.parcelRepository = parcelRepository;
         this.guiManager = guiManager;
         this.mainGUI = mainGUI;
     }
@@ -74,7 +69,7 @@ public class ParcelListGui implements GuiView {
             gui.setItem(slot, backgroundItem);
         }
 
-        this.parcelRepository.findByReceiver(player.getUniqueId(), page).thenAccept(result -> {
+        this.guiManager.getParcelByReceiver(player.getUniqueId(), page).thenAccept(result -> {
             if (result.items().isEmpty() && page.hasPrevious()) {
                 this.show(player, page.previous());
                 return;

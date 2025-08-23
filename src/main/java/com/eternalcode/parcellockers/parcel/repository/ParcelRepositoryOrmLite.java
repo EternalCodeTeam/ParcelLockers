@@ -9,11 +9,9 @@ import com.eternalcode.parcellockers.shared.PageResult;
 import com.j256.ormlite.table.TableUtils;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implements ParcelRepository {
@@ -21,11 +19,8 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     private static final String RECEIVER_COLUMN = "receiver";
     private static final String SENDER_COLUMN = "sender";
 
-    private final ParcelCache cache;
-
-    public ParcelRepositoryOrmLite(DatabaseManager databaseManager, Scheduler scheduler, ParcelCache cache) {
+    public ParcelRepositoryOrmLite(DatabaseManager databaseManager, Scheduler scheduler) {
         super(databaseManager, scheduler);
-        this.cache = cache;
 
         try {
             TableUtils.createTableIfNotExists(databaseManager.connectionSource(), ParcelTable.class);
@@ -35,20 +30,13 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     }
 
     @Override
-    public CompletableFuture<Void> save(Parcel parcel) {
-        return this.saveIfNotExist(ParcelTable.class, ParcelTable.from(parcel)).thenApply(dao -> {
-            this.cache.put(parcel);
-            return null;
-        });
+    public void save(Parcel parcel) {
+        this.saveIfNotExist(ParcelTable.class, ParcelTable.from(parcel)).thenApply(dao -> null);
     }
 
     @Override
-    public CompletableFuture<Void> update(Parcel parcel) {
-        return this.save(ParcelTable.class, ParcelTable.from(parcel)).thenApply(dao -> {
-            this.cache.remove(parcel.uuid());
-            this.cache.put(parcel);
-            return null;
-        });
+    public void update(Parcel parcel) {
+        this.save(ParcelTable.class, ParcelTable.from(parcel)).thenApply(dao -> null);
     }
 
     @Override
@@ -102,13 +90,7 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     @Override
     public CompletableFuture<Integer> remove(UUID uuid) {
-        CompletableFuture<Integer> removeFuture = this.deleteById(ParcelTable.class, uuid);
-        removeFuture.thenAccept(deletedCount -> {
-            if (deletedCount > 0) {
-                this.cache.remove(uuid);
-            }
-        });
-        return removeFuture;
+        return this.deleteById(ParcelTable.class, uuid);
     }
 
     @Override
@@ -140,16 +122,5 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     @Override
     public CompletableFuture<Integer> removeAll() {
         return this.deleteAll(ParcelTable.class);
-    }
-
-    public void updateCaches() {
-        this.findAll().thenAccept(parcels -> {
-            List<Parcel> parcelList = parcels.orElse(List.of());
-            Map<UUID, Parcel> newCache = new ConcurrentHashMap<>();
-
-            parcelList.forEach(parcel -> newCache.put(parcel.uuid(), parcel));
-            this.cache.clear();
-            this.cache.putAll(newCache);
-        });
     }
 }

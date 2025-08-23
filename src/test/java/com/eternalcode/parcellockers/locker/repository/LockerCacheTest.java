@@ -1,7 +1,6 @@
 package com.eternalcode.parcellockers.locker.repository;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -21,63 +20,63 @@ class LockerCacheTest {
 
     @BeforeEach
     void setUp() {
-        lockerCache = new LockerCache();
-        testPosition = new Position(10, 20, 30, "world");
-        testLocker = new Locker(UUID.randomUUID(), "Test locker", testPosition);
+        this.lockerCache = new LockerCache();
+        this.testPosition = new Position(10, 20, 30, "world");
+        this.testLocker = new Locker(UUID.randomUUID(), "Test locker", this.testPosition);
     }
 
     @Test
     void shouldPutAndGetLockerByUuid() {
         // given
-        lockerCache.put(testLocker);
+        this.lockerCache.put(this.testLocker);
 
         // when
-        Optional<Locker> result = lockerCache.get(testLocker.uuid());
+        Optional<Locker> result = this.lockerCache.get(this.testLocker.uuid());
 
         // then
         assertTrue(result.isPresent());
-        assertEquals(testLocker, result.get());
+        assertEquals(this.testLocker, result.get());
     }
 
     @Test
     void shouldPutAndGetLockerByPosition() {
         // given
-        lockerCache.put(testLocker);
+        this.lockerCache.put(this.testLocker);
 
         // when
-        Optional<Locker> result = lockerCache.get(testPosition);
+        Optional<Locker> result = this.lockerCache.get(this.testPosition);
 
         // then
         assertTrue(result.isPresent());
-        assertEquals(testLocker, result.get());
+        assertEquals(this.testLocker, result.get());
     }
 
     @Test
     void shouldRemoveLockerByUuid() {
         // given
-        lockerCache.put(testLocker);
+        this.lockerCache.put(this.testLocker);
 
         // when
-        Locker removed = lockerCache.remove(testLocker.uuid());
+        Locker removed = this.lockerCache.remove(this.testLocker.uuid());
 
         // then
-        assertEquals(testLocker, removed);
-        assertFalse(lockerCache.get(testLocker.uuid()).isPresent());
-        assertFalse(lockerCache.get(testPosition).isPresent());
+        assertEquals(this.testLocker, removed);
+        assertFalse(this.lockerCache.get(this.testLocker.uuid()).isPresent());
+        assertFalse(this.lockerCache.get(this.testPosition).isPresent());
     }
 
     @Test
     void shouldRemoveLockerByObject() {
         // given
-        lockerCache.put(testLocker);
+        this.lockerCache.put(this.testLocker);
 
         // when
-        Locker removed = lockerCache.remove(testLocker);
+        Locker removed = this.lockerCache.remove(this.testLocker);
 
         // then
-        assertEquals(testLocker, removed);
-        assertFalse(lockerCache.get(testLocker.uuid()).isPresent());
-        assertFalse(lockerCache.get(testPosition).isPresent());
+        assertEquals(this.testLocker, removed);
+        assertFalse(this.lockerCache.get(this.testLocker.uuid()).isPresent());
+        assertFalse(this.lockerCache.get(this.testPosition).isPresent());
     }
 
     @Test
@@ -91,47 +90,47 @@ class LockerCacheTest {
         );
 
         // when
-        lockerCache.putAll(lockers);
+        this.lockerCache.putAll(lockers);
 
         // then
-        assertTrue(lockerCache.get(locker1.uuid()).isPresent());
-        assertTrue(lockerCache.get(locker2.uuid()).isPresent());
-        assertTrue(lockerCache.get(locker1.position()).isPresent());
-        assertTrue(lockerCache.get(locker2.position()).isPresent());
+        assertTrue(this.lockerCache.get(locker1.uuid()).isPresent());
+        assertTrue(this.lockerCache.get(locker2.uuid()).isPresent());
+        assertTrue(this.lockerCache.get(locker1.position()).isPresent());
+        assertTrue(this.lockerCache.get(locker2.position()).isPresent());
     }
 
     @Test
     void shouldClearCache() {
         // given
-        lockerCache.put(testLocker);
+        this.lockerCache.put(this.testLocker);
 
         // when
-        lockerCache.clear();
+        this.lockerCache.clear();
 
         // then
-        assertFalse(lockerCache.get(testLocker.uuid()).isPresent());
-        assertFalse(lockerCache.get(testPosition).isPresent());
-        assertEquals(0, lockerCache.cache().size());
+        assertFalse(this.lockerCache.get(this.testLocker.uuid()).isPresent());
+        assertFalse(this.lockerCache.get(this.testPosition).isPresent());
+        assertEquals(0, this.lockerCache.cache().size());
     }
 
     @Test
     void shouldReturnCorrectSize() {
         // given
-        lockerCache.put(testLocker);
+        this.lockerCache.put(this.testLocker);
 
         // when & then
-        assertEquals(1, lockerCache.cache().size());
-        assertEquals(1, lockerCache.positionCache().size());
+        assertEquals(1, this.lockerCache.cache().size());
+        assertEquals(1, this.lockerCache.positionCache().size());
     }
 
     @Test
     void shouldReturnUnmodifiableMaps() {
         // given
-        lockerCache.put(testLocker);
+        this.lockerCache.put(this.testLocker);
 
         // when
-        Map<UUID, Locker> cache = lockerCache.cache();
-        Map<Position, Locker> positionCache = lockerCache.positionCache();
+        Map<UUID, Locker> cache = this.lockerCache.cache();
+        Map<Position, Locker> positionCache = this.lockerCache.positionCache();
 
         // then
         assertThrows(UnsupportedOperationException.class, () -> cache.clear());

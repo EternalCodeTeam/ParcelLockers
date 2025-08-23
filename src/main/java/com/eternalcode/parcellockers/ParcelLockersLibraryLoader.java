@@ -19,14 +19,14 @@ public class ParcelLockersLibraryLoader implements PluginLoader {
     @Override
     public void classloader(@NotNull PluginClasspathBuilder classpathBuilder) {
         MavenLibraryResolver resolver = new MavenLibraryResolver();
-        PluginLibraries pluginLibraries = load();
+        PluginLibraries pluginLibraries = this.load();
         pluginLibraries.asDependencies().forEach(resolver::addDependency);
         pluginLibraries.asRepositories().forEach(resolver::addRepository);
         classpathBuilder.addLibrary(resolver);
     }
 
     public PluginLibraries load() {
-        try (var in = getClass().getResourceAsStream("/paper-libraries.json")) {
+        try (var in = this.getClass().getResourceAsStream("/paper-libraries.json")) {
             return new Gson().fromJson(new InputStreamReader(in, StandardCharsets.UTF_8), PluginLibraries.class);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -35,12 +35,12 @@ public class ParcelLockersLibraryLoader implements PluginLoader {
 
     private record PluginLibraries(Map<String, String> repositories, List<String> dependencies) {
         public Stream<Dependency> asDependencies() {
-            return dependencies.stream()
+            return this.dependencies.stream()
                 .map(d -> new Dependency(new DefaultArtifact(d), null));
         }
 
         public Stream<RemoteRepository> asRepositories() {
-            return repositories.entrySet().stream()
+            return this.repositories.entrySet().stream()
                 .map(e -> new RemoteRepository.Builder(e.getKey(), "default", e.getValue()).build());
         }
     }
