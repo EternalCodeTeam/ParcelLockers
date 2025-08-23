@@ -4,6 +4,7 @@ import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.eternalcode.parcellockers.database.wrapper.AbstractRepositoryOrmLite;
 import com.eternalcode.parcellockers.shared.Page;
+import com.eternalcode.parcellockers.shared.PageResult;
 import com.eternalcode.parcellockers.user.User;
 import com.j256.ormlite.table.TableUtils;
 import java.sql.SQLException;
@@ -27,7 +28,7 @@ public class UserRepositoryOrmLite extends AbstractRepositoryOrmLite implements 
 
     @Override
     public CompletableFuture<Optional<User>> find(UUID uuid) {
-        return this.select(UserTable.class, uuid).thenApply(userTable -> Optional.ofNullable(userTable)
+        return this.selectSafe(UserTable.class, uuid).thenApply(optional -> optional
             .map(UserTable::toUser)
         );
     }
@@ -58,7 +59,7 @@ public class UserRepositoryOrmLite extends AbstractRepositoryOrmLite implements 
     }
 
     @Override
-    public CompletableFuture<UserPageResult> findPage(Page page) {
+    public CompletableFuture<PageResult<User>> findPage(Page page) {
         return this.action(
             UserTable.class, dao -> {
             List<User> users = dao.queryBuilder()
@@ -72,7 +73,7 @@ public class UserRepositoryOrmLite extends AbstractRepositoryOrmLite implements 
             if (hasNext) {
                 users.removeLast();
             }
-            return new UserPageResult(users, hasNext);
+            return new PageResult<>(users, hasNext);
         });
     }
 }

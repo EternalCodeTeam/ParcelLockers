@@ -1,6 +1,6 @@
 package com.eternalcode.parcellockers.parcel.task;
 
-import com.eternalcode.parcellockers.delivery.repository.DeliveryRepository;
+import com.eternalcode.parcellockers.delivery.DeliveryManager;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelService;
 import com.eternalcode.parcellockers.parcel.ParcelStatus;
@@ -10,16 +10,16 @@ public class ParcelSendTask extends BukkitRunnable {
 
     private final Parcel parcel;
     private final ParcelService parcelService;
-    private final DeliveryRepository deliveryRepository;
+    private final DeliveryManager deliveryManager;
 
     public ParcelSendTask(
         Parcel parcel,
         ParcelService parcelService,
-        DeliveryRepository deliveryRepository
+        DeliveryManager deliveryManager
     ) {
         this.parcel = parcel;
         this.parcelService = parcelService;
-        this.deliveryRepository = deliveryRepository;
+        this.deliveryManager = deliveryManager;
     }
 
     @Override
@@ -39,7 +39,7 @@ public class ParcelSendTask extends BukkitRunnable {
 
 
         this.parcelService.update(updated);
-        this.deliveryRepository.delete(updated.uuid());
+        this.deliveryManager.delete(updated.uuid());
     }
 
 }

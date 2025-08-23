@@ -1,7 +1,7 @@
 package com.eternalcode.parcellockers.user;
 
 import com.eternalcode.parcellockers.shared.Page;
-import com.eternalcode.parcellockers.user.repository.UserPageResult;
+import com.eternalcode.parcellockers.shared.PageResult;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -16,5 +16,5 @@ public interface UserManager {
 
     CompletableFuture<Optional<User>> get(UUID uniqueId);
 
-    CompletableFuture<UserPageResult> getPage(Page page);
+    CompletableFuture<PageResult<User>> getPage(Page page);
 }

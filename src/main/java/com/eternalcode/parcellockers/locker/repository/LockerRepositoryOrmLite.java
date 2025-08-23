@@ -31,7 +31,7 @@ public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     @Override
     public CompletableFuture<Void> save(Locker locker) {
-        return this.save(LockerTable.class, LockerTable.from(locker)).thenApply(dao -> null);
+        return this.saveIfNotExist(LockerTable.class, LockerTable.from(locker)).thenApply(dao -> null);
     }
 
     @Override
@@ -48,12 +48,11 @@ public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     @Override
     public CompletableFuture<Optional<Locker>> find(Position position) {
-        // We have to assume that there is only one locker per position
         return this.action(
-                LockerTable.class, dao -> {
-            List<LockerTable> lockers = dao.queryForEq("position", position);
-            return lockers.isEmpty() ? Optional.empty() : Optional.of(lockers.getFirst().toLocker());
-        });
+            LockerTable.class, dao -> {
+                List<LockerTable> lockers = dao.queryForEq("position", position);
+                return lockers.isEmpty() ? Optional.empty() : Optional.of(lockers.getFirst().toLocker());
+            });
     }
 
     @Override
@@ -69,13 +68,13 @@ public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     @Override
     public CompletableFuture<PageResult<Locker>> findPage(Page page) {
         return this.action(
-                LockerTable.class, dao -> {
-            List<Locker> lockers = dao.queryBuilder()
-                .offset((long) page.getOffset())
-                .limit((long) page.getLimit() + 1)
-                .query()
-                .stream().map(LockerTable::toLocker)
-                .collect(Collectors.toList());
+            LockerTable.class, dao -> {
+                List<Locker> lockers = dao.queryBuilder()
+                    .offset((long) page.getOffset())
+                    .limit((long) page.getLimit() + 1)
+                    .query()
+                    .stream().map(LockerTable::toLocker)
+                    .collect(Collectors.toList());
 
             boolean hasNext = lockers.size() > page.getLimit();
             if (hasNext) {

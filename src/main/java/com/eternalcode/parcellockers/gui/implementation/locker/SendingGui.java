@@ -180,24 +180,20 @@ public class SendingGui implements GuiView {
                 this.state
             );
             this.guiManager.getItemStorage(player.getUniqueId()).thenAccept(result -> {
-                    if (result.isPresent()) {
-                        int slotsSize = result.get().items().size();
-                        if (slotsSize <= 9) {
-                            this.scheduler.run(() -> storageGUI.show(player, this.state.size()));
-                        } else if (slotsSize <= 18 && this.state.size() == ParcelSize.SMALL) {
-                            this.scheduler.run(() -> storageGUI.show(player, ParcelSize.MEDIUM));
-                        } else {
-                            this.scheduler.run(() -> storageGUI.show(player, ParcelSize.LARGE));
-                        }
-                    } else {
+                    int slotsSize = result.items().size();
+                    if (slotsSize <= 9) {
                         this.scheduler.run(() -> storageGUI.show(player, this.state.size()));
+                    } else if (slotsSize <= 18 && this.state.size() == ParcelSize.SMALL) {
+                        this.scheduler.run(() -> storageGUI.show(player, ParcelSize.MEDIUM));
+                    } else {
+                        this.scheduler.run(() -> storageGUI.show(player, ParcelSize.LARGE));
                     }
                 }
             ).orTimeout(2, TimeUnit.SECONDS);
         });
         GuiItem submitItem = this.guiSettings.submitParcelItem.toGuiItem(event ->
             this.guiManager.getItemStorage(player.getUniqueId()).thenAccept(result -> {
-                if (result.isEmpty() || result.get().items().isEmpty()) {
+                if (result.items().isEmpty()) {
                     this.noticeService.create()
                         .notice(messages -> messages.parcel.empty)
                         .player(player.getUniqueId())
@@ -213,13 +209,21 @@ public class SendingGui implements GuiView {
                     return;
                 }
 
-                Parcel parcel = new Parcel(UUID.randomUUID(), player.getUniqueId(), this.state.parcelName(),
-                    this.state.parcelDescription(), this.state.priority(), this.state.receiver(),
-                    this.state.size(), this.state.entryLocker(), this.state.destinationLocker(), this.state.status());
+                Parcel parcel = new Parcel(
+                    UUID.randomUUID(),
+                    player.getUniqueId(),
+                    this.state.parcelName(),
+                    this.state.parcelDescription(),
+                    this.state.priority(),
+                    this.state.receiver(),
+                    this.state.size(),
+                    this.state.entryLocker(),
+                    this.state.destinationLocker(),
+                    this.state.status()
+                );
 
-                if (this.guiManager.sendParcel(player, parcel, result.get().items())) {
-                    this.guiManager.deleteItemStorage(player.getUniqueId());
-                }
+                this.guiManager.sendParcel(player, parcel, result.items());
+                this.guiManager.deleteItemStorage(player.getUniqueId());
 
                 this.gui.close(player);
             }).orTimeout(5, TimeUnit.SECONDS));
@@ -287,8 +291,7 @@ public class SendingGui implements GuiView {
         this.guiManager.getLocker(this.state.destinationLocker()).thenAccept(lockerOptional ->
             lockerOptional.ifPresent(locker -> this.updateDestinationItem(player, locker.name())));
 
-
-        this.gui.open(player);
+        this.scheduler.run(() -> this.gui.open(player));
     }
 
     private void setSelected(Gui gui, ParcelSize size) {

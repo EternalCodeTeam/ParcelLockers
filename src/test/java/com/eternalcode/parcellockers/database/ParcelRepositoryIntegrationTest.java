@@ -45,9 +45,8 @@ class ParcelRepositoryIntegrationTest extends IntegrationTestSpec {
         PluginConfig config = new ConfigService().create(PluginConfig.class, new File(dataFolder, "config.yml"));
         DatabaseManager databaseManager = new DatabaseManager(config, Logger.getLogger("ParcelLockers"), dataFolder);
         this.databaseManager = databaseManager;
-        ParcelCache cache = new ParcelCache();
 
-        ParcelRepository parcelRepository = new ParcelRepositoryOrmLite(databaseManager, new TestScheduler(), cache);
+        ParcelRepository parcelRepository = new ParcelRepositoryOrmLite(databaseManager, new TestScheduler());
         UUID uuid = UUID.randomUUID();
         UUID sender = UUID.randomUUID();
         UUID receiver = UUID.randomUUID();
@@ -70,10 +69,10 @@ class ParcelRepositoryIntegrationTest extends IntegrationTestSpec {
         assertEquals(uuid, bySender.getFirst().uuid());
 
         PageResult<Parcel> pageResult = this.await(parcelRepository.findPage(new Page(0, 28)));
-        assertEquals(1, pageResult.parcels().size());
-        assertEquals(uuid, pageResult.parcels().getFirst().uuid());
+        assertEquals(1, pageResult.items().size());
+        assertEquals(uuid, pageResult.items().getFirst().uuid());
 
-        this.await(parcelRepository.remove(uuid));
+        this.await(parcelRepository.delete(uuid));
         Optional<Parcel> removedParcel = this.await(parcelRepository.findById(uuid));
         assertTrue(removedParcel.isEmpty());
     }

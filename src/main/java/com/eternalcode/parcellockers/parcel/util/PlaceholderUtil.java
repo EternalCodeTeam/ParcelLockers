@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Blocking;
 
 public class PlaceholderUtil {
@@ -30,7 +31,7 @@ public class PlaceholderUtil {
             .register("{NAME}", parcel.name())
             .register("{SENDER}", senderName)
             .register("{RECEIVER}", receiver)
-            .register("{SIZE}", parcel.size().toString())
+            .register("{SIZE}", StringUtils.capitalize(parcel.size().toString().toLowerCase()))
             .register("{PRIORITY}", parcel.priority() ? "&aYes" : "&cNo")
             .register("{DESCRIPTION}", parcel.description() != null ? parcel.description() : "-");
 

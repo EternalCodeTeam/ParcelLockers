@@ -63,7 +63,7 @@ public class SentParcelsGui implements GuiView {
         gui.setItem(49, closeItem);
 
 
-        this.guiManager.getParcelBySender(player.getUniqueId()).thenAccept(optionalParcels -> {
+        this.guiManager.getParcelsBySender(player.getUniqueId()).thenAccept(optionalParcels -> {
             List<Parcel> parcels = optionalParcels.orElse(Collections.emptyList());
 
             for (Parcel parcel : parcels) {

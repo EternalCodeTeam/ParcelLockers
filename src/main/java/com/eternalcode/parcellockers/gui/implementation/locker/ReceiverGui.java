@@ -6,8 +6,8 @@ import com.eternalcode.parcellockers.gui.GuiManager;
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.gui.PaginatedGuiRefresher;
 import com.eternalcode.parcellockers.shared.Page;
+import com.eternalcode.parcellockers.shared.PageResult;
 import com.eternalcode.parcellockers.user.User;
-import com.eternalcode.parcellockers.user.repository.UserPageResult;
 import com.spotify.futures.CompletableFutures;
 import dev.rollczi.liteskullapi.SkullAPI;
 import dev.rollczi.liteskullapi.SkullData;
@@ -81,7 +81,7 @@ public class ReceiverGui implements GuiView {
 
         gui.setItem(49, closeItem);
 
-        this.guiManager.getUserPage(page).thenAccept(result -> {
+        this.guiManager.getUsers(page).thenAccept(result -> {
             if (result.hasNextPage()) {
                 gui.setItem(51, nextPageItem);
             }
@@ -102,8 +102,8 @@ public class ReceiverGui implements GuiView {
         });
     }
 
-    private CompletableFuture<List<Supplier<GuiItem>>> loadSkulls(Player player, UserPageResult result, PaginatedGuiRefresher refresh) {
-        return result.users().stream()
+    private CompletableFuture<List<Supplier<GuiItem>>> loadSkulls(Player player, PageResult<User> result, PaginatedGuiRefresher refresh) {
+        return result.items().stream()
 //            .filter(user -> !user.uuid().equals(player.getUniqueId()))
             .map(user -> this.skullAPI.getSkullData(user.uuid()).thenApply(skullData -> this.toItem(player, user, skullData, refresh)))
             .collect(CompletableFutures.joinList());

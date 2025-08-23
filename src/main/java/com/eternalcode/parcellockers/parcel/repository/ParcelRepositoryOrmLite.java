@@ -30,13 +30,13 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     }
 
     @Override
-    public void save(Parcel parcel) {
-        this.saveIfNotExist(ParcelTable.class, ParcelTable.from(parcel)).thenApply(dao -> null);
+    public CompletableFuture<Void> save(Parcel parcel) {
+        return this.saveIfNotExist(ParcelTable.class, ParcelTable.from(parcel)).thenApply(dao -> null);
     }
 
     @Override
-    public void update(Parcel parcel) {
-        this.save(ParcelTable.class, ParcelTable.from(parcel)).thenApply(dao -> null);
+    public CompletableFuture<Void> update(Parcel parcel) {
+        return this.save(ParcelTable.class, ParcelTable.from(parcel)).thenApply(dao -> null);
     }
 
     @Override
@@ -84,12 +84,12 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     }
 
     @Override
-    public CompletableFuture<Integer> remove(Parcel parcel) {
-        return this.remove(parcel.uuid());
+    public CompletableFuture<Integer> delete(Parcel parcel) {
+        return this.delete(parcel.uuid());
     }
 
     @Override
-    public CompletableFuture<Integer> remove(UUID uuid) {
+    public CompletableFuture<Integer> delete(UUID uuid) {
         return this.deleteById(ParcelTable.class, uuid);
     }
 
@@ -120,7 +120,7 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     }
 
     @Override
-    public CompletableFuture<Integer> removeAll() {
+    public CompletableFuture<Integer> deleteAll() {
         return this.deleteAll(ParcelTable.class);
     }
 }

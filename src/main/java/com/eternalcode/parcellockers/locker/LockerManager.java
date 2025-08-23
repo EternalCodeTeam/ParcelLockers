@@ -1,6 +1,9 @@
 package com.eternalcode.parcellockers.locker;
 
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
+import com.eternalcode.parcellockers.notification.NoticeService;
+import com.eternalcode.parcellockers.shared.Page;
+import com.eternalcode.parcellockers.shared.PageResult;
 import com.eternalcode.parcellockers.shared.Position;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -9,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import org.bukkit.command.CommandSender;
 
 public class LockerManager {
 
@@ -58,6 +62,10 @@ public class LockerManager {
             });
             return optionalLocker;
         });
+    }
+
+    public CompletableFuture<PageResult<Locker>> get(Page page) {
+        return this.lockerRepository.findPage(page);
     }
 
     public CompletableFuture<Optional<List<Locker>>> getAll() {
@@ -112,6 +120,19 @@ public class LockerManager {
                 this.lockersByPosition.asMap().values().removeIf(locker -> locker.uuid().equals(uniqueId));
             }
             return deleted;
+        });
+    }
+
+    public void deleteAll(CommandSender sender, NoticeService noticeService) {
+        this.lockerRepository.deleteAll().thenAccept(deleted -> {
+            noticeService.create()
+                .notice(messages -> messages.admin.deletedLockers)
+                .placeholder("{COUNT}", deleted.toString())
+                .viewer(sender)
+                .send();
+
+            this.lockersByUUID.invalidateAll();
+            this.lockersByPosition.invalidateAll();
         });
     }
 }

@@ -10,15 +10,19 @@ import com.eternalcode.parcellockers.command.handler.MissingPermissionsHandlerIm
 import com.eternalcode.parcellockers.configuration.ConfigService;
 import com.eternalcode.parcellockers.configuration.implementation.MessageConfig;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
+import com.eternalcode.parcellockers.content.ParcelContentManager;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepositoryOrmLite;
 import com.eternalcode.parcellockers.database.DatabaseManager;
+import com.eternalcode.parcellockers.delivery.DeliveryManager;
 import com.eternalcode.parcellockers.delivery.repository.DeliveryRepositoryOrmLite;
+import com.eternalcode.parcellockers.gui.GuiManager;
 import com.eternalcode.parcellockers.gui.implementation.locker.LockerGui;
 import com.eternalcode.parcellockers.gui.implementation.remote.MainGui;
-import com.eternalcode.parcellockers.gui.implementation.remote.ParcelListGui;
+import com.eternalcode.parcellockers.itemstorage.ItemStorageManager;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepositoryOrmLite;
+import com.eternalcode.parcellockers.locker.LockerManager;
 import com.eternalcode.parcellockers.locker.controller.LockerBreakController;
 import com.eternalcode.parcellockers.locker.controller.LockerInteractionController;
 import com.eternalcode.parcellockers.locker.controller.LockerPlaceController;
@@ -99,33 +103,47 @@ public final class ParcelLockers extends JavaPlugin {
             .threadPool(20)
             .build();
 
+        // database repositories
+        ParcelRepositoryOrmLite parcelRepository = new ParcelRepositoryOrmLite(databaseManager, scheduler);
         LockerRepositoryOrmLite lockerRepository = new LockerRepositoryOrmLite(databaseManager, scheduler);
-
-        ParcelRepositoryOrmLite parcelRepository = new ParcelRepositoryOrmLite(databaseManager, scheduler, parcelCache);
-
-        DeliveryRepositoryOrmLite deliveryRepository = new DeliveryRepositoryOrmLite(databaseManager, scheduler);
-
         ParcelContentRepository parcelContentRepository = new ParcelContentRepositoryOrmLite(databaseManager, scheduler);
-        ParcelService parcelService = new ParcelServiceImpl(config,
-            noticeService, parcelRepository, deliveryRepository, parcelContentRepository, scheduler);
-
+        DeliveryRepositoryOrmLite deliveryRepository = new DeliveryRepositoryOrmLite(databaseManager, scheduler);
         ItemStorageRepository itemStorageRepository = new ItemStorageRepositoryOrmLite(databaseManager, scheduler);
-
         UserRepository userRepository = new UserRepositoryOrmLite(databaseManager, scheduler);
+
+        // service and managers
+        ParcelService parcelService = new ParcelServiceImpl(
+            config,
+            noticeService,
+            parcelRepository,
+            deliveryRepository,
+            parcelContentRepository,
+            scheduler
+        );
+
         UserManager userManager = new UserManagerImpl(userRepository);
+        LockerManager lockerManager = new LockerManager(lockerRepository);
+        ParcelContentManager parcelContentManager = new ParcelContentManager(parcelContentRepository);
+        ItemStorageManager itemStorageManager = new ItemStorageManager(itemStorageRepository);
+        DeliveryManager deliveryManager = new DeliveryManager(deliveryRepository);
+
+        // guis
+        GuiManager guiManager = new GuiManager(
+            config,
+            scheduler,
+            parcelService,
+            lockerManager,
+            userManager,
+            itemStorageManager,
+            parcelContentManager,
+            deliveryManager
+        );
 
         MainGui mainGUI = new MainGui(
             scheduler,
             miniMessage,
             config.guiSettings,
             guiManager
-        );
-        ParcelListGui parcelListGUI = new ParcelListGui(
-            scheduler,
-            miniMessage,
-            config.guiSettings,
-            guiManager,
-            mainGUI
         );
 
         this.liteCommands = LiteBukkitFactory.builder(this.getName(), this)
@@ -135,7 +153,7 @@ public final class ParcelLockers extends JavaPlugin {
             .commands(LiteCommandsAnnotations.of(
                 new ParcelCommand(mainGUI),
                 new ParcelLockersCommand(configManager, config, noticeService),
-                new DebugCommand(parcelRepository, lockerRepository, itemStorageRepository, parcelContentRepository, noticeService)
+                new DebugCommand(parcelService, lockerManager, itemStorageManager, parcelContentManager, deliveryManager, userManager, noticeService)
             ))
             .invalidUsage(new InvalidUsageHandlerImpl(noticeService))
             .missingPermission(new MissingPermissionsHandlerImpl(noticeService))
@@ -145,26 +163,21 @@ public final class ParcelLockers extends JavaPlugin {
             miniMessage,
             scheduler,
             config.guiSettings,
-            itemStorageRepository,
-            parcelRepository,
-            lockerRepository,
+            guiManager,
             noticeService,
-            parcelContentRepository,
-            userRepository,
-            this.skullAPI,
-            parcelService
+            this.skullAPI
         );
 
         Stream.of(
-            new LockerInteractionController(lockerCache, lockerGUI),
-            new LockerPlaceController(config, this, lockerRepository, noticeService),
-            new LockerBreakController(lockerRepository, lockerCache, noticeService),
+            new LockerInteractionController(lockerManager, lockerGUI),
+            new LockerPlaceController(config, this, lockerManager, noticeService),
+            new LockerBreakController(lockerManager, noticeService),
             new PrepareUserController(userManager),
             new LoadUserController(userManager, server)
         ).forEach(controller -> server.getPluginManager().registerEvents(controller, this));
 
         new Metrics(this, 17677);
-        new UpdaterService(this.getDescription());
+        new UpdaterService(this.getPluginMeta().getVersion());
 
         parcelRepository.findAll().thenAccept(optionalParcels -> {
             List<Parcel> parcels = optionalParcels.orElseGet(ArrayList::new).stream()
@@ -176,7 +189,7 @@ public final class ParcelLockers extends JavaPlugin {
                     optionalDelivery.ifPresent(delivery -> {
                         long delay = Math.max(0, delivery.deliveryTimestamp().toEpochMilli() - System.currentTimeMillis());
                         scheduler.runLaterAsync(
-                            new ParcelSendTask(parcel, parcelService, deliveryRepository),
+                            new ParcelSendTask(parcel, parcelService, deliveryManager),
                             Duration.ofMillis(delay)
                         );
                     })

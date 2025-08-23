@@ -24,7 +24,7 @@ public class ItemStorageRepositoryOrmLite extends AbstractRepositoryOrmLite impl
 
     @Override
     public CompletableFuture<Void> save(ItemStorage itemStorage) {
-        return this.save(ItemStorageTable.class, ItemStorageTable.from(itemStorage.owner(), itemStorage.items())).thenApply(dao -> null);
+        return this.saveIfNotExist(ItemStorageTable.class, ItemStorageTable.from(itemStorage.owner(), itemStorage.items())).thenApply(dao -> null);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.eternalcode.parcellockers.user.repository;
 
 import com.eternalcode.parcellockers.shared.Page;
+import com.eternalcode.parcellockers.shared.PageResult;
 import com.eternalcode.parcellockers.user.User;
 import java.util.Optional;
 import java.util.UUID;
@@ -16,5 +17,5 @@ public interface UserRepository {
 
     CompletableFuture<Optional<User>> find(String name);
 
-    CompletableFuture<UserPageResult> findPage(Page page);
+    CompletableFuture<PageResult<User>> findPage(Page page);
 }

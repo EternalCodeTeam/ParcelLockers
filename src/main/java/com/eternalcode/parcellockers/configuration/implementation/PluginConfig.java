@@ -197,7 +197,6 @@ public class PluginConfig extends OkaeriConfig {
         public ConfigItem parcelItem = new ConfigItem()
             .name("&6{NAME}")
             .lore(List.of(
-                    "&6UUID: &e{UUID}",
                     "&6Sender: &e{SENDER}",
                     "&6Receiver: &e{RECEIVER}",
                     "&6Size: &e{SIZE}",
@@ -318,7 +317,6 @@ public class PluginConfig extends OkaeriConfig {
         public ConfigItem parcelCollectionItem = new ConfigItem()
             .name("&a{NAME}")
             .lore(List.of(
-                    "&6UUID: &e{UUID}",
                     "&6Sender: &e{SENDER}",
                     "&6Size: &e{SIZE}",
                     "&6Description: &e{DESCRIPTION}"

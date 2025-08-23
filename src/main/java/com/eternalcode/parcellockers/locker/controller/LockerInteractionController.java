@@ -3,6 +3,7 @@ package com.eternalcode.parcellockers.locker.controller;
 import com.eternalcode.parcellockers.gui.implementation.locker.LockerGui;
 import com.eternalcode.parcellockers.locker.LockerManager;
 import com.eternalcode.parcellockers.shared.PositionAdapter;
+import java.util.UUID;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -38,9 +39,10 @@ public class LockerInteractionController implements Listener {
             if (optionalLocker.isEmpty()) {
                 return;
             }
+            UUID uuid = optionalLocker.get().uuid();
 
             event.setCancelled(true);
-            this.lockerGUI.show(player);
+            this.lockerGUI.show(player, uuid);
         });
     }
 }

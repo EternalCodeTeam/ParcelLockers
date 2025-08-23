@@ -34,6 +34,10 @@ public class MessageConfig extends OkaeriConfig {
     @Comment("# These messages are used when creating, deleting, or managing parcel lockers.")
     public LockerMessages locker = new LockerMessages();
 
+    @Comment({"", "# Messages related to admin commands can be configured here." })
+    @Comment("# These messages are used for administrative actions such as deleting all lockers or parcels.")
+    public AdminMessages admin = new AdminMessages();
+
     public static class ParcelMessages extends OkaeriConfig {
         public Notice sent = Notice.builder()
             .chat("&2✔ &aParcel sent successfully.")
@@ -86,7 +90,6 @@ public class MessageConfig extends OkaeriConfig {
             .build();
         public Notice illegalItem = Notice.builder()
             .chat("&4✘ &cThe parcel contains illegal items that cannot be sent. ({ITEMS})")
-            .sound(Sound.ENTITY_ENDERMAN_AMBIENT.key())
             .build();
         public Notice cannotDelete = Notice.builder()
             .chat("&4✘ &cAn error occurred while deleting the parcel.")
@@ -139,5 +142,16 @@ public class MessageConfig extends OkaeriConfig {
             .chat("&4✘ &cYou are already creating a parcel locker!")
             .sound(Sound.ENTITY_VILLAGER_NO.key())
             .build();
+    }
+
+    public static class AdminMessages extends OkaeriConfig {
+        public Notice deletedLockers = Notice.chat("&4⚠ &cAll parcel lockers have been deleted!");
+        public Notice deletedParcels = Notice.chat("&4⚠ &cAll parcels have been deleted!");
+        public Notice deletedItemStorages = Notice.chat("&4⚠ &cAll item storages have been deleted!");
+        public Notice deletedContents = Notice.chat("&4⚠ &cAll parcel contents have been deleted!");
+        public Notice deletedDeliveries = Notice.chat("&4⚠ &cAll deliveries have been deleted!");
+        public Notice deletedUsers = Notice.chat("&4⚠ &cAll users have been deleted!");
+        public Notice invalidNumberOfStacks = Notice.chat("&4✘ &cInvalid number of stacks. Must be between 1 and 36.");
+        public Notice invalidItemMaterials = Notice.chat("&4✘ &cItem materials to give are invalid (should never happen, if it does report this on our discord).");
     }
 }

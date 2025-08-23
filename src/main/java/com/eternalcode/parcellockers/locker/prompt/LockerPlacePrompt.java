@@ -1,4 +1,4 @@
-package com.eternalcode.parcellockers.conversation;
+package com.eternalcode.parcellockers.locker.prompt;
 
 import org.bukkit.ChatColor;
 import org.bukkit.conversations.ConversationContext;
@@ -6,7 +6,7 @@ import org.bukkit.conversations.Prompt;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class ParcelLockerPlacePrompt implements Prompt {
+public class LockerPlacePrompt implements Prompt {
 
     @Override
     public Prompt acceptInput(@NotNull ConversationContext context, @Nullable String input) {

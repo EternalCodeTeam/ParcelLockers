@@ -10,9 +10,9 @@ import java.util.concurrent.CompletableFuture;
 
 public interface ParcelRepository {
 
-    void save(Parcel parcel);
+    CompletableFuture<Void> save(Parcel parcel);
 
-    void update(Parcel parcel);
+    CompletableFuture<Void> update(Parcel parcel);
 
     CompletableFuture<Optional<List<Parcel>>> findAll();
 
@@ -24,11 +24,11 @@ public interface ParcelRepository {
 
     CompletableFuture<PageResult<Parcel>> findByReceiver(UUID receiver, Page page);
 
-    CompletableFuture<Integer> remove(Parcel parcel);
+    CompletableFuture<Integer> delete(Parcel parcel);
 
-    CompletableFuture<Integer> remove(UUID uuid);
+    CompletableFuture<Integer> delete(UUID uuid);
 
-    CompletableFuture<Integer> removeAll();
+    CompletableFuture<Integer> deleteAll();
 
     CompletableFuture<PageResult<Parcel>> findPage(Page page);
 }

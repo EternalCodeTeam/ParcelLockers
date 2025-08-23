@@ -1,9 +1,8 @@
 package com.eternalcode.parcellockers.locker.controller;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
-import com.eternalcode.parcellockers.conversation.ParcelLockerPlacePrompt;
-import com.eternalcode.parcellockers.locker.Locker;
-import com.eternalcode.parcellockers.locker.repository.LockerRepository;
+import com.eternalcode.parcellockers.locker.LockerManager;
+import com.eternalcode.parcellockers.locker.prompt.LockerPlacePrompt;
 import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.shared.PositionAdapter;
 import com.github.benmanes.caffeine.cache.Cache;
@@ -27,21 +26,21 @@ public class LockerPlaceController implements Listener {
 
     private final PluginConfig config;
     private final Plugin plugin;
-    private final LockerRepository databaseService;
+    private final LockerManager lockerManager;
     private final NoticeService noticeService;
     private final Cache<UUID, Boolean> lockerCreators = Caffeine.newBuilder()
         .expireAfterWrite(2, TimeUnit.MINUTES)
         .build();
 
     public LockerPlaceController(
-            PluginConfig config,
-            Plugin plugin,
-            LockerRepository databaseService,
-            NoticeService noticeService
+        PluginConfig config,
+        Plugin plugin,
+        LockerManager lockerManager,
+        NoticeService noticeService
     ) {
         this.config = config;
         this.plugin = plugin;
-        this.databaseService = databaseService;
+        this.lockerManager = lockerManager;
         this.noticeService = noticeService;
     }
 
@@ -98,23 +97,12 @@ public class LockerPlaceController implements Listener {
                     String description = (String) e.getContext().getSessionData("description");
                     Location location = event.getBlockPlaced().getLocation();
 
-                    this.databaseService.save(new Locker(
-                        UUID.randomUUID(),
-                        description,
-                        PositionAdapter.convert(location))).whenComplete((parcelLocker, throwable) -> {
-                        if (throwable != null) {
-                            throwable.printStackTrace();
-                            this.noticeService.create()
-                                .player(player.getUniqueId())
-                                .notice(messages -> messages.locker.cannotCreate)
-                                .send();
-                            return;
-                        }
-                        this.noticeService.create()
-                            .player(player.getUniqueId())
-                            .notice(messages -> messages.locker.created)
-                            .send();
-                    });
+                    this.lockerManager.create(UUID.randomUUID(), description, PositionAdapter.convert(location));
+
+                    this.noticeService.create()
+                        .player(player.getUniqueId())
+                        .notice(messages -> messages.locker.created)
+                        .send();
 
                     this.lockerCreators.invalidate(player.getUniqueId());
                 })
@@ -122,7 +110,7 @@ public class LockerPlaceController implements Listener {
                 .withModality(false)
                 .withLocalEcho(false)
                 .withTimeout(60)
-                .withFirstPrompt(new ParcelLockerPlacePrompt());
+                .withFirstPrompt(new LockerPlacePrompt());
 
         player.beginConversation(conversationFactory.buildConversation(player));
     }

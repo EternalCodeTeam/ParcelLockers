@@ -7,9 +7,13 @@ import com.eternalcode.parcellockers.configuration.implementation.PluginConfig.G
 import com.eternalcode.parcellockers.gui.GuiManager;
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.notification.NoticeService;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import dev.rollczi.liteskullapi.SkullAPI;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
@@ -23,6 +27,10 @@ public class LockerGui implements GuiView {
     private final NoticeService noticeService;
     private final SkullAPI skullAPI;
 
+    private final Cache<UUID, UUID> userEntryLockerCache = Caffeine.newBuilder()
+        .expireAfterAccess(2, TimeUnit.MINUTES)
+        .build();
+
     public LockerGui(
         MiniMessage miniMessage, Scheduler scheduler,
         GuiSettings guiSettings, GuiManager guiManager,
@@ -35,6 +43,11 @@ public class LockerGui implements GuiView {
         this.guiManager = guiManager;
         this.noticeService = noticeService;
         this.skullAPI = skullAPI;
+    }
+
+    public void show(Player player, UUID entryLocker) {
+        this.userEntryLockerCache.put(player.getUniqueId(), entryLocker);
+        this.show(player);
     }
 
     @Override
@@ -75,7 +88,7 @@ public class LockerGui implements GuiView {
             this.noticeService,
             this.guiManager,
             this.skullAPI,
-            new SendingGuiState()
+            new SendingGuiState().entryLocker(this.userEntryLockerCache.getIfPresent(player.getUniqueId()))
         ).show(player)));
 
         gui.setItem(49, closeItem);

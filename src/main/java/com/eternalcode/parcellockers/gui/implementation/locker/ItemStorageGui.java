@@ -4,7 +4,6 @@ import com.eternalcode.commons.bukkit.ItemUtil;
 import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig.GuiSettings;
 import com.eternalcode.parcellockers.gui.GuiManager;
-import com.eternalcode.parcellockers.itemstorage.ItemStorage;
 import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.util.MaterialUtil;
@@ -110,21 +109,14 @@ public class ItemStorageGui {
                 items.add(item);
             }
 
-            this.guiManager.deleteItemStorage(player.getUniqueId()).thenAccept(
-                unused -> this.guiManager.saveItemStorage(new ItemStorage(player.getUniqueId(), items))
-            );
+            this.guiManager.deleteItemStorage(player.getUniqueId());
+            this.guiManager.saveItemStorage(player.getUniqueId(), items);
         });
 
-        this.guiManager.getItemStorage(player.getUniqueId()).thenAccept(optional -> {
-            if (optional.isPresent()) {
-                ItemStorage itemStorage = optional.get();
-
-                for (ItemStack item : itemStorage.items()) {
-                    gui.addItem(item);
-                }
-            }
-
+        this.guiManager.getItemStorage(player.getUniqueId()).thenAccept(itemStorage -> {
+            gui.addItem(itemStorage.items());
             this.scheduler.run(() -> gui.open(player));
         });
+
     }
 }

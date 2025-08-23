@@ -1,11 +1,14 @@
 package com.eternalcode.parcellockers.command.debug;
 
+import com.eternalcode.commons.bukkit.ItemUtil;
 import com.eternalcode.multification.notice.Notice;
-import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
-import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
-import com.eternalcode.parcellockers.locker.repository.LockerRepository;
+import com.eternalcode.parcellockers.content.ParcelContentManager;
+import com.eternalcode.parcellockers.delivery.DeliveryManager;
+import com.eternalcode.parcellockers.itemstorage.ItemStorageManager;
+import com.eternalcode.parcellockers.locker.LockerManager;
 import com.eternalcode.parcellockers.notification.NoticeService;
-import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
+import com.eternalcode.parcellockers.parcel.ParcelService;
+import com.eternalcode.parcellockers.user.UserManager;
 import dev.rollczi.litecommands.annotations.argument.Arg;
 import dev.rollczi.litecommands.annotations.command.Command;
 import dev.rollczi.litecommands.annotations.context.Sender;
@@ -26,82 +29,50 @@ import org.bukkit.inventory.ItemStack;
 @Permission("parcellockers.debug")
 public class DebugCommand {
 
-    private final ParcelRepository parcelRepository;
-    private final LockerRepository lockerRepository;
-    private final ItemStorageRepository itemStorageRepository;
-    private final ParcelContentRepository contentRepository;
+    private final ParcelService parcelService;
+    private final LockerManager lockerManager;
+    private final ItemStorageManager itemStorageManager;
+    private final ParcelContentManager contentManager;
+    private final DeliveryManager deliveryManager;
+    private final UserManager userManager;
     private final NoticeService noticeService;
 
     public DebugCommand(
-        ParcelRepository parcelRepository,
-        LockerRepository lockerRepository,
-        ItemStorageRepository itemStorageRepository,
-        ParcelContentRepository contentRepository,
+        ParcelService parcelService,
+        LockerManager lockerManager,
+        ItemStorageManager itemStorageManager,
+        ParcelContentManager contentManager,
+        DeliveryManager deliveryManager,
+        UserManager userManager,
         NoticeService noticeService
     ) {
-        this.parcelRepository = parcelRepository;
-        this.lockerRepository = lockerRepository;
-        this.itemStorageRepository = itemStorageRepository;
-        this.contentRepository = contentRepository;
+        this.parcelService = parcelService;
+        this.lockerManager = lockerManager;
+        this.itemStorageManager = itemStorageManager;
+        this.contentManager = contentManager;
+        this.deliveryManager = deliveryManager;
+        this.userManager = userManager;
         this.noticeService = noticeService;
     }
 
     @Execute(name = "delete parcels")
     void deleteParcels(@Sender CommandSender sender) {
-        this.parcelRepository.removeAll().exceptionally(throwable -> {
-            this.noticeService.create()
-                .notice(Notice.chat("&4Failed to delete parcels"))
-                .viewer(sender)
-                .send();
-            return null;
-        }).thenRun(() -> this.noticeService.create()
-            .notice(Notice.chat("&cParcels deleted"))
-            .viewer(sender)
-            .send());
+        this.parcelService.deleteAll(sender, this.noticeService);
     }
 
     @Execute(name = "delete lockers")
     void deleteLockers(@Sender CommandSender sender) {
-        this.lockerRepository.deleteAll().exceptionally(throwable -> {
-            this.noticeService.create()
-                .notice(Notice.chat("&4Failed to delete lockers"))
-                .viewer(sender)
-                .send();
-            return null;
-        }).thenRun(() -> this.noticeService.create()
-            .notice(Notice.chat("&cLockers deleted"))
-            .viewer(sender)
-            .send());
+        this.lockerManager.deleteAll(sender, this.noticeService);
     }
 
     @Execute(name = "delete itemstorages")
     void deleteItemStorages(@Sender CommandSender sender) {
-        this.itemStorageRepository.deleteAll()
-            .exceptionally(throwable -> {
-                this.noticeService.create()
-                    .notice(Notice.chat("&4Failed to delete item storages"))
-                    .viewer(sender)
-                    .send();
-                return null;
-            })
-            .thenRun(() -> this.noticeService.create()
-                .notice(Notice.chat("&cItem storages deleted"))
-                .viewer(sender)
-                .send());
+        this.itemStorageManager.deleteAll(sender, this.noticeService);
     }
 
     @Execute(name = "delete items")
     void deleteItems(@Sender CommandSender sender) {
-        this.contentRepository.deleteAll().exceptionally(throwable -> {
-            this.noticeService.create()
-                .notice(Notice.chat("&4Failed to delete parcel contents"))
-                .viewer(sender)
-                .send();
-            return null;
-        }).thenRun(() -> this.noticeService.create()
-            .notice(Notice.chat("&cParcel contents deleted"))
-            .viewer(sender)
-            .send());
+        this.contentManager.deleteAll(sender, this.noticeService);
     }
 
     @Execute(name = "delete all")
@@ -140,7 +111,7 @@ public class DebugCommand {
             int randomAmount = Math.min(random.nextInt(64) + 1, randomMaterial.getMaxStackSize());
 
             ItemStack itemStack = new ItemStack(randomMaterial, randomAmount);
-            player.getInventory().addItem(itemStack);
+            ItemUtil.giveItem(player, itemStack);
         }
     }
 }

@@ -40,7 +40,7 @@ public class ParcelContentRepositoryOrmLite extends AbstractRepositoryOrmLite im
 
     @Override
     public CompletableFuture<Optional<ParcelContent>> find(UUID uniqueId) {
-        return this.select(ParcelContentTable.class, uniqueId).thenApply(parcelContentTable -> Optional.ofNullable(
-            parcelContentTable.toParcelContent()));
+        return this.selectSafe(ParcelContentTable.class, uniqueId)
+            .thenApply(optional -> optional.map(ParcelContentTable::toParcelContent));
     }
 }

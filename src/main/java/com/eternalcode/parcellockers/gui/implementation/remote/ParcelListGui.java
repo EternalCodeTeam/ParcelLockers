@@ -69,7 +69,7 @@ public class ParcelListGui implements GuiView {
             gui.setItem(slot, backgroundItem);
         }
 
-        this.guiManager.getParcelByReceiver(player.getUniqueId(), page).thenAccept(result -> {
+        this.guiManager.getParcelsByReceiver(player.getUniqueId(), page).thenAccept(result -> {
             if (result.items().isEmpty() && page.hasPrevious()) {
                 this.show(player, page.previous());
                 return;

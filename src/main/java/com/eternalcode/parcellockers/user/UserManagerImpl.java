@@ -1,7 +1,7 @@
 package com.eternalcode.parcellockers.user;
 
 import com.eternalcode.parcellockers.shared.Page;
-import com.eternalcode.parcellockers.user.repository.UserPageResult;
+import com.eternalcode.parcellockers.shared.PageResult;
 import com.eternalcode.parcellockers.user.repository.UserRepository;
 import java.util.HashMap;
 import java.util.Map;
@@ -60,7 +60,7 @@ public class UserManagerImpl implements UserManager {
     }
 
     @Override
-    public CompletableFuture<UserPageResult> getPage(Page page) {
+    public CompletableFuture<PageResult<User>> getPage(Page page) {
         return this.userRepository.findPage(page);
     }
 

@@ -78,7 +78,7 @@ public class CollectionGui implements GuiView {
 
         gui.setItem(49, closeItem);
 
-        this.guiManager.getParcelByReceiver(player.getUniqueId(), page).thenAccept(result -> {
+        this.guiManager.getParcelsByReceiver(player.getUniqueId(), page).thenAccept(result -> {
             if (result == null || result.items().isEmpty()) {
                 gui.setItem(22, this.guiSettings.noParcelsItem.toGuiItem());
                 this.scheduler.run(() -> gui.open(player));
