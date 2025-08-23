@@ -12,7 +12,7 @@ public class PositionPersister extends BaseDataType {
     private static final PositionPersister INSTANCE = new PositionPersister();
 
     private PositionPersister() {
-        super(SqlType.LONG_STRING, new Class<?>[] { PositionPersister.class });
+        super(SqlType.LONG_STRING, new Class<?>[] { Position.class });
     }
 
     public static PositionPersister getSingleton() {

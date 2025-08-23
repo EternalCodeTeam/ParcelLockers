@@ -289,7 +289,10 @@ public class SendingGui implements GuiView {
             userOptional.ifPresent(user -> this.updateReceiverItem(player, user.name())));
 
         this.guiManager.getLocker(this.state.destinationLocker()).thenAccept(lockerOptional ->
-            lockerOptional.ifPresent(locker -> this.updateDestinationItem(player, locker.name())));
+            lockerOptional.ifPresent(locker -> {
+                System.out.println(locker);
+                this.updateDestinationItem(player, locker.name());
+            }));
 
         this.scheduler.run(() -> this.gui.open(player));
     }
