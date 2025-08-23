@@ -32,7 +32,7 @@ dependencies {
     paperLibrary("dev.rollczi:liteskullapi:2.0.0")
 
     // gui
-    implementation("dev.triumphteam:triumph-gui-paper:3.1.13-SNAPSHOT")
+    paperLibrary("dev.triumphteam:triumph-gui-paper:3.1.13-SNAPSHOT")
     paperLibrary("de.rapha149.signgui:signgui:2.5.4")
 
     // configs
@@ -134,7 +134,7 @@ tasks {
         val relocationPrefix = "com.eternalcode.parcellockers.libs"
         listOf(
             "org.bstats",
-            "dev.triumphteam"
+//            "dev.triumphteam"
         ).forEach { relocate(it, "$relocationPrefix.$it") }
     }
 }

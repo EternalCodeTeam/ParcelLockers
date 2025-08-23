@@ -50,6 +50,7 @@ import dev.rollczi.litecommands.bukkit.LiteBukkitFactory;
 import dev.rollczi.litecommands.bukkit.LiteBukkitMessages;
 import dev.rollczi.liteskullapi.LiteSkullFactory;
 import dev.rollczi.liteskullapi.SkullAPI;
+import dev.triumphteam.gui.TriumphGui;
 import java.io.File;
 import java.sql.SQLException;
 import java.time.Duration;
@@ -128,6 +129,7 @@ public final class ParcelLockers extends JavaPlugin {
         DeliveryManager deliveryManager = new DeliveryManager(deliveryRepository);
 
         // guis
+        TriumphGui.init(this);
         GuiManager guiManager = new GuiManager(
             config,
             scheduler,

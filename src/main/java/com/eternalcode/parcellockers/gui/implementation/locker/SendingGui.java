@@ -9,6 +9,7 @@ import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
+import com.eternalcode.parcellockers.shared.ScheduledGuiAction;
 import de.rapha149.signgui.SignGUI;
 import de.rapha149.signgui.exception.SignGUIVersionException;
 import dev.rollczi.liteskullapi.SkullAPI;
@@ -77,7 +78,6 @@ public class SendingGui implements GuiView {
 
     @Override
     public void show(Player player) {
-
         Component guiTitle = this.miniMessage.deserialize(this.guiSettings.parcelLockerSendingGuiTitle);
 
         this.gui = Gui.gui()
@@ -124,8 +124,7 @@ public class SendingGui implements GuiView {
                         this.gui.updateItem(NAME_ITEM_SLOT, nameItem
                             .lore(lore)
                             .toItemStack());
-                        this.gui.open(player);
-                        return List.of();
+                        return List.of(new ScheduledGuiAction(this.scheduler, () -> this.gui.open(player)));
                     })
                     .build();
                 nameSignGui.open(player);
@@ -161,8 +160,7 @@ public class SendingGui implements GuiView {
                         this.gui.updateItem(DESCRIPTION_ITEM_SLOT, descriptionItem
                             .lore(lore)
                             .toItemStack());
-                        this.gui.open(player);
-                        return List.of();
+                        return List.of(new ScheduledGuiAction(this.scheduler, () -> this.gui.open(player)));
                     })
                     .build();
             } catch (SignGUIVersionException e) {
@@ -293,13 +291,10 @@ public class SendingGui implements GuiView {
         this.guiManager.getUser(this.state.receiver()).thenAccept(userOptional ->
             userOptional.ifPresent(user -> this.updateReceiverItem(player, user.name())));
 
-
-        if (this.state.destinationLocker() != null) {
-            this.guiManager.getLocker(this.state.destinationLocker()).thenAccept(lockerOptional ->
-                lockerOptional.ifPresent(locker -> {
-                    this.updateDestinationItem(player, locker.name());
-                }));
-        }
+        this.guiManager.getLocker(this.state.destinationLocker()).thenAccept(lockerOptional ->
+            lockerOptional.ifPresent(locker -> {
+                this.updateDestinationItem(player, locker.name());
+            }));
 
         this.scheduler.run(() -> this.gui.open(player));
     }
@@ -346,11 +341,13 @@ public class SendingGui implements GuiView {
         this.gui.updateItem(DESCRIPTION_ITEM_SLOT, this.createActiveItem(this.guiSettings.parcelDescriptionItem, line));
     }
 
-    public void updateReceiverItem(Player player, String receiverName) {
-        this.noticeService.create()
-            .notice(messages -> messages.parcel.receiverSet)
-            .player(player.getUniqueId())
-            .send();
+    public void updateReceiverItem(Player player, String receiverName, boolean sendNotice) {
+        if (sendNotice) {
+            this.noticeService.create()
+                .notice(messages -> messages.parcel.receiverSet)
+                .player(player.getUniqueId())
+                .send();
+        }
 
         if (receiverName == null || receiverName.isEmpty()) {
             this.gui.updateItem(RECEIVER_ITEM_SLOT, this.guiSettings.parcelReceiverItem.toItemStack());
@@ -359,6 +356,10 @@ public class SendingGui implements GuiView {
 
         String line = this.guiSettings.parcelReceiverGuiSetLine.replace("{RECEIVER}", receiverName);
         this.gui.updateItem(RECEIVER_ITEM_SLOT, this.createActiveItem(this.guiSettings.parcelReceiverItem, line));
+    }
+
+    public void updateReceiverItem(Player player, String receiverName) {
+        this.updateReceiverItem(player, receiverName, false);
     }
 
     public void updateDestinationItem(Player player, String destinationLockerDesc) {

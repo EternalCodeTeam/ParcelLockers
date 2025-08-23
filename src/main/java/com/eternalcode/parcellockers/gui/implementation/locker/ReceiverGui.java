@@ -11,7 +11,7 @@ import com.eternalcode.parcellockers.user.User;
 import com.spotify.futures.CompletableFutures;
 import dev.rollczi.liteskullapi.SkullAPI;
 import dev.rollczi.liteskullapi.SkullData;
-import dev.triumphteam.gui.builder.item.ItemBuilder;
+import dev.triumphteam.gui.builder.item.PaperItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
@@ -79,15 +79,27 @@ public class ReceiverGui implements GuiView {
                     refresh.addItem(item);
                 }
 
-                this.scheduler.run(() -> gui.open(player));
+                this.scheduler.run(() -> {
+                    gui.open(player);
+                });
+            }).exceptionally(ex -> {
+                ex.printStackTrace();
+                return null;
             });
+        }).exceptionally(ex -> {
+            ex.printStackTrace();
+            return null;
         });
     }
 
     private CompletableFuture<List<Supplier<GuiItem>>> loadSkulls(Player player, PageResult<User> result, PaginatedGuiRefresher refresh) {
         return result.items().stream()
 //            .filter(user -> !user.uuid().equals(player.getUniqueId()))
-            .map(user -> this.skullAPI.getSkullData(user.uuid()).thenApply(skullData -> this.toItem(player, user, skullData, refresh)))
+            .map(user -> this.skullAPI.getSkullData(user.uuid()).thenApply(skullData -> this.toItem(player, user, skullData, refresh))
+                .exceptionally(throwable -> {
+                    System.err.println("ReceiverGui: Error fetching skull for user " + user.uuid() + ": " + throwable.getMessage());
+                    return null;
+                }))
             .collect(CompletableFutures.joinList())
             .orTimeout(10, TimeUnit.SECONDS);
     }
@@ -101,7 +113,7 @@ public class ReceiverGui implements GuiView {
                 ? this.guiSettings.parcelReceiverSetLine
                 : this.guiSettings.parcelReceiverNotSetLine;
 
-            return ItemBuilder.skull()
+            return PaperItemBuilder.skull()
                 .texture(skullData.getTexture())
                 .name(this.miniMessage.deserialize(user.name()))
                 .lore(this.miniMessage.deserialize(lore))
