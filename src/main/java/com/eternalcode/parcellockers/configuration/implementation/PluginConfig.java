@@ -9,7 +9,6 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 
 @Header({
     " ",
@@ -62,15 +61,6 @@ public class PluginConfig extends OkaeriConfig {
 
         @Comment({"", "# Parcel sending duration for priority parcels"})
         public Duration priorityParcelSendDuration = Duration.ofSeconds(5);
-
-        @Comment({"", "# Error sound used in the plugin."})
-        public Sound errorSound = Sound.ENTITY_ENDERMAN_AMBIENT;
-
-        @Comment({ "", "# The sound volume for the error sound." })
-        public float errorSoundVolume = 1.0F;
-
-        @Comment({ "", "# The sound pitch for the error sound." })
-        public float errorSoundPitch = 1.0F;
     }
 
     public static class GuiSettings extends OkaeriConfig {

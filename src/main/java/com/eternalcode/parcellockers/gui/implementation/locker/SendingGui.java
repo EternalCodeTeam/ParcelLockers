@@ -2,19 +2,13 @@ package com.eternalcode.parcellockers.gui.implementation.locker;
 
 import com.eternalcode.commons.adventure.AdventureUtil;
 import com.eternalcode.commons.scheduler.Scheduler;
-import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig.GuiSettings;
 import com.eternalcode.parcellockers.configuration.serializable.ConfigItem;
-import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
+import com.eternalcode.parcellockers.gui.GuiManager;
 import com.eternalcode.parcellockers.gui.GuiView;
-import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
-import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.parcel.Parcel;
-import com.eternalcode.parcellockers.parcel.ParcelService;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
-import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
-import com.eternalcode.parcellockers.user.repository.UserRepository;
 import de.rapha149.signgui.SignGUI;
 import de.rapha149.signgui.exception.SignGUIVersionException;
 import dev.rollczi.liteskullapi.SkullAPI;
@@ -34,7 +28,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-public class ParcelSendingGui implements GuiView {
+public class SendingGui implements GuiView {
 
     private static final int RECEIVER_ITEM_SLOT = 23;
     private static final int SMALL_BUTTON_SLOT = 12;
@@ -48,54 +42,38 @@ public class ParcelSendingGui implements GuiView {
     private static final int SUBMIT_ITEM_SLOT = 43;
     private static final int CLOSE_ITEM_SLOT = 49;
     private final Scheduler scheduler;
-    private final PluginConfig config;
+    private final GuiSettings guiSettings;
     private final MiniMessage miniMessage;
-    private final ItemStorageRepository itemStorageRepository;
-    private final ParcelRepository parcelRepository;
-    private final LockerRepository lockerRepository;
     private final NoticeService noticeService;
-    private final ParcelContentRepository parcelContentRepository;
-    private final UserRepository userRepository;
+    private final GuiManager guiManager;
     private final SkullAPI skullAPI;
-    private final ParcelService parcelService;
 
-    private final ParcelSendingGuiState state;
+    private final SendingGuiState state;
 
     private Gui gui;
 
-    public ParcelSendingGui(
-            Scheduler scheduler,
-            PluginConfig config,
-            MiniMessage miniMessage,
-            ItemStorageRepository itemStorageRepository,
-            ParcelRepository parcelRepository,
-            LockerRepository lockerRepository,
-            NoticeService noticeService,
-            ParcelContentRepository parcelContentRepository,
-            UserRepository userRepository,
-            SkullAPI skullAPI,
-            ParcelService parcelService,
-            ParcelSendingGuiState state
+    public SendingGui(
+        Scheduler scheduler,
+        GuiSettings guiSettings,
+        MiniMessage miniMessage,
+        NoticeService noticeService,
+        GuiManager guiManager,
+        SkullAPI skullAPI,
+        SendingGuiState state
     ) {
         this.scheduler = scheduler;
-        this.config = config;
+        this.guiSettings = guiSettings;
         this.miniMessage = miniMessage;
-        this.itemStorageRepository = itemStorageRepository;
-        this.parcelRepository = parcelRepository;
-        this.lockerRepository = lockerRepository;
         this.noticeService = noticeService;
-        this.parcelContentRepository = parcelContentRepository;
-        this.userRepository = userRepository;
+        this.guiManager = guiManager;
         this.skullAPI = skullAPI;
-        this.parcelService = parcelService;
         this.state = state;
     }
 
     @Override
     public void show(Player player) {
-        GuiSettings guiSettings = this.config.guiSettings;
 
-        Component guiTitle = this.miniMessage.deserialize(guiSettings.parcelLockerSendingGuiTitle);
+        Component guiTitle = this.miniMessage.deserialize(this.guiSettings.parcelLockerSendingGuiTitle);
 
         this.gui = Gui.gui()
             .rows(6)
@@ -103,9 +81,9 @@ public class ParcelSendingGui implements GuiView {
             .title(guiTitle)
             .create();
 
-        GuiItem backgroundItem = guiSettings.mainGuiBackgroundItem.toGuiItem();
-        GuiItem cornerItem = guiSettings.cornerItem.toGuiItem();
-        ConfigItem nameItem = guiSettings.parcelNameItem.clone();
+        GuiItem backgroundItem = this.guiSettings.mainGuiBackgroundItem.toGuiItem();
+        GuiItem cornerItem = this.guiSettings.cornerItem.toGuiItem();
+        ConfigItem nameItem = this.guiSettings.parcelNameItem.clone();
         GuiItem nameGuiItem = nameItem.toGuiItem(event -> {
             try {
                 SignGUI nameSignGui = SignGUI.builder()
@@ -134,7 +112,7 @@ public class ParcelSendingGui implements GuiView {
                         }
 
                         lore.add(
-                            this.config.guiSettings.parcelNameSetLine.replace("{NAME}",
+                            this.guiSettings.parcelNameSetLine.replace("{NAME}",
                             this.state.parcelName() == null ? "None" : this.state.parcelName())
                         );
 
@@ -149,10 +127,9 @@ public class ParcelSendingGui implements GuiView {
             } catch (SignGUIVersionException e) {
                 Bukkit.getLogger().severe("The server version is unsupported by SignGUI API!");
             }
-
         });
 
-        ConfigItem descriptionItem = guiSettings.parcelDescriptionItem.clone();
+        ConfigItem descriptionItem = this.guiSettings.parcelDescriptionItem.clone();
         GuiItem descriptionGuiItem = descriptionItem.toGuiItem(event -> {
             SignGUI descriptionSignGui = null;
             try {
@@ -174,7 +151,7 @@ public class ParcelSendingGui implements GuiView {
                             lore.remove(1);
                         }
 
-                        lore.add(guiSettings.parcelDescriptionSetLine.replace("{DESCRIPTION}", description));
+                        lore.add(this.guiSettings.parcelDescriptionSetLine.replace("{DESCRIPTION}", description));
 
                         this.gui.updateItem(DESCRIPTION_ITEM_SLOT, descriptionItem
                             .lore(lore)
@@ -185,26 +162,24 @@ public class ParcelSendingGui implements GuiView {
                     .build();
             } catch (SignGUIVersionException e) {
                 Bukkit.getLogger().severe("The server version is unsupported by SignGUI API!");
+            } finally {
+                if (descriptionSignGui != null) {
+                    descriptionSignGui.open(player);
+                }
             }
-            descriptionSignGui.open(player);
         });
 
-        GuiItem storageItem = guiSettings.parcelStorageItem.toGuiItem(event -> {
-            ParcelItemStorageGui storageGUI = new ParcelItemStorageGui(
+        GuiItem storageItem = this.guiSettings.parcelStorageItem.toGuiItem(event -> {
+            ItemStorageGui storageGUI = new ItemStorageGui(
                 this.scheduler,
-                this.config,
+                this.guiSettings,
                 this.miniMessage,
-                this.itemStorageRepository,
-                this.parcelRepository,
-                this.lockerRepository,
+                this.guiManager,
                 this.noticeService,
-                this.parcelContentRepository,
-                this.userRepository,
                 this.skullAPI,
-                this.state,
-                this.parcelService
+                this.state
             );
-            this.itemStorageRepository.find(player.getUniqueId()).thenAccept(result -> {
+            this.guiManager.getItemStorage(player.getUniqueId()).thenAccept(result -> {
                     if (result.isPresent()) {
                         int slotsSize = result.get().items().size();
                         if (slotsSize <= 9) {
@@ -220,8 +195,8 @@ public class ParcelSendingGui implements GuiView {
                 }
             ).orTimeout(2, TimeUnit.SECONDS);
         });
-        GuiItem submitItem = guiSettings.submitParcelItem.toGuiItem(event ->
-            this.itemStorageRepository.find(player.getUniqueId()).thenAccept(result -> {
+        GuiItem submitItem = this.guiSettings.submitParcelItem.toGuiItem(event ->
+            this.guiManager.getItemStorage(player.getUniqueId()).thenAccept(result -> {
                 if (result.isEmpty() || result.get().items().isEmpty()) {
                     this.noticeService.create()
                         .notice(messages -> messages.parcel.empty)
@@ -242,32 +217,27 @@ public class ParcelSendingGui implements GuiView {
                     this.state.parcelDescription(), this.state.priority(), this.state.receiver(),
                     this.state.size(), this.state.entryLocker(), this.state.destinationLocker(), this.state.status());
 
-                if (this.parcelService.send(player, parcel, result.get().items())) {
-                    this.itemStorageRepository.delete(player.getUniqueId());
+                if (this.guiManager.sendParcel(player, parcel, result.get().items())) {
+                    this.guiManager.deleteItemStorage(player.getUniqueId());
                 }
 
                 this.gui.close(player);
             }).orTimeout(5, TimeUnit.SECONDS));
 
-        GuiItem closeItem = guiSettings.closeItem.toGuiItem(event ->
-            new LockerMainGui(
+        GuiItem closeItem = this.guiSettings.closeItem.toGuiItem(event ->
+            new LockerGui(
                 this.miniMessage,
                 this.scheduler,
-                this.config,
-                this.itemStorageRepository,
-                this.parcelRepository,
-                this.lockerRepository,
+                this.guiSettings,
+                this.guiManager,
                 this.noticeService,
-                this.parcelContentRepository,
-                this.userRepository,
-                this.skullAPI,
-                this.parcelService
+                this.skullAPI
             ).show(player));
 
-        ConfigItem smallButton = guiSettings.smallParcelSizeItem;
-        ConfigItem mediumButton = guiSettings.mediumParcelSizeItem;
-        ConfigItem largeButton = guiSettings.largeParcelSizeItem;
-        ConfigItem priorityItem = guiSettings.priorityItem;
+        ConfigItem smallButton = this.guiSettings.smallParcelSizeItem;
+        ConfigItem mediumButton = this.guiSettings.mediumParcelSizeItem;
+        ConfigItem largeButton = this.guiSettings.largeParcelSizeItem;
+        ConfigItem priorityItem = this.guiSettings.priorityItem;
 
 
         int size = gui.getRows() * 9;
@@ -283,21 +253,21 @@ public class ParcelSendingGui implements GuiView {
         this.gui.setItem(LARGE_BUTTON_SLOT, largeButton.toGuiItem(event -> this.setSelected(this.gui, ParcelSize.LARGE)));
         this.gui.setItem(NAME_ITEM_SLOT, nameGuiItem);
         this.gui.setItem(DESCRIPTION_ITEM_SLOT, descriptionGuiItem);
-        this.gui.setItem(RECEIVER_ITEM_SLOT, guiSettings.parcelReceiverItem.toGuiItem(event -> new ReceiverSelectionGui(
+        this.gui.setItem(RECEIVER_ITEM_SLOT, this.guiSettings.parcelReceiverItem.toGuiItem(event -> new ReceiverGui(
             this.scheduler,
-            this.config,
+            this.guiSettings,
             this.miniMessage,
-            this.userRepository,
+            this.guiManager,
             this,
             this.skullAPI,
             this.state
         ).show(player)));
 
-        this.gui.setItem(DESTINATION_ITEM_SLOT, guiSettings.parcelDestinationLockerItem.toGuiItem(event -> new DestinationSelectionGui(
+        this.gui.setItem(DESTINATION_ITEM_SLOT, this.guiSettings.parcelDestinationLockerItem.toGuiItem(event -> new DestinationGui(
             this.scheduler,
-            this.config,
+            this.guiSettings,
             this.miniMessage,
-            this.lockerRepository,
+            this.guiManager,
             this,
             this.state
         ).show(player)));
@@ -311,10 +281,10 @@ public class ParcelSendingGui implements GuiView {
 
         this.updateNameItem();
         this.updateDescriptionItem();
-        this.userRepository.find(this.state.receiver()).thenAccept(userOptional ->
+        this.guiManager.getUser(this.state.receiver()).thenAccept(userOptional ->
             userOptional.ifPresent(user -> this.updateReceiverItem(player, user.name())));
 
-        this.lockerRepository.find(this.state.destinationLocker()).thenAccept(lockerOptional ->
+        this.guiManager.getLocker(this.state.destinationLocker()).thenAccept(lockerOptional ->
             lockerOptional.ifPresent(locker -> this.updateDestinationItem(player, locker.description())));
 
 
@@ -322,13 +292,12 @@ public class ParcelSendingGui implements GuiView {
     }
 
     private void setSelected(Gui gui, ParcelSize size) {
-        PluginConfig.GuiSettings settings = this.config.guiSettings;
         this.state.size(size);
 
-        ConfigItem smallButton = size == ParcelSize.SMALL ? settings.selectedSmallParcelSizeItem : settings.smallParcelSizeItem;
-        ConfigItem mediumButton = size == ParcelSize.MEDIUM ? settings.selectedMediumParcelSizeItem : settings.mediumParcelSizeItem;
-        ConfigItem largeButton = size == ParcelSize.LARGE ? settings.selectedLargeParcelSizeItem : settings.largeParcelSizeItem;
-        ConfigItem priorityButton = this.state.priority() ? settings.selectedPriorityItem : settings.priorityItem;
+        ConfigItem smallButton = size == ParcelSize.SMALL ? this.guiSettings.selectedSmallParcelSizeItem : this.guiSettings.smallParcelSizeItem;
+        ConfigItem mediumButton = size == ParcelSize.MEDIUM ? this.guiSettings.selectedMediumParcelSizeItem : this.guiSettings.mediumParcelSizeItem;
+        ConfigItem largeButton = size == ParcelSize.LARGE ? this.guiSettings.selectedLargeParcelSizeItem : this.guiSettings.largeParcelSizeItem;
+        ConfigItem priorityButton = this.state.priority() ? this.guiSettings.selectedPriorityItem : this.guiSettings.priorityItem;
 
         gui.updateItem(SMALL_BUTTON_SLOT, smallButton.toItemStack());
         gui.updateItem(MEDIUM_BUTTON_SLOT, mediumButton.toItemStack());
@@ -337,34 +306,31 @@ public class ParcelSendingGui implements GuiView {
     }
 
     private void setSelected(Gui gui, boolean priority) {
-        PluginConfig.GuiSettings settings = this.config.guiSettings;
         this.state.priority(priority);
 
-        ConfigItem priorityButton = priority ? settings.selectedPriorityItem : settings.priorityItem;
+        ConfigItem priorityButton = priority ? this.guiSettings.selectedPriorityItem : this.guiSettings.priorityItem;
 
         gui.updateItem(PRIORITY_BUTTON_SLOT, priorityButton.toItemStack());
     }
 
     public void updateNameItem() {
-        GuiSettings settings = this.config.guiSettings;
         if (this.state.parcelName() == null || this.state.parcelName().isEmpty()) {
-            this.gui.updateItem(NAME_ITEM_SLOT, settings.parcelNameItem.toItemStack());
+            this.gui.updateItem(NAME_ITEM_SLOT, this.guiSettings.parcelNameItem.toItemStack());
             return;
         }
 
-        String line = settings.parcelNameSetLine.replace("{NAME}", this.state.parcelName());
-        this.gui.updateItem(NAME_ITEM_SLOT, this.createActiveItem(settings.parcelNameItem, line));
+        String line = this.guiSettings.parcelNameSetLine.replace("{NAME}", this.state.parcelName());
+        this.gui.updateItem(NAME_ITEM_SLOT, this.createActiveItem(this.guiSettings.parcelNameItem, line));
     }
 
     public void updateDescriptionItem() {
-        GuiSettings settings = this.config.guiSettings;
         if (this.state.parcelDescription() == null || this.state.parcelDescription().isEmpty()) {
-            this.gui.updateItem(DESCRIPTION_ITEM_SLOT, settings.parcelDescriptionItem.toItemStack());
+            this.gui.updateItem(DESCRIPTION_ITEM_SLOT, this.guiSettings.parcelDescriptionItem.toItemStack());
             return;
         }
 
-        String line = settings.parcelDescriptionSetLine.replace("{DESCRIPTION}", this.state.parcelDescription());
-        this.gui.updateItem(DESCRIPTION_ITEM_SLOT, this.createActiveItem(settings.parcelDescriptionItem, line));
+        String line = this.guiSettings.parcelDescriptionSetLine.replace("{DESCRIPTION}", this.state.parcelDescription());
+        this.gui.updateItem(DESCRIPTION_ITEM_SLOT, this.createActiveItem(this.guiSettings.parcelDescriptionItem, line));
     }
 
     public void updateReceiverItem(Player player, String receiverName) {
@@ -373,14 +339,13 @@ public class ParcelSendingGui implements GuiView {
             .player(player.getUniqueId())
             .send();
 
-        GuiSettings settings = this.config.guiSettings;
         if (receiverName == null || receiverName.isEmpty()) {
-            this.gui.updateItem(RECEIVER_ITEM_SLOT, settings.parcelReceiverItem.toItemStack());
+            this.gui.updateItem(RECEIVER_ITEM_SLOT, this.guiSettings.parcelReceiverItem.toItemStack());
             return;
         }
 
-        String line = settings.parcelReceiverGuiSetLine.replace("{RECEIVER}", receiverName);
-        this.gui.updateItem(RECEIVER_ITEM_SLOT, this.createActiveItem(settings.parcelReceiverItem, line));
+        String line = this.guiSettings.parcelReceiverGuiSetLine.replace("{RECEIVER}", receiverName);
+        this.gui.updateItem(RECEIVER_ITEM_SLOT, this.createActiveItem(this.guiSettings.parcelReceiverItem, line));
     }
 
     public void updateDestinationItem(Player player, String destinationLockerDesc) {
@@ -389,14 +354,13 @@ public class ParcelSendingGui implements GuiView {
             .player(player.getUniqueId())
             .send();
 
-        GuiSettings settings = this.config.guiSettings;
         if (destinationLockerDesc == null || destinationLockerDesc.isEmpty()) {
-            this.gui.updateItem(DESTINATION_ITEM_SLOT, settings.parcelDestinationLockerItem.toItemStack());
+            this.gui.updateItem(DESTINATION_ITEM_SLOT, this.guiSettings.parcelDestinationLockerItem.toItemStack());
             return;
         }
 
-        String line = settings.parcelDestinationLockerSetLine.replace("{DESCRIPTION}", destinationLockerDesc);
-        this.gui.updateItem(DESTINATION_ITEM_SLOT, this.createActiveItem(settings.parcelDestinationLockerItem, line));
+        String line = this.guiSettings.parcelDestinationLockerSetLine.replace("{DESCRIPTION}", destinationLockerDesc);
+        this.gui.updateItem(DESTINATION_ITEM_SLOT, this.createActiveItem(this.guiSettings.parcelDestinationLockerItem, line));
     }
 
     private @NotNull ItemStack createActiveItem(ConfigItem item, String appendLore) {

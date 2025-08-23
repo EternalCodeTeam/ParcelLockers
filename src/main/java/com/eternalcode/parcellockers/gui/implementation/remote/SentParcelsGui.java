@@ -1,14 +1,12 @@
 package com.eternalcode.parcellockers.gui.implementation.remote;
 
 import com.eternalcode.commons.scheduler.Scheduler;
-import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig.GuiSettings;
 import com.eternalcode.parcellockers.configuration.serializable.ConfigItem;
+import com.eternalcode.parcellockers.gui.GuiManager;
 import com.eternalcode.parcellockers.gui.GuiView;
-import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.parcel.Parcel;
-import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
-import com.eternalcode.parcellockers.parcel.util.ParcelPlaceholderUtil;
-import com.eternalcode.parcellockers.user.UserManager;
+import com.eternalcode.parcellockers.parcel.util.PlaceholderUtil;
 import dev.triumphteam.gui.builder.item.PaperItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
@@ -24,42 +22,36 @@ public class SentParcelsGui implements GuiView {
 
     private final Scheduler scheduler;
     private final MiniMessage miniMessage;
-    private final PluginConfig config;
-    private final ParcelRepository parcelRepository;
-    private final LockerRepository lockerRepository;
+    private final GuiSettings guiSettings;
     private final MainGui mainGUI;
-    private final UserManager userManager;
+    private final GuiManager guiManager;
 
     public SentParcelsGui(
         Scheduler scheduler,
         MiniMessage miniMessage,
-        PluginConfig config,
-        ParcelRepository parcelRepository,
-        LockerRepository lockerRepository,
+        GuiSettings guiSettings,
         MainGui mainGUI,
-        UserManager userManager
+        GuiManager guiManager
     ) {
         this.scheduler = scheduler;
         this.miniMessage = miniMessage;
-        this.config = config;
-        this.parcelRepository = parcelRepository;
-        this.lockerRepository = lockerRepository;
+        this.guiSettings = guiSettings;
         this.mainGUI = mainGUI;
-        this.userManager = userManager;
+        this.guiManager = guiManager;
     }
 
     @Override
     public void show(Player player) {
         PaginatedGui gui = Gui.paginated()
-            .title(this.miniMessage.deserialize(this.config.guiSettings.sentParcelsTitle))
+            .title(this.miniMessage.deserialize(this.guiSettings.sentParcelsTitle))
             .rows(6)
             .disableAllInteractions()
             .create();
 
-        ConfigItem parcelItem = this.config.guiSettings.parcelItem;
-        GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem();
-        GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem();
-        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(event -> this.mainGUI.show(player));
+        ConfigItem parcelItem = this.guiSettings.parcelItem;
+        GuiItem cornerItem = this.guiSettings.cornerItem.toGuiItem();
+        GuiItem backgroundItem = this.guiSettings.mainGuiBackgroundItem.toGuiItem();
+        GuiItem closeItem = this.guiSettings.closeItem.toGuiItem(event -> this.mainGUI.show(player));
 
         for (int slot : CORNER_SLOTS) {
             gui.setItem(slot, cornerItem);
@@ -72,13 +64,13 @@ public class SentParcelsGui implements GuiView {
         gui.setItem(49, closeItem);
 
 
-        this.parcelRepository.findBySender(player.getUniqueId()).thenAccept(optionalParcels -> {
+        this.guiManager.getParcelBySender(player.getUniqueId()).thenAccept(optionalParcels -> {
             List<Parcel> parcels = optionalParcels.orElse(Collections.emptyList());
 
             for (Parcel parcel : parcels) {
                 PaperItemBuilder item = parcelItem.toBuilder();
 
-                List<Component> newLore = ParcelPlaceholderUtil.replaceParcelPlaceholders(parcel, parcelItem.lore(), this.userManager, this.lockerRepository)
+                List<Component> newLore = PlaceholderUtil.replaceParcelPlaceholders(parcel, parcelItem.lore(), this.guiManager)
                     .stream()
                     .map(line -> this.miniMessage.deserialize(line))
                     .toList();

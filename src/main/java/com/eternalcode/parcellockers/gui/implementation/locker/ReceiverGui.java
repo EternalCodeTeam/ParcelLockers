@@ -1,14 +1,13 @@
 package com.eternalcode.parcellockers.gui.implementation.locker;
 
 import com.eternalcode.commons.scheduler.Scheduler;
-import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig.GuiSettings;
+import com.eternalcode.parcellockers.gui.GuiManager;
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.gui.PaginatedGuiRefresher;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.user.User;
 import com.eternalcode.parcellockers.user.repository.UserPageResult;
-import com.eternalcode.parcellockers.user.repository.UserRepository;
 import com.spotify.futures.CompletableFutures;
 import dev.rollczi.liteskullapi.SkullAPI;
 import dev.rollczi.liteskullapi.SkullData;
@@ -23,35 +22,34 @@ import java.util.function.Supplier;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 
-
-public class ReceiverSelectionGui implements GuiView {
+@SuppressWarnings("ClassCanBeRecord")
+public class ReceiverGui implements GuiView {
 
     private static final int WIDTH = 7;
     private static final int HEIGHT = 4;
     private static final Page FIRST_PAGE = new Page(0, WIDTH * HEIGHT);
 
     private final Scheduler scheduler;
-    private final PluginConfig config;
+    private final GuiSettings guiSettings;
     private final MiniMessage miniMessage;
-    private final UserRepository userRepository;
-    private final ParcelSendingGui sendingGUI;
+    private final GuiManager guiManager;
+    private final SendingGui sendingGUI;
     private final SkullAPI skullAPI;
-    private final ParcelSendingGuiState state;
+    private final SendingGuiState state;
 
-
-    public ReceiverSelectionGui(
+    public ReceiverGui(
             Scheduler scheduler,
-            PluginConfig config,
+            GuiSettings guiSettings,
             MiniMessage miniMessage,
-            UserRepository userRepository,
-            ParcelSendingGui sendingGUI,
+            GuiManager guiManager,
+            SendingGui sendingGUI,
             SkullAPI skullAPI,
-            ParcelSendingGuiState state
+            SendingGuiState state
     ) {
         this.scheduler = scheduler;
-        this.config = config;
+        this.guiSettings = guiSettings;
         this.miniMessage = miniMessage;
-        this.userRepository = userRepository;
+        this.guiManager = guiManager;
         this.sendingGUI = sendingGUI;
         this.skullAPI = skullAPI;
         this.state = state;
@@ -63,18 +61,17 @@ public class ReceiverSelectionGui implements GuiView {
     }
 
     private void show(Player player, Page page) {
-        GuiSettings settings = this.config.guiSettings;
         PaginatedGui gui = Gui.paginated()
-            .title(this.miniMessage.deserialize(settings.parcelReceiverSelectionGuiTitle))
+            .title(this.miniMessage.deserialize(this.guiSettings.parcelReceiverSelectionGuiTitle))
             .rows(6)
             .disableAllInteractions()
             .create();
 
-        GuiItem backgroundItem = settings.mainGuiBackgroundItem.toGuiItem();
-        GuiItem cornerItem = settings.cornerItem.toGuiItem();
-        GuiItem closeItem = settings.closeItem.toGuiItem(event -> this.sendingGUI.show(player));
-        GuiItem previousPageItem = settings.previousPageItem.toGuiItem(event -> this.show(player, page.previous()));
-        GuiItem nextPageItem = settings.nextPageItem.toGuiItem(event -> this.show(player, page.next()));
+        GuiItem backgroundItem = this.guiSettings.mainGuiBackgroundItem.toGuiItem();
+        GuiItem cornerItem = this.guiSettings.cornerItem.toGuiItem();
+        GuiItem closeItem = this.guiSettings.closeItem.toGuiItem(event -> this.sendingGUI.show(player));
+        GuiItem previousPageItem = this.guiSettings.previousPageItem.toGuiItem(event -> this.show(player, page.previous()));
+        GuiItem nextPageItem = this.guiSettings.nextPageItem.toGuiItem(event -> this.show(player, page.next()));
 
         for (int slot : CORNER_SLOTS) {
             gui.setItem(slot, cornerItem);
@@ -85,7 +82,7 @@ public class ReceiverSelectionGui implements GuiView {
 
         gui.setItem(49, closeItem);
 
-        this.userRepository.findPage(page).thenAccept(result -> {
+        this.guiManager.getUserPage(page).thenAccept(result -> {
             if (result.hasNextPage()) {
                 gui.setItem(51, nextPageItem);
             }
@@ -118,10 +115,9 @@ public class ReceiverSelectionGui implements GuiView {
 
         return () -> {
             boolean isReceiverSelected = uuid.equals(this.state.receiver());
-            GuiSettings settings = this.config.guiSettings;
             String lore = isReceiverSelected
-                ? settings.parcelReceiverSetLine
-                : settings.parcelReceiverNotSetLine;
+                ? this.guiSettings.parcelReceiverSetLine
+                : this.guiSettings.parcelReceiverNotSetLine;
 
             return ItemBuilder.skull()
                 .texture(skullData.getTexture())

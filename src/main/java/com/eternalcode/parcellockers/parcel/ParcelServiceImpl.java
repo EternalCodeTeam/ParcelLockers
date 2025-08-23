@@ -60,6 +60,7 @@ public class ParcelServiceImpl implements ParcelService {
                     .player(sender.getUniqueId())
                     .send();
 
+                this.parcelRepository.remove(parcel);
                 throw new ParcelLockersException("Failed to save parcel content", throwable);
             }
 
@@ -69,6 +70,7 @@ public class ParcelServiceImpl implements ParcelService {
                 .send();
 
             Delivery delivery = new Delivery(parcel.uuid(), Instant.now().plus(delay));
+            this.deliveryRepository.save(delivery);
             ParcelSendTask task = new ParcelSendTask(parcel, delivery, parcelRepository, deliveryRepository, config);
 
             this.scheduler.runLaterAsync(task, delay);
@@ -79,7 +81,7 @@ public class ParcelServiceImpl implements ParcelService {
     }
 
     @Override
-    public void remove(CommandSender sender, Parcel parcel) {
+    public void delete(CommandSender sender, Parcel parcel) {
         this.parcelRepository.remove(parcel)
             .thenAccept(v ->
                 this.noticeService.create()

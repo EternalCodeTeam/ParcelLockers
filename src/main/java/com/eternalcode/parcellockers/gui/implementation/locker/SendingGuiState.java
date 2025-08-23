@@ -10,7 +10,7 @@ import lombok.experimental.Accessors;
 @Getter
 @Setter
 @Accessors(fluent = true)
-public class ParcelSendingGuiState {
+public class SendingGuiState {
 
     private String parcelName;
     private String parcelDescription;
@@ -21,7 +21,7 @@ public class ParcelSendingGuiState {
     private UUID destinationLocker;
     private ParcelStatus status;
 
-    public ParcelSendingGuiState() {
+    public SendingGuiState() {
         this.parcelName = null;
         this.parcelDescription = null;
         this.size = ParcelSize.SMALL;

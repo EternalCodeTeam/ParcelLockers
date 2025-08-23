@@ -2,6 +2,7 @@ package com.eternalcode.parcellockers.parcel.repository;
 
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.shared.Page;
+import com.eternalcode.parcellockers.shared.PageResult;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -21,7 +22,7 @@ public interface ParcelRepository {
 
     CompletableFuture<Optional<List<Parcel>>> findByReceiver(UUID receiver);
 
-    CompletableFuture<ParcelPageResult> findByReceiver(UUID receiver, Page page);
+    CompletableFuture<PageResult<Parcel>> findByReceiver(UUID receiver, Page page);
 
     CompletableFuture<Integer> remove(Parcel parcel);
 
@@ -29,5 +30,5 @@ public interface ParcelRepository {
 
     CompletableFuture<Integer> removeAll();
 
-    CompletableFuture<ParcelPageResult> findPage(Page page);
+    CompletableFuture<PageResult<Parcel>> findPage(Page page);
 }

@@ -2,6 +2,7 @@ package com.eternalcode.parcellockers.locker.repository;
 
 import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.shared.Page;
+import com.eternalcode.parcellockers.shared.PageResult;
 import com.eternalcode.parcellockers.shared.Position;
 import java.util.List;
 import java.util.Optional;
@@ -24,5 +25,5 @@ public interface LockerRepository {
 
     CompletableFuture<Integer> deleteAll();
 
-    CompletableFuture<LockerPageResult> findPage(Page page);
+    CompletableFuture<PageResult<Locker>> findPage(Page page);
 }

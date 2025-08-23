@@ -5,6 +5,7 @@ import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.eternalcode.parcellockers.database.wrapper.AbstractRepositoryOrmLite;
 import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.shared.Page;
+import com.eternalcode.parcellockers.shared.PageResult;
 import com.eternalcode.parcellockers.shared.ParcelLockersException;
 import com.eternalcode.parcellockers.shared.Position;
 import com.j256.ormlite.table.TableUtils;
@@ -80,7 +81,7 @@ public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     }
 
     @Override
-    public CompletableFuture<LockerPageResult> findPage(Page page) {
+    public CompletableFuture<PageResult<Locker>> findPage(Page page) {
         return this.action(
                 LockerTable.class, dao -> {
             List<Locker> lockers = dao.queryBuilder()
@@ -95,7 +96,7 @@ public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implement
                 lockers.removeLast();
             }
 
-            return new LockerPageResult(lockers, hasNext);
+            return new PageResult<>(lockers, hasNext);
         });
     }
 

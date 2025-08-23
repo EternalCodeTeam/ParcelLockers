@@ -9,7 +9,7 @@ public interface ParcelService {
 
     void collect(Player player, Parcel parcel);
 
-    void remove(CommandSender sender, Parcel parcel);
+    void delete(CommandSender sender, Parcel parcel);
 
     boolean send(Player sender, Parcel parcel, List<ItemStack> items);
 }

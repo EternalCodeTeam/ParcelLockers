@@ -1,6 +1,6 @@
 package com.eternalcode.parcellockers.locker.controller;
 
-import com.eternalcode.parcellockers.gui.implementation.locker.LockerMainGui;
+import com.eternalcode.parcellockers.gui.implementation.locker.LockerGui;
 import com.eternalcode.parcellockers.locker.repository.LockerCache;
 import com.eternalcode.parcellockers.shared.Position;
 import com.eternalcode.parcellockers.shared.PositionAdapter;
@@ -15,11 +15,11 @@ import org.bukkit.event.player.PlayerInteractEvent;
 public class LockerInteractionController implements Listener {
 
     private final LockerCache cache;
-    private final LockerMainGui lockerMainGUI;
+    private final LockerGui lockerGUI;
 
-    public LockerInteractionController(LockerCache cache, LockerMainGui lockerMainGUI) {
+    public LockerInteractionController(LockerCache cache, LockerGui lockerGUI) {
         this.cache = cache;
-        this.lockerMainGUI = lockerMainGUI;
+        this.lockerGUI = lockerGUI;
     }
 
     @EventHandler
@@ -39,7 +39,7 @@ public class LockerInteractionController implements Listener {
 
         if (this.cache.get(blockPos).isPresent()) {
             event.setCancelled(true);
-            this.lockerMainGUI.show(player);
+            this.lockerGUI.show(player);
         }
     }
 }

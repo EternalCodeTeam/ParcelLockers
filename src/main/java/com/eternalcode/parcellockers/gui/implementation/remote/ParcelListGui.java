@@ -3,15 +3,14 @@ package com.eternalcode.parcellockers.gui.implementation.remote;
 import static com.eternalcode.commons.adventure.AdventureUtil.resetItalic;
 
 import com.eternalcode.commons.scheduler.Scheduler;
-import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig.GuiSettings;
 import com.eternalcode.parcellockers.configuration.serializable.ConfigItem;
+import com.eternalcode.parcellockers.gui.GuiManager;
 import com.eternalcode.parcellockers.gui.GuiView;
-import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
-import com.eternalcode.parcellockers.parcel.util.ParcelPlaceholderUtil;
+import com.eternalcode.parcellockers.parcel.util.PlaceholderUtil;
 import com.eternalcode.parcellockers.shared.Page;
-import com.eternalcode.parcellockers.user.UserManager;
 import dev.triumphteam.gui.builder.item.PaperItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
@@ -21,6 +20,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 
+@SuppressWarnings("ClassCanBeRecord")
 public class ParcelListGui implements GuiView {
 
     private static final int WIDTH = 7;
@@ -28,27 +28,24 @@ public class ParcelListGui implements GuiView {
     private static final Page FIRST_PAGE = new Page(0, WIDTH * HEIGHT);
     private final Scheduler scheduler;
     private final MiniMessage miniMessage;
-    private final PluginConfig config;
+    private final GuiSettings guiSettings;
     private final ParcelRepository parcelRepository;
-    private final LockerRepository lockerRepository;
-    private final UserManager userManager;
+    private final GuiManager guiManager;
     private final MainGui mainGUI;
 
     public ParcelListGui(
         Scheduler scheduler,
         MiniMessage miniMessage,
-        PluginConfig config,
+        GuiSettings guiSettings,
         ParcelRepository parcelRepository,
-        LockerRepository lockerRepository,
-        UserManager userManager,
+        GuiManager guiManager,
         MainGui mainGUI
     ) {
         this.scheduler = scheduler;
         this.miniMessage = miniMessage;
-        this.config = config;
+        this.guiSettings = guiSettings;
         this.parcelRepository = parcelRepository;
-        this.lockerRepository = lockerRepository;
-        this.userManager = userManager;
+        this.guiManager = guiManager;
         this.mainGUI = mainGUI;
     }
 
@@ -59,16 +56,16 @@ public class ParcelListGui implements GuiView {
 
     private void show(Player player, Page page) {
         PaginatedGui gui = Gui.paginated()
-            .title(resetItalic(this.miniMessage.deserialize(this.config.guiSettings.parcelListGuiTitle)))
-            .disableAllInteractions()
+            .title(resetItalic(this.miniMessage.deserialize(this.guiSettings.parcelListGuiTitle)))
             .rows(6)
+            .disableAllInteractions()
             .create();
 
-        GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem();
-        GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem();
-        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(event -> this.mainGUI.show(player));
-        GuiItem previousPageItem = this.config.guiSettings.previousPageItem.toGuiItem(event -> this.show(player, page.previous()));
-        GuiItem nextPageItem = this.config.guiSettings.nextPageItem.toGuiItem(event -> this.show(player, page.next()));
+        GuiItem backgroundItem = this.guiSettings.mainGuiBackgroundItem.toGuiItem();
+        GuiItem cornerItem = this.guiSettings.cornerItem.toGuiItem();
+        GuiItem closeItem = this.guiSettings.closeItem.toGuiItem(event -> this.mainGUI.show(player));
+        GuiItem previousPageItem = this.guiSettings.previousPageItem.toGuiItem(event -> this.show(player, page.previous()));
+        GuiItem nextPageItem = this.guiSettings.nextPageItem.toGuiItem(event -> this.show(player, page.next()));
 
         for (int slot : CORNER_SLOTS) {
             gui.setItem(slot, cornerItem);
@@ -77,18 +74,17 @@ public class ParcelListGui implements GuiView {
             gui.setItem(slot, backgroundItem);
         }
 
-        this.parcelRepository.findPage(page).thenAccept(result -> {
-            if (result.parcels().isEmpty() && page.hasPrevious()) {
+        this.parcelRepository.findByReceiver(player.getUniqueId(), page).thenAccept(result -> {
+            if (result.items().isEmpty() && page.hasPrevious()) {
                 this.show(player, page.previous());
                 return;
             }
 
-            ConfigItem item = this.config.guiSettings.parcelItem;
-
-            for (Parcel parcel : result.parcels()) {
+            for (Parcel parcel : result.items()) {
+                ConfigItem item = this.guiSettings.parcelItem;
                 PaperItemBuilder parcelItem = item.toBuilder();
 
-                List<Component> newLore = ParcelPlaceholderUtil.replaceParcelPlaceholders(parcel, item.lore(), this.userManager, this.lockerRepository).stream()
+                List<Component> newLore = PlaceholderUtil.replaceParcelPlaceholders(parcel, item.lore(), this.guiManager).stream()
                     .map(line -> resetItalic(this.miniMessage.deserialize(line)))
                     .toList();
                 parcelItem.lore(newLore);

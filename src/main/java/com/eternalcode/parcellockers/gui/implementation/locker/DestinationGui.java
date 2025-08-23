@@ -1,14 +1,14 @@
 package com.eternalcode.parcellockers.gui.implementation.locker;
 
 import com.eternalcode.commons.scheduler.Scheduler;
-import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig.GuiSettings;
 import com.eternalcode.parcellockers.configuration.serializable.ConfigItem;
+import com.eternalcode.parcellockers.gui.GuiManager;
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.gui.PaginatedGuiRefresher;
 import com.eternalcode.parcellockers.locker.Locker;
-import com.eternalcode.parcellockers.locker.repository.LockerPageResult;
-import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.shared.Page;
+import com.eternalcode.parcellockers.shared.PageResult;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
@@ -19,31 +19,32 @@ import java.util.function.Supplier;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 
-public class DestinationSelectionGui implements GuiView {
+@SuppressWarnings("ClassCanBeRecord")
+public class DestinationGui implements GuiView {
 
     private static final int WIDTH = 7;
     private static final int HEIGHT = 4;
     private static final Page FIRST_PAGE = new Page(0, WIDTH * HEIGHT);
 
     private final Scheduler scheduler;
-    private final PluginConfig config;
+    private final GuiSettings guiSettings;
     private final MiniMessage miniMessage;
-    private final LockerRepository lockerRepository;
-    private final ParcelSendingGui sendingGUI;
-    private final ParcelSendingGuiState state;
+    private final GuiManager guiManager;
+    private final SendingGui sendingGUI;
+    private final SendingGuiState state;
 
-    public DestinationSelectionGui(
+    public DestinationGui(
         Scheduler scheduler,
-        PluginConfig config,
+        GuiSettings guiSettings,
         MiniMessage miniMessage,
-        LockerRepository lockerRepository,
-        ParcelSendingGui sendingGUI,
-        ParcelSendingGuiState state
+        GuiManager guiManager,
+        SendingGui sendingGUI,
+        SendingGuiState state
     ) {
         this.scheduler = scheduler;
-        this.config = config;
+        this.guiSettings = guiSettings;
         this.miniMessage = miniMessage;
-        this.lockerRepository = lockerRepository;
+        this.guiManager = guiManager;
         this.sendingGUI = sendingGUI;
         this.state = state;
     }
@@ -54,14 +55,14 @@ public class DestinationSelectionGui implements GuiView {
     }
 
     private void show(Player player, Page page) {
-        GuiItem previousPageItem = this.config.guiSettings.previousPageItem.toGuiItem(event -> this.show(player, page.previous()));
-        GuiItem nextPageItem = this.config.guiSettings.nextPageItem.toGuiItem(event -> this.show(player, page.next()));
-        GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem();
-        GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem();
-        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(event -> this.sendingGUI.show(player));
+        GuiItem previousPageItem = this.guiSettings.previousPageItem.toGuiItem(event -> this.show(player, page.previous()));
+        GuiItem nextPageItem = this.guiSettings.nextPageItem.toGuiItem(event -> this.show(player, page.next()));
+        GuiItem cornerItem = this.guiSettings.cornerItem.toGuiItem();
+        GuiItem backgroundItem = this.guiSettings.mainGuiBackgroundItem.toGuiItem();
+        GuiItem closeItem = this.guiSettings.closeItem.toGuiItem(event -> this.sendingGUI.show(player));
 
         PaginatedGui gui = Gui.paginated()
-            .title(this.miniMessage.deserialize(this.config.guiSettings.parcelDestinationLockerSelectionGuiTitle))
+            .title(this.miniMessage.deserialize(this.guiSettings.parcelDestinationLockerSelectionGuiTitle))
             .rows(6)
             .disableAllInteractions()
             .create();
@@ -77,7 +78,7 @@ public class DestinationSelectionGui implements GuiView {
 
         gui.setItem(49, closeItem);
 
-        this.lockerRepository.findPage(page).thenAccept(result -> {
+        this.guiManager.getLockerPage(page).thenAccept(result -> {
                 if (result.hasNextPage()) {
                     gui.setItem(51, nextPageItem);
                 }
@@ -91,22 +92,22 @@ public class DestinationSelectionGui implements GuiView {
             }).orTimeout(5, TimeUnit.SECONDS);
     }
 
-    private List<Supplier<GuiItem>> loadLockers(Player player, LockerPageResult result, PaginatedGuiRefresher refresh) {
-        return result.lockers().stream()
+    private List<Supplier<GuiItem>> loadLockers(Player player, PageResult<Locker> result, PaginatedGuiRefresher refresh) {
+        return result.items().stream()
             .map(locker -> this.toItem(player, locker, refresh))
             .toList();
     }
 
     private Supplier<GuiItem> toItem(Player player, Locker locker, PaginatedGuiRefresher refresher) {
         UUID uuid = locker.uuid();
-        ConfigItem parcelItem = this.config.guiSettings.destinationLockerItem.clone();
+        ConfigItem parcelItem = this.guiSettings.destinationLockerItem.clone();
 
         return () -> {
             String name = parcelItem.name().replace("{DESCRIPTION}", locker.description());
             boolean isLockerSelected = uuid.equals(this.state.destinationLocker());
             String oneLineLore = isLockerSelected
-                ? this.config.guiSettings.parcelDestinationSetLine
-                : this.config.guiSettings.parcelDestinationNotSetLine;
+                ? this.guiSettings.parcelDestinationSetLine
+                : this.guiSettings.parcelDestinationNotSetLine;
 
             return parcelItem
                 .name(name)

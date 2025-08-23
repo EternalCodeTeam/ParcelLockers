@@ -5,6 +5,7 @@ import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.eternalcode.parcellockers.database.wrapper.AbstractRepositoryOrmLite;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.shared.Page;
+import com.eternalcode.parcellockers.shared.PageResult;
 import com.j256.ormlite.table.TableUtils;
 import java.sql.SQLException;
 import java.util.List;
@@ -73,7 +74,7 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
             .toList()));
     }
 
-    public CompletableFuture<ParcelPageResult> findByReceiver(UUID receiver, Page page) {
+    public CompletableFuture<PageResult<Parcel>> findByReceiver(UUID receiver, Page page) {
         return this.action(
                 ParcelTable.class, dao -> {
             List<Parcel> parcels = dao.queryBuilder()
@@ -90,7 +91,7 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
             if (hasNext) {
                 parcels.removeLast();
             }
-            return new ParcelPageResult(parcels, hasNext);
+            return new PageResult<>(parcels, hasNext);
         });
     }
 
@@ -111,7 +112,7 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     }
 
     @Override
-    public CompletableFuture<ParcelPageResult> findPage(Page page) {
+    public CompletableFuture<PageResult<Parcel>> findPage(Page page) {
         return this.action(
                 ParcelTable.class, dao -> {
             List<Parcel> parcels = dao.queryBuilder()
@@ -125,7 +126,7 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
             if (hasNext) {
                 parcels.removeLast();
             }
-            return new ParcelPageResult(parcels, hasNext);
+            return new PageResult<>(parcels, hasNext);
         });
     }
 

@@ -1,18 +1,14 @@
 package com.eternalcode.parcellockers.gui.implementation.locker;
 
 import com.eternalcode.commons.scheduler.Scheduler;
-import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig.GuiSettings;
 import com.eternalcode.parcellockers.configuration.serializable.ConfigItem;
+import com.eternalcode.parcellockers.gui.GuiManager;
 import com.eternalcode.parcellockers.gui.GuiView;
-import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.parcel.Parcel;
-import com.eternalcode.parcellockers.parcel.ParcelService;
 import com.eternalcode.parcellockers.parcel.ParcelStatus;
-import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
-import com.eternalcode.parcellockers.parcel.util.ParcelPlaceholderUtil;
+import com.eternalcode.parcellockers.parcel.util.PlaceholderUtil;
 import com.eternalcode.parcellockers.shared.Page;
-import com.eternalcode.parcellockers.user.UserManager;
 import com.eternalcode.parcellockers.util.InventoryUtil;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
@@ -21,36 +17,28 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 
-public class ParcelCollectionGui implements GuiView {
+@SuppressWarnings("ClassCanBeRecord")
+public class CollectionGui implements GuiView {
 
     private static final int WIDTH = 7;
     private static final int HEIGHT = 4;
     private static final Page FIRST_PAGE = new Page(0, WIDTH * HEIGHT);
 
-    private final PluginConfig config;
+    private final GuiSettings guiSettings;
     private final Scheduler scheduler;
-    private final ParcelRepository parcelRepository;
+    private final GuiManager guiManager;
     private final MiniMessage miniMessage;
-    private final ParcelService parcelService;
-    private final UserManager userManager;
-    private final LockerRepository lockerRepository;
 
-    public ParcelCollectionGui(
-        PluginConfig config,
+    public CollectionGui(
+        GuiSettings guiSettings,
         Scheduler scheduler,
-        ParcelRepository parcelRepository,
-        MiniMessage miniMessage,
-        ParcelService parcelService,
-        UserManager userManager,
-        LockerRepository lockerRepository
+        GuiManager guiManager,
+        MiniMessage miniMessage
     ) {
-        this.config = config;
+        this.guiSettings = guiSettings;
         this.scheduler = scheduler;
-        this.parcelRepository = parcelRepository;
+        this.guiManager = guiManager;
         this.miniMessage = miniMessage;
-        this.parcelService = parcelService;
-        this.userManager = userManager;
-        this.lockerRepository = lockerRepository;
     }
 
     @Override
@@ -59,9 +47,7 @@ public class ParcelCollectionGui implements GuiView {
     }
 
     private void show(Player player, Page page) {
-        GuiSettings guiSettings = this.config.guiSettings;
-
-        Component guiTitle = this.miniMessage.deserialize(guiSettings.parcelCollectionGuiTitle);
+        Component guiTitle = this.miniMessage.deserialize(this.guiSettings.parcelCollectionGuiTitle);
 
         PaginatedGui gui = Gui.paginated()
             .rows(6)
@@ -69,16 +55,16 @@ public class ParcelCollectionGui implements GuiView {
             .title(guiTitle)
             .create();
 
-        ConfigItem parcelItem = guiSettings.parcelCollectionItem;
-        GuiItem closeItem = guiSettings.closeItem.toGuiItem(event -> gui.close(player));
-        GuiItem cornerItem = guiSettings.cornerItem.toGuiItem();
-        GuiItem backgroundItem = guiSettings.mainGuiBackgroundItem.toGuiItem();
-        GuiItem nextPageItem = guiSettings.nextPageItem.toGuiItem(event -> {
+        ConfigItem parcelItem = this.guiSettings.parcelCollectionItem;
+        GuiItem closeItem = this.guiSettings.closeItem.toGuiItem(event -> gui.close(player));
+        GuiItem cornerItem = this.guiSettings.cornerItem.toGuiItem();
+        GuiItem backgroundItem = this.guiSettings.mainGuiBackgroundItem.toGuiItem();
+        GuiItem nextPageItem = this.guiSettings.nextPageItem.toGuiItem(event -> {
             Page nextPage = new Page(page.page() + 1, page.size());
             this.show(player, nextPage);
         });
 
-        GuiItem previousPageItem = guiSettings.previousPageItem.toGuiItem(event -> {
+        GuiItem previousPageItem = this.guiSettings.previousPageItem.toGuiItem(event -> {
             Page previousPage = new Page(page.page() - 1, page.size());
             this.show(player, previousPage);
         });
@@ -93,9 +79,11 @@ public class ParcelCollectionGui implements GuiView {
 
         gui.setItem(49, closeItem);
 
-        this.parcelRepository.findByReceiver(player.getUniqueId(), page).thenAccept(result -> {
-            if (result == null || result.parcels().isEmpty()) {
-                gui.setItem(22, guiSettings.noParcelsItem.toGuiItem(event -> player.playSound(player.getLocation(), this.config.settings.errorSound, this.config.settings.errorSoundVolume, this.config.settings.errorSoundPitch)));
+        this.guiManager.getParcelByReceiver(player.getUniqueId(), page).thenAccept(result -> {
+            if (result == null || result.items().isEmpty()) {
+                gui.setItem(22, this.guiSettings.noParcelsItem.toGuiItem());
+                this.scheduler.run(() -> gui.open(player));
+                return;
             }
 
             if (result.hasNextPage()) {
@@ -106,19 +94,19 @@ public class ParcelCollectionGui implements GuiView {
                 gui.setItem(47, previousPageItem);
             }
 
-            for (Parcel parcel : result.parcels()) {
+            for (Parcel parcel : result.items()) {
                 if (parcel.status() != ParcelStatus.DELIVERED) {
                     continue;
                 }
 
                 ConfigItem item = parcelItem.clone();
                 item.name(item.name().replace("{NAME}", parcel.name()));
-                item.lore(ParcelPlaceholderUtil.replaceParcelPlaceholders(parcel, item.lore(), this.userManager, this.lockerRepository));
+                item.lore(PlaceholderUtil.replaceParcelPlaceholders(parcel, item.lore(), this.guiManager));
 
                 item.glow(true);
 
                 gui.addItem(item.toGuiItem(event -> {
-                    this.parcelService.collect(player, parcel);
+                    this.guiManager.collectParcel(player, parcel);
                     gui.removeItem(event.getSlot());
                     InventoryUtil.shiftItems(event.getSlot(), gui, item.type());
                     gui.update();

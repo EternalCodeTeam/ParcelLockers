@@ -14,7 +14,7 @@ import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepositoryOrmLite;
 import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.eternalcode.parcellockers.delivery.repository.DeliveryRepositoryOrmLite;
-import com.eternalcode.parcellockers.gui.implementation.locker.LockerMainGui;
+import com.eternalcode.parcellockers.gui.implementation.locker.LockerGui;
 import com.eternalcode.parcellockers.gui.implementation.remote.MainGui;
 import com.eternalcode.parcellockers.gui.implementation.remote.ParcelListGui;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
@@ -127,15 +127,14 @@ public final class ParcelLockers extends JavaPlugin {
         MainGui mainGUI = new MainGui(
             scheduler,
             miniMessage,
-            config,
+            config.guiSettings,
             parcelRepository,
-            lockerRepository,
-            userManager
+            lockerRepository
         );
         ParcelListGui parcelListGUI = new ParcelListGui(
             scheduler,
             miniMessage,
-            config,
+            config.guiSettings,
             parcelRepository,
             lockerRepository,
             userManager,
@@ -157,10 +156,10 @@ public final class ParcelLockers extends JavaPlugin {
             .missingPermission(new MissingPermissionsHandlerImpl(noticeService))
             .build();
 
-        LockerMainGui lockerMainGUI = new LockerMainGui(
+        LockerGui lockerGUI = new LockerGui(
             miniMessage,
             scheduler,
-            config,
+            config.guiSettings,
             itemStorageRepository,
             parcelRepository,
             lockerRepository,
@@ -172,7 +171,7 @@ public final class ParcelLockers extends JavaPlugin {
         );
 
         Stream.of(
-            new LockerInteractionController(lockerCache, lockerMainGUI),
+            new LockerInteractionController(lockerCache, lockerGUI),
             new LockerPlaceController(config, this, lockerRepository, noticeService),
             new LockerBreakController(lockerRepository, lockerCache, noticeService),
             new PrepareUserController(userManager),

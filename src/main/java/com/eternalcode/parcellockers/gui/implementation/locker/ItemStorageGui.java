@@ -2,17 +2,11 @@ package com.eternalcode.parcellockers.gui.implementation.locker;
 
 import com.eternalcode.commons.bukkit.ItemUtil;
 import com.eternalcode.commons.scheduler.Scheduler;
-import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig.GuiSettings;
-import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
+import com.eternalcode.parcellockers.gui.GuiManager;
 import com.eternalcode.parcellockers.itemstorage.ItemStorage;
-import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
-import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.notification.NoticeService;
-import com.eternalcode.parcellockers.parcel.ParcelService;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
-import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
-import com.eternalcode.parcellockers.user.repository.UserRepository;
 import com.eternalcode.parcellockers.util.MaterialUtil;
 import dev.rollczi.liteskullapi.SkullAPI;
 import dev.triumphteam.gui.guis.Gui;
@@ -26,80 +20,61 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-public class ParcelItemStorageGui {
+@SuppressWarnings("ClassCanBeRecord")
+public class ItemStorageGui {
 
     private final Scheduler scheduler;
-    private final PluginConfig config;
+    private final GuiSettings guiSettings;
     private final MiniMessage miniMessage;
-    private final ItemStorageRepository itemStorageRepository;
-    private final ParcelRepository parcelRepository;
-    private final LockerRepository lockerRepository;
+    private final GuiManager guiManager;
     private final NoticeService noticeService;
-    private final ParcelContentRepository parcelContentRepository;
-    private final UserRepository userRepository;
     private final SkullAPI skullAPI;
-    private final ParcelSendingGuiState state;
-    private final ParcelService parcelService;
+    private final SendingGuiState state;
 
-    public ParcelItemStorageGui(
+    public ItemStorageGui(
         Scheduler scheduler,
-        PluginConfig config,
+        GuiSettings guiSettings,
         MiniMessage miniMessage,
-        ItemStorageRepository itemStorageRepository,
-        ParcelRepository parcelRepository,
-        LockerRepository lockerRepository,
+        GuiManager guiManager,
         NoticeService noticeService,
-        ParcelContentRepository parcelContentRepository,
-        UserRepository userRepository,
         SkullAPI skullAPI,
-        ParcelSendingGuiState state, ParcelService parcelService
+        SendingGuiState state
     ) {
         this.scheduler = scheduler;
-        this.config = config;
+        this.guiSettings = guiSettings;
         this.miniMessage = miniMessage;
-        this.itemStorageRepository = itemStorageRepository;
-        this.parcelRepository = parcelRepository;
-        this.lockerRepository = lockerRepository;
+        this.guiManager = guiManager;
         this.noticeService = noticeService;
-        this.parcelContentRepository = parcelContentRepository;
-        this.userRepository = userRepository;
         this.skullAPI = skullAPI;
         this.state = state;
-        this.parcelService = parcelService;
     }
 
     void show(Player player, ParcelSize size) {
         StorageGui gui;
-        GuiSettings guiSettings = this.config.guiSettings;
 
-        GuiItem backgroundItem = guiSettings.mainGuiBackgroundItem.toGuiItem(event -> event.setCancelled(true));
+        GuiItem backgroundItem = this.guiSettings.mainGuiBackgroundItem.toGuiItem(event -> event.setCancelled(true));
 
-        GuiItem confirmItem = guiSettings.confirmItemsItem.toGuiItem(event -> new ParcelSendingGui(
+        GuiItem confirmItem = this.guiSettings.confirmItemsItem.toGuiItem(event -> new SendingGui(
             this.scheduler,
-            this.config,
+            this.guiSettings,
             this.miniMessage,
-            this.itemStorageRepository,
-            this.parcelRepository,
-            this.lockerRepository,
             this.noticeService,
-            this.parcelContentRepository,
-            this.userRepository,
+            this.guiManager,
             this.skullAPI,
-            this.parcelService,
             this.state
         ).show(player));
 
         switch (size) {
             case SMALL -> gui = Gui.storage()
-                .title(this.miniMessage.deserialize(guiSettings.parcelSmallContentGuiTitle))
+                .title(this.miniMessage.deserialize(this.guiSettings.parcelSmallContentGuiTitle))
                 .rows(2)
                 .create();
             case MEDIUM -> gui = Gui.storage()
-                .title(this.miniMessage.deserialize(guiSettings.parcelMediumContentGuiTitle))
+                .title(this.miniMessage.deserialize(this.guiSettings.parcelMediumContentGuiTitle))
                 .rows(3)
                 .create();
             case LARGE -> gui = Gui.storage()
-                .title(this.miniMessage.deserialize(guiSettings.parcelLargeContentGuiTitle))
+                .title(this.miniMessage.deserialize(this.guiSettings.parcelLargeContentGuiTitle))
                 .rows(4)
                 .create();
             default -> throw new IllegalStateException("Unexpected value: " + size);
@@ -121,7 +96,7 @@ public class ParcelItemStorageGui {
                     continue;
                 }
 
-                for (Material type : this.config.guiSettings.illegalItems) {
+                for (Material type : this.guiSettings.illegalItems) {
                     if (item.getType() == type) {
                         ItemUtil.giveItem(player, item);
                         gui.removeItem(item);
@@ -136,12 +111,12 @@ public class ParcelItemStorageGui {
                 items.add(item);
             }
 
-            this.itemStorageRepository.delete(player.getUniqueId()).thenAccept(unused -> {
-                this.itemStorageRepository.save(new ItemStorage(player.getUniqueId(), items));
-            });
+            this.guiManager.deleteItemStorage(player.getUniqueId()).thenAccept(
+                unused -> this.guiManager.saveItemStorage(new ItemStorage(player.getUniqueId(), items))
+            );
         });
 
-        this.itemStorageRepository.find(player.getUniqueId()).thenAccept(optional -> {
+        this.guiManager.getItemStorage(player.getUniqueId()).thenAccept(optional -> {
             if (optional.isPresent()) {
                 ItemStorage itemStorage = optional.get();
 
