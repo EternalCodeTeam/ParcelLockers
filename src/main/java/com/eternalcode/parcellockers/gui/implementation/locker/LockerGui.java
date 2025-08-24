@@ -70,7 +70,7 @@ public class LockerGui implements GuiView {
         gui.open(player);
     }
 
-    private void setupStaticItems(Gui gui, Player player) {
+    private void setupStaticItems(Player player, Gui gui) {
         GuiItem backgroundItem = this.guiSettings.mainGuiBackgroundItem.toGuiItem();
         GuiItem cornerItem = this.guiSettings.cornerItem.toGuiItem();
         GuiItem closeItem = this.guiSettings.closeItem.toGuiItem(event -> gui.close(player));

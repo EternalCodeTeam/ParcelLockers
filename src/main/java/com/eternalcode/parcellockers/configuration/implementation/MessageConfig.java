@@ -8,10 +8,8 @@ import org.bukkit.Sound;
 
 @SuppressWarnings("ALL")
 @Header({
-    " ",
     "# This file contains messages used by the ParcelLockers plugin.",
     "# You can customize these messages to fit your server's theme or language.",
-    " ",
 })
 public class MessageConfig extends OkaeriConfig {
 
@@ -145,12 +143,12 @@ public class MessageConfig extends OkaeriConfig {
     }
 
     public static class AdminMessages extends OkaeriConfig {
-        public Notice deletedLockers = Notice.chat("&4⚠ &cAll parcel lockers have been deleted!");
-        public Notice deletedParcels = Notice.chat("&4⚠ &cAll parcels have been deleted!");
-        public Notice deletedItemStorages = Notice.chat("&4⚠ &cAll item storages have been deleted!");
-        public Notice deletedContents = Notice.chat("&4⚠ &cAll parcel contents have been deleted!");
-        public Notice deletedDeliveries = Notice.chat("&4⚠ &cAll deliveries have been deleted!");
-        public Notice deletedUsers = Notice.chat("&4⚠ &cAll users have been deleted!");
+        public Notice deletedLockers = Notice.chat("&4⚠ &cAll ({COUNT}) parcel lockers have been deleted!");
+        public Notice deletedParcels = Notice.chat("&4⚠ &cAll ({COUNT}) parcels have been deleted!");
+        public Notice deletedItemStorages = Notice.chat("&4⚠ &cAll ({COUNT}) item storages have been deleted!");
+        public Notice deletedContents = Notice.chat("&4⚠ &cAll ({COUNT}) parcel contents have been deleted!");
+        public Notice deletedDeliveries = Notice.chat("&4⚠ &cAll ({COUNT}) deliveries have been deleted!");
+        public Notice deletedUsers = Notice.chat("&4⚠ &cAll ({COUNT}) users have been deleted!");
         public Notice invalidNumberOfStacks = Notice.chat("&4✘ &cInvalid number of stacks. Must be between 1 and 36.");
         public Notice invalidItemMaterials = Notice.chat("&4✘ &cItem materials to give are invalid (should never happen, if it does report this on our discord).");
     }

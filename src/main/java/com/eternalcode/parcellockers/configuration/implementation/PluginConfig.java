@@ -11,16 +11,12 @@ import java.util.List;
 import org.bukkit.Material;
 
 @Header({
-    " ",
     "# ParcelLockers plugin configuration file.",
-    "#",
-    "# This file is used to configure the plugin.",
+    "",
     "# You can change the settings here to customize the plugin behavior or appearance.",
-    "#",
-    "# If you want to reload the configuration, you can do it using the /parcellockers reload command."
+    "# If you want to reload the configuration, you can do it using the '/parcellockers reload' command."
 })
 public class PluginConfig extends OkaeriConfig {
-    @Comment({ "", "# The plugin settings." })
     public Settings settings = new Settings();
 
     @Comment({ "", "# The plugin GUI settings." })
@@ -28,7 +24,7 @@ public class PluginConfig extends OkaeriConfig {
 
     public static class Settings extends OkaeriConfig {
 
-        @Comment({ "", "# Whether the player after entering the server should receive information about the new version of the plugin?" })
+        @Comment("# Whether the player after entering the server should receive information about the new version of the plugin?")
         public boolean receiveUpdates = true;
 
         @Comment({ "", "# The database type. (MYSQL, SQLITE)" })
