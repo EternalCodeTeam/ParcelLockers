@@ -32,7 +32,6 @@ public class MainGui implements GuiView {
 
     @Override
     public void show(Player player) {
-
         Gui gui = Gui.gui()
             .title(resetItalic(this.miniMessage.deserialize(this.guiSettings.mainGuiTitle)))
             .rows(6)

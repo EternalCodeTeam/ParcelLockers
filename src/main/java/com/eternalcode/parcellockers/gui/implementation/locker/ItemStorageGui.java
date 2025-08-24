@@ -94,6 +94,8 @@ public class ItemStorageGui {
                     continue;
                 }
 
+                // todo fix duplication glitch with illegal items
+                // if the item is illegal, give it back to the player and do not save it
                 for (Material type : this.guiSettings.illegalItems) {
                     if (item.getType() == type) {
                         ItemUtil.giveItem(player, item);
@@ -103,10 +105,11 @@ public class ItemStorageGui {
                             .placeholder("{ITEMS}", MaterialUtil.format(item.getType()))
                             .player(player.getUniqueId())
                             .send();
+                        return;
                     }
                 }
-
                 items.add(item);
+
             }
 
             this.guiManager.deleteItemStorage(player.getUniqueId());

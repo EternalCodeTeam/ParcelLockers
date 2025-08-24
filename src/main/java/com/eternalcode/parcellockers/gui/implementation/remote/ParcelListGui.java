@@ -49,25 +49,15 @@ public class ParcelListGui implements GuiView {
         this.show(player, FIRST_PAGE);
     }
 
-    private void show(Player player, Page page) {
+    @Override
+    public void show(Player player, Page page) {
         PaginatedGui gui = Gui.paginated()
             .title(resetItalic(this.miniMessage.deserialize(this.guiSettings.parcelListGuiTitle)))
             .rows(6)
             .disableAllInteractions()
             .create();
 
-        GuiItem backgroundItem = this.guiSettings.mainGuiBackgroundItem.toGuiItem();
-        GuiItem cornerItem = this.guiSettings.cornerItem.toGuiItem();
-        GuiItem closeItem = this.guiSettings.closeItem.toGuiItem(event -> this.mainGUI.show(player));
-        GuiItem previousPageItem = this.guiSettings.previousPageItem.toGuiItem(event -> this.show(player, page.previous()));
-        GuiItem nextPageItem = this.guiSettings.nextPageItem.toGuiItem(event -> this.show(player, page.next()));
-
-        for (int slot : CORNER_SLOTS) {
-            gui.setItem(slot, cornerItem);
-        }
-        for (int slot : BORDER_SLOTS) {
-            gui.setItem(slot, backgroundItem);
-        }
+        this.setupStaticItems(player, gui);
 
         this.guiManager.getParcelsByReceiver(player.getUniqueId(), page).thenAccept(result -> {
             if (result.items().isEmpty() && page.hasPrevious()) {
@@ -88,18 +78,25 @@ public class ParcelListGui implements GuiView {
                 gui.addItem(parcelItem.asGuiItem());
             }
 
-            gui.setItem(49, closeItem);
-
-            if (result.hasNextPage()) {
-                gui.setItem(51, nextPageItem);
-            }
-
-            if (page.hasPrevious()) {
-                gui.setItem(47, previousPageItem);
-            }
+            this.setupNavigation(gui, page, result, player, this.guiSettings);
 
             this.scheduler.run(() -> gui.open(player));
         });
 
+    }
+
+    private void setupStaticItems(Player player, PaginatedGui gui) {
+        GuiItem backgroundItem = this.guiSettings.mainGuiBackgroundItem.toGuiItem();
+        GuiItem cornerItem = this.guiSettings.cornerItem.toGuiItem();
+        GuiItem closeItem = this.guiSettings.closeItem.toGuiItem(event -> this.mainGUI.show(player));
+
+        for (int slot : CORNER_SLOTS) {
+            gui.setItem(slot, cornerItem);
+        }
+        for (int slot : BORDER_SLOTS) {
+            gui.setItem(slot, backgroundItem);
+        }
+
+        gui.setItem(49, closeItem);
     }
 }

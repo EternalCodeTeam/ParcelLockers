@@ -125,21 +125,13 @@ public class ParcelServiceImpl implements ParcelService {
 
             // TODO: Do not delete, archive instead
             this.invalidate(parcel);
-            this.parcelRepository.delete(parcel)
-                .thenAccept(v -> this.parcelContentRepository.delete(optional.get().uniqueId()))
-                .whenComplete((v, throwable) -> {
-                    if (throwable != null) {
-                        this.noticeService.create()
-                            .notice(messages -> messages.parcel.cannotCollect)
-                            .player(player.getUniqueId())
-                            .send();
-                        return;
-                    }
-                    this.noticeService.create()
-                        .notice(messages -> messages.parcel.collected)
-                        .player(player.getUniqueId())
-                        .send();
-                });
+            this.parcelRepository.delete(parcel);
+            this.parcelContentRepository.delete(parcel.uuid());
+
+            this.noticeService.create()
+                .notice(messages -> messages.parcel.collected)
+                .player(player.getUniqueId())
+                .send();
         });
     }
 

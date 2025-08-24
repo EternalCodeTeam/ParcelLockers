@@ -53,12 +53,8 @@ public class DestinationGui implements GuiView {
         this.show(player, FIRST_PAGE);
     }
 
-    private void show(Player player, Page page) {
-        GuiItem previousPageItem = this.guiSettings.previousPageItem.toGuiItem(event -> this.show(player, page.previous()));
-        GuiItem nextPageItem = this.guiSettings.nextPageItem.toGuiItem(event -> this.show(player, page.next()));
-        GuiItem cornerItem = this.guiSettings.cornerItem.toGuiItem();
-        GuiItem backgroundItem = this.guiSettings.mainGuiBackgroundItem.toGuiItem();
-        GuiItem closeItem = this.guiSettings.closeItem.toGuiItem(event -> this.sendingGUI.show(player));
+    @Override
+    public void show(Player player, Page page) {
 
         PaginatedGui gui = Gui.paginated()
             .title(this.miniMessage.deserialize(this.guiSettings.parcelDestinationLockerSelectionGuiTitle))
@@ -68,23 +64,10 @@ public class DestinationGui implements GuiView {
 
         PaginatedGuiRefresher refresher = new PaginatedGuiRefresher(gui);
 
-        for (int slot : CORNER_SLOTS) {
-            gui.setItem(slot, cornerItem);
-        }
-        for (int slot : BORDER_SLOTS) {
-            gui.setItem(slot, backgroundItem);
-        }
-
-        gui.setItem(49, closeItem);
+        this.setupStaticItems(player, gui);
 
         this.guiManager.getLockerPage(page).thenAccept(result -> {
-                if (result.hasNextPage()) {
-                    gui.setItem(51, nextPageItem);
-                }
-
-                if (page.hasPrevious()) {
-                    gui.setItem(47, previousPageItem);
-                }
+                this.setupNavigation(gui, page, result, player, this.guiSettings);
 
                 this.loadLockers(player, result, refresher).forEach(refresher::addItem);
                 this.scheduler.run(() -> gui.open(player));
@@ -115,15 +98,30 @@ public class DestinationGui implements GuiView {
                 .toGuiItem(event -> {
                     if (isLockerSelected) {
                         this.state.destinationLocker(null);
-                        this.sendingGUI.updateDestinationItem(player, "");
+                        this.sendingGUI.updateDestinationItem(player, "", false);
                         refresher.refresh();
                         return;
                     }
 
                     this.state.destinationLocker(uuid);
-                    this.sendingGUI.updateDestinationItem(player, locker.name());
+                    this.sendingGUI.updateDestinationItem(player, locker.name(), true);
                     refresher.refresh();
                 });
         };
+    }
+
+    private void setupStaticItems(Player player, PaginatedGui gui) {
+        GuiItem backgroundItem = this.guiSettings.mainGuiBackgroundItem.toGuiItem();
+        GuiItem cornerItem = this.guiSettings.cornerItem.toGuiItem();
+        GuiItem closeItem = this.guiSettings.closeItem.toGuiItem(event -> this.sendingGUI.show(player));
+
+        for (int slot : CORNER_SLOTS) {
+            gui.setItem(slot, cornerItem);
+        }
+        for (int slot : BORDER_SLOTS) {
+            gui.setItem(slot, backgroundItem);
+        }
+
+        gui.setItem(49, closeItem);
     }
 }

@@ -12,11 +12,7 @@ repositories {
     gradlePluginPortal()
     maven { url = uri("https://maven-central.storage-download.googleapis.com/maven2/")}
 
-    maven { url = uri("https://repo.panda-lang.org/releases") }
     maven { url = uri("https://repo.triumphteam.dev/snapshots/")}
-    maven { url = uri("https://hub.spigotmc.org/nexus/content/repositories/snapshots/") }
-    maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots") }
-    maven { url = uri("https://oss.sonatype.org/content/repositories/central") }
     maven { url = uri("https://repo.papermc.io/repository/maven-public/") }
     maven { url = uri("https://repo.eternalcode.pl/releases") }
     maven { url  = uri("https://storehouse.okaeri.eu/repository/maven-public/") }
@@ -101,6 +97,7 @@ paper {
     website = "https://github.com/EternalCodeTeam/ParcelLockers"
     loader = "com.eternalcode.parcellockers.ParcelLockersLibraryLoader"
     generateLibrariesJson = true
+    foliaSupported = false
 }
 
 tasks.withType<JavaCompile> {

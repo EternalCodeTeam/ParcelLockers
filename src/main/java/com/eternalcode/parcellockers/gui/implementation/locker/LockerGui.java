@@ -47,18 +47,7 @@ public class LockerGui implements GuiView {
             .disableAllInteractions()
             .create();
 
-        GuiItem backgroundItem = this.guiSettings.mainGuiBackgroundItem.toGuiItem();
-        GuiItem cornerItem = this.guiSettings.cornerItem.toGuiItem();
-        GuiItem closeItem = this.guiSettings.closeItem.toGuiItem(event -> gui.close(player));
-
-        int size = gui.getRows() * 9;
-        for (int i = 0; i < size; i++) {
-            gui.setItem(i, backgroundItem);
-        }
-
-        for (int slot : CORNER_SLOTS) {
-            gui.setItem(slot, cornerItem);
-        }
+        this.setupStaticItems(player, gui);
 
         CollectionGui collectionGui = new CollectionGui(
             this.guiSettings,
@@ -78,7 +67,23 @@ public class LockerGui implements GuiView {
             new SendingGuiState().entryLocker(entryLocker)
         ).show(player, entryLocker)));
 
-        gui.setItem(49, closeItem);
         gui.open(player);
+    }
+
+    private void setupStaticItems(Gui gui, Player player) {
+        GuiItem backgroundItem = this.guiSettings.mainGuiBackgroundItem.toGuiItem();
+        GuiItem cornerItem = this.guiSettings.cornerItem.toGuiItem();
+        GuiItem closeItem = this.guiSettings.closeItem.toGuiItem(event -> gui.close(player));
+
+        int size = gui.getRows() * 9;
+        for (int i = 0; i < size; i++) {
+            gui.setItem(i, backgroundItem);
+        }
+
+        for (int slot : CORNER_SLOTS) {
+            gui.setItem(slot, cornerItem);
+        }
+        gui.setItem(49, closeItem);
+
     }
 }

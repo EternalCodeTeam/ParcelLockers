@@ -23,8 +23,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-// TODO move notices to MessagesConfig
-
 @Command(name = "parcel debug")
 @Permission("parcellockers.debug")
 public class DebugCommand {

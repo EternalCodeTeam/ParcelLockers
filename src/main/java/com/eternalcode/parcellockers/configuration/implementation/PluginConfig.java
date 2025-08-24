@@ -12,16 +12,15 @@ import org.bukkit.Material;
 
 @Header({
     " ",
-    "# Parcel Lockers plugin configuration file.",
+    "# ParcelLockers plugin configuration file.",
     "#",
-    "# This file is used to configure the ParcelLockers plugin.",
-    "# You can change the settings here to customize the plugin behavior.",
+    "# This file is used to configure the plugin.",
+    "# You can change the settings here to customize the plugin behavior or appearance.",
     "#",
-    "# If you want to change the settings, you can do it in-game using the /parcellockers reload command."
+    "# If you want to reload the configuration, you can do it using the /parcellockers reload command."
 })
 public class PluginConfig extends OkaeriConfig {
-
-    @Comment({ "", "# Parcel Lockers plugin configuration file." })
+    @Comment({ "", "# The plugin settings." })
     public Settings settings = new Settings();
 
     @Comment({ "", "# The plugin GUI settings." })
@@ -57,10 +56,10 @@ public class PluginConfig extends OkaeriConfig {
             .lore(List.of("&bPlace to create a parcel locker."));
 
         @Comment({"", "# Standard parcel sending duration"})
-        public Duration parcelSendDuration = Duration.ofSeconds(10);
+        public Duration parcelSendDuration = Duration.ofSeconds(5);
 
         @Comment({"", "# Parcel sending duration for priority parcels"})
-        public Duration priorityParcelSendDuration = Duration.ofSeconds(5);
+        public Duration priorityParcelSendDuration = Duration.ofSeconds(2);
     }
 
     public static class GuiSettings extends OkaeriConfig {
@@ -81,24 +80,24 @@ public class PluginConfig extends OkaeriConfig {
         public String parcelReceiverSelectionGuiTitle = "&5Select recipient";
 
         @Comment({ "", "# The item of the parcel collection GUI" })
-        public String parcelCollectionGuiTitle = "&aCollect parcels";
+        public String parcelCollectionGuiTitle = "&2Collect parcels";
 
         @Comment({ "", "# The item of the small parcel size button" })
         public ConfigItem smallParcelSizeItem = new ConfigItem()
             .name("&2\uD83C\uDF37 &aSmall")
-            .lore(List.of("&aClick to select the small parcel size."))
+            .lore(List.of("&2» &aClick to select the small parcel size."))
             .type(Material.OAK_CHEST_BOAT);
 
         @Comment({ "", "# The item of the medium parcel size button" })
         public ConfigItem mediumParcelSizeItem = new ConfigItem()
             .name("&6\uD83C\uDF39 &eMedium")
-            .lore(List.of("&eClick to select the medium parcel size."))
+            .lore(List.of("&6» &eClick to select the medium parcel size."))
             .type(Material.CHEST_MINECART);
 
         @Comment({ "", "# The item of the large parcel size button" })
         public ConfigItem largeParcelSizeItem = new ConfigItem()
             .name("&4\uD83C\uDFDD &cLarge")
-            .lore(List.of("&cClick to select the large parcel size."))
+            .lore(List.of("&4» &cClick to select the large parcel size."))
             .type(Material.TNT_MINECART);
 
         @Comment({ "", "# The item represents selected small parcel size." })
@@ -220,7 +219,7 @@ public class PluginConfig extends OkaeriConfig {
             .type(Material.NAME_TAG);
 
         @Comment({ "", "# The value of the GUI line, when parcel name is set" })
-        public String parcelNameSetLine = "&4» &cCurrent parcel name: &e{NAME}";
+        public String parcelNameSetLine = "&4› &cCurrent parcel name: &e{NAME}";
 
         @Comment({ "", "# The item of the parcel name button" })
         public ConfigItem parcelDescriptionItem = new ConfigItem()
@@ -228,7 +227,7 @@ public class PluginConfig extends OkaeriConfig {
             .lore(List.of("&2» &aClick to add parcel description."))
             .type(Material.OAK_SIGN);
 
-        public String parcelDescriptionSetLine = "&2» &aCurrent parcel name: &2{DESCRIPTION}";
+        public String parcelDescriptionSetLine = "&2› &aCurrent parcel name: &2{DESCRIPTION}";
 
         @Comment({ "", "# The item of the parcel receiver button" })
         public ConfigItem parcelReceiverItem = new ConfigItem()
@@ -237,7 +236,7 @@ public class PluginConfig extends OkaeriConfig {
             .type(Material.PLAYER_HEAD);
 
         @Comment({ "", "# The value of the GUI line, when parcel name is set" })
-        public String parcelReceiverGuiSetLine = "&5» &dCurrent parcel receiver: &5{RECEIVER}";
+        public String parcelReceiverGuiSetLine = "&5› &dCurrent parcel receiver: &5{RECEIVER}";
 
         @Comment({ "", "# The value of the player itemlore line, when parcel receiver is not set" })
         public String parcelReceiverNotSetLine = "&9» &bClick to select.";
@@ -248,8 +247,8 @@ public class PluginConfig extends OkaeriConfig {
         @Comment({ "", "# The item of the parcel destination locker button" })
         public ConfigItem parcelDestinationLockerItem = new ConfigItem()
             .name("&3\uD83D\uDEE3 Destination locker")
-            .lore(List.of("&3Click to edit the parcel destination locker."))
-            .type(Material.COMPASS);
+            .lore(List.of("&3» &bClick to edit the parcel destination locker."))
+            .type(Material.END_PORTAL_FRAME);
 
         @Comment({ "", "# The item of the previous page button" })
         public ConfigItem previousPageItem = new ConfigItem()
@@ -266,7 +265,7 @@ public class PluginConfig extends OkaeriConfig {
         @Comment({ "", "# The item of the confirm items button" })
         public ConfigItem confirmItemsItem = new ConfigItem()
             .name("&2✔ &aConfirm items")
-            .lore(List.of("&aClick to confirm the items."))
+            .lore(List.of("&2» &aClick to confirm the items."))
             .type(Material.GREEN_DYE);
 
         @Comment({ "", "# The name of the parcel small content GUI" })
@@ -284,7 +283,7 @@ public class PluginConfig extends OkaeriConfig {
         @Comment({ "", "# The item of the parcel in destination selection GUI" })
         public ConfigItem destinationLockerItem = new ConfigItem()
             .name("&3{DESCRIPTION}")
-            .lore(List.of("&bClick to select this locker."))
+            .lore(List.of("&3» &bClick to select this locker."))
             .type(Material.CHISELED_BOOKSHELF);
 
         @Comment({ "", "# The lore of the button in the sending GUI of the parcel destination locker selection GUI" })

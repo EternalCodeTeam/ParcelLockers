@@ -289,12 +289,10 @@ public class SendingGui implements GuiView {
         this.updateNameItem();
         this.updateDescriptionItem();
         this.guiManager.getUser(this.state.receiver()).thenAccept(userOptional ->
-            userOptional.ifPresent(user -> this.updateReceiverItem(player, user.name())));
+            userOptional.ifPresent(user -> this.updateReceiverItem(player, user.name(), false)));
 
         this.guiManager.getLocker(this.state.destinationLocker()).thenAccept(lockerOptional ->
-            lockerOptional.ifPresent(locker -> {
-                this.updateDestinationItem(player, locker.name());
-            }));
+            lockerOptional.ifPresent(locker -> this.updateDestinationItem(player, locker.name(), false)));
 
         this.scheduler.run(() -> this.gui.open(player));
     }
@@ -358,15 +356,13 @@ public class SendingGui implements GuiView {
         this.gui.updateItem(RECEIVER_ITEM_SLOT, this.createActiveItem(this.guiSettings.parcelReceiverItem, line));
     }
 
-    public void updateReceiverItem(Player player, String receiverName) {
-        this.updateReceiverItem(player, receiverName, false);
-    }
-
-    public void updateDestinationItem(Player player, String destinationLockerDesc) {
-        this.noticeService.create()
-            .notice(messages -> messages.parcel.destinationSet)
-            .player(player.getUniqueId())
-            .send();
+    public void updateDestinationItem(Player player, String destinationLockerDesc, boolean sendNotice) {
+        if (sendNotice){
+            this.noticeService.create()
+                .notice(messages -> messages.parcel.destinationSet)
+                .player(player.getUniqueId())
+                .send();
+        }
 
         if (destinationLockerDesc == null || destinationLockerDesc.isEmpty()) {
             this.gui.updateItem(DESTINATION_ITEM_SLOT, this.guiSettings.parcelDestinationLockerItem.toItemStack());

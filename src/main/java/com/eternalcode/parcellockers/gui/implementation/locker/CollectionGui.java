@@ -45,8 +45,10 @@ public class CollectionGui implements GuiView {
         this.show(player, FIRST_PAGE);
     }
 
-    private void show(Player player, Page page) {
+    @Override
+    public void show(Player player, Page page) {
         Component guiTitle = this.miniMessage.deserialize(this.guiSettings.parcelCollectionGuiTitle);
+        ConfigItem parcelItem = this.guiSettings.parcelCollectionItem;
 
         PaginatedGui gui = Gui.paginated()
             .rows(6)
@@ -54,29 +56,7 @@ public class CollectionGui implements GuiView {
             .title(guiTitle)
             .create();
 
-        ConfigItem parcelItem = this.guiSettings.parcelCollectionItem;
-        GuiItem closeItem = this.guiSettings.closeItem.toGuiItem(event -> gui.close(player));
-        GuiItem cornerItem = this.guiSettings.cornerItem.toGuiItem();
-        GuiItem backgroundItem = this.guiSettings.mainGuiBackgroundItem.toGuiItem();
-        GuiItem nextPageItem = this.guiSettings.nextPageItem.toGuiItem(event -> {
-            Page nextPage = new Page(page.page() + 1, page.size());
-            this.show(player, nextPage);
-        });
-
-        GuiItem previousPageItem = this.guiSettings.previousPageItem.toGuiItem(event -> {
-            Page previousPage = new Page(page.page() - 1, page.size());
-            this.show(player, previousPage);
-        });
-
-        for (int cornerSlot : CORNER_SLOTS) {
-            gui.setItem(cornerSlot, cornerItem);
-        }
-
-        for (int borderSlot : BORDER_SLOTS) {
-            gui.setItem(borderSlot, backgroundItem);
-        }
-
-        gui.setItem(49, closeItem);
+        this.setupStaticItems(player, gui);
 
         this.guiManager.getParcelsByReceiver(player.getUniqueId(), page).thenAccept(result -> {
             if (result == null || result.items().isEmpty()) {
@@ -85,13 +65,7 @@ public class CollectionGui implements GuiView {
                 return;
             }
 
-            if (result.hasNextPage()) {
-                gui.setItem(51, nextPageItem);
-            }
-
-            if (page.hasPrevious()) {
-                gui.setItem(47, previousPageItem);
-            }
+            this.setupNavigation(gui, page, result, player, this.guiSettings);
 
             for (Parcel parcel : result.items()) {
                 if (parcel.status() != ParcelStatus.DELIVERED) {
@@ -114,5 +88,21 @@ public class CollectionGui implements GuiView {
 
             this.scheduler.run(() -> gui.open(player));
         });
+    }
+
+    private void setupStaticItems(Player player, PaginatedGui gui) {
+        GuiItem closeItem = this.guiSettings.closeItem.toGuiItem(event -> gui.close(player));
+        GuiItem cornerItem = this.guiSettings.cornerItem.toGuiItem();
+        GuiItem backgroundItem = this.guiSettings.mainGuiBackgroundItem.toGuiItem();
+
+        for (int cornerSlot : CORNER_SLOTS) {
+            gui.setItem(cornerSlot, cornerItem);
+        }
+
+        for (int borderSlot : BORDER_SLOTS) {
+            gui.setItem(borderSlot, backgroundItem);
+        }
+
+        gui.setItem(49, closeItem);
     }
 }

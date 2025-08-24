@@ -48,20 +48,7 @@ public class SentParcelsGui implements GuiView {
             .create();
 
         ConfigItem parcelItem = this.guiSettings.parcelItem;
-        GuiItem cornerItem = this.guiSettings.cornerItem.toGuiItem();
-        GuiItem backgroundItem = this.guiSettings.mainGuiBackgroundItem.toGuiItem();
-        GuiItem closeItem = this.guiSettings.closeItem.toGuiItem(event -> this.mainGUI.show(player));
-
-        for (int slot : CORNER_SLOTS) {
-            gui.setItem(slot, cornerItem);
-        }
-
-        for (int slot : BORDER_SLOTS) {
-            gui.setItem(slot, backgroundItem);
-        }
-
-        gui.setItem(49, closeItem);
-
+        this.setupStaticItems(player, gui);
 
         this.guiManager.getParcelsBySender(player.getUniqueId()).thenAccept(optionalParcels -> {
             List<Parcel> parcels = optionalParcels.orElse(Collections.emptyList());
@@ -80,5 +67,21 @@ public class SentParcelsGui implements GuiView {
             }
             this.scheduler.run(() -> gui.open(player));
         });
+    }
+
+    private void setupStaticItems(Player player, PaginatedGui gui) {
+        GuiItem cornerItem = this.guiSettings.cornerItem.toGuiItem();
+        GuiItem backgroundItem = this.guiSettings.mainGuiBackgroundItem.toGuiItem();
+        GuiItem closeItem = this.guiSettings.closeItem.toGuiItem(event -> this.mainGUI.show(player));
+
+        for (int slot : CORNER_SLOTS) {
+            gui.setItem(slot, cornerItem);
+        }
+
+        for (int slot : BORDER_SLOTS) {
+            gui.setItem(slot, backgroundItem);
+        }
+
+        gui.setItem(49, closeItem);
     }
 }

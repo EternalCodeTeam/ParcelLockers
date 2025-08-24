@@ -60,14 +60,15 @@ public class ReceiverGui implements GuiView {
         this.show(player, FIRST_PAGE);
     }
 
-    private void show(Player player, Page page) {
+    @Override
+    public void show(Player player, Page page) {
         PaginatedGui gui = Gui.paginated()
             .title(this.miniMessage.deserialize(this.guiSettings.parcelReceiverSelectionGuiTitle))
             .rows(6)
             .disableAllInteractions()
             .create();
 
-        this.setupStaticItems(gui, player);
+        this.setupStaticItems(player, gui);
 
         this.guiManager.getUsers(page).thenAccept(result -> {
             this.setupNavigation(gui, page, result, player);
@@ -79,25 +80,18 @@ public class ReceiverGui implements GuiView {
                     refresh.addItem(item);
                 }
 
-                this.scheduler.run(() -> {
-                    gui.open(player);
-                });
-            }).exceptionally(ex -> {
-                ex.printStackTrace();
-                return null;
+                this.scheduler.run(() -> gui.open(player));
             });
-        }).exceptionally(ex -> {
-            ex.printStackTrace();
-            return null;
         });
     }
 
     private CompletableFuture<List<Supplier<GuiItem>>> loadSkulls(Player player, PageResult<User> result, PaginatedGuiRefresher refresh) {
         return result.items().stream()
-//            .filter(user -> !user.uuid().equals(player.getUniqueId()))
-            .map(user -> this.skullAPI.getSkullData(user.uuid()).thenApply(skullData -> this.toItem(player, user, skullData, refresh))
+            //            .filter(user -> !user.uuid().equals(player.getUniqueId()))
+            .map(user -> this.skullAPI.getSkullData(user.uuid())
+                .thenApply(skullData -> this.toItem(player, user, skullData, refresh))
                 .exceptionally(throwable -> {
-                    System.err.println("ReceiverGui: Error fetching skull for user " + user.uuid() + ": " + throwable.getMessage());
+                    throwable.printStackTrace();
                     return null;
                 }))
             .collect(CompletableFutures.joinList())
@@ -121,19 +115,19 @@ public class ReceiverGui implements GuiView {
                 .asGuiItem(event -> {
                     if (uuid.equals(this.state.receiver())) {
                         refresher.refresh();
-                        this.sendingGUI.updateReceiverItem(player, "");
+                        this.sendingGUI.updateReceiverItem(player, "", false);
                         this.state.receiver(null);
                         return;
                     }
 
-                    this.sendingGUI.updateReceiverItem(player, user.name());
+                    this.sendingGUI.updateReceiverItem(player, user.name(), true);
                     this.state.receiver(uuid);
                     refresher.refresh();
                 });
         };
     }
 
-    private void setupStaticItems(PaginatedGui gui, Player player) {
+    private void setupStaticItems(Player player, PaginatedGui gui) {
         GuiItem backgroundItem = this.guiSettings.mainGuiBackgroundItem.toGuiItem();
         GuiItem cornerItem = this.guiSettings.cornerItem.toGuiItem();
         GuiItem closeItem = this.guiSettings.closeItem.toGuiItem(event -> this.sendingGUI.show(player));
