@@ -67,6 +67,8 @@ public class CollectionGui implements GuiView {
 
             this.setupNavigation(gui, page, result, player, this.guiSettings);
 
+
+            //todo fix not opening? maybe too many parcels
             for (Parcel parcel : result.items()) {
                 if (parcel.status() != ParcelStatus.DELIVERED) {
                     continue;
@@ -84,6 +86,7 @@ public class CollectionGui implements GuiView {
                     InventoryUtil.shiftItems(event.getSlot(), gui, item.type());
                     gui.update();
                 }));
+
             }
 
             this.scheduler.run(() -> gui.open(player));

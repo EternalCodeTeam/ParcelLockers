@@ -60,7 +60,7 @@ public class ParcelServiceImpl implements ParcelService {
 
     @Override
     public void send(Player sender, Parcel parcel, List<ItemStack> items) {
-        this.parcelRepository.save(parcel).handle((v, throwable) -> {
+        this.parcelRepository.save(parcel).whenComplete((v, throwable) -> {
             if (throwable != null) {
                 this.noticeService.create()
                     .notice(messages -> messages.parcel.cannotSend)
@@ -73,7 +73,6 @@ public class ParcelServiceImpl implements ParcelService {
                 .notice(messages -> messages.parcel.sent)
                 .player(sender.getUniqueId())
                 .send();
-            return null;
         });
     }
 

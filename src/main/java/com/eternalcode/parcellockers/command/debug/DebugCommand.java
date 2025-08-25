@@ -1,6 +1,5 @@
 package com.eternalcode.parcellockers.command.debug;
 
-import com.eternalcode.commons.RandomElementUtil;
 import com.eternalcode.commons.bukkit.ItemUtil;
 import com.eternalcode.multification.notice.Notice;
 import com.eternalcode.parcellockers.content.ParcelContentManager;
@@ -22,8 +21,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.RandomUtils;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -115,36 +112,26 @@ public class DebugCommand {
 
     @Execute(name = "send")
     void send(@Sender Player player, @Arg int count) {
-        Random random = new Random();
         for (int i = 0; i < count; i++) {
+            UUID locker = UUID.randomUUID();
             this.parcelService.send(
                 player,
                 new Parcel(
                     UUID.randomUUID(),
                     player.getUniqueId(),
-                    RandomStringUtils.random(12),
-                    "",
-                    RandomUtils.nextBoolean(),
+                    "test",
+                    "test",
+                    false,
                     player.getUniqueId(),
-                    ParcelSize.LARGE,
-                    UUID.randomUUID(),
-                    UUID.randomUUID(),
-                    ParcelStatus.PENDING
+                    ParcelSize.MEDIUM,
+                    locker,
+                    locker,
+                    ParcelStatus.DELIVERED
                     ),
-                this.generateRandomItems(random.nextInt(1, 20))
-                );
+                new ArrayList<>(Arrays.asList(
+                    new ItemStack(Material.STONE, 5),
+                    new ItemStack(Material.DIAMOND, 10)
+                )));
         }
-    }
-
-    private List<ItemStack> generateRandomItems(int count) {
-        List<ItemStack> items = new ArrayList<>();
-        List<Material> itemMaterials = Arrays.stream(Material.values()).filter(Material::isItem).toList();
-        Random random = ThreadLocalRandom.current();
-        for (int i = 0; i < count; i++) {
-            Material material = RandomElementUtil.randomElement(itemMaterials).get();
-            int randomAmount = Math.min(random.nextInt(64) + 1, material.getMaxStackSize());
-            items.add(new ItemStack(material, randomAmount));
-        }
-        return items;
     }
 }

@@ -81,7 +81,7 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
                     .query()
                     .stream()
                     .map(ParcelTable::toParcel)
-                    .toList();
+                    .collect(Collectors.toList());
 
                 boolean hasNext = parcels.size() > page.getLimit();
                 if (hasNext) {

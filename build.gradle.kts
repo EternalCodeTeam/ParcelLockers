@@ -53,7 +53,7 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.38")
 
     // jetbrains annotations
-    paperLibrary("org.jetbrains:annotations:26.0.2")
+    compileOnly("org.jetbrains:annotations:26.0.2")
 
     // jackson-bukkit
     paperLibrary("de.eldoria.jacksonbukkit:paper:1.2.0")
