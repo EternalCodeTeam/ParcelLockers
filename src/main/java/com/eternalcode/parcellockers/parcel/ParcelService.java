@@ -25,13 +25,9 @@ public interface ParcelService {
 
     CompletableFuture<Optional<Parcel>> get(UUID uuid);
 
-    CompletableFuture<Optional<List<Parcel>>> getBySender(UUID sender);
-
-    CompletableFuture<Optional<List<Parcel>>> getByReceiver(UUID receiver);
+    CompletableFuture<PageResult<Parcel>> getBySender(UUID sender, Page page);
 
     CompletableFuture<PageResult<Parcel>> getByReceiver(UUID receiver, Page page);
-
-    CompletableFuture<Optional<List<Parcel>>> getAll();
 
     CompletableFuture<Integer> delete(UUID uuid);
 

@@ -7,17 +7,21 @@ import com.eternalcode.parcellockers.gui.GuiManager;
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.util.PlaceholderUtil;
+import com.eternalcode.parcellockers.shared.Page;
 import dev.triumphteam.gui.builder.item.PaperItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
-import java.util.Collections;
 import java.util.List;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 
 public class SentParcelsGui implements GuiView {
+
+    private static final int WIDTH = 7;
+    private static final int HEIGHT = 4;
+    private static final Page FIRST_PAGE = new Page(0, WIDTH * HEIGHT);
 
     private final Scheduler scheduler;
     private final MiniMessage miniMessage;
@@ -39,8 +43,12 @@ public class SentParcelsGui implements GuiView {
         this.guiManager = guiManager;
     }
 
-    @Override
     public void show(Player player) {
+        this.show(player, FIRST_PAGE);
+    }
+
+    @Override
+    public void show(Player player, Page page) {
         PaginatedGui gui = Gui.paginated()
             .title(this.miniMessage.deserialize(this.guiSettings.sentParcelsTitle))
             .rows(6)
@@ -50,8 +58,8 @@ public class SentParcelsGui implements GuiView {
         ConfigItem parcelItem = this.guiSettings.parcelItem;
         this.setupStaticItems(player, gui);
 
-        this.guiManager.getParcelsBySender(player.getUniqueId()).thenAccept(optionalParcels -> {
-            List<Parcel> parcels = optionalParcels.orElse(Collections.emptyList());
+        this.guiManager.getParcelsBySender(player.getUniqueId(), page).thenAccept(result -> {
+            List<Parcel> parcels = result.items();
 
             for (Parcel parcel : parcels) {
                 PaperItemBuilder item = parcelItem.toBuilder();

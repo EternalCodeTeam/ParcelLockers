@@ -40,12 +40,12 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     }
 
     @Override
-    public CompletableFuture<Optional<Parcel>> findById(UUID uuid) {
+    public CompletableFuture<Optional<Parcel>> fetchById(UUID uuid) {
         return this.selectSafe(ParcelTable.class, uuid).thenApply(optional -> optional.map(ParcelTable::toParcel));
     }
 
     @Override
-    public CompletableFuture<Optional<List<Parcel>>> findBySender(UUID sender) {
+    public CompletableFuture<Optional<List<Parcel>>> fetchBySender(UUID sender) {
         return this.action(
                 ParcelTable.class, dao -> Optional.of(dao.queryForEq(SENDER_COLUMN, sender)
             .stream()
@@ -53,8 +53,12 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
             .toList()));
     }
 
+    public CompletableFuture<PageResult<Parcel>> fetchBySender(UUID sender, Page page) {
+        return this.fetchByPaged(sender, page, SENDER_COLUMN);
+    }
+
     @Override
-    public CompletableFuture<Optional<List<Parcel>>> findByReceiver(UUID receiver) {
+    public CompletableFuture<Optional<List<Parcel>>> fetchByReceiver(UUID receiver) {
         return this.action(
                 ParcelTable.class, dao -> Optional.of(dao.queryForEq(RECEIVER_COLUMN, receiver)
             .stream()
@@ -62,25 +66,29 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
             .toList()));
     }
 
-    public CompletableFuture<PageResult<Parcel>> findByReceiver(UUID receiver, Page page) {
-        return this.action(
-                ParcelTable.class, dao -> {
-            List<Parcel> parcels = dao.queryBuilder()
-                .limit((long) page.getLimit() + 1)
-                .offset((long) page.getOffset())
-                .where()
-                .eq(RECEIVER_COLUMN, receiver)
-                .query()
-                .stream()
-                .map(ParcelTable::toParcel)
-                .toList();
+    public CompletableFuture<PageResult<Parcel>> fetchByReceiver(UUID receiver, Page page) {
+        return this.fetchByPaged(receiver, page, RECEIVER_COLUMN);
+    }
 
-            boolean hasNext = parcels.size() > page.getLimit();
-            if (hasNext) {
-                parcels.removeLast();
-            }
-            return new PageResult<>(parcels, hasNext);
-        });
+    private CompletableFuture<PageResult<Parcel>> fetchByPaged(UUID key, Page page, String column) {
+        return this.action(
+            ParcelTable.class, dao -> {
+                List<Parcel> parcels = dao.queryBuilder()
+                    .limit((long) page.getLimit() + 1)
+                    .offset((long) page.getOffset())
+                    .where()
+                    .eq(column, key)
+                    .query()
+                    .stream()
+                    .map(ParcelTable::toParcel)
+                    .toList();
+
+                boolean hasNext = parcels.size() > page.getLimit();
+                if (hasNext) {
+                    parcels.removeLast();
+                }
+                return new PageResult<>(parcels, hasNext);
+            });
     }
 
     @Override
@@ -94,7 +102,7 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     }
 
     @Override
-    public CompletableFuture<PageResult<Parcel>> findPage(Page page) {
+    public CompletableFuture<PageResult<Parcel>> fetchPage(Page page) {
         return this.action(
                 ParcelTable.class, dao -> {
             List<Parcel> parcels = dao.queryBuilder()
@@ -113,7 +121,7 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     }
 
     @Override
-    public CompletableFuture<Optional<List<Parcel>>> findAll() {
+    public CompletableFuture<Optional<List<Parcel>>> fetchAll() {
         return this.selectAll(ParcelTable.class).thenApply(parcels -> Optional.of(parcels.stream()
             .map(ParcelTable::toParcel)
             .toList()));

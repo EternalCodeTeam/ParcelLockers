@@ -30,6 +30,8 @@ public class LockerManager {
 
     public LockerManager(LockerRepository lockerRepository) {
         this.lockerRepository = lockerRepository;
+
+        this.cacheAll();
     }
 
     public CompletableFuture<Optional<Locker>> get(UUID uniqueId) {
@@ -43,7 +45,7 @@ public class LockerManager {
             return CompletableFuture.completedFuture(Optional.of(locker));
         }
 
-        return this.lockerRepository.find(uniqueId).thenApply(optionalLocker -> {
+        return this.lockerRepository.fetch(uniqueId).thenApply(optionalLocker -> {
             optionalLocker.ifPresent(locker1 -> {
                 this.lockersByUUID.put(locker1.uuid(), locker1);
                 this.lockersByPosition.put(locker1.position(), locker1);
@@ -59,7 +61,7 @@ public class LockerManager {
             return CompletableFuture.completedFuture(Optional.of(locker));
         }
 
-        return this.lockerRepository.find(position).thenApply(optionalLocker -> {
+        return this.lockerRepository.fetch(position).thenApply(optionalLocker -> {
             optionalLocker.ifPresent(locker1 -> {
                 this.lockersByUUID.put(locker1.uuid(), locker1);
                 this.lockersByPosition.put(locker1.position(), locker1);
@@ -69,21 +71,12 @@ public class LockerManager {
     }
 
     public CompletableFuture<PageResult<Locker>> get(Page page) {
-        return this.lockerRepository.findPage(page);
-    }
-
-    public CompletableFuture<Optional<List<Locker>>> getAll() {
-        List<Locker> lockers = List.copyOf(this.lockersByUUID.asMap().values());
-        if (!lockers.isEmpty()) {
-            return CompletableFuture.completedFuture(Optional.of(lockers));
+        List<Locker> cached = List.copyOf(this.lockersByUUID.asMap().values());
+        boolean hasNextPage = cached.size() > page.getLimit();
+        if (!cached.isEmpty() && page.getOffset() == 0 && !hasNextPage) {
+            return CompletableFuture.completedFuture(new PageResult<>(cached, false));
         }
-        return this.lockerRepository.findAll().thenApply(optionalLockers -> {
-            optionalLockers.ifPresent(lockers1 -> lockers1.forEach(locker -> {
-                this.lockersByUUID.put(locker.uuid(), locker);
-                this.lockersByPosition.put(locker.position(), locker);
-            }));
-            return optionalLockers;
-        });
+        return this.lockerRepository.fetchPage(page);
     }
 
     public Locker getOrCreate(UUID uniqueId, String name, Position position) {
@@ -138,5 +131,13 @@ public class LockerManager {
             this.lockersByUUID.invalidateAll();
             this.lockersByPosition.invalidateAll();
         });
+    }
+
+    private void cacheAll() {
+        this.lockerRepository.fetchAll()
+            .thenAccept(optionalLockers -> optionalLockers.ifPresent(lockers -> lockers.forEach(locker -> {
+                this.lockersByUUID.put(locker.uuid(), locker);
+                this.lockersByPosition.put(locker.position(), locker);
+            })));
     }
 }

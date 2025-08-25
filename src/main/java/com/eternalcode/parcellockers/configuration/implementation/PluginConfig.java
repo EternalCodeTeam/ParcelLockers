@@ -205,7 +205,7 @@ public class PluginConfig extends OkaeriConfig {
         @Comment({ "", "# The item of the parcel item storage button" })
         public ConfigItem parcelStorageItem = new ConfigItem()
             .name("&6\uD83D\uDCBE Parcel storage")
-            .lore(List.of("&6» &eClick to add/remove items from this parcel"))
+            .lore(List.of("&6» &eClick to add/remove items from this parcel."))
             .type(Material.CHEST);
 
         @Comment({ "", "# The item of the parcel name button" })
@@ -223,7 +223,7 @@ public class PluginConfig extends OkaeriConfig {
             .lore(List.of("&2» &aClick to add parcel description."))
             .type(Material.OAK_SIGN);
 
-        public String parcelDescriptionSetLine = "&2› &aCurrent parcel name: &2{DESCRIPTION}";
+        public String parcelDescriptionSetLine = "&2› &aCurrent parcel description: &2{DESCRIPTION}";
 
         @Comment({ "", "# The item of the parcel receiver button" })
         public ConfigItem parcelReceiverItem = new ConfigItem()
@@ -242,8 +242,8 @@ public class PluginConfig extends OkaeriConfig {
 
         @Comment({ "", "# The item of the parcel destination locker button" })
         public ConfigItem parcelDestinationLockerItem = new ConfigItem()
-            .name("&3\uD83D\uDEE3 Destination locker")
-            .lore(List.of("&3» &bClick to edit the parcel destination locker."))
+            .name("&9\uD83D\uDEE3 Destination locker")
+            .lore(List.of("&9» &3Click to edit the parcel destination locker."))
             .type(Material.END_PORTAL_FRAME);
 
         @Comment({ "", "# The item of the previous page button" })
@@ -280,10 +280,10 @@ public class PluginConfig extends OkaeriConfig {
         public ConfigItem destinationLockerItem = new ConfigItem()
             .name("&3{DESCRIPTION}")
             .lore(List.of("&3» &bClick to select this locker."))
-            .type(Material.CHISELED_BOOKSHELF);
+            .type(Material.END_PORTAL_FRAME);
 
         @Comment({ "", "# The lore of the button in the sending GUI of the parcel destination locker selection GUI" })
-        public String parcelDestinationLockerSetLine = "&6› &eCurrent destination locker: &6{DESCRIPTION}";
+        public String parcelDestinationLockerSetLine = "&9› &3Current destination locker: &9{DESCRIPTION}";
 
         @Comment({ "", "# The destination GUI locker button lore in case the destination locker is set." })
         public String parcelDestinationSetLine = "&2✔ &aSelected!";

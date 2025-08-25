@@ -1,23 +1,29 @@
 package com.eternalcode.parcellockers.command.debug;
 
+import com.eternalcode.commons.RandomElementUtil;
 import com.eternalcode.commons.bukkit.ItemUtil;
 import com.eternalcode.multification.notice.Notice;
 import com.eternalcode.parcellockers.content.ParcelContentManager;
-import com.eternalcode.parcellockers.delivery.DeliveryManager;
 import com.eternalcode.parcellockers.itemstorage.ItemStorageManager;
 import com.eternalcode.parcellockers.locker.LockerManager;
 import com.eternalcode.parcellockers.notification.NoticeService;
+import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelService;
-import com.eternalcode.parcellockers.user.UserManager;
+import com.eternalcode.parcellockers.parcel.ParcelSize;
+import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import dev.rollczi.litecommands.annotations.argument.Arg;
 import dev.rollczi.litecommands.annotations.command.Command;
 import dev.rollczi.litecommands.annotations.context.Sender;
 import dev.rollczi.litecommands.annotations.execute.Execute;
 import dev.rollczi.litecommands.annotations.permission.Permission;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -31,8 +37,6 @@ public class DebugCommand {
     private final LockerManager lockerManager;
     private final ItemStorageManager itemStorageManager;
     private final ParcelContentManager contentManager;
-    private final DeliveryManager deliveryManager;
-    private final UserManager userManager;
     private final NoticeService noticeService;
 
     public DebugCommand(
@@ -40,16 +44,12 @@ public class DebugCommand {
         LockerManager lockerManager,
         ItemStorageManager itemStorageManager,
         ParcelContentManager contentManager,
-        DeliveryManager deliveryManager,
-        UserManager userManager,
         NoticeService noticeService
     ) {
         this.parcelService = parcelService;
         this.lockerManager = lockerManager;
         this.itemStorageManager = itemStorageManager;
         this.contentManager = contentManager;
-        this.deliveryManager = deliveryManager;
-        this.userManager = userManager;
         this.noticeService = noticeService;
     }
 
@@ -111,5 +111,40 @@ public class DebugCommand {
             ItemStack itemStack = new ItemStack(randomMaterial, randomAmount);
             ItemUtil.giveItem(player, itemStack);
         }
+    }
+
+    @Execute(name = "send")
+    void send(@Sender Player player, @Arg int count) {
+        Random random = new Random();
+        for (int i = 0; i < count; i++) {
+            this.parcelService.send(
+                player,
+                new Parcel(
+                    UUID.randomUUID(),
+                    player.getUniqueId(),
+                    RandomStringUtils.random(12),
+                    "",
+                    RandomUtils.nextBoolean(),
+                    player.getUniqueId(),
+                    ParcelSize.LARGE,
+                    UUID.randomUUID(),
+                    UUID.randomUUID(),
+                    ParcelStatus.PENDING
+                    ),
+                this.generateRandomItems(random.nextInt(1, 20))
+                );
+        }
+    }
+
+    private List<ItemStack> generateRandomItems(int count) {
+        List<ItemStack> items = new ArrayList<>();
+        List<Material> itemMaterials = Arrays.stream(Material.values()).filter(Material::isItem).toList();
+        Random random = ThreadLocalRandom.current();
+        for (int i = 0; i < count; i++) {
+            Material material = RandomElementUtil.randomElement(itemMaterials).get();
+            int randomAmount = Math.min(random.nextInt(64) + 1, material.getMaxStackSize());
+            items.add(new ItemStack(material, randomAmount));
+        }
+        return items;
     }
 }

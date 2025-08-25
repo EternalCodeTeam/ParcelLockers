@@ -56,24 +56,24 @@ class ParcelRepositoryIntegrationTest extends IntegrationTestSpec {
         parcelRepository.save(new Parcel(uuid, sender, "name", "description", true, receiver,
             ParcelSize.SMALL, entryLocker, destinationLocker, ParcelStatus.PENDING));
 
-        Optional<Parcel> parcel = this.await(parcelRepository.findById(uuid));
+        Optional<Parcel> parcel = this.await(parcelRepository.fetchById(uuid));
         assertTrue(parcel.isPresent());
         assertEquals(uuid, parcel.get().uuid());
 
-        List<Parcel> byReceiver = this.await(parcelRepository.findByReceiver(receiver)).orElse(Collections.emptyList());
+        List<Parcel> byReceiver = this.await(parcelRepository.fetchByReceiver(receiver)).orElse(Collections.emptyList());
         assertEquals(1, byReceiver.size());
         assertEquals(uuid, byReceiver.getFirst().uuid());
 
-        List<Parcel> bySender = this.await(parcelRepository.findBySender(sender)).orElse(Collections.emptyList());
+        List<Parcel> bySender = this.await(parcelRepository.fetchBySender(sender)).orElse(Collections.emptyList());
         assertEquals(1, bySender.size());
         assertEquals(uuid, bySender.getFirst().uuid());
 
-        PageResult<Parcel> pageResult = this.await(parcelRepository.findPage(new Page(0, 28)));
+        PageResult<Parcel> pageResult = this.await(parcelRepository.fetchPage(new Page(0, 28)));
         assertEquals(1, pageResult.items().size());
         assertEquals(uuid, pageResult.items().getFirst().uuid());
 
         this.await(parcelRepository.delete(uuid));
-        Optional<Parcel> removedParcel = this.await(parcelRepository.findById(uuid));
+        Optional<Parcel> removedParcel = this.await(parcelRepository.fetchById(uuid));
         assertTrue(removedParcel.isEmpty());
     }
 

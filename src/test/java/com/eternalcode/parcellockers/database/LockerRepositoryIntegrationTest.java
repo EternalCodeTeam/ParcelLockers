@@ -10,6 +10,7 @@ import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.locker.repository.LockerRepositoryOrmLite;
 import com.eternalcode.parcellockers.shared.Page;
+import com.eternalcode.parcellockers.shared.PageResult;
 import com.eternalcode.parcellockers.shared.Position;
 import java.io.File;
 import java.nio.file.Path;
@@ -41,7 +42,6 @@ class LockerRepositoryIntegrationTest extends IntegrationTestSpec {
         PluginConfig config = new ConfigService().create(PluginConfig.class, new File(dataFolder, "config.yml"));
         DatabaseManager databaseManager = new DatabaseManager(config, Logger.getLogger("ParcelLockers"), dataFolder);
         this.databaseManager = databaseManager;
-        LockerCache cache = new LockerCache();
 
         LockerRepository parcelLockerRepository = new LockerRepositoryOrmLite(databaseManager, new TestScheduler());
 
@@ -52,20 +52,20 @@ class LockerRepositoryIntegrationTest extends IntegrationTestSpec {
 
         parcelLockerRepository.save(new Locker(uuid, description, position));
 
-        Optional<Locker> parcelLocker = this.await(parcelLockerRepository.find(uuid));
+        Optional<Locker> parcelLocker = this.await(parcelLockerRepository.fetch(uuid));
         assertTrue(parcelLocker.isPresent());
         assertEquals(uuid, parcelLocker.get().uuid());
 
-        Optional<Locker> byPosition = this.await(parcelLockerRepository.find(position));
+        Optional<Locker> byPosition = this.await(parcelLockerRepository.fetch(position));
         assertTrue(byPosition.isPresent());
         assertEquals(uuid, byPosition.get().uuid());
 
-        LockerPageResult pageResult = this.await(parcelLockerRepository.findPage(new Page(0, 28)));
-        assertEquals(1, pageResult.lockers().size());
-        assertEquals(uuid, pageResult.lockers().getFirst().uuid());
+        PageResult<Locker> pageResult = this.await(parcelLockerRepository.fetchPage(new Page(0, 28)));
+        assertEquals(1, pageResult.items().size());
+        assertEquals(uuid, pageResult.items().getFirst().uuid());
 
         this.await(parcelLockerRepository.delete(uuid));
-        Optional<Locker> removed = this.await(parcelLockerRepository.find(uuid));
+        Optional<Locker> removed = this.await(parcelLockerRepository.fetch(uuid));
         assertTrue(removed.isEmpty());
     }
 

@@ -13,9 +13,9 @@ public interface UserRepository {
 
     CompletableFuture<Void> changeName(UUID uuid, String newName);
 
-    CompletableFuture<Optional<User>> find(UUID uuid);
+    CompletableFuture<Optional<User>> fetch(UUID uuid);
 
-    CompletableFuture<Optional<User>> find(String name);
+    CompletableFuture<Optional<User>> fetch(String name);
 
-    CompletableFuture<PageResult<User>> findPage(Page page);
+    CompletableFuture<PageResult<User>> fetchPage(Page page);
 }

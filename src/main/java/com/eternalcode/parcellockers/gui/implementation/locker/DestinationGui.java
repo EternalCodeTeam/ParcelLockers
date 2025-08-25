@@ -71,7 +71,12 @@ public class DestinationGui implements GuiView {
 
                 this.loadLockers(player, result, refresher).forEach(refresher::addItem);
                 this.scheduler.run(() -> gui.open(player));
-            }).orTimeout(5, TimeUnit.SECONDS);
+            }).orTimeout(5, TimeUnit.SECONDS)
+            .exceptionally(throwable -> {
+                throwable.printStackTrace();
+                return null;
+            });
+
     }
 
     private List<Supplier<GuiItem>> loadLockers(Player player, PageResult<Locker> result, PaginatedGuiRefresher refresh) {
@@ -82,16 +87,16 @@ public class DestinationGui implements GuiView {
 
     private Supplier<GuiItem> toItem(Player player, Locker locker, PaginatedGuiRefresher refresher) {
         UUID uuid = locker.uuid();
-        ConfigItem parcelItem = this.guiSettings.destinationLockerItem.clone();
+        ConfigItem lockerItem = this.guiSettings.destinationLockerItem.clone();
 
         return () -> {
-            String name = parcelItem.name().replace("{DESCRIPTION}", locker.name());
+            String name = lockerItem.name().replace("{DESCRIPTION}", locker.name());
             boolean isLockerSelected = uuid.equals(this.state.destinationLocker());
             String oneLineLore = isLockerSelected
                 ? this.guiSettings.parcelDestinationSetLine
                 : this.guiSettings.parcelDestinationNotSetLine;
 
-            return parcelItem
+            return lockerItem
                 .name(name)
                 .glow(isLockerSelected)
                 .lore(List.of(oneLineLore))

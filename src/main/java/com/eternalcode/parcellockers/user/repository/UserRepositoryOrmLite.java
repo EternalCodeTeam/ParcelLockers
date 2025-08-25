@@ -27,14 +27,14 @@ public class UserRepositoryOrmLite extends AbstractRepositoryOrmLite implements 
     }
 
     @Override
-    public CompletableFuture<Optional<User>> find(UUID uuid) {
+    public CompletableFuture<Optional<User>> fetch(UUID uuid) {
         return this.selectSafe(UserTable.class, uuid).thenApply(optional -> optional
             .map(UserTable::toUser)
         );
     }
 
     @Override
-    public CompletableFuture<Optional<User>> find(String name) {
+    public CompletableFuture<Optional<User>> fetch(String name) {
         return this.action(
             UserTable.class, dao -> {
             UserTable userTable = dao.queryForEq("username", name).stream().findFirst().orElse(null);
@@ -59,7 +59,7 @@ public class UserRepositoryOrmLite extends AbstractRepositoryOrmLite implements 
     }
 
     @Override
-    public CompletableFuture<PageResult<User>> findPage(Page page) {
+    public CompletableFuture<PageResult<User>> fetchPage(Page page) {
         return this.action(
             UserTable.class, dao -> {
             List<User> users = dao.queryBuilder()

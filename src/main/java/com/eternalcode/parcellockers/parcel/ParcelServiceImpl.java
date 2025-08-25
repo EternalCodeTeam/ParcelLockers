@@ -54,6 +54,8 @@ public class ParcelServiceImpl implements ParcelService {
         this.deliveryRepository = deliveryRepository;
         this.parcelContentRepository = parcelContentRepository;
         this.scheduler = scheduler;
+
+        this.cacheAll();
     }
 
     @Override
@@ -102,7 +104,7 @@ public class ParcelServiceImpl implements ParcelService {
 
     @Override
     public void collect(Player player, Parcel parcel) {
-        this.parcelContentRepository.find(parcel.uuid()).thenAccept(optional -> {
+        this.parcelContentRepository.fetch(parcel.uuid()).thenAccept(optional -> {
             if (optional.isEmpty()) {
                 this.noticeService.create()
                     .notice(messages -> messages.parcel.cannotCollect)
@@ -141,55 +143,40 @@ public class ParcelServiceImpl implements ParcelService {
         if (cached != null) {
             return CompletableFuture.completedFuture(Optional.of(cached));
         }
-        return this.parcelRepository.findById(uuid).thenApply(optional -> {
+        return this.parcelRepository.fetchById(uuid).thenApply(optional -> {
             optional.ifPresent(this::cache);
             return optional;
         });
     }
 
     @Override
-    public CompletableFuture<Optional<List<Parcel>>> getBySender(UUID sender) {
+    public CompletableFuture<PageResult<Parcel>> getBySender(UUID sender, Page page) {
         List<Parcel> cached = List.copyOf(this.parcelsBySender.get(sender));
-        if (!cached.isEmpty()) {
-            return CompletableFuture.completedFuture(Optional.of(cached));
+        boolean hasNextPage = cached.size() > page.getLimit();
+        if (!cached.isEmpty() && page.getOffset() == 0 && !hasNextPage) {
+            return CompletableFuture.completedFuture(new PageResult<>(cached, false));
         }
-        return this.parcelRepository.findBySender(sender).thenApply(optional -> {
-            optional.ifPresent(parcels -> parcels.forEach(this::cache));
-            return optional;
-        });
-    }
-
-    @Override
-    public CompletableFuture<Optional<List<Parcel>>> getByReceiver(UUID receiver) {
-        List<Parcel> cached = List.copyOf(this.parcelsByReceiver.get(receiver));
-        if (!cached.isEmpty()) {
-            return CompletableFuture.completedFuture(Optional.of(cached));
-        }
-        return this.parcelRepository.findByReceiver(receiver).thenApply(optional -> {
-            optional.ifPresent(parcels -> parcels.forEach(this::cache));
-            return optional;
-        });
-    }
-
-    @Override
-    public CompletableFuture<PageResult<Parcel>> getByReceiver(UUID receiver, Page page) {
-        return this.parcelRepository.findByReceiver(receiver, page).thenApply(result -> {
+        return this.parcelRepository.fetchBySender(sender, page).thenApply(result -> {
             result.items().forEach(this::cache);
             return result;
         });
     }
 
     @Override
-    public CompletableFuture<Optional<List<Parcel>>> getAll() {
-        List<Parcel> cached = List.copyOf(this.parcelsByUuid.asMap().values());
-        if (!cached.isEmpty()) {
-            return CompletableFuture.completedFuture(Optional.of(cached));
+    public CompletableFuture<PageResult<Parcel>> getByReceiver(UUID receiver, Page page) {
+        List<Parcel> cached = List.copyOf(this.parcelsByReceiver.get(receiver));
+        boolean hasNextPage = cached.size() > page.getLimit();
+        if (!cached.isEmpty() && page.getOffset() == 0 && !hasNextPage) {
+            return CompletableFuture.completedFuture(new PageResult<>(cached, false));
         }
-
-        return this.parcelRepository.findAll().thenApply(optional -> {
-            optional.ifPresent(parcels -> parcels.forEach(this::cache));
-            return optional;
+        return this.parcelRepository.fetchByReceiver(receiver, page).thenApply(result -> {
+            result.items().forEach(this::cache);
+            return result;
         });
+    }
+
+    private void cacheAll() {
+        this.parcelRepository.fetchAll().thenAccept(optional -> optional.ifPresent(parcels -> parcels.forEach(this::cache)));
     }
 
     @Override

@@ -52,15 +52,18 @@ public class ItemStorageGui {
 
         GuiItem backgroundItem = this.guiSettings.mainGuiBackgroundItem.toGuiItem(event -> event.setCancelled(true));
 
-        GuiItem confirmItem = this.guiSettings.confirmItemsItem.toGuiItem(event -> new SendingGui(
-            this.scheduler,
-            this.guiSettings,
-            this.miniMessage,
-            this.noticeService,
-            this.guiManager,
-            this.skullAPI,
-            this.state
-        ).show(player));
+        GuiItem confirmItem = this.guiSettings.confirmItemsItem.toGuiItem(event -> {
+            event.setCancelled(true);
+            new SendingGui(
+                this.scheduler,
+                this.guiSettings,
+                this.miniMessage,
+                this.noticeService,
+                this.guiManager,
+                this.skullAPI,
+                this.state
+            ).show(player);
+        });
 
         switch (size) {
             case SMALL -> gui = Gui.storage()

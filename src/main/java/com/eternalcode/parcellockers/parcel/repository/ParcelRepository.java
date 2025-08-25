@@ -14,15 +14,19 @@ public interface ParcelRepository {
 
     CompletableFuture<Void> update(Parcel parcel);
 
-    CompletableFuture<Optional<List<Parcel>>> findAll();
+    CompletableFuture<Optional<List<Parcel>>> fetchAll();
 
-    CompletableFuture<Optional<Parcel>> findById(UUID uuid);
+    CompletableFuture<Optional<Parcel>> fetchById(UUID uuid);
 
-    CompletableFuture<Optional<List<Parcel>>> findBySender(UUID sender);
+    @Deprecated
+    CompletableFuture<Optional<List<Parcel>>> fetchBySender(UUID sender);
 
-    CompletableFuture<Optional<List<Parcel>>> findByReceiver(UUID receiver);
+    CompletableFuture<PageResult<Parcel>> fetchBySender(UUID sender, Page page);
 
-    CompletableFuture<PageResult<Parcel>> findByReceiver(UUID receiver, Page page);
+    @Deprecated
+    CompletableFuture<Optional<List<Parcel>>> fetchByReceiver(UUID receiver);
+
+    CompletableFuture<PageResult<Parcel>> fetchByReceiver(UUID receiver, Page page);
 
     CompletableFuture<Integer> delete(Parcel parcel);
 
@@ -30,5 +34,5 @@ public interface ParcelRepository {
 
     CompletableFuture<Integer> deleteAll();
 
-    CompletableFuture<PageResult<Parcel>> findPage(Page page);
+    CompletableFuture<PageResult<Parcel>> fetchPage(Page page);
 }

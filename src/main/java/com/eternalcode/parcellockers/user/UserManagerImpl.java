@@ -28,7 +28,7 @@ public class UserManagerImpl implements UserManager {
             return CompletableFuture.completedFuture(Optional.of(user));
         }
 
-        return this.userRepository.find(uniqueId);
+        return this.userRepository.fetch(uniqueId);
     }
 
     @Override
@@ -39,7 +39,7 @@ public class UserManagerImpl implements UserManager {
             return CompletableFuture.completedFuture(Optional.of(user));
         }
 
-        return this.userRepository.find(username);
+        return this.userRepository.fetch(username);
     }
 
     @Override
@@ -61,7 +61,7 @@ public class UserManagerImpl implements UserManager {
 
     @Override
     public CompletableFuture<PageResult<User>> getPage(Page page) {
-        return this.userRepository.findPage(page);
+        return this.userRepository.fetchPage(page);
     }
 
     @Override

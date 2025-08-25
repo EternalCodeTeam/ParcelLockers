@@ -6,6 +6,7 @@ import com.eternalcode.parcellockers.database.wrapper.AbstractRepositoryOrmLite;
 import com.eternalcode.parcellockers.itemstorage.ItemStorage;
 import com.j256.ormlite.table.TableUtils;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -28,8 +29,16 @@ public class ItemStorageRepositoryOrmLite extends AbstractRepositoryOrmLite impl
     }
 
     @Override
-    public CompletableFuture<Optional<ItemStorage>> find(UUID uuid) {
+    public CompletableFuture<Optional<ItemStorage>> fetch(UUID uuid) {
         return this.selectSafe(ItemStorageTable.class, uuid).thenApply(optional -> optional.map(ItemStorageTable::toItemStorage));
+    }
+
+    @Override
+    public CompletableFuture<Optional<List<ItemStorage>>> fetchAll() {
+        return this.selectAll(ItemStorageTable.class)
+            .thenApply(list -> Optional.of(list.stream()
+                .map(ItemStorageTable::toItemStorage)
+                .toList()));
     }
 
     @Override

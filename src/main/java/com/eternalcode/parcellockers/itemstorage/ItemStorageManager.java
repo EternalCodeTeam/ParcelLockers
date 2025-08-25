@@ -23,6 +23,8 @@ public class ItemStorageManager {
 
     public ItemStorageManager(ItemStorageRepository itemStorageRepository) {
         this.itemStorageRepository = itemStorageRepository;
+
+        this.cacheAll();
     }
 
     public CompletableFuture<Optional<ItemStorage>> get(UUID parcelId) {
@@ -30,7 +32,7 @@ public class ItemStorageManager {
         if (content != null) {
             return CompletableFuture.completedFuture(Optional.of(content));
         }
-        return this.itemStorageRepository.find(parcelId).thenApply(optional -> {
+        return this.itemStorageRepository.fetch(parcelId).thenApply(optional -> {
             optional.ifPresent(value -> this.cache.put(parcelId, value));
             return optional;
         });
@@ -48,6 +50,10 @@ public class ItemStorageManager {
         this.cache.put(parcel, content);
         this.itemStorageRepository.save(content);
         return content;
+    }
+
+    private void cacheAll() {
+        this.itemStorageRepository.fetchAll().thenAccept(all -> all.ifPresent(list -> list.forEach(itemStorage -> this.cache.put(itemStorage.owner(), itemStorage))));
     }
     
     public void delete(UUID parcel) {

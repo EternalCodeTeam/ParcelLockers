@@ -18,6 +18,8 @@ public class DeliveryManager {
 
     public DeliveryManager(DeliveryRepository deliveryRepository) {
         this.deliveryRepository = deliveryRepository;
+
+        this.cacheAll();
     }
 
     public Delivery getOrCreate(UUID parcel, Instant deliveryTimestamp) {
@@ -37,5 +39,10 @@ public class DeliveryManager {
     public void delete(UUID parcel) {
         this.deliveryCache.invalidate(parcel);
         this.deliveryRepository.delete(parcel);
+    }
+
+    private void cacheAll() {
+        this.deliveryRepository.fetchAll()
+            .thenAccept(all -> all.ifPresent(list -> list.forEach(delivery -> this.deliveryCache.put(delivery.parcel(), delivery))));
     }
 }

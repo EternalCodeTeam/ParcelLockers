@@ -28,7 +28,6 @@ import com.eternalcode.parcellockers.locker.controller.LockerInteractionControll
 import com.eternalcode.parcellockers.locker.controller.LockerPlaceController;
 import com.eternalcode.parcellockers.locker.repository.LockerRepositoryOrmLite;
 import com.eternalcode.parcellockers.notification.NoticeService;
-import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelService;
 import com.eternalcode.parcellockers.parcel.ParcelServiceImpl;
 import com.eternalcode.parcellockers.parcel.ParcelStatus;
@@ -42,7 +41,6 @@ import com.eternalcode.parcellockers.user.controller.LoadUserController;
 import com.eternalcode.parcellockers.user.controller.PrepareUserController;
 import com.eternalcode.parcellockers.user.repository.UserRepository;
 import com.eternalcode.parcellockers.user.repository.UserRepositoryOrmLite;
-import com.google.common.base.Stopwatch;
 import dev.rollczi.litecommands.LiteCommands;
 import dev.rollczi.litecommands.adventure.LiteAdventureExtension;
 import dev.rollczi.litecommands.annotations.LiteCommandsAnnotations;
@@ -55,9 +53,6 @@ import java.io.File;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import java.util.stream.Stream;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bstats.bukkit.Metrics;
@@ -69,21 +64,18 @@ public final class ParcelLockers extends JavaPlugin {
 
     private LiteCommands<CommandSender> liteCommands;
     private SkullAPI skullAPI;
-
     private DatabaseManager databaseManager;
 
     @Override
     public void onEnable() {
-        Stopwatch started = Stopwatch.createStarted();
-
         MiniMessage miniMessage = MiniMessage.builder()
             .preProcessor(new AdventureLegacyColorPreProcessor())
             .postProcessor(new AdventureLegacyColorPostProcessor())
             .build();
 
-        ConfigService configManager = new ConfigService();
-        PluginConfig config = configManager.create(PluginConfig.class, new File(this.getDataFolder(), "config.yml"));
-        MessageConfig messageConfig = configManager.create(MessageConfig.class, new File(this.getDataFolder(), "messages.yml"));
+        ConfigService configService = new ConfigService();
+        PluginConfig config = configService.create(PluginConfig.class, new File(this.getDataFolder(), "config.yml"));
+        MessageConfig messageConfig = configService.create(MessageConfig.class, new File(this.getDataFolder(), "messages.yml"));
         Server server = this.getServer();
         NoticeService noticeService = new NoticeService(messageConfig, miniMessage);
         Scheduler scheduler = new BukkitSchedulerImpl(this);
@@ -94,8 +86,10 @@ public final class ParcelLockers extends JavaPlugin {
         try {
             databaseManager.connect();
         } catch (SQLException exception) {
-            this.getLogger().severe("Could not connect to database! Some functions may not work properly!");
-            throw new RuntimeException(exception);
+            this.getLogger().severe("Could not connect to database! Disabling...");
+            exception.printStackTrace();
+            this.getServer().getPluginManager().disablePlugin(this);
+            return;
         }
 
         this.skullAPI = LiteSkullFactory.builder()
@@ -148,19 +142,6 @@ public final class ParcelLockers extends JavaPlugin {
             guiManager
         );
 
-        this.liteCommands = LiteBukkitFactory.builder(this.getName(), this)
-            .extension(new LiteAdventureExtension<>())
-            .message(LiteBukkitMessages.PLAYER_ONLY, messageConfig.playerOnlyCommand)
-            .message(LiteBukkitMessages.PLAYER_NOT_FOUND, messageConfig.playerNotFound)
-            .commands(LiteCommandsAnnotations.of(
-                new ParcelCommand(mainGUI),
-                new ParcelLockersCommand(configManager, config, noticeService),
-                new DebugCommand(parcelService, lockerManager, itemStorageManager, parcelContentManager, deliveryManager, userManager, noticeService)
-            ))
-            .invalidUsage(new InvalidUsageHandlerImpl(noticeService))
-            .missingPermission(new MissingPermissionsHandlerImpl(noticeService))
-            .build();
-
         LockerGui lockerGUI = new LockerGui(
             miniMessage,
             scheduler,
@@ -169,6 +150,20 @@ public final class ParcelLockers extends JavaPlugin {
             noticeService,
             this.skullAPI
         );
+
+        this.liteCommands = LiteBukkitFactory.builder(this.getName(), this)
+            .extension(new LiteAdventureExtension<>())
+            .message(LiteBukkitMessages.PLAYER_ONLY, messageConfig.playerOnlyCommand)
+            .message(LiteBukkitMessages.PLAYER_NOT_FOUND, messageConfig.playerNotFound)
+            .commands(LiteCommandsAnnotations.of(
+                new ParcelCommand(mainGUI),
+                new ParcelLockersCommand(configService, config, noticeService),
+                new DebugCommand(parcelService, lockerManager, itemStorageManager, parcelContentManager,
+                    noticeService)
+            ))
+            .invalidUsage(new InvalidUsageHandlerImpl(noticeService))
+            .missingPermission(new MissingPermissionsHandlerImpl(noticeService))
+            .build();
 
         Stream.of(
             new LockerInteractionController(lockerManager, lockerGUI),
@@ -181,26 +176,16 @@ public final class ParcelLockers extends JavaPlugin {
         new Metrics(this, 17677);
         new UpdaterService(this.getPluginMeta().getVersion());
 
-        parcelRepository.findAll().thenAccept(optionalParcels -> {
-            List<Parcel> parcels = optionalParcels.orElseGet(ArrayList::new).stream()
-                .filter(parcel -> parcel.status() != ParcelStatus.DELIVERED)
-                .toList();
-
-            parcels.forEach(parcel ->
-                deliveryRepository.find(parcel.uuid()).thenAccept(optionalDelivery ->
-                    optionalDelivery.ifPresent(delivery -> {
-                        long delay = Math.max(0, delivery.deliveryTimestamp().toEpochMilli() - System.currentTimeMillis());
-                        scheduler.runLaterAsync(
-                            new ParcelSendTask(parcel, parcelService, deliveryManager),
-                            Duration.ofMillis(delay)
-                        );
-                    })
-                )
-            );
-        });
-
-        long millis = started.elapsed(TimeUnit.MILLISECONDS);
-        this.getLogger().log(Level.INFO, "Successfully enabled ParcelLockers in {0}ms", millis);
+        parcelRepository.fetchAll().thenAccept(optionalParcels -> optionalParcels
+            .orElseGet(ArrayList::new)
+            .stream()
+            .filter(parcel -> parcel.status() != ParcelStatus.DELIVERED)
+            .forEach(parcel -> deliveryRepository.fetch(parcel.uuid()).thenAccept(optionalDelivery ->
+                optionalDelivery.ifPresent(delivery -> {
+                    long delay = Math.max(0, delivery.deliveryTimestamp().toEpochMilli() - System.currentTimeMillis());
+                    scheduler.runLaterAsync(new ParcelSendTask(parcel, parcelService, deliveryManager), Duration.ofMillis(delay));
+                })
+            )));
     }
 
     @Override

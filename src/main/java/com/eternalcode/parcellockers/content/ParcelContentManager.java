@@ -30,7 +30,7 @@ public class ParcelContentManager {
         if (content != null) {
             return CompletableFuture.completedFuture(Optional.of(content));
         }
-        return this.contentRepository.find(parcelId).thenApply(optional -> {
+        return this.contentRepository.fetch(parcelId).thenApply(optional -> {
             optional.ifPresent(value -> this.cache.put(parcelId, value));
             return optional;
         });

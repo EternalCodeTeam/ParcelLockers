@@ -288,11 +288,15 @@ public class SendingGui implements GuiView {
 
         this.updateNameItem();
         this.updateDescriptionItem();
-        this.guiManager.getUser(this.state.receiver()).thenAccept(userOptional ->
-            userOptional.ifPresent(user -> this.updateReceiverItem(player, user.name(), false)));
+        if (this.state.receiver() != null) {
+            this.guiManager.getUser(this.state.receiver()).thenAccept(userOptional ->
+                userOptional.ifPresent(user -> this.updateReceiverItem(player, user.name(), false)));
+        }
 
-        this.guiManager.getLocker(this.state.destinationLocker()).thenAccept(lockerOptional ->
-            lockerOptional.ifPresent(locker -> this.updateDestinationItem(player, locker.name(), false)));
+        if (this.state.destinationLocker() != null) {
+            this.guiManager.getLocker(this.state.destinationLocker()).thenAccept(lockerOptional ->
+                lockerOptional.ifPresent(locker -> this.updateDestinationItem(player, locker.name(), false)));
+        }
 
         this.scheduler.run(() -> this.gui.open(player));
     }
@@ -365,7 +369,14 @@ public class SendingGui implements GuiView {
         }
 
         if (destinationLockerDesc == null || destinationLockerDesc.isEmpty()) {
-            this.gui.updateItem(DESTINATION_ITEM_SLOT, this.guiSettings.parcelDestinationLockerItem.toItemStack());
+            this.gui.setItem(DESTINATION_ITEM_SLOT, this.guiSettings.parcelDestinationLockerItem.toGuiItem(event -> new DestinationGui(
+                this.scheduler,
+                this.guiSettings,
+                this.miniMessage,
+                this.guiManager,
+                this,
+                this.state
+            ).show(player)));
             return;
         }
 
