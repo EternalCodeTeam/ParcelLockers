@@ -47,10 +47,10 @@ dependencies {
 
     // metrics and sentry
     implementation("org.bstats:bstats-bukkit:3.1.0")
-    implementation("io.sentry:sentry:8.19.1")
+    implementation("io.sentry:sentry:8.20.0")
 
     // database
-    implementation("com.zaxxer:HikariCP:7.0.1")
+    implementation("com.zaxxer:HikariCP:7.0.2")
     implementation("com.j256.ormlite:ormlite-jdbc:6.1")
     implementation("com.h2database:h2:2.3.232")
     implementation("org.postgresql:postgresql:42.7.7")
