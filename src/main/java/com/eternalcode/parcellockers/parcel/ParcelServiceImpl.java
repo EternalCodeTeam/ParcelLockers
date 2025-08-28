@@ -5,6 +5,7 @@ import static com.eternalcode.parcellockers.util.InventoryUtil.freeSlotsInInvent
 import com.eternalcode.commons.bukkit.ItemUtil;
 import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
+import com.eternalcode.parcellockers.content.ParcelContent;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.delivery.repository.DeliveryRepository;
 import com.eternalcode.parcellockers.notification.NoticeService;
@@ -69,6 +70,7 @@ public class ParcelServiceImpl implements ParcelService {
                 throw new ParcelLockersException("Failed to save parcel", throwable);
             }
 
+            this.parcelContentRepository.save(new ParcelContent(parcel.uuid(), items));
             this.noticeService.create()
                 .notice(messages -> messages.parcel.sent)
                 .player(sender.getUniqueId())

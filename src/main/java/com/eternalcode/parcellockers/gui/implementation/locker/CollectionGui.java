@@ -9,7 +9,6 @@ import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import com.eternalcode.parcellockers.parcel.util.PlaceholderUtil;
 import com.eternalcode.parcellockers.shared.Page;
-import com.eternalcode.parcellockers.util.InventoryUtil;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
@@ -68,22 +67,25 @@ public class CollectionGui implements GuiView {
             this.setupNavigation(gui, page, result, player, this.guiSettings);
 
 
-            //todo fix not opening? maybe too many parcels
             for (Parcel parcel : result.items()) {
                 if (parcel.status() != ParcelStatus.DELIVERED) {
                     continue;
                 }
 
                 ConfigItem item = parcelItem.clone();
+                System.out.println("Item type: " + item.type());
                 item.name(item.name().replace("{NAME}", parcel.name()));
                 item.lore(PlaceholderUtil.replaceParcelPlaceholders(parcel, item.lore(), this.guiManager));
 
                 item.glow(true);
 
                 gui.addItem(item.toGuiItem(event -> {
+                    System.out.println("Clicked slot: " + event.getSlot());
+                    System.out.println("Item type at slot: " + event.getCurrentItem().getType());
                     this.guiManager.collectParcel(player, parcel);
                     gui.removeItem(event.getSlot());
-                    InventoryUtil.shiftItems(event.getSlot(), gui, item.type());
+                    System.out.println("removeItem called");
+                   // InventoryUtil.shiftItems(event.getSlot(), gui, item.type());
                     gui.update();
                 }));
 
