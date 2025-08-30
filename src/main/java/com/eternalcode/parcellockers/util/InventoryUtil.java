@@ -26,12 +26,6 @@ public class InventoryUtil {
         if (removedSlot < 0 || gui == null) {
             throw new IllegalArgumentException("Invalid arguments provided for shifting items.");
         }
-
-        System.out.println("=== DEBUG shiftItems ===");
-        System.out.println("Removed slot: " + removedSlot);
-        System.out.println("Type to shift: " + typeToShift);
-        System.out.println("Total GUI items: " + gui.getGuiItems().size());
-
         // Pobierz wszystkie itemy do przesunięcia (tylko te po usuniętym slocie)
         List<Entry<Integer, GuiItem>> itemsToShift = gui.getGuiItems().entrySet()
             .stream()

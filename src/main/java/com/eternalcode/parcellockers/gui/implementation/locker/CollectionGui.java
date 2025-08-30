@@ -5,6 +5,7 @@ import com.eternalcode.parcellockers.configuration.implementation.PluginConfig.G
 import com.eternalcode.parcellockers.configuration.serializable.ConfigItem;
 import com.eternalcode.parcellockers.gui.GuiManager;
 import com.eternalcode.parcellockers.gui.GuiView;
+import com.eternalcode.parcellockers.gui.PaginatedGuiRefresher;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import com.eternalcode.parcellockers.parcel.util.PlaceholderUtil;
@@ -12,6 +13,8 @@ import com.eternalcode.parcellockers.shared.Page;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
@@ -64,34 +67,41 @@ public class CollectionGui implements GuiView {
                 return;
             }
 
+            PaginatedGuiRefresher refresher = new PaginatedGuiRefresher(gui);
+
             this.setupNavigation(gui, page, result, player, this.guiSettings);
 
+
+            AtomicInteger parcelCounter = new AtomicInteger(0);
 
             for (Parcel parcel : result.items()) {
                 if (parcel.status() != ParcelStatus.DELIVERED) {
                     continue;
                 }
+                // TODO fix atomicinteger not changing with removals (refresher indexes changes, but counter not)
+                final int parcelIndex = parcelCounter.getAndIncrement();
 
-                ConfigItem item = parcelItem.clone();
-                System.out.println("Item type: " + item.type());
-                item.name(item.name().replace("{NAME}", parcel.name()));
-                item.lore(PlaceholderUtil.replaceParcelPlaceholders(parcel, item.lore(), this.guiManager));
+                // Stwórz supplier dla tego itemu
+                Supplier<GuiItem> itemSupplier = () -> {
+                    ConfigItem item = parcelItem.clone();
+                    item.name(item.name().replace("{NAME}", parcel.name()));
+                    item.lore(PlaceholderUtil.replaceParcelPlaceholders(parcel, item.lore(), this.guiManager));
+                    item.glow(true);
 
-                item.glow(true);
+                    return item.toGuiItem(event -> {
+                        this.guiManager.collectParcel(player, parcel);
+                        refresher.removeItemAt(parcelIndex);
+                    });
+                };
 
-                gui.addItem(item.toGuiItem(event -> {
-                    System.out.println("Clicked slot: " + event.getSlot());
-                    System.out.println("Item type at slot: " + event.getCurrentItem().getType());
-                    this.guiManager.collectParcel(player, parcel);
-                    gui.removeItem(event.getSlot());
-                    System.out.println("removeItem called");
-                   // InventoryUtil.shiftItems(event.getSlot(), gui, item.type());
-                    gui.update();
-                }));
-
+                refresher.addItem(itemSupplier);
+                refresher.refresh();
             }
 
             this.scheduler.run(() -> gui.open(player));
+        }).exceptionally(throwable -> {
+            throwable.printStackTrace();
+            return null;
         });
     }
 

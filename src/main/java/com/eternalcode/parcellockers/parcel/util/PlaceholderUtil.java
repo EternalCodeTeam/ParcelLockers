@@ -2,16 +2,13 @@ package com.eternalcode.parcellockers.parcel.util;
 
 import com.eternalcode.multification.shared.Formatter;
 import com.eternalcode.parcellockers.gui.GuiManager;
-import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.user.User;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Blocking;
 
@@ -35,20 +32,22 @@ public class PlaceholderUtil {
             .register("{PRIORITY}", parcel.priority() ? "&aYes" : "&cNo")
             .register("{DESCRIPTION}", parcel.description() != null ? parcel.description() : "-");
 
-        Optional<Locker> lockerOptional = guiManager.getLocker(parcel.destinationLocker())
-            .orTimeout(3, TimeUnit.SECONDS)
-            .join();
+        /*if (parcel.destinationLocker() != null) {
+            Optional<Locker> lockerOptional = guiManager.getLocker(parcel.destinationLocker())
+                .orTimeout(3, TimeUnit.SECONDS)
+                .join();
 
-        if (lockerOptional.isPresent()) {
-            Locker locker = lockerOptional.get();
-            formatter.register("{POSITION_X}", locker.position().x())
-                .register("{POSITION_Y}", locker.position().y())
-                .register("{POSITION_Z}", locker.position().z());
-        } else {
-            formatter.register("{POSITION_X}", "-")
-                .register("{POSITION_Y}", "-")
-                .register("{POSITION_Z}", "-");
-        }
+            if (lockerOptional.isPresent()) {
+                Locker locker = lockerOptional.get();
+                formatter.register("{POSITION_X}", locker.position().x())
+                    .register("{POSITION_Y}", locker.position().y())
+                    .register("{POSITION_Z}", locker.position().z());
+            } else {
+                formatter.register("{POSITION_X}", "-")
+                    .register("{POSITION_Y}", "-")
+                    .register("{POSITION_Z}", "-");
+            }
+        }*/
 
         List<String> newLore = new ArrayList<>();
 
