@@ -114,16 +114,6 @@ public class PlaceholderUtil {
             .toList();
     }
 
-    @Blocking
-    @Deprecated
-    public static List<String> replaceParcelPlaceholders(Parcel parcel, List<String> lore, GuiManager guiManager) {
-        try {
-            return replaceParcelPlaceholdersAsync(parcel, lore, guiManager).join();
-        } catch (Exception e) {
-            System.err.println("Timeout or error in replaceParcelPlaceholders: " + e.getMessage());
-            return createFallbackLore(parcel, lore);
-        }
-    }
 }
 
 
