@@ -4,7 +4,10 @@ import java.util.List;
 
 public record PageResult<T>(List<T> items, boolean hasNextPage) {
 
-    public static PageResult empty() {
-        return new PageResult<>(List.of(), false);
+    private static final PageResult<?> EMPTY = new PageResult<>(List.of(), false);
+
+    @SuppressWarnings("unchecked")
+    public static <T> PageResult<T> empty() {
+        return (PageResult<T>) EMPTY;
     }
 }
