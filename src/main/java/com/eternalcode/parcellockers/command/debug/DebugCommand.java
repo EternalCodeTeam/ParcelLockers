@@ -15,7 +15,6 @@ import dev.rollczi.litecommands.annotations.command.Command;
 import dev.rollczi.litecommands.annotations.context.Sender;
 import dev.rollczi.litecommands.annotations.execute.Execute;
 import dev.rollczi.litecommands.annotations.permission.Permission;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -128,10 +127,8 @@ public class DebugCommand {
                     locker,
                     ParcelStatus.DELIVERED
                     ),
-                new ArrayList<>(Arrays.asList(
-                    new ItemStack(Material.STONE, 5),
-                    new ItemStack(Material.DIAMOND, 10)
-                )));
+                List.of(new ItemStack(Material.DIRT, 1))
+            );
         }
     }
 }

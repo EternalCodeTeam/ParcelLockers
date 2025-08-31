@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.ApiStatus.Obsolete;
 
 public class InventoryUtil {
 
@@ -22,6 +23,7 @@ public class InventoryUtil {
         return freeSlots;
     }
 
+    @Obsolete
     public static void shiftItems(int removedSlot, PaginatedGui gui, Material typeToShift) {
         if (removedSlot < 0 || gui == null) {
             throw new IllegalArgumentException("Invalid arguments provided for shifting items.");

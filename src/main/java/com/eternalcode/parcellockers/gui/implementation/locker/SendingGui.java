@@ -352,7 +352,7 @@ public class SendingGui implements GuiView {
         }
 
         if (receiverName == null || receiverName.isEmpty()) {
-            this.gui.updateItem(RECEIVER_ITEM_SLOT, this.guiSettings.parcelReceiverItem.toItemStack());
+            this.gui.updateItem(RECEIVER_ITEM_SLOT, this.createActiveItem(this.guiSettings.parcelReceiverItem, this.guiSettings.parcelReceiverNotSetLine));
             return;
         }
 

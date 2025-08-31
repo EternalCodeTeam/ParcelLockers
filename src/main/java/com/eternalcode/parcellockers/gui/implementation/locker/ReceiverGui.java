@@ -1,5 +1,6 @@
 package com.eternalcode.parcellockers.gui.implementation.locker;
 
+import com.eternalcode.commons.adventure.AdventureUtil;
 import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig.GuiSettings;
 import com.eternalcode.parcellockers.gui.GuiManager;
@@ -110,13 +111,13 @@ public class ReceiverGui implements GuiView {
             return PaperItemBuilder.skull()
                 .texture(skullData.getTexture())
                 .name(this.miniMessage.deserialize(user.name()))
-                .lore(this.miniMessage.deserialize(lore))
-                .glow(uuid.equals(this.state.receiver()))
+                .lore(AdventureUtil.resetItalic(this.miniMessage.deserialize(lore)))
+                .glow(isReceiverSelected)
                 .asGuiItem(event -> {
-                    if (uuid.equals(this.state.receiver())) {
-                        refresher.refresh();
+                    if (isReceiverSelected) {
                         this.sendingGUI.updateReceiverItem(player, "", false);
                         this.state.receiver(null);
+                        refresher.refresh();
                         return;
                     }
 

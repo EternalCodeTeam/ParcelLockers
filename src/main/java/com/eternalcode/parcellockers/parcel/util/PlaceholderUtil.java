@@ -2,13 +2,16 @@ package com.eternalcode.parcellockers.parcel.util;
 
 import com.eternalcode.multification.shared.Formatter;
 import com.eternalcode.parcellockers.gui.GuiManager;
+import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.user.User;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Blocking;
 
@@ -32,7 +35,7 @@ public class PlaceholderUtil {
             .register("{PRIORITY}", parcel.priority() ? "&aYes" : "&cNo")
             .register("{DESCRIPTION}", parcel.description() != null ? parcel.description() : "-");
 
-        /*if (parcel.destinationLocker() != null) {
+        if (parcel.destinationLocker() != null) {
             Optional<Locker> lockerOptional = guiManager.getLocker(parcel.destinationLocker())
                 .orTimeout(3, TimeUnit.SECONDS)
                 .join();
@@ -47,7 +50,7 @@ public class PlaceholderUtil {
                     .register("{POSITION_Y}", "-")
                     .register("{POSITION_Z}", "-");
             }
-        }*/
+        }
 
         List<String> newLore = new ArrayList<>();
 
