@@ -108,10 +108,8 @@ public final class ParcelLockers extends JavaPlugin {
 
         // service and managers
         ParcelService parcelService = new ParcelServiceImpl(
-            config,
             noticeService,
             parcelRepository,
-            deliveryRepository,
             parcelContentRepository,
             scheduler
         );

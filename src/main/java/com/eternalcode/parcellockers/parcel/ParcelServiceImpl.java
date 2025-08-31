@@ -4,10 +4,8 @@ import static com.eternalcode.parcellockers.util.InventoryUtil.freeSlotsInInvent
 
 import com.eternalcode.commons.bukkit.ItemUtil;
 import com.eternalcode.commons.scheduler.Scheduler;
-import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.content.ParcelContent;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
-import com.eternalcode.parcellockers.delivery.repository.DeliveryRepository;
 import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.shared.Page;
@@ -21,20 +19,20 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 public class ParcelServiceImpl implements ParcelService {
 
-    private final PluginConfig config;
     private final NoticeService noticeService;
     private final ParcelRepository parcelRepository;
-    private final DeliveryRepository deliveryRepository;
     private final ParcelContentRepository parcelContentRepository;
     private final Scheduler scheduler;
 
     private final Cache<UUID, Parcel> parcelsByUuid = Caffeine.newBuilder()
+        .expireAfterAccess(3, TimeUnit.HOURS)
         .maximumSize(10_000)
         .build();
 
@@ -42,17 +40,13 @@ public class ParcelServiceImpl implements ParcelService {
     private final Multimap<UUID, Parcel> parcelsByReceiver = HashMultimap.create();
 
     public ParcelServiceImpl(
-        PluginConfig config,
         NoticeService noticeService,
         ParcelRepository parcelRepository,
-        DeliveryRepository deliveryRepository,
         ParcelContentRepository parcelContentRepository,
         Scheduler scheduler
     ) {
-        this.config = config;
         this.noticeService = noticeService;
         this.parcelRepository = parcelRepository;
-        this.deliveryRepository = deliveryRepository;
         this.parcelContentRepository = parcelContentRepository;
         this.scheduler = scheduler;
 

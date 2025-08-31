@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import org.jetbrains.annotations.TestOnly;
 
 public interface ParcelRepository {
 
@@ -18,12 +19,12 @@ public interface ParcelRepository {
 
     CompletableFuture<Optional<Parcel>> fetchById(UUID uuid);
 
-    @Deprecated
+    @TestOnly
     CompletableFuture<Optional<List<Parcel>>> fetchBySender(UUID sender);
 
     CompletableFuture<PageResult<Parcel>> fetchBySender(UUID sender, Page page);
 
-    @Deprecated
+    @TestOnly
     CompletableFuture<Optional<List<Parcel>>> fetchByReceiver(UUID receiver);
 
     CompletableFuture<PageResult<Parcel>> fetchByReceiver(UUID receiver, Page page);

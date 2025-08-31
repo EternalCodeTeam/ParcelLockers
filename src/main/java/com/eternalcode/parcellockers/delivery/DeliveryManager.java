@@ -12,8 +12,8 @@ public class DeliveryManager {
     private final DeliveryRepository deliveryRepository;
 
     private final Cache<UUID, Delivery> deliveryCache = Caffeine.newBuilder()
+        .expireAfterWrite(Duration.ofHours(6))
         .maximumSize(10_000)
-        .expireAfterAccess(Duration.ofHours(6))
         .build();
 
     public DeliveryManager(DeliveryRepository deliveryRepository) {

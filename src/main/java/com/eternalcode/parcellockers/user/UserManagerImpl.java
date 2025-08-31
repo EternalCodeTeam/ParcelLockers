@@ -3,18 +3,26 @@ package com.eternalcode.parcellockers.user;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.PageResult;
 import com.eternalcode.parcellockers.user.repository.UserRepository;
-import java.util.HashMap;
-import java.util.Map;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 public class UserManagerImpl implements UserManager {
 
     private final UserRepository userRepository;
 
-    private final Map<UUID, User> usersByUUID = new HashMap<>();
-    private final Map<String, User> usersByName = new HashMap<>();
+    private final Cache<UUID, User> usersByUUID = Caffeine.newBuilder()
+        .expireAfterAccess(2, TimeUnit.HOURS)
+        .maximumSize(10_000)
+        .build();
+
+    private final Cache<String, User> usersByName = Caffeine.newBuilder()
+        .expireAfterAccess(2, TimeUnit.HOURS)
+        .maximumSize(10_000)
+        .build();
 
     public UserManagerImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -22,7 +30,7 @@ public class UserManagerImpl implements UserManager {
 
     @Override
     public CompletableFuture<Optional<User>> get(UUID uniqueId) {
-        User user = this.usersByUUID.get(uniqueId);
+        User user = this.usersByUUID.getIfPresent(uniqueId);
 
         if (user != null) {
             return CompletableFuture.completedFuture(Optional.of(user));
@@ -33,7 +41,7 @@ public class UserManagerImpl implements UserManager {
 
     @Override
     public CompletableFuture<Optional<User>> get(String username) {
-        User user = this.usersByName.get(username);
+        User user = this.usersByName.getIfPresent(username);
 
         if (user != null) {
             return CompletableFuture.completedFuture(Optional.of(user));
@@ -44,13 +52,13 @@ public class UserManagerImpl implements UserManager {
 
     @Override
     public void getOrCreate(UUID uuid, String name) {
-        User userByUUID = this.usersByUUID.get(uuid);
+        User userByUUID = this.usersByUUID.getIfPresent(uuid);
 
         if (userByUUID != null) {
             return;
         }
 
-        User userByName = this.usersByName.get(name);
+        User userByName = this.usersByName.getIfPresent(name);
 
         if (userByName != null) {
             return;
@@ -66,7 +74,7 @@ public class UserManagerImpl implements UserManager {
 
     @Override
     public User create(UUID uuid, String name) {
-        if (this.usersByUUID.containsKey(uuid) || this.usersByName.containsKey(name)) {
+        if (this.usersByUUID.getIfPresent(uuid) != null || this.usersByName.getIfPresent(name) != null) {
             throw new IllegalStateException("User already exists");
         }
 
