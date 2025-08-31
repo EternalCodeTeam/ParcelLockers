@@ -164,10 +164,10 @@ public class SendingGui implements GuiView {
                     .build();
             } catch (SignGUIVersionException e) {
                 Bukkit.getLogger().severe("The server version is unsupported by SignGUI API!");
-            } finally {
-                if (descriptionSignGui != null) {
-                    descriptionSignGui.open(player);
-                }
+            }
+
+            if (descriptionSignGui != null) {
+                descriptionSignGui.open(player);
             }
         });
 

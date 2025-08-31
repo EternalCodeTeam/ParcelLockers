@@ -1,10 +1,17 @@
 package com.eternalcode.parcellockers.locker.controller;
 
+import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.multification.shared.Formatter;
 import com.eternalcode.parcellockers.locker.LockerManager;
 import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.shared.Position;
 import com.eternalcode.parcellockers.shared.PositionAdapter;
+import com.spotify.futures.CompletableFutures;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
@@ -22,13 +29,15 @@ public class LockerBreakController implements Listener {
 
     private final LockerManager lockerManager;
     private final NoticeService noticeService;
+    private final Scheduler scheduler;
 
     public LockerBreakController(
             LockerManager lockerManager,
-            NoticeService noticeService
+            NoticeService noticeService, Scheduler scheduler
     ) {
         this.lockerManager = lockerManager;
         this.noticeService = noticeService;
+        this.scheduler = scheduler;
     }
 
     @EventHandler
@@ -92,22 +101,32 @@ public class LockerBreakController implements Listener {
 
         this.lockerManager.get(position).thenAccept(locker -> {
             if (locker.isPresent()) {
-                event.blockList().remove(explodedBlockState.getBlock());
+                this.scheduler.run(() -> event.blockList().remove(explodedBlockState.getBlock()));
             }
         });
     }
 
     @EventHandler
     public void onEntityExplode(EntityExplodeEvent event) {
-        for (Block block : event.blockList()) {
-            Position position = PositionAdapter.convert(block.getLocation());
+        List<Block> blocks = new ArrayList<>(event.blockList());
 
-            this.lockerManager.get(position).thenAccept(locker -> {
-                if (locker.isPresent()) {
-                    event.blockList().remove(block);
-                }
+        List<CompletableFuture<Optional<Block>>> futures = blocks.stream()
+            .map(block -> {
+                Position position = PositionAdapter.convert(block.getLocation());
+                return this.lockerManager.get(position)
+                    .thenApply(locker -> locker.isPresent() ? Optional.of(block) : Optional.<Block>empty());
+            })
+            .collect(Collectors.toList());
+
+        CompletableFutures.allAsList(futures)
+            .thenAccept(results -> {
+                List<Block> blocksToRemove = results.stream()
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .toList();
+
+                this.scheduler.run(() -> event.blockList().removeAll(blocksToRemove));
             });
-        }
     }
 
     @EventHandler
