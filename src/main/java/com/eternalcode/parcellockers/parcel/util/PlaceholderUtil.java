@@ -97,7 +97,6 @@ public class PlaceholderUtil {
     }
 
     private static List<String> createFallbackLore(Parcel parcel, List<String> originalLore) {
-        // Podstawowe placeholdery bez asynchronicznych wywołań
         Formatter fallbackFormatter = new Formatter()
             .register("{UUID}", parcel.uuid().toString())
             .register("{NAME}", parcel.name())
@@ -115,7 +114,6 @@ public class PlaceholderUtil {
             .toList();
     }
 
-    // Zachowaj starą metodę dla kompatybilności wstecznej, ale z lepszym error handlingiem
     @Blocking
     @Deprecated
     public static List<String> replaceParcelPlaceholders(Parcel parcel, List<String> lore, GuiManager guiManager) {

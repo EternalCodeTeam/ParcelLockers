@@ -5,6 +5,7 @@ import io.papermc.paper.plugin.loader.PluginClasspathBuilder;
 import io.papermc.paper.plugin.loader.PluginLoader;
 import io.papermc.paper.plugin.loader.library.impl.MavenLibraryResolver;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -26,7 +27,7 @@ public class ParcelLockersLibraryLoader implements PluginLoader {
     }
 
     public PluginLibraries load() {
-        try (var in = this.getClass().getResourceAsStream("/paper-libraries.json")) {
+        try (InputStream in = this.getClass().getResourceAsStream("/paper-libraries.json")) {
             return new Gson().fromJson(new InputStreamReader(in, StandardCharsets.UTF_8), PluginLibraries.class);
         } catch (IOException e) {
             throw new RuntimeException(e);

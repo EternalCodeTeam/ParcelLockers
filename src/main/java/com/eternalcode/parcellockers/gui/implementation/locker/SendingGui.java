@@ -27,7 +27,6 @@ import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.NotNull;
 
 public class SendingGui implements GuiView {
 
@@ -384,7 +383,7 @@ public class SendingGui implements GuiView {
         this.gui.updateItem(DESTINATION_ITEM_SLOT, this.createActiveItem(this.guiSettings.parcelDestinationLockerItem, line));
     }
 
-    private @NotNull ItemStack createActiveItem(ConfigItem item, String appendLore) {
+    private ItemStack createActiveItem(ConfigItem item, String appendLore) {
         List<String> itemLore = new ArrayList<>(item.lore());
         itemLore.add(appendLore);
 

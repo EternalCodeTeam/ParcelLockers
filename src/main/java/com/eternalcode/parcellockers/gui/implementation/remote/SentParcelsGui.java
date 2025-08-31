@@ -9,11 +9,13 @@ import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.util.PlaceholderUtil;
 import com.eternalcode.parcellockers.shared.Page;
+import com.spotify.futures.CompletableFutures;
 import dev.triumphteam.gui.builder.item.PaperItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
@@ -62,19 +64,40 @@ public class SentParcelsGui implements GuiView {
         this.guiManager.getParcelsBySender(player.getUniqueId(), page).thenAccept(result -> {
             List<Parcel> parcels = result.items();
 
-            for (Parcel parcel : parcels) {
-                PaperItemBuilder item = parcelItem.toBuilder();
+            List<CompletableFuture<GuiItem>> itemFutures = parcels.stream()
+                .map(parcel -> PlaceholderUtil.replaceParcelPlaceholdersAsync(
+                        parcel,
+                        parcelItem.lore(),
+                        this.guiManager)
+                    .thenApply(processedLore -> {
+                        PaperItemBuilder item = parcelItem.toBuilder();
 
-                List<Component> newLore = PlaceholderUtil.replaceParcelPlaceholders(parcel, parcelItem.lore(), this.guiManager)
-                    .stream()
-                    .map(line -> AdventureUtil.resetItalic(this.miniMessage.deserialize(line)))
-                    .toList();
-                item.lore(newLore);
-                item.name(AdventureUtil.resetItalic(this.miniMessage.deserialize(parcelItem.name().replace("{NAME}", parcel.name()))));
+                        List<Component> newLore = processedLore
+                            .stream()
+                            .map(line -> AdventureUtil.resetItalic(this.miniMessage.deserialize(line)))
+                            .toList();
 
-                gui.addItem(item.asGuiItem());
-            }
-            this.scheduler.run(() -> gui.open(player));
+                        item.lore(newLore);
+                        item.name(AdventureUtil.resetItalic(
+                            this.miniMessage.deserialize(
+                                parcelItem.name().replace("{NAME}", parcel.name())
+                            )
+                        ));
+
+                        return item.asGuiItem();
+                    }))
+                .toList();
+
+            CompletableFutures.allAsList(itemFutures)
+                .thenAccept(guiItems -> {
+                    guiItems.forEach(gui::addItem);
+                    this.scheduler.run(() -> gui.open(player));
+                })
+                .exceptionally(throwable -> {
+                    System.err.println("Failed to process parcel items: " + throwable.getMessage());
+                    this.scheduler.run(() -> gui.open(player));
+                    return null;
+                });
         });
     }
 

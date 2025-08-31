@@ -83,7 +83,6 @@ public class CollectionGui implements GuiView {
                     this.scheduler.run(() -> gui.open(player));
                 });
         });
-
     }
 
     private void setupStaticItems(Player player, PaginatedGui gui) {
@@ -114,7 +113,7 @@ public class CollectionGui implements GuiView {
 
                 return item.toGuiItem(event -> {
                     this.guiManager.collectParcel(player, parcel);
-                    refresher.removeItemByPageSlot(event.getSlot());
+                    refresher.removeItemBySlot(event.getSlot());
                 });
             });
     }

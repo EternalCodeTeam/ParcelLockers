@@ -5,7 +5,6 @@ import dev.triumphteam.gui.guis.PaginatedGui;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 public class PaginatedGuiRefresher {
@@ -23,9 +22,9 @@ public class PaginatedGuiRefresher {
     }
 
     /**
-     * Deletes item by its slot in the current page (not absolute slot in the inventory)
+     * Deletes item by its absolute slot in the inventory
      */
-    public void removeItemByPageSlot(int pageSlot) {
+    public void removeItemBySlot(int pageSlot) {
         Map<Integer, GuiItem> currentPageItems = this.gui.getCurrentPageItems();
 
         if (!currentPageItems.containsKey(pageSlot)) {
@@ -44,51 +43,13 @@ public class PaginatedGuiRefresher {
         }
     }
 
-    /**
-     * Deletes items matching the given predicate
-     */
-    public void removeItem(Predicate<GuiItem> predicate) {
-        this.items.removeIf(supplier -> predicate.test(supplier.get()));
-        this.refresh();
-    }
-
-    /**
-     * Deletes item at specific index in the items list
-     */
-    public void removeItemAt(int index) {
-        if (index >= 0 && index < this.items.size()) {
-            this.items.remove(index);
-            this.refresh();
-        }
-    }
-
     public void refresh() {
         this.gui.clearPageItems(false);
 
-        // Dodaj wszystkie itemy z powrotem
         for (Supplier<GuiItem> item : this.items) {
             this.gui.addItem(item.get());
         }
 
         this.gui.update();
-    }
-
-    /**
-     * Debug: Pokaż informacje o slotach
-     */
-    public void debugSlots() {
-        System.out.println("=== DEBUG SLOTS ===");
-        System.out.println("Static items (setItem): " + this.gui.getGuiItems().keySet());
-        System.out.println("Current page items (addItem): " + this.gui.getCurrentPageItems().keySet());
-        System.out.println("Items list size: " + this.items.size());
-        System.out.println("==================");
-    }
-
-    public int size() {
-        return this.items.size();
-    }
-
-    public boolean isEmpty() {
-        return this.items.isEmpty();
     }
 }

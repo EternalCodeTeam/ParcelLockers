@@ -7,14 +7,15 @@ import com.eternalcode.parcellockers.configuration.implementation.PluginConfig.G
 import com.eternalcode.parcellockers.configuration.serializable.ConfigItem;
 import com.eternalcode.parcellockers.gui.GuiManager;
 import com.eternalcode.parcellockers.gui.GuiView;
-import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.util.PlaceholderUtil;
 import com.eternalcode.parcellockers.shared.Page;
+import com.spotify.futures.CompletableFutures;
 import dev.triumphteam.gui.builder.item.PaperItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
@@ -65,24 +66,37 @@ public class ParcelListGui implements GuiView {
                 return;
             }
 
-            for (Parcel parcel : result.items()) {
-                ConfigItem item = this.guiSettings.parcelItem;
-                PaperItemBuilder parcelItem = item.toBuilder();
+            ConfigItem item = this.guiSettings.parcelItem;
 
-                List<Component> newLore = PlaceholderUtil.replaceParcelPlaceholders(parcel, item.lore(), this.guiManager).stream()
-                    .map(line -> resetItalic(this.miniMessage.deserialize(line)))
-                    .toList();
-                parcelItem.lore(newLore);
-                parcelItem.name(this.miniMessage.deserialize(item.name().replace("{NAME}", parcel.name())));
+            List<CompletableFuture<GuiItem>> itemFutures = result.items().stream()
+                .map(parcel -> PlaceholderUtil.replaceParcelPlaceholdersAsync(parcel, item.lore(), this.guiManager)
+                    .thenApply(processedLore -> {
+                        PaperItemBuilder parcelItem = item.toBuilder();
 
-                gui.addItem(parcelItem.asGuiItem());
-            }
+                        List<Component> newLore = processedLore.stream()
+                            .map(line -> resetItalic(this.miniMessage.deserialize(line)))
+                            .toList();
 
-            this.setupNavigation(gui, page, result, player, this.guiSettings);
+                        parcelItem.lore(newLore);
+                        parcelItem.name(this.miniMessage.deserialize(item.name().replace("{NAME}", parcel.name())));
 
-            this.scheduler.run(() -> gui.open(player));
+                        return parcelItem.asGuiItem();
+                    }))
+                .toList();
+
+            CompletableFutures.allAsList(itemFutures)
+                .thenAccept(guiItems -> {
+                    guiItems.forEach(gui::addItem);
+                    this.setupNavigation(gui, page, result, player, this.guiSettings);
+                    this.scheduler.run(() -> gui.open(player));
+                })
+                .exceptionally(throwable -> {
+                    System.err.println("Failed to process parcel items: " + throwable.getMessage());
+                    this.setupNavigation(gui, page, result, player, this.guiSettings);
+                    this.scheduler.run(() -> gui.open(player));
+                    return null;
+                });
         });
-
     }
 
     private void setupStaticItems(Player player, PaginatedGui gui) {

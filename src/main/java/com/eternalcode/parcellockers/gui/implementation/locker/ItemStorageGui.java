@@ -112,7 +112,6 @@ public class ItemStorageGui {
                     }
                 }
                 items.add(item);
-
             }
 
             this.guiManager.deleteItemStorage(player.getUniqueId());
