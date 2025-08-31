@@ -82,7 +82,7 @@ public record Position(int x, int y, int z, String world) {
             "x=" + this.x +
             ", y=" + this.y +
             ", z=" + this.z +
-            ", world=\"" + this.world + "\"" +  // Używaj podwójnych cudzysłowów
+            ", world=\"" + this.world + "\"" +
             '}';
     }
 }
