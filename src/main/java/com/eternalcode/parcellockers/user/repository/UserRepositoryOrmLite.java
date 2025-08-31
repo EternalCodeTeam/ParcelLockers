@@ -43,8 +43,12 @@ public class UserRepositoryOrmLite extends AbstractRepositoryOrmLite implements 
     }
 
     @Override
-    public void save(User user) {
-        this.save(UserTable.class, UserTable.from(user)).thenApply(dao -> null);
+        this.save(UserTable.class, UserTable.from(user))
+            .exceptionally(ex -> {
+                System.err.println("Failed to save user: " + ex.getMessage());
+                ex.printStackTrace();
+                return null;
+            });
     }
 
     @Override
