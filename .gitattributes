@@ -1,7 +1,7 @@
 * text=auto
+
 *.sh text eol=lf
 gradlew text eol=lf
 *.bat text eol=crlf
-*.java text eol=lf
 
 *.jar binary
