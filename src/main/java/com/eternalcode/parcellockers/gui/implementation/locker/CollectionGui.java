@@ -10,9 +10,11 @@ import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import com.eternalcode.parcellockers.parcel.util.PlaceholderUtil;
 import com.eternalcode.parcellockers.shared.Page;
+import com.spotify.futures.CompletableFutures;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -70,38 +72,18 @@ public class CollectionGui implements GuiView {
 
             this.setupNavigation(gui, page, result, player, this.guiSettings);
 
-            for (Parcel parcel : result.items()) {
-                if (parcel.status() != ParcelStatus.DELIVERED) {
-                    continue;
-                }
-
-                Supplier<GuiItem> itemSupplier = () -> {
-                    ConfigItem item = parcelItem.clone();
-                    item.name(item.name().replace("{NAME}", parcel.name()));
-                    item.lore(PlaceholderUtil.replaceParcelPlaceholders(parcel, item.lore(), this.guiManager));
-                    item.glow(true);
-
-                    return item.toGuiItem(event -> {
-                        this.guiManager.collectParcel(player, parcel);
-
-                        // Debug - zobacz które sloty są używane
-                        System.out.println("BEFORE removal:");
-                        refresher.debugSlots();
-                        // Usuń item używając slotu z PAGE ITEMS
-                        refresher.removeItemByPageSlot(event.getSlot());
-                        System.out.println("AFTER removal:");
-                        refresher.debugSlots();
-                    });
-                };
-
-                refresher.addItem(itemSupplier);
-            }
-
-            this.scheduler.run(() -> gui.open(player));
-        }).exceptionally(throwable -> {
-            throwable.printStackTrace();
-            return null;
+            result.items().stream()
+                .filter(parcel -> parcel.status() == ParcelStatus.DELIVERED)
+                .map(parcel -> this.createParcelItemAsync(parcel, parcelItem, player, refresher))
+                .collect(CompletableFutures.joinList())  // 🎯 Spotify magic!
+                .thenAccept(suppliers -> {
+                    for (Supplier<GuiItem> supplier : suppliers) {
+                        refresher.addItem(supplier);
+                    }
+                    this.scheduler.run(() -> gui.open(player));
+                });
         });
+
     }
 
     private void setupStaticItems(Player player, PaginatedGui gui) {
@@ -118,5 +100,22 @@ public class CollectionGui implements GuiView {
         }
 
         gui.setItem(49, closeItem);
+    }
+
+    private CompletableFuture<Supplier<GuiItem>> createParcelItemAsync(
+        Parcel parcel, ConfigItem parcelItem, Player player, PaginatedGuiRefresher refresher) {
+
+        return PlaceholderUtil.replaceParcelPlaceholdersAsync(parcel, parcelItem.lore(), this.guiManager)
+            .thenApply(processedLore -> () -> {
+                ConfigItem item = parcelItem.clone();
+                item.name(item.name().replace("{NAME}", parcel.name()));
+                item.lore(processedLore);
+                item.glow(true);
+
+                return item.toGuiItem(event -> {
+                    this.guiManager.collectParcel(player, parcel);
+                    refresher.removeItemByPageSlot(event.getSlot());
+                });
+            });
     }
 }
