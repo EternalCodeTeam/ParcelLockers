@@ -14,10 +14,7 @@ import org.bukkit.inventory.ItemStack;
 
 public class ItemStorageManager {
 
-    private final Cache<UUID, ItemStorage> cache = Caffeine.newBuilder()
-        .expireAfterWrite(6, TimeUnit.HOURS)
-        .maximumSize(10_000)
-        .build();
+    private final Cache<UUID, ItemStorage> cache;
 
     private final ItemStorageRepository itemStorageRepository;
 
@@ -25,6 +22,10 @@ public class ItemStorageManager {
         this.itemStorageRepository = itemStorageRepository;
 
         this.cacheAll();
+        this.cache = Caffeine.newBuilder()
+            .expireAfterWrite(6, TimeUnit.HOURS)
+            .maximumSize(10_000)
+            .build();
     }
 
     public CompletableFuture<Optional<ItemStorage>> get(UUID parcelId) {

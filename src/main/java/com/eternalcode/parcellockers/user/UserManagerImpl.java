@@ -14,18 +14,19 @@ public class UserManagerImpl implements UserManager {
 
     private final UserRepository userRepository;
 
-    private final Cache<UUID, User> usersByUUID = Caffeine.newBuilder()
-        .expireAfterAccess(2, TimeUnit.HOURS)
-        .maximumSize(10_000)
-        .build();
-
-    private final Cache<String, User> usersByName = Caffeine.newBuilder()
-        .expireAfterAccess(2, TimeUnit.HOURS)
-        .maximumSize(10_000)
-        .build();
+    private final Cache<UUID, User> usersByUUID;
+    private final Cache<String, User> usersByName;
 
     public UserManagerImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
+        this.usersByUUID = Caffeine.newBuilder()
+            .expireAfterAccess(2, TimeUnit.HOURS)
+            .maximumSize(10_000)
+            .build();
+        this.usersByName = Caffeine.newBuilder()
+            .expireAfterAccess(2, TimeUnit.HOURS)
+            .maximumSize(10_000)
+            .build();
     }
 
     @Override

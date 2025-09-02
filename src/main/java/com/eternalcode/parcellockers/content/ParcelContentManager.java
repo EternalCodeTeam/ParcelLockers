@@ -14,15 +14,16 @@ import org.bukkit.inventory.ItemStack;
 
 public class ParcelContentManager {
 
-    private final Cache<UUID, ParcelContent> cache = Caffeine.newBuilder()
-        .expireAfterWrite(6, TimeUnit.HOURS)
-        .maximumSize(10_000)
-        .build();
+    private final Cache<UUID, ParcelContent> cache;
 
     private final ParcelContentRepository contentRepository;
 
     public ParcelContentManager(ParcelContentRepository contentRepository) {
         this.contentRepository = contentRepository;
+        this.cache = Caffeine.newBuilder()
+            .expireAfterWrite(6, TimeUnit.HOURS)
+            .maximumSize(10_000)
+            .build();
     }
 
     public CompletableFuture<Optional<ParcelContent>> get(UUID parcelId) {

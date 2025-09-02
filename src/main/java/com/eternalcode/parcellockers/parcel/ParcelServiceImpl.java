@@ -31,11 +31,9 @@ public class ParcelServiceImpl implements ParcelService {
     private final ParcelContentRepository parcelContentRepository;
     private final Scheduler scheduler;
 
-    private final Cache<UUID, Parcel> parcelsByUuid = Caffeine.newBuilder()
-        .expireAfterAccess(3, TimeUnit.HOURS)
-        .maximumSize(10_000)
-        .build();
+    private final Cache<UUID, Parcel> parcelsByUuid;
 
+    // todo - use cache instead of multimaps for thread safety
     private final Multimap<UUID, Parcel> parcelsBySender = HashMultimap.create();
     private final Multimap<UUID, Parcel> parcelsByReceiver = HashMultimap.create();
 
@@ -51,6 +49,10 @@ public class ParcelServiceImpl implements ParcelService {
         this.scheduler = scheduler;
 
         this.cacheAll();
+        this.parcelsByUuid = Caffeine.newBuilder()
+            .expireAfterAccess(3, TimeUnit.HOURS)
+            .maximumSize(10_000)
+            .build();
     }
 
     @Override

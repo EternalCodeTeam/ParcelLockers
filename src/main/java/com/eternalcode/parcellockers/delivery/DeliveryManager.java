@@ -11,15 +11,16 @@ public class DeliveryManager {
 
     private final DeliveryRepository deliveryRepository;
 
-    private final Cache<UUID, Delivery> deliveryCache = Caffeine.newBuilder()
-        .expireAfterWrite(Duration.ofHours(6))
-        .maximumSize(10_000)
-        .build();
+    private final Cache<UUID, Delivery> deliveryCache;
 
     public DeliveryManager(DeliveryRepository deliveryRepository) {
         this.deliveryRepository = deliveryRepository;
 
         this.cacheAll();
+        this.deliveryCache = Caffeine.newBuilder()
+            .expireAfterWrite(Duration.ofHours(6))
+            .maximumSize(10_000)
+            .build();
     }
 
     public Delivery getOrCreate(UUID parcel, Instant deliveryTimestamp) {

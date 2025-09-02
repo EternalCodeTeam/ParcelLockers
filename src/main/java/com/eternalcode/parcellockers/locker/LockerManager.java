@@ -18,20 +18,21 @@ public class LockerManager {
 
     private final LockerRepository lockerRepository;
 
-    private final Cache<UUID, Locker> lockersByUUID = Caffeine.newBuilder()
-        .expireAfterAccess(Duration.ofHours(2))
-        .maximumSize(10_000)
-        .build();
-
-    private final Cache<Position, Locker> lockersByPosition = Caffeine.newBuilder()
-        .expireAfterAccess(Duration.ofHours(2))
-        .maximumSize(10_000)
-        .build();
+    private final Cache<UUID, Locker> lockersByUUID;
+    private final Cache<Position, Locker> lockersByPosition;
 
     public LockerManager(LockerRepository lockerRepository) {
         this.lockerRepository = lockerRepository;
 
         this.cacheAll();
+        this.lockersByUUID = Caffeine.newBuilder()
+            .expireAfterAccess(Duration.ofHours(2))
+            .maximumSize(10_000)
+            .build();
+        this.lockersByPosition = Caffeine.newBuilder()
+            .expireAfterAccess(Duration.ofHours(2))
+            .maximumSize(10_000)
+            .build();
     }
 
     public CompletableFuture<Optional<Locker>> get(UUID uniqueId) {
