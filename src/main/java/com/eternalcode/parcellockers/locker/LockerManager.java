@@ -14,6 +14,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import org.bukkit.command.CommandSender;
 
+// TODO: Implement validation
 public class LockerManager {
 
     private final LockerRepository lockerRepository;

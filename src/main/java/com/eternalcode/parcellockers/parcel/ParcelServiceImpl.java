@@ -13,8 +13,7 @@ import com.eternalcode.parcellockers.shared.PageResult;
 import com.eternalcode.parcellockers.shared.ParcelLockersException;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -32,10 +31,8 @@ public class ParcelServiceImpl implements ParcelService {
     private final Scheduler scheduler;
 
     private final Cache<UUID, Parcel> parcelsByUuid;
-
-    // todo - use cache instead of multimaps for thread safety
-    private final Multimap<UUID, Parcel> parcelsBySender = HashMultimap.create();
-    private final Multimap<UUID, Parcel> parcelsByReceiver = HashMultimap.create();
+    private final Cache<UUID, List<Parcel>> parcelsBySender;
+    private final Cache<UUID, List<Parcel>> parcelsByReceiver;
 
     public ParcelServiceImpl(
         NoticeService noticeService,
@@ -50,6 +47,16 @@ public class ParcelServiceImpl implements ParcelService {
 
         this.cacheAll();
         this.parcelsByUuid = Caffeine.newBuilder()
+            .expireAfterAccess(3, TimeUnit.HOURS)
+            .maximumSize(10_000)
+            .build();
+
+        this.parcelsBySender = Caffeine.newBuilder()
+            .expireAfterAccess(3, TimeUnit.HOURS)
+            .maximumSize(10_000)
+            .build();
+
+        this.parcelsByReceiver = Caffeine.newBuilder()
             .expireAfterAccess(3, TimeUnit.HOURS)
             .maximumSize(10_000)
             .build();
@@ -148,7 +155,7 @@ public class ParcelServiceImpl implements ParcelService {
 
     @Override
     public CompletableFuture<PageResult<Parcel>> getBySender(UUID sender, Page page) {
-        List<Parcel> cached = List.copyOf(this.parcelsBySender.get(sender));
+        List<Parcel> cached = List.copyOf(this.parcelsBySender.getIfPresent(sender));
         boolean hasNextPage = cached.size() > page.getLimit();
         if (!cached.isEmpty() && page.getOffset() == 0 && !hasNextPage) {
             return CompletableFuture.completedFuture(new PageResult<>(cached, false));
@@ -161,7 +168,7 @@ public class ParcelServiceImpl implements ParcelService {
 
     @Override
     public CompletableFuture<PageResult<Parcel>> getByReceiver(UUID receiver, Page page) {
-        List<Parcel> cached = List.copyOf(this.parcelsByReceiver.get(receiver));
+        List<Parcel> cached = List.copyOf(this.parcelsByReceiver.getIfPresent(receiver));
         boolean hasNextPage = cached.size() > page.getLimit();
         if (!cached.isEmpty() && page.getOffset() == 0 && !hasNextPage) {
             return CompletableFuture.completedFuture(new PageResult<>(cached, false));
@@ -205,20 +212,46 @@ public class ParcelServiceImpl implements ParcelService {
                 .send();
 
             this.parcelsByUuid.invalidateAll();
-            this.parcelsBySender.clear();
-            this.parcelsByReceiver.clear();
+            this.parcelsBySender.invalidateAll();
+            this.parcelsByReceiver.invalidateAll();
         });
     }
 
     private void cache(Parcel parcel) {
         this.parcelsByUuid.put(parcel.uuid(), parcel);
-        this.parcelsBySender.put(parcel.sender(), parcel);
-        this.parcelsByReceiver.put(parcel.receiver(), parcel);
+
+        List<Parcel> bySender = this.parcelsBySender.getIfPresent(parcel.sender());
+        if (bySender == null) {
+            bySender = new ArrayList<>();
+        }
+        bySender.add(parcel);
+
+        List<Parcel> byReceiver = this.parcelsByReceiver.getIfPresent(parcel.receiver());
+        if (byReceiver == null) {
+            byReceiver = new ArrayList<>();
+        }
+        byReceiver.add(parcel);
+
+        this.parcelsBySender.put(parcel.sender(), bySender);
+        this.parcelsByReceiver.put(parcel.receiver(), byReceiver);
     }
 
     private void invalidate(Parcel parcel) {
         this.parcelsByUuid.invalidate(parcel.uuid());
-        this.parcelsBySender.remove(parcel.sender(), parcel);
-        this.parcelsByReceiver.remove(parcel.receiver(), parcel);
+
+        List<Parcel> bySender = this.parcelsBySender.getIfPresent(parcel.sender());
+        if (bySender == null) {
+            bySender = new ArrayList<>();
+        }
+        bySender.remove(parcel);
+
+        List<Parcel> byReceiver = this.parcelsByReceiver.getIfPresent(parcel.receiver());
+        if (byReceiver == null) {
+            byReceiver = new ArrayList<>();
+        }
+        byReceiver.remove(parcel);
+
+        this.parcelsBySender.put(parcel.sender(), bySender);
+        this.parcelsByReceiver.put(parcel.receiver(), byReceiver);
     }
 }
