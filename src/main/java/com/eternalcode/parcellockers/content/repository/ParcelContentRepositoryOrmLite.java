@@ -29,8 +29,8 @@ public class ParcelContentRepositoryOrmLite extends AbstractRepositoryOrmLite im
     }
 
     @Override
-    public void delete(UUID uniqueId) {
-        this.deleteById(ParcelContentTable.class, uniqueId);
+    public CompletableFuture<Integer> delete(UUID uniqueId) {
+        return this.deleteById(ParcelContentTable.class, uniqueId);
     }
 
     @Override

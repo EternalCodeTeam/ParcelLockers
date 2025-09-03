@@ -11,7 +11,7 @@ import java.util.concurrent.CompletableFuture;
 
 public interface LockerRepository {
 
-    CompletableFuture<Void> save(Locker locker);
+    CompletableFuture<Locker> save(Locker locker);
 
     CompletableFuture<Optional<List<Locker>>> fetchAll();
 

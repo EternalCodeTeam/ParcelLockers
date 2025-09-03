@@ -1,10 +1,12 @@
 package com.eternalcode.parcellockers.locker;
 
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
+import com.eternalcode.parcellockers.locker.validation.LockerValidationService;
 import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.PageResult;
 import com.eternalcode.parcellockers.shared.Position;
+import com.eternalcode.parcellockers.shared.validation.ValidationResult;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import java.time.Duration;
@@ -12,18 +14,21 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import org.bukkit.command.CommandSender;
 
 // TODO: Implement validation
 public class LockerManager {
 
     private final LockerRepository lockerRepository;
+    private final LockerValidationService validationService;
 
     private final Cache<UUID, Locker> lockersByUUID;
     private final Cache<Position, Locker> lockersByPosition;
 
-    public LockerManager(LockerRepository lockerRepository) {
+    public LockerManager(LockerRepository lockerRepository, LockerValidationService validationService) {
         this.lockerRepository = lockerRepository;
+        this.validationService = validationService;
 
         this.cacheAll();
         this.lockersByUUID = Caffeine.newBuilder()
@@ -81,35 +86,44 @@ public class LockerManager {
         return this.lockerRepository.fetchPage(page);
     }
 
-    public Locker getOrCreate(UUID uniqueId, String name, Position position) {
+    public CompletableFuture<Locker> getOrCreate(UUID uniqueId, String name, Position position) {
         Locker lockerByUUID = this.lockersByUUID.getIfPresent(uniqueId);
         if (lockerByUUID != null) {
-            return lockerByUUID;
+            return CompletableFuture.completedFuture(lockerByUUID);
         }
 
         Locker lockerByPosition = this.lockersByPosition.getIfPresent(position);
         if (lockerByPosition != null) {
-            return lockerByPosition;
+            return CompletableFuture.completedFuture(lockerByPosition);
         }
 
         return this.create(uniqueId, name, position);
     }
 
-    public Locker create(UUID uniqueId, String name, Position position) {
-        if (this.lockersByUUID.getIfPresent(uniqueId) != null) {
-            throw new IllegalStateException("Locker with UUID " + uniqueId + " already exists in cache");
-        }
+    public CompletableFuture<Locker> create(UUID uniqueId, String name, Position position) {
+        return CompletableFuture.supplyAsync(() -> {
 
-        if (this.lockersByPosition.getIfPresent(position) != null) {
-            throw new IllegalStateException("Locker at position " + position + " already exists in cache");
-        }
+            ValidationResult validation = this.validationService.validateCreateParameters(uniqueId, name, position);
+            if (!validation.isValid()) {
+                throw new IllegalArgumentException(validation.errorMessage());
+            }
 
-        Locker locker = new Locker(uniqueId, name, position);
-        this.lockersByUUID.put(uniqueId, locker);
-        this.lockersByPosition.put(position, locker);
-        this.lockerRepository.save(locker);
+            Optional<Locker> existingByUUID = Optional.ofNullable(this.lockersByUUID.get(uniqueId, uuid -> null));
+            Optional<Locker> existingByPosition = Optional.ofNullable(this.lockersByPosition.get(position, pos -> null));
 
-        return locker;
+            ValidationResult conflictCheck = this.validationService.validateNoConflicts(
+                uniqueId, position, existingByUUID, existingByPosition);
+
+            if (!conflictCheck.isValid()) {
+                throw new IllegalStateException(conflictCheck.errorMessage());
+            }
+
+            Locker locker = new Locker(uniqueId, name, position);
+            this.lockersByUUID.put(uniqueId, locker);
+            this.lockersByPosition.put(position, locker);
+
+            return this.lockerRepository.save(locker);
+        }).thenCompose(Function.identity());
     }
 
     public void delete(UUID uniqueId) {

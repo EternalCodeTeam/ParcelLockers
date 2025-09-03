@@ -27,6 +27,8 @@ import com.eternalcode.parcellockers.locker.controller.LockerBreakController;
 import com.eternalcode.parcellockers.locker.controller.LockerInteractionController;
 import com.eternalcode.parcellockers.locker.controller.LockerPlaceController;
 import com.eternalcode.parcellockers.locker.repository.LockerRepositoryOrmLite;
+import com.eternalcode.parcellockers.locker.validation.LockerValidationService;
+import com.eternalcode.parcellockers.locker.validation.LockerValidator;
 import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.parcel.ParcelService;
 import com.eternalcode.parcellockers.parcel.ParcelServiceImpl;
@@ -115,7 +117,8 @@ public final class ParcelLockers extends JavaPlugin {
         );
 
         UserManager userManager = new UserManagerImpl(userRepository);
-        LockerManager lockerManager = new LockerManager(lockerRepository);
+        LockerValidationService lockerValidationService = new LockerValidator();
+        LockerManager lockerManager = new LockerManager(lockerRepository, lockerValidationService);
         ParcelContentManager parcelContentManager = new ParcelContentManager(parcelContentRepository);
         ItemStorageManager itemStorageManager = new ItemStorageManager(itemStorageRepository);
         DeliveryManager deliveryManager = new DeliveryManager(deliveryRepository);

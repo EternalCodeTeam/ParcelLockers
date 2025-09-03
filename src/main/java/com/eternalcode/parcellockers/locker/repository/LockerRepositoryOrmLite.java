@@ -30,8 +30,8 @@ public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     }
 
     @Override
-    public CompletableFuture<Void> save(Locker locker) {
-        return this.saveIfNotExist(LockerTable.class, LockerTable.from(locker)).thenApply(dao -> null);
+    public CompletableFuture<Locker> save(Locker locker) {
+        return this.saveIfNotExist(LockerTable.class, LockerTable.from(locker)).thenApply(LockerTable::toLocker);
     }
 
     @Override

@@ -11,7 +11,7 @@ public interface ParcelContentRepository {
 
     CompletableFuture<Optional<ParcelContent>> fetch(UUID uniqueId);
 
-    void delete(UUID uniqueId);
+    CompletableFuture<Integer> delete(UUID uniqueId);
 
     CompletableFuture<Integer> deleteAll();
 

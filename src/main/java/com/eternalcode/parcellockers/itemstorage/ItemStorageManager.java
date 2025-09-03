@@ -54,7 +54,10 @@ public class ItemStorageManager {
     }
 
     private void cacheAll() {
-        this.itemStorageRepository.fetchAll().thenAccept(all -> all.ifPresent(list -> list.forEach(itemStorage -> this.cache.put(itemStorage.owner(), itemStorage))));
+        this.itemStorageRepository.fetchAll()
+            .thenAccept(all -> all.ifPresent(list -> list.forEach(itemStorage -> this.cache.put(
+                itemStorage.owner(),
+                itemStorage))));
     }
     
     public void delete(UUID parcel) {

@@ -8,11 +8,13 @@ import java.util.concurrent.CompletableFuture;
 
 public interface DeliveryRepository {
 
-    void save(Delivery delivery);
+    CompletableFuture<Void> save(Delivery delivery);
 
     CompletableFuture<Optional<Delivery>> fetch(UUID parcel);
 
-    void delete(UUID parcel);
+    CompletableFuture<Integer> delete(UUID parcel);
+
+    CompletableFuture<Integer> deleteAll();
 
     CompletableFuture<Optional<List<Delivery>>> fetchAll();
 }
