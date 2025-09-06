@@ -18,6 +18,7 @@ public class LoadUserController implements Listener {
     }
 
     @EventHandler
+    @Deprecated
     void onLoad(ServerLoadEvent event) {
         for (Player player : this.server.getOnlinePlayers()) {
             this.userManager.create(player.getUniqueId(), player.getName());
