@@ -66,6 +66,12 @@ public class ParcelListGui implements GuiView {
                 return;
             }
 
+            if (result.items().isEmpty()) {
+                gui.setItem(22, this.guiSettings.noParcelsItem.toGuiItem());
+                this.scheduler.run(() -> gui.open(player));
+                return;
+            }
+
             ConfigItem item = this.guiSettings.parcelItem;
 
             List<CompletableFuture<GuiItem>> itemFutures = result.items().stream()

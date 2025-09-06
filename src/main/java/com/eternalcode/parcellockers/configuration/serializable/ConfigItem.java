@@ -1,8 +1,9 @@
 package com.eternalcode.parcellockers.configuration.serializable;
 
+import static com.eternalcode.commons.adventure.AdventureUtil.resetItalic;
+
 import com.eternalcode.commons.adventure.AdventureLegacyColorPostProcessor;
 import com.eternalcode.commons.adventure.AdventureLegacyColorPreProcessor;
-import com.eternalcode.commons.adventure.AdventureUtil;
 import dev.triumphteam.gui.builder.item.PaperItemBuilder;
 import dev.triumphteam.gui.components.GuiAction;
 import dev.triumphteam.gui.guis.GuiItem;
@@ -36,8 +37,8 @@ public class ConfigItem implements Serializable, Cloneable {
 
     public GuiItem toGuiItem(GuiAction<InventoryClickEvent> action) {
         return PaperItemBuilder.from(this.type)
-            .name(AdventureUtil.resetItalic(this.miniMessage.deserialize(this.name)))
-            .lore(this.lore.stream().map(element -> AdventureUtil.resetItalic(this.miniMessage.deserialize(element))).toList())
+            .name(resetItalic(this.miniMessage.deserialize(this.name)))
+            .lore(this.lore.stream().map(element -> resetItalic(this.miniMessage.deserialize(element))).toList())
             .flags(ItemFlag.HIDE_ENCHANTS)
             .glow(this.glow)
             .asGuiItem(action);
@@ -45,8 +46,8 @@ public class ConfigItem implements Serializable, Cloneable {
 
     public @NotNull PaperItemBuilder toBuilder() {
         return PaperItemBuilder.from(this.type)
-            .name(AdventureUtil.resetItalic(this.miniMessage.deserialize(this.name)))
-            .lore(this.lore.stream().map(element -> AdventureUtil.resetItalic(this.miniMessage.deserialize(element))).toList())
+            .name(resetItalic(this.miniMessage.deserialize(this.name)))
+            .lore(this.lore.stream().map(element -> resetItalic(this.miniMessage.deserialize(element))).toList())
             .flags(ItemFlag.HIDE_ENCHANTS)
             .glow(this.glow);
     }

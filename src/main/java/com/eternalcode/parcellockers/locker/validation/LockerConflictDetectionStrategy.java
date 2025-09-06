@@ -6,6 +6,7 @@ import com.eternalcode.parcellockers.shared.validation.ValidationResult;
 import java.util.Optional;
 import java.util.UUID;
 
+@FunctionalInterface
 public interface LockerConflictDetectionStrategy {
 
     ValidationResult detectConflicts(

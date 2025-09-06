@@ -1,6 +1,7 @@
 package com.eternalcode.parcellockers.gui.implementation.remote;
 
-import com.eternalcode.commons.adventure.AdventureUtil;
+import static com.eternalcode.commons.adventure.AdventureUtil.resetItalic;
+
 import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig.GuiSettings;
 import com.eternalcode.parcellockers.configuration.serializable.ConfigItem;
@@ -74,11 +75,11 @@ public class SentParcelsGui implements GuiView {
 
                         List<Component> newLore = processedLore
                             .stream()
-                            .map(line -> AdventureUtil.resetItalic(this.miniMessage.deserialize(line)))
+                            .map(line -> resetItalic(this.miniMessage.deserialize(line)))
                             .toList();
 
                         item.lore(newLore);
-                        item.name(AdventureUtil.resetItalic(
+                        item.name(resetItalic(
                             this.miniMessage.deserialize(
                                 parcelItem.name().replace("{NAME}", parcel.name())
                             )

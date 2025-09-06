@@ -1,6 +1,7 @@
 package com.eternalcode.parcellockers.gui.implementation.locker;
 
-import com.eternalcode.commons.adventure.AdventureUtil;
+import static com.eternalcode.commons.adventure.AdventureUtil.resetItalic;
+
 import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig.GuiSettings;
 import com.eternalcode.parcellockers.configuration.serializable.ConfigItem;
@@ -388,7 +389,7 @@ public class SendingGui implements GuiView {
         itemLore.add(appendLore);
 
         return item.toBuilder()
-            .lore(itemLore.stream().map(element -> AdventureUtil.resetItalic(this.miniMessage.deserialize(element))).toList())
+            .lore(itemLore.stream().map(element -> resetItalic(this.miniMessage.deserialize(element))).toList())
             .glow(true)
             .build();
     }
