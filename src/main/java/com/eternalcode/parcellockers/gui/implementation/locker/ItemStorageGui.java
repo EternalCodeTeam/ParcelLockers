@@ -110,14 +110,13 @@ public class ItemStorageGui {
                             .placeholder("{ITEMS}", MaterialUtil.format(item.getType()))
                             .player(player.getUniqueId())
                             .send();
-                        return;
                     }
                 }
                 items.add(item);
             }
 
-            this.guiManager.deleteItemStorage(player.getUniqueId());
-            this.guiManager.saveItemStorage(player.getUniqueId(), items);
+            this.guiManager.deleteItemStorage(player.getUniqueId())
+                .thenAccept(action -> this.guiManager.saveItemStorage(player.getUniqueId(), items));
         });
 
         this.guiManager.getItemStorage(player.getUniqueId()).thenAccept(itemStorage -> {

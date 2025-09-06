@@ -21,11 +21,12 @@ public class ItemStorageManager {
     public ItemStorageManager(ItemStorageRepository itemStorageRepository) {
         this.itemStorageRepository = itemStorageRepository;
 
-        this.cacheAll();
         this.cache = Caffeine.newBuilder()
             .expireAfterWrite(6, TimeUnit.HOURS)
             .maximumSize(10_000)
             .build();
+
+        this.cacheAll();
     }
 
     public CompletableFuture<Optional<ItemStorage>> get(UUID parcelId) {

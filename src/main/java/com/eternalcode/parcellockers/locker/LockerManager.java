@@ -30,7 +30,6 @@ public class LockerManager {
         this.lockerRepository = lockerRepository;
         this.validationService = validationService;
 
-        this.cacheAll();
         this.lockersByUUID = Caffeine.newBuilder()
             .expireAfterAccess(Duration.ofHours(2))
             .maximumSize(10_000)
@@ -39,6 +38,8 @@ public class LockerManager {
             .expireAfterAccess(Duration.ofHours(2))
             .maximumSize(10_000)
             .build();
+
+        this.cacheAll();
     }
 
     public CompletableFuture<Optional<Locker>> get(UUID uniqueId) {

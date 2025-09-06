@@ -45,7 +45,6 @@ public class ParcelServiceImpl implements ParcelService {
         this.parcelContentRepository = parcelContentRepository;
         this.scheduler = scheduler;
 
-        this.cacheAll();
         this.parcelsByUuid = Caffeine.newBuilder()
             .expireAfterAccess(3, TimeUnit.HOURS)
             .maximumSize(10_000)
@@ -60,11 +59,13 @@ public class ParcelServiceImpl implements ParcelService {
             .expireAfterAccess(3, TimeUnit.HOURS)
             .maximumSize(10_000)
             .build();
+
+        this.cacheAll();
     }
 
     @Override
     public CompletableFuture<Void> send(Player sender, Parcel parcel, List<ItemStack> items) {
-        this.parcelRepository.save(parcel).whenComplete((v, throwable) -> {
+        this.parcelRepository.save(parcel).whenComplete((unused, throwable) -> {
             if (throwable != null) {
                 this.noticeService.create()
                     .notice(messages -> messages.parcel.cannotSend)
@@ -91,7 +92,7 @@ public class ParcelServiceImpl implements ParcelService {
     @Override
     public CompletableFuture<Void> delete(CommandSender sender, Parcel parcel) {
         return this.parcelRepository.delete(parcel)
-            .thenAccept(v -> {
+            .thenAccept(unused -> {
                 this.noticeService.create()
                     .notice(messages -> messages.parcel.deleted)
                     .viewer(sender)
@@ -155,33 +156,50 @@ public class ParcelServiceImpl implements ParcelService {
     }
 
     @Override
-    public CompletableFuture<PageResult<Parcel>> getBySender(UUID sender, Page page) {
-        List<Parcel> cached = List.copyOf(this.parcelsBySender.getIfPresent(sender));
-        boolean hasNextPage = cached.size() > page.getLimit();
-        if (!cached.isEmpty() && page.getOffset() == 0 && !hasNextPage) {
-            return CompletableFuture.completedFuture(new PageResult<>(cached, false));
+    public CompletableFuture<PageResult<Parcel>> getBySender(UUID receiver, Page page) {
+        List<Parcel> cached = this.parcelsBySender.getIfPresent(receiver);
+
+        if (cached != null) {
+            int fromIndex = Math.min(page.getOffset(), cached.size());
+            int toIndex = Math.min(page.getOffset() + page.getLimit(), cached.size());
+
+            List<Parcel> pageItems = cached.subList(fromIndex, toIndex);
+            boolean hasNextPage = toIndex < cached.size();
+
+            return CompletableFuture.completedFuture(new PageResult<>(pageItems, hasNextPage));
         }
-        return this.parcelRepository.fetchBySender(sender, page).thenApply(result -> {
-            result.items().forEach(this::cache);
-            return result;
-        });
+
+        return this.parcelRepository.fetchBySender(receiver, page)
+            .thenApply(result -> {
+                result.items().forEach(this::cache);
+                return result;
+            });
     }
 
     @Override
     public CompletableFuture<PageResult<Parcel>> getByReceiver(UUID receiver, Page page) {
-        List<Parcel> cached = List.copyOf(this.parcelsByReceiver.getIfPresent(receiver));
-        boolean hasNextPage = cached.size() > page.getLimit();
-        if (!cached.isEmpty() && page.getOffset() == 0 && !hasNextPage) {
-            return CompletableFuture.completedFuture(new PageResult<>(cached, false));
+        List<Parcel> cached = this.parcelsByReceiver.getIfPresent(receiver);
+
+        if (cached != null) {
+            int fromIndex = Math.min(page.getOffset(), cached.size());
+            int toIndex = Math.min(page.getOffset() + page.getLimit(), cached.size());
+
+            List<Parcel> pageItems = cached.subList(fromIndex, toIndex);
+            boolean hasNextPage = toIndex < cached.size();
+
+            return CompletableFuture.completedFuture(new PageResult<>(pageItems, hasNextPage));
         }
-        return this.parcelRepository.fetchByReceiver(receiver, page).thenApply(result -> {
-            result.items().forEach(this::cache);
-            return result;
-        });
+
+        return this.parcelRepository.fetchByReceiver(receiver, page)
+            .thenApply(result -> {
+                result.items().forEach(this::cache);
+                return result;
+            });
     }
 
     private void cacheAll() {
-        this.parcelRepository.fetchAll().thenAccept(optional -> optional.ifPresent(parcels -> parcels.forEach(this::cache)));
+        this.parcelRepository.fetchAll()
+            .thenAccept(optional -> optional.ifPresent(parcels -> parcels.forEach(this::cache)));
     }
 
     @Override
@@ -221,38 +239,25 @@ public class ParcelServiceImpl implements ParcelService {
     private void cache(Parcel parcel) {
         this.parcelsByUuid.put(parcel.uuid(), parcel);
 
-        List<Parcel> bySender = this.parcelsBySender.getIfPresent(parcel.sender());
-        if (bySender == null) {
-            bySender = new ArrayList<>();
-        }
+        List<Parcel> bySender = this.parcelsBySender.get(parcel.sender(), k -> new ArrayList<>());
         bySender.add(parcel);
-
-        List<Parcel> byReceiver = this.parcelsByReceiver.getIfPresent(parcel.receiver());
-        if (byReceiver == null) {
-            byReceiver = new ArrayList<>();
-        }
-        byReceiver.add(parcel);
-
         this.parcelsBySender.put(parcel.sender(), bySender);
+
+        List<Parcel> byReceiver = this.parcelsByReceiver.get(parcel.receiver(), k -> new ArrayList<>());
+        byReceiver.add(parcel);
         this.parcelsByReceiver.put(parcel.receiver(), byReceiver);
     }
+
 
     private void invalidate(Parcel parcel) {
         this.parcelsByUuid.invalidate(parcel.uuid());
 
-        List<Parcel> bySender = this.parcelsBySender.getIfPresent(parcel.sender());
-        if (bySender == null) {
-            bySender = new ArrayList<>();
-        }
+        List<Parcel> bySender = this.parcelsBySender.get(parcel.sender(), k -> new ArrayList<>());
         bySender.remove(parcel);
-
-        List<Parcel> byReceiver = this.parcelsByReceiver.getIfPresent(parcel.receiver());
-        if (byReceiver == null) {
-            byReceiver = new ArrayList<>();
-        }
-        byReceiver.remove(parcel);
-
         this.parcelsBySender.put(parcel.sender(), bySender);
+
+        List<Parcel> byReceiver = this.parcelsByReceiver.get(parcel.receiver(), k -> new ArrayList<>());
+        byReceiver.remove(parcel);
         this.parcelsByReceiver.put(parcel.receiver(), byReceiver);
     }
 }
