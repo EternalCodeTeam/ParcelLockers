@@ -13,15 +13,15 @@ import org.bukkit.inventory.ItemStack;
 
 public interface ParcelService {
 
-    void send(Player sender, Parcel parcel, List<ItemStack> items);
+    CompletableFuture<Void> send(Player sender, Parcel parcel, List<ItemStack> items);
 
-    void update(Parcel parcel);
+    CompletableFuture<Void> update(Parcel parcel);
 
-    void collect(Player player, Parcel parcel);
+    CompletableFuture<Void> collect(Player player, Parcel parcel);
 
-    void delete(CommandSender sender, Parcel parcel);
+    CompletableFuture<Void> delete(CommandSender sender, Parcel parcel);
 
-    void deleteAll(CommandSender sender, NoticeService noticeService);
+    CompletableFuture<Void> deleteAll(CommandSender sender, NoticeService noticeService);
 
     CompletableFuture<Optional<Parcel>> get(UUID uuid);
 

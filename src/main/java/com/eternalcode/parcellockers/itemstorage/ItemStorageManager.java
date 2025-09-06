@@ -39,16 +39,16 @@ public class ItemStorageManager {
         });
     }
 
-    public ItemStorage getOrCreate(UUID parcelId, List<ItemStack> items) {
-        return this.cache.get(parcelId, key -> this.create(key, items));
+    public ItemStorage getOrCreate(UUID owner, List<ItemStack> items) {
+        return this.cache.get(owner, key -> this.create(key, items));
     }
 
-    public ItemStorage create(UUID parcel, List<ItemStack> items) {
-        ItemStorage content = new ItemStorage(parcel, items);
-        if (this.cache.getIfPresent(parcel) != null) {
-            throw new IllegalStateException("ParcelContent for parcel " + parcel + " already exists. Use ParcelContentManager#getOrCreate method instead.");
+    public ItemStorage create(UUID owner, List<ItemStack> items) {
+        ItemStorage content = new ItemStorage(owner, items);
+        if (this.cache.getIfPresent(owner) != null) {
+            throw new IllegalStateException("ItemStorage for owner " + owner + " already exists. Use ItemStorageManager#getOrCreate method instead.");
         }
-        this.cache.put(parcel, content);
+        this.cache.put(owner, content);
         this.itemStorageRepository.save(content);
         return content;
     }
@@ -60,13 +60,13 @@ public class ItemStorageManager {
                 itemStorage))));
     }
     
-    public void delete(UUID parcel) {
+    public CompletableFuture<Void> delete(UUID parcel) {
         this.cache.invalidate(parcel);
-        this.itemStorageRepository.delete(parcel);
+        return this.itemStorageRepository.delete(parcel).thenApply(i -> null);
     }
 
-    public void deleteAll(CommandSender sender, NoticeService noticeService) {
-        this.itemStorageRepository.deleteAll().thenAccept(deleted -> {
+    public CompletableFuture<Void> deleteAll(CommandSender sender, NoticeService noticeService) {
+        return this.itemStorageRepository.deleteAll().thenAccept(deleted -> {
             noticeService.create()
                 .viewer(sender)
                 .notice(messages -> messages.admin.deletedItemStorages)

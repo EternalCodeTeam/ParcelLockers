@@ -6,6 +6,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public class DeliveryManager {
 
@@ -37,9 +38,11 @@ public class DeliveryManager {
         return delivery;
     }
 
-    public void delete(UUID parcel) {
-        this.deliveryCache.invalidate(parcel);
-        this.deliveryRepository.delete(parcel);
+    public CompletableFuture<Void> delete(UUID parcel) {
+        return this.deliveryRepository.delete(parcel).thenApply(i -> {
+            this.deliveryCache.invalidate(parcel);
+            return null;
+        });
     }
 
     private void cacheAll() {

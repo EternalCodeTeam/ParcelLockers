@@ -87,6 +87,8 @@ public class ItemStorageGui {
 
         gui.setCloseGuiAction(event -> {
             ItemStack[] contents = gui.getInventory().getContents();
+            // todo fix items not saving after clicking the confirm button on the gui
+            // when no new items were added
 
             List<ItemStack> items = new ArrayList<>();
 

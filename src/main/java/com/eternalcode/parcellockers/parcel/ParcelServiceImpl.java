@@ -63,7 +63,7 @@ public class ParcelServiceImpl implements ParcelService {
     }
 
     @Override
-    public void send(Player sender, Parcel parcel, List<ItemStack> items) {
+    public CompletableFuture<Void> send(Player sender, Parcel parcel, List<ItemStack> items) {
         this.parcelRepository.save(parcel).whenComplete((v, throwable) -> {
             if (throwable != null) {
                 this.noticeService.create()
@@ -79,17 +79,18 @@ public class ParcelServiceImpl implements ParcelService {
                 .player(sender.getUniqueId())
                 .send();
         });
+        return null;
     }
 
     @Override
-    public void update(Parcel updated) {
-        this.parcelRepository.update(updated);
+    public CompletableFuture<Void> update(Parcel updated) {
         this.cache(updated);
+        return this.parcelRepository.update(updated);
     }
 
     @Override
-    public void delete(CommandSender sender, Parcel parcel) {
-        this.parcelRepository.delete(parcel)
+    public CompletableFuture<Void> delete(CommandSender sender, Parcel parcel) {
+        return this.parcelRepository.delete(parcel)
             .thenAccept(v -> {
                 this.noticeService.create()
                     .notice(messages -> messages.parcel.deleted)
@@ -107,8 +108,8 @@ public class ParcelServiceImpl implements ParcelService {
     }
 
     @Override
-    public void collect(Player player, Parcel parcel) {
-        this.parcelContentRepository.fetch(parcel.uuid()).thenAccept(optional -> {
+    public CompletableFuture<Void> collect(Player player, Parcel parcel) {
+        return this.parcelContentRepository.fetch(parcel.uuid()).thenAccept(optional -> {
             if (optional.isEmpty()) {
                 this.noticeService.create()
                     .notice(messages -> messages.parcel.cannotCollect)
@@ -129,7 +130,7 @@ public class ParcelServiceImpl implements ParcelService {
             items.forEach(item -> this.scheduler.run(() -> ItemUtil.giveItem(player, item)));
 
 
-            // TODO: Do not delete, archive instead
+            // TODO in the future: Do not delete, archive instead
             this.invalidate(parcel);
             this.parcelRepository.delete(parcel);
             this.parcelContentRepository.delete(parcel.uuid());
@@ -185,8 +186,8 @@ public class ParcelServiceImpl implements ParcelService {
 
     @Override
     public CompletableFuture<Integer> delete(UUID uuid) {
-        this.parcelsByUuid.invalidate(uuid);
         return this.parcelRepository.delete(uuid).thenApply(deleted -> {
+            this.parcelsByUuid.invalidate(uuid);
             if (deleted > 0) {
                 Parcel cached = this.parcelsByUuid.getIfPresent(uuid);
                 if (cached != null) {
@@ -203,8 +204,8 @@ public class ParcelServiceImpl implements ParcelService {
     }
 
     @Override
-    public void deleteAll(CommandSender sender, NoticeService noticeService) {
-        this.parcelRepository.deleteAll().thenAccept(deleted -> {
+    public CompletableFuture<Void> deleteAll(CommandSender sender, NoticeService noticeService) {
+        return this.parcelRepository.deleteAll().thenAccept(deleted -> {
             noticeService.create()
                 .notice(messages -> messages.admin.deletedParcels)
                 .viewer(sender)

@@ -126,18 +126,17 @@ public class LockerManager {
         }).thenCompose(Function.identity());
     }
 
-    public void delete(UUID uniqueId) {
-        this.lockersByUUID.invalidate(uniqueId);
-        this.lockerRepository.delete(uniqueId).thenApply(deleted -> {
+    public CompletableFuture<Void> delete(UUID uniqueId) {
+        return this.lockerRepository.delete(uniqueId).thenAccept(deleted -> {
             if (deleted > 0) {
+                this.lockersByUUID.invalidate(uniqueId);
                 this.lockersByPosition.asMap().values().removeIf(locker -> locker.uuid().equals(uniqueId));
             }
-            return deleted;
         });
     }
 
-    public void deleteAll(CommandSender sender, NoticeService noticeService) {
-        this.lockerRepository.deleteAll().thenAccept(deleted -> {
+    public CompletableFuture<Void> deleteAll(CommandSender sender, NoticeService noticeService) {
+        return this.lockerRepository.deleteAll().thenAccept(deleted -> {
             noticeService.create()
                 .notice(messages -> messages.admin.deletedLockers)
                 .placeholder("{COUNT}", deleted.toString())
