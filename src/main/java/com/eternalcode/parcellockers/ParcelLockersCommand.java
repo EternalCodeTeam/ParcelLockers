@@ -34,8 +34,8 @@ public class ParcelLockersCommand {
             .send();
     }
 
-    @Execute(name = "give")
-    void give(@Sender Player player) {
+    @Execute(name = "get")
+    void get(@Sender Player player) {
         ItemStack parcelItem = this.config.settings.parcelLockerItem.toGuiItem().getItemStack();
         player.getInventory().addItem(parcelItem);
     }
