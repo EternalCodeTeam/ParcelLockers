@@ -10,6 +10,8 @@ import org.bukkit.Sound;
 @Header({
     "# This file contains messages used by the ParcelLockers plugin.",
     "# You can customize these messages to fit your server's theme or language.",
+    "# You may use legacy color codes with '&' (e.g., &a for green, &c for red)",
+    "# MiniMessage formatting is also supported for advanced text styling."
 })
 public class MessageConfig extends OkaeriConfig {
 

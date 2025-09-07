@@ -12,7 +12,6 @@ import java.util.concurrent.TimeUnit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.ItemStack;
 
-// TODO: Use CompletableFuture wherever possible
 public class ParcelContentManager {
 
     private final Cache<UUID, ParcelContent> cache;
@@ -59,8 +58,8 @@ public class ParcelContentManager {
         });
     }
 
-    public void deleteAll(CommandSender sender, NoticeService noticeService) {
-        this.contentRepository.deleteAll().thenAccept(deleted -> {
+    public CompletableFuture<Void> deleteAll(CommandSender sender, NoticeService noticeService) {
+        return this.contentRepository.deleteAll().thenAccept(deleted -> {
             noticeService.create()
                 .viewer(sender)
                 .notice(messages -> messages.admin.deletedContents)

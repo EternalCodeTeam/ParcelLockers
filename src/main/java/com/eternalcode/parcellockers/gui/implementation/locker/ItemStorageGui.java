@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -52,18 +51,6 @@ public class ItemStorageGui {
 
         GuiItem backgroundItem = this.guiSettings.mainGuiBackgroundItem.toGuiItem(event -> event.setCancelled(true));
 
-        GuiItem confirmItem = this.guiSettings.confirmItemsItem.toGuiItem(event -> {
-            event.setCancelled(true);
-            new SendingGui(
-                this.scheduler,
-                this.guiSettings,
-                this.miniMessage,
-                this.noticeService,
-                this.guiManager,
-                this.skullAPI,
-                this.state
-            ).show(player);
-        });
 
         switch (size) {
             case SMALL -> gui = Gui.storage()
@@ -81,16 +68,20 @@ public class ItemStorageGui {
             default -> throw new IllegalStateException("Unexpected value: " + size);
         }
 
+
+        GuiItem confirmItem = this.guiSettings.confirmItemsItem.toGuiItem(event -> {
+            event.setCancelled(true);
+            gui.close(player);
+        });
+
         // Set background items and confirm/cancel items + close gui action
         IntStream.rangeClosed(1, 9).forEach(i -> gui.setItem(gui.getRows(), i, backgroundItem));
         gui.setItem(gui.getRows(), 5, confirmItem);
 
         gui.setCloseGuiAction(event -> {
             ItemStack[] contents = gui.getInventory().getContents();
-            // todo fix items not saving after clicking the confirm button on the gui
-            // when no new items were added
-
             List<ItemStack> items = new ArrayList<>();
+            List<ItemStack> illegalItems = new ArrayList<>();
 
             for (int i = 0; i < contents.length - 9; i++) {
                 ItemStack item = contents[i];
@@ -99,24 +90,35 @@ public class ItemStorageGui {
                     continue;
                 }
 
-                // todo fix duplication glitch with illegal items
-                // if the item is illegal, give it back to the player and do not save it
-                for (Material type : this.guiSettings.illegalItems) {
-                    if (item.getType() == type) {
-                        ItemUtil.giveItem(player, item);
-                        gui.removeItem(item);
-                        this.noticeService.create()
-                            .notice(messages -> messages.parcel.illegalItem)
-                            .placeholder("{ITEMS}", MaterialUtil.format(item.getType()))
-                            .player(player.getUniqueId())
-                            .send();
-                    }
+                if (this.guiSettings.illegalItems.contains(item.getType())) {
+                    illegalItems.add(item);
+                } else {
+                    items.add(item);
                 }
-                items.add(item);
+            }
+
+            for (ItemStack illegalItem : illegalItems) {
+                ItemUtil.giveItem(player, illegalItem);
+                this.noticeService.create()
+                    .notice(messages -> messages.parcel.illegalItem)
+                    .placeholder("{ITEMS}", MaterialUtil.format(illegalItem.getType()))
+                    .player(player.getUniqueId())
+                    .send();
             }
 
             this.guiManager.deleteItemStorage(player.getUniqueId())
-                .thenAccept(action -> this.guiManager.saveItemStorage(player.getUniqueId(), items));
+                .thenAccept(action -> {
+                    this.guiManager.saveItemStorage(player.getUniqueId(), items);
+                    new SendingGui(
+                        this.scheduler,
+                        this.guiSettings,
+                        this.miniMessage,
+                        this.noticeService,
+                        this.guiManager,
+                        this.skullAPI,
+                        this.state
+                    ).show(player);
+                });
         });
 
         this.guiManager.getItemStorage(player.getUniqueId()).thenAccept(itemStorage -> {

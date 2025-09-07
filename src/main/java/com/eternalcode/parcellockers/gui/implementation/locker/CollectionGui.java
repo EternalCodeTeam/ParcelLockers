@@ -75,7 +75,7 @@ public class CollectionGui implements GuiView {
             result.items().stream()
                 .filter(parcel -> parcel.status() == ParcelStatus.DELIVERED)
                 .map(parcel -> this.createParcelItemAsync(parcel, parcelItem, player, refresher))
-                .collect(CompletableFutures.joinList())  // 🎯 Spotify magic!
+                .collect(CompletableFutures.joinList())
                 .thenAccept(suppliers -> {
                     for (Supplier<GuiItem> supplier : suppliers) {
                         refresher.addItem(supplier);

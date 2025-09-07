@@ -45,13 +45,13 @@ public class ItemStorageManager {
     }
 
     public ItemStorage create(UUID owner, List<ItemStack> items) {
-        ItemStorage content = new ItemStorage(owner, items);
+        ItemStorage itemStorage = new ItemStorage(owner, items);
         if (this.cache.getIfPresent(owner) != null) {
             throw new IllegalStateException("ItemStorage for owner " + owner + " already exists. Use ItemStorageManager#getOrCreate method instead.");
         }
-        this.cache.put(owner, content);
-        this.itemStorageRepository.save(content);
-        return content;
+        this.cache.put(owner, itemStorage);
+        this.itemStorageRepository.save(itemStorage);
+        return itemStorage;
     }
 
     private void cacheAll() {

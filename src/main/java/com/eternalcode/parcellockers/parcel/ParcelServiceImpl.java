@@ -65,7 +65,7 @@ public class ParcelServiceImpl implements ParcelService {
 
     @Override
     public CompletableFuture<Void> send(Player sender, Parcel parcel, List<ItemStack> items) {
-        this.parcelRepository.save(parcel).whenComplete((unused, throwable) -> {
+        return this.parcelRepository.save(parcel).whenComplete((unused, throwable) -> {
             if (throwable != null) {
                 this.noticeService.create()
                     .notice(messages -> messages.parcel.cannotSend)
@@ -80,7 +80,6 @@ public class ParcelServiceImpl implements ParcelService {
                 .player(sender.getUniqueId())
                 .send();
         });
-        return null;
     }
 
     @Override

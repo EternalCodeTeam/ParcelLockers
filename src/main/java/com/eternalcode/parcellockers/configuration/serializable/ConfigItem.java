@@ -18,7 +18,6 @@ import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.NotNull;
 
 @Getter
 @Setter
@@ -35,16 +34,7 @@ public class ConfigItem implements Serializable, Cloneable {
     private List<String> lore = List.of();
     private boolean glow = false;
 
-    public GuiItem toGuiItem(GuiAction<InventoryClickEvent> action) {
-        return PaperItemBuilder.from(this.type)
-            .name(resetItalic(this.miniMessage.deserialize(this.name)))
-            .lore(this.lore.stream().map(element -> resetItalic(this.miniMessage.deserialize(element))).toList())
-            .flags(ItemFlag.HIDE_ENCHANTS)
-            .glow(this.glow)
-            .asGuiItem(action);
-    }
-
-    public @NotNull PaperItemBuilder toBuilder() {
+    public PaperItemBuilder toBuilder() {
         return PaperItemBuilder.from(this.type)
             .name(resetItalic(this.miniMessage.deserialize(this.name)))
             .lore(this.lore.stream().map(element -> resetItalic(this.miniMessage.deserialize(element))).toList())
@@ -54,6 +44,10 @@ public class ConfigItem implements Serializable, Cloneable {
 
     public GuiItem toGuiItem() {
         return this.toBuilder().asGuiItem();
+    }
+
+    public GuiItem toGuiItem(GuiAction<InventoryClickEvent> action) {
+        return this.toBuilder().asGuiItem(action);
     }
 
     public ItemStack toItemStack() {

@@ -11,6 +11,7 @@ import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.shared.ScheduledGuiAction;
+import com.eternalcode.parcellockers.util.MaterialUtil;
 import de.rapha149.signgui.SignGUI;
 import de.rapha149.signgui.exception.SignGUIVersionException;
 import dev.rollczi.liteskullapi.SkullAPI;
@@ -140,7 +141,7 @@ public class SendingGui implements GuiView {
                 descriptionSignGui = SignGUI.builder()
                     .setColor(DyeColor.BLACK)
                     .setType(Material.OAK_SIGN)
-                    .setLine(0, "Enter parcel name:")
+                    .setLine(0, "Enter parcel description:")
                     .setHandler((p, result) -> {
                         String description = result.getLineWithoutColor(1);
 
@@ -172,7 +173,8 @@ public class SendingGui implements GuiView {
             }
         });
 
-        GuiItem storageItem = this.guiSettings.parcelStorageItem.toGuiItem(event -> {
+        ConfigItem parcelStorageItem = this.guiSettings.parcelStorageItem.clone();
+        GuiItem storageItem = parcelStorageItem.toGuiItem(event -> {
             ItemStorageGui storageGUI = new ItemStorageGui(
                 this.scheduler,
                 this.guiSettings,
@@ -288,6 +290,7 @@ public class SendingGui implements GuiView {
 
         this.updateNameItem();
         this.updateDescriptionItem();
+        this.updateStorageItem(player);
         if (this.state.receiver() != null) {
             this.guiManager.getUser(this.state.receiver()).thenAccept(userOptional ->
                 userOptional.ifPresent(user -> this.updateReceiverItem(player, user.name(), false)));
@@ -384,9 +387,40 @@ public class SendingGui implements GuiView {
         this.gui.updateItem(DESTINATION_ITEM_SLOT, this.createActiveItem(this.guiSettings.parcelDestinationLockerItem, line));
     }
 
+    public void updateStorageItem(Player player) {
+        this.guiManager.getItemStorage(player.getUniqueId()).thenAccept(result -> {
+            List<ItemStack> items = result.items();
+            if (items.isEmpty()) {
+                this.gui.updateItem(STORAGE_ITEM_SLOT, this.createActiveItem(this.guiSettings.parcelStorageItem, List.of()));
+                return;
+            }
+
+            List<String> lore = new ArrayList<>();
+            lore.add(this.guiSettings.parcelStorageItemsSetLine);
+
+            for (ItemStack item : items) {
+                lore.add(this.guiSettings.parcelStorageItemLine
+                    .replace("{ITEM}", MaterialUtil.format(item.getType()))
+                    .replace("{AMOUNT}", Integer.toString(item.getAmount()))
+                );
+            }
+            this.gui.updateItem(STORAGE_ITEM_SLOT, this.createActiveItem(this.guiSettings.parcelStorageItem, lore));
+        });
+    }
+
     private ItemStack createActiveItem(ConfigItem item, String appendLore) {
         List<String> itemLore = new ArrayList<>(item.lore());
         itemLore.add(appendLore);
+
+        return item.toBuilder()
+            .lore(itemLore.stream().map(element -> resetItalic(this.miniMessage.deserialize(element))).toList())
+            .glow(true)
+            .build();
+    }
+
+    private ItemStack createActiveItem(ConfigItem item, List<String> appendLore) {
+        List<String> itemLore = new ArrayList<>(item.lore());
+        itemLore.addAll(appendLore);
 
         return item.toBuilder()
             .lore(itemLore.stream().map(element -> resetItalic(this.miniMessage.deserialize(element))).toList())

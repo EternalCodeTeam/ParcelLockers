@@ -17,7 +17,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import org.bukkit.command.CommandSender;
 
-// TODO: Implement validation
 public class LockerManager {
 
     private final LockerRepository lockerRepository;

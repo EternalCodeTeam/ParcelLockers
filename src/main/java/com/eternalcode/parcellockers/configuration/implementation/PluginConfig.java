@@ -14,9 +14,11 @@ import org.bukkit.Material;
     "# ParcelLockers plugin configuration file.",
     "",
     "# You can change the settings here to customize the plugin behavior or appearance.",
-    "# If you want to reload the configuration, you can do it using the '/parcellockers reload' command."
+    "# If you want to reload the configuration, you can do it using the '/parcellockers reload' command.",
+    "# Both legacy color codes and MiniMessage formatting are supported in messages and GUI titles."
 })
 public class PluginConfig extends OkaeriConfig {
+
     public Settings settings = new Settings();
 
     @Comment({ "", "# The plugin GUI settings." })
@@ -207,6 +209,12 @@ public class PluginConfig extends OkaeriConfig {
             .name("&6\uD83D\uDCBE Parcel storage")
             .lore(List.of("&6» &eClick to add/remove items from this parcel."))
             .type(Material.CHEST);
+
+        @Comment({ "", "# The first line of lore when the parcel item storage contains items."})
+        public String parcelStorageItemsSetLine = "&6› &eCurrent items:";
+
+        @Comment({ "", "# The line of lore containing the item name and amount when the parcel item storage contains items."})
+        public String parcelStorageItemLine = "&6 - &e{AMOUNT}x {ITEM}";
 
         @Comment({ "", "# The item of the parcel name button" })
         public ConfigItem parcelNameItem = new ConfigItem()
