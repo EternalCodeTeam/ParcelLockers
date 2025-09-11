@@ -84,7 +84,7 @@ public class ParcelListGui implements GuiView {
                             .toList();
 
                         parcelItem.lore(newLore);
-                        parcelItem.name(this.miniMessage.deserialize(item.name().replace("{NAME}", parcel.name())));
+                        parcelItem.name(resetItalic(this.miniMessage.deserialize(item.name().replace("{NAME}", parcel.name()))));
 
                         return parcelItem.asGuiItem();
                     }))

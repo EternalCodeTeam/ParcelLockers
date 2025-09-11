@@ -206,9 +206,25 @@ public class SendingGui implements GuiView {
                     return;
                 }
 
+                if (this.state.parcelName() == null || this.state.parcelName().isEmpty()) {
+                    this.noticeService.create()
+                        .notice(messages -> messages.parcel.nameNotSet)
+                        .player(player.getUniqueId())
+                        .send();
+                    return;
+                }
+
                 if (this.state.receiver() == null) {
                     this.noticeService.create()
                         .notice(messages -> messages.parcel.receiverNotSet)
+                        .player(player.getUniqueId())
+                        .send();
+                    return;
+                }
+
+                if (this.state.destinationLocker() == null) {
+                    this.noticeService.create()
+                        .notice(messages -> messages.parcel.destinationNotSet)
                         .player(player.getUniqueId())
                         .send();
                     return;

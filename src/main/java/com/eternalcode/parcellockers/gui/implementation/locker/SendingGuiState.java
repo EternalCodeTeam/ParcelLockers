@@ -23,7 +23,7 @@ public class SendingGuiState {
 
     public SendingGuiState() {
         this.parcelName = null;
-        this.parcelDescription = null;
+        this.parcelDescription = "";
         this.size = ParcelSize.SMALL;
         this.receiver = null;
         this.priority = false;

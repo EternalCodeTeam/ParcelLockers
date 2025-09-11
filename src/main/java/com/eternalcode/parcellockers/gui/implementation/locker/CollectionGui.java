@@ -77,6 +77,11 @@ public class CollectionGui implements GuiView {
                 .map(parcel -> this.createParcelItemAsync(parcel, parcelItem, player, refresher))
                 .collect(CompletableFutures.joinList())
                 .thenAccept(suppliers -> {
+                    if (suppliers.isEmpty()) {
+                        gui.setItem(22, this.guiSettings.noParcelsItem.toGuiItem());
+                        this.scheduler.run(() -> gui.open(player));
+                        return;
+                    }
                     for (Supplier<GuiItem> supplier : suppliers) {
                         refresher.addItem(supplier);
                     }
@@ -102,7 +107,11 @@ public class CollectionGui implements GuiView {
     }
 
     private CompletableFuture<Supplier<GuiItem>> createParcelItemAsync(
-        Parcel parcel, ConfigItem parcelItem, Player player, PaginatedGuiRefresher refresher) {
+        Parcel parcel,
+        ConfigItem parcelItem,
+        Player player,
+        PaginatedGuiRefresher refresher
+    ) {
 
         return PlaceholderUtil.replaceParcelPlaceholdersAsync(parcel, parcelItem.lore(), this.guiManager)
             .thenApply(processedLore -> () -> {

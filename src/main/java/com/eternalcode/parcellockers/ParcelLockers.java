@@ -43,6 +43,8 @@ import com.eternalcode.parcellockers.user.controller.LoadUserController;
 import com.eternalcode.parcellockers.user.controller.PrepareUserController;
 import com.eternalcode.parcellockers.user.repository.UserRepository;
 import com.eternalcode.parcellockers.user.repository.UserRepositoryOrmLite;
+import com.eternalcode.parcellockers.user.validation.UserValidationService;
+import com.eternalcode.parcellockers.user.validation.UserValidator;
 import dev.rollczi.litecommands.LiteCommands;
 import dev.rollczi.litecommands.adventure.LiteAdventureExtension;
 import dev.rollczi.litecommands.annotations.LiteCommandsAnnotations;
@@ -116,7 +118,8 @@ public final class ParcelLockers extends JavaPlugin {
             scheduler
         );
 
-        UserManager userManager = new UserManagerImpl(userRepository);
+        UserValidationService userValidationService = new UserValidator();
+        UserManager userManager = new UserManagerImpl(userRepository, userValidationService);
         LockerValidationService lockerValidationService = new LockerValidator();
         LockerManager lockerManager = new LockerManager(lockerRepository, lockerValidationService);
         ParcelContentManager parcelContentManager = new ParcelContentManager(parcelContentRepository);

@@ -54,10 +54,10 @@ public class PluginConfig extends OkaeriConfig {
             .lore(List.of("&bPlace to create a parcel locker."));
 
         @Comment({"", "# Standard parcel sending duration"})
-        public Duration parcelSendDuration = Duration.ofSeconds(5);
+        public Duration parcelSendDuration = Duration.ofMinutes(30);
 
         @Comment({"", "# Parcel sending duration for priority parcels"})
-        public Duration priorityParcelSendDuration = Duration.ofSeconds(2);
+        public Duration priorityParcelSendDuration = Duration.ofSeconds(30);
     }
 
     public static class GuiSettings extends OkaeriConfig {
@@ -211,10 +211,10 @@ public class PluginConfig extends OkaeriConfig {
             .type(Material.CHEST);
 
         @Comment({ "", "# The first line of lore when the parcel item storage contains items."})
-        public String parcelStorageItemsSetLine = "&6› &eCurrent items:";
+        public String parcelStorageItemsSetLine = "  &6› &eCurrent items:";
 
         @Comment({ "", "# The line of lore containing the item name and amount when the parcel item storage contains items."})
-        public String parcelStorageItemLine = "&6 - &e{AMOUNT}x {ITEM}";
+        public String parcelStorageItemLine = "   &6- &e{AMOUNT}x {ITEM}";
 
         @Comment({ "", "# The item of the parcel name button" })
         public ConfigItem parcelNameItem = new ConfigItem()

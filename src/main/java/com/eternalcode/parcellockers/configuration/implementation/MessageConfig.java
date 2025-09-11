@@ -84,8 +84,16 @@ public class MessageConfig extends OkaeriConfig {
             .chat("&2✔ &aParcel collected successfully.")
             .sound(Sound.ENTITY_PLAYER_LEVELUP.key())
             .build();
+        public Notice nameNotSet = Notice.builder()
+            .chat("&4✘ &cThe parcel name is not set!")
+            .sound(Sound.ENTITY_ENDERMAN_AMBIENT.key())
+            .build();
         public Notice receiverNotSet = Notice.builder()
             .chat("&4✘ &cThe parcel receiver is not set!")
+            .sound(Sound.ENTITY_ENDERMAN_AMBIENT.key())
+            .build();
+        public Notice destinationNotSet = Notice.builder()
+            .chat("&4✘ &cThe parcel destination locker is not set!")
             .sound(Sound.ENTITY_ENDERMAN_AMBIENT.key())
             .build();
         public Notice illegalItem = Notice.builder()
