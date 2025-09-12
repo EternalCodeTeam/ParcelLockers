@@ -1,8 +1,8 @@
 plugins {
     `java-library`
     id("de.eldoria.plugin-yml.paper") version "0.7.1"
-    id("xyz.jpenilla.run-paper") version "3.0.0-beta.1"
-    id("com.gradleup.shadow") version "9.0.2"
+    id("xyz.jpenilla.run-paper") version "3.0.0"
+    id("com.gradleup.shadow") version "9.1.0"
 }
 
 group = "com.eternalcode"
@@ -21,8 +21,8 @@ repositories {
 dependencies {
     // minecraft development api
     compileOnly("io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT")
-    paperLibrary("dev.rollczi:litecommands-bukkit:3.10.4")
-    paperLibrary("dev.rollczi:litecommands-adventure:3.10.4")
+    paperLibrary("dev.rollczi:litecommands-bukkit:3.10.5")
+    paperLibrary("dev.rollczi:litecommands-adventure:3.10.5")
 
     // skull api
     paperLibrary("dev.rollczi:liteskullapi:2.0.0")
@@ -43,14 +43,14 @@ dependencies {
     implementation("org.bstats:bstats-bukkit:3.1.0")
 
     // database
-    paperLibrary("com.zaxxer:HikariCP:7.0.1")
+    paperLibrary("com.zaxxer:HikariCP:7.0.2")
     paperLibrary("com.j256.ormlite:ormlite-jdbc:6.1")
     paperLibrary("com.h2database:h2:2.3.232")
     paperLibrary("org.postgresql:postgresql:42.7.7")
 
     // lombok
-    compileOnly("org.projectlombok:lombok:1.18.38")
-    annotationProcessor("org.projectlombok:lombok:1.18.38")
+    compileOnly("org.projectlombok:lombok:1.18.40")
+    annotationProcessor("org.projectlombok:lombok:1.18.40")
 
     // jetbrains annotations
     compileOnly("org.jetbrains:annotations:26.0.2")
@@ -62,9 +62,9 @@ dependencies {
     paperLibrary("com.spotify:completable-futures:0.3.6")
 
     // eternalcode commons
-    paperLibrary("com.eternalcode:eternalcode-commons-adventure:1.3.0")
-    paperLibrary("com.eternalcode:eternalcode-commons-bukkit:1.3.0")
-    paperLibrary("com.eternalcode:eternalcode-commons-shared:1.3.0")
+    paperLibrary("com.eternalcode:eternalcode-commons-adventure:1.3.1")
+    paperLibrary("com.eternalcode:eternalcode-commons-bukkit:1.3.1")
+    paperLibrary("com.eternalcode:eternalcode-commons-shared:1.3.1")
 
     // multification
     paperLibrary("com.eternalcode:multification-bukkit:1.2.2")
@@ -81,7 +81,7 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter:1.21.3")
     testImplementation("org.testcontainers:mysql:1.21.3")
     testImplementation("mysql:mysql-connector-java:8.0.33")
-    testImplementation("com.eternalcode:eternalcode-commons-shared:1.3.0")
+    testImplementation("com.eternalcode:eternalcode-commons-shared:1.3.1")
 }
 
 java {
