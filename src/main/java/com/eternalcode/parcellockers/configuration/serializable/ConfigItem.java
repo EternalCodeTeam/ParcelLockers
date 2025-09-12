@@ -7,6 +7,7 @@ import com.eternalcode.commons.adventure.AdventureLegacyColorPreProcessor;
 import dev.triumphteam.gui.builder.item.PaperItemBuilder;
 import dev.triumphteam.gui.components.GuiAction;
 import dev.triumphteam.gui.guis.GuiItem;
+import eu.okaeri.configs.annotation.Exclude;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +25,8 @@ import org.bukkit.inventory.ItemStack;
 @Accessors(fluent = true)
 public class ConfigItem implements Serializable, Cloneable {
 
-    private final transient MiniMessage miniMessage = MiniMessage.builder()
+    @Exclude
+    private static final MiniMessage MINI_MESSAGE = MiniMessage.builder()
         .preProcessor(new AdventureLegacyColorPreProcessor())
         .postProcessor(new AdventureLegacyColorPostProcessor())
         .build();
@@ -36,8 +38,8 @@ public class ConfigItem implements Serializable, Cloneable {
 
     public PaperItemBuilder toBuilder() {
         return PaperItemBuilder.from(this.type)
-            .name(resetItalic(this.miniMessage.deserialize(this.name)))
-            .lore(this.lore.stream().map(element -> resetItalic(this.miniMessage.deserialize(element))).toList())
+            .name(resetItalic(MINI_MESSAGE.deserialize(this.name)))
+            .lore(this.lore.stream().map(element -> resetItalic(MINI_MESSAGE.deserialize(element))).toList())
             .flags(ItemFlag.HIDE_ENCHANTS)
             .glow(this.glow);
     }

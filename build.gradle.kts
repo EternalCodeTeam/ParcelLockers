@@ -130,8 +130,7 @@ tasks {
 
         val relocationPrefix = "com.eternalcode.parcellockers.libs"
         listOf(
-            "org.bstats",
-//            "dev.triumphteam"
+            "org.bstats"
         ).forEach { relocate(it, "$relocationPrefix.$it") }
     }
 }

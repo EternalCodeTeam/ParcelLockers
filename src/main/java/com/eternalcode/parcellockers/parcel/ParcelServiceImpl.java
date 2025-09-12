@@ -204,7 +204,6 @@ public class ParcelServiceImpl implements ParcelService {
     @Override
     public CompletableFuture<Integer> delete(UUID uuid) {
         return this.parcelRepository.delete(uuid).thenApply(deleted -> {
-            this.parcelsByUuid.invalidate(uuid);
             if (deleted > 0) {
                 Parcel cached = this.parcelsByUuid.getIfPresent(uuid);
                 if (cached != null) {
