@@ -23,7 +23,7 @@ repositories {
 
 dependencies {
     // minecraft development api
-    compileOnly("org.spigotmc:spigot-api:1.21.5-R0.1-SNAPSHOT")
+    compileOnly("org.spigotmc:spigot-api:1.21.7-R0.1-SNAPSHOT")
     implementation("net.kyori:adventure-platform-bukkit:4.4.1")
     implementation("net.kyori:adventure-text-minimessage:4.24.0")
     implementation("dev.rollczi:litecommands-bukkit:3.10.5")
@@ -85,10 +85,14 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.13.4")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.13.4")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-
     testImplementation("org.testcontainers:junit-jupiter:1.21.3")
     testImplementation("org.testcontainers:mysql:1.21.3")
     testImplementation("mysql:mysql-connector-java:8.0.33")
+
+    testImplementation("org.spigotmc:spigot-api:1.21.5-R0.1-SNAPSHOT")
+    testImplementation("net.kyori:adventure-platform-bukkit:4.4.1")
+    testImplementation("net.kyori:adventure-text-minimessage:4.24.0")
+    testImplementation("net.dzikoysk:cdn:1.14.9")
 }
 
 java {
@@ -115,7 +119,7 @@ tasks.withType<JavaCompile> {
 
 tasks {
     runServer {
-        minecraftVersion("1.21.5")
+        minecraftVersion("1.21.7")
     }
 
     clean {
