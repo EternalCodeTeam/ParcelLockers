@@ -1,11 +1,15 @@
 package com.eternalcode.parcellockers.locker.controller;
 
-import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
-import com.eternalcode.parcellockers.conversation.ParcelLockerPlacePrompt;
-import com.eternalcode.parcellockers.locker.Locker;
-import com.eternalcode.parcellockers.locker.repository.LockerRepository;
-import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
+import com.eternalcode.parcellockers.locker.LockerManager;
+import com.eternalcode.parcellockers.locker.prompt.LockerPlacePrompt;
+import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.shared.PositionAdapter;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import java.util.HashSet;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import org.bukkit.Location;
 import org.bukkit.conversations.ConversationFactory;
 import org.bukkit.conversations.NullConversationPrefix;
@@ -18,29 +22,26 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.UUID;
-
 public class LockerPlaceController implements Listener {
 
-    private final PluginConfiguration config;
+    private final PluginConfig config;
     private final Plugin plugin;
-    private final LockerRepository databaseService;
-    private final NotificationAnnouncer announcer;
-    private final Map<UUID, Boolean> lockerCreators = new HashMap<>();
+    private final LockerManager lockerManager;
+    private final NoticeService noticeService;
+    private final Cache<UUID, Boolean> lockerCreators = Caffeine.newBuilder()
+        .expireAfterWrite(2, TimeUnit.MINUTES)
+        .build();
 
     public LockerPlaceController(
-            PluginConfiguration config,
-            Plugin plugin,
-            LockerRepository databaseService,
-            NotificationAnnouncer announcer
+        PluginConfig config,
+        Plugin plugin,
+        LockerManager lockerManager,
+        NoticeService noticeService
     ) {
         this.config = config;
         this.plugin = plugin;
-        this.databaseService = databaseService;
-        this.announcer = announcer;
+        this.lockerManager = lockerManager;
+        this.noticeService = noticeService;
     }
 
     private static boolean compareMeta(ItemStack first, ItemStack second) {
@@ -77,37 +78,39 @@ public class LockerPlaceController implements Listener {
             return;
         }
 
-        if (this.lockerCreators.containsKey(player.getUniqueId())) {
+        if (this.lockerCreators.getIfPresent(player.getUniqueId()) != null) {
             event.setCancelled(true);
-            this.announcer.sendMessage(player, this.config.messages.alreadyCreatingLocker);
+            this.noticeService.create()
+                .player(player.getUniqueId())
+                .notice(messages -> messages.locker.alreadyCreating)
+                .send();
             return;
         }
         this.lockerCreators.put(player.getUniqueId(), true);
 
         ConversationFactory conversationFactory = new ConversationFactory(this.plugin)
                 .addConversationAbandonedListener(e -> {
-                    if (e.gracefulExit()) {
-                        String description = (String) e.getContext().getSessionData("description");
-                        Location location = event.getBlockPlaced().getLocation();
-
-                        this.databaseService.save(new Locker(UUID.randomUUID(), description, PositionAdapter.convert(location))).whenComplete((parcelLocker, throwable) -> {
-                            if (throwable != null) {
-                                throwable.printStackTrace();
-                                this.announcer.sendMessage(player, this.config.messages.failedToCreateParcelLocker);
-                                return;
-                            }
-                            this.announcer.sendMessage(player, this.config.messages.parcelLockerSuccessfullyCreated);
-                        });
-                    } else {
+                    if (!e.gracefulExit()) {
                         event.setCancelled(true);
+                        return;
                     }
-                    this.lockerCreators.remove(player.getUniqueId());
+                    String description = (String) e.getContext().getSessionData("description");
+                    Location location = event.getBlockPlaced().getLocation();
+
+                    this.lockerManager.create(UUID.randomUUID(), description, PositionAdapter.convert(location));
+
+                    this.noticeService.create()
+                        .player(player.getUniqueId())
+                        .notice(messages -> messages.locker.created)
+                        .send();
+
+                    this.lockerCreators.invalidate(player.getUniqueId());
                 })
                 .withPrefix(new NullConversationPrefix())
                 .withModality(false)
                 .withLocalEcho(false)
                 .withTimeout(60)
-                .withFirstPrompt(new ParcelLockerPlacePrompt(this.config));
+                .withFirstPrompt(new LockerPlacePrompt(this.noticeService));
 
         player.beginConversation(conversationFactory.buildConversation(player));
     }

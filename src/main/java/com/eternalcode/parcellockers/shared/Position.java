@@ -12,7 +12,7 @@ public record Position(int x, int y, int z, String world) {
 
     public static final String NONE_WORLD = "__NONE__";
 
-    private static final Pattern PARSE_FORMAT = Pattern.compile("Position\\{x=(?<x>-?\\d+), y=(?<y>-?\\d+), z=(?<z>-?\\d+), world='(?<world>.+)'}");
+    private static final Pattern PARSE_FORMAT = Pattern.compile("Position\\{x=(?<x>-?\\d+), y=(?<y>-?\\d+), z=(?<z>-?\\d+), world=\"(?<world>.+)\"}");
 
     public static Position parse(String parse) {
         Matcher matcher = PARSE_FORMAT.matcher(parse);
@@ -82,7 +82,7 @@ public record Position(int x, int y, int z, String world) {
             "x=" + this.x +
             ", y=" + this.y +
             ", z=" + this.z +
-            ", world='" + this.world + '\'' +
+            ", world=\"" + this.world + "\"" +
             '}';
     }
 }

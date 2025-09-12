@@ -1,10 +1,11 @@
 package com.eternalcode.parcellockers.locker.controller;
 
-import com.eternalcode.parcellockers.gui.implementation.locker.LockerMainGui;
-import com.eternalcode.parcellockers.locker.repository.LockerCache;
-import com.eternalcode.parcellockers.shared.Position;
+import com.eternalcode.parcellockers.gui.implementation.locker.LockerGui;
+import com.eternalcode.parcellockers.locker.LockerManager;
 import com.eternalcode.parcellockers.shared.PositionAdapter;
+import java.util.UUID;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -13,30 +14,35 @@ import org.bukkit.event.player.PlayerInteractEvent;
 
 public class LockerInteractionController implements Listener {
 
-    private final LockerCache cache;
-    private final LockerMainGui lockerMainGUI;
+    private final LockerManager lockerManager;
+    private final LockerGui lockerGUI;
 
-    public LockerInteractionController(LockerCache cache, LockerMainGui lockerMainGUI) {
-        this.cache = cache;
-        this.lockerMainGUI = lockerMainGUI;
+    public LockerInteractionController(LockerManager lockerManager, LockerGui lockerGUI) {
+        this.lockerManager = lockerManager;
+        this.lockerGUI = lockerGUI;
     }
 
     @EventHandler
     public void onInventoryOpen(PlayerInteractEvent event) {
         Player player = event.getPlayer();
-        Position blockPos = PositionAdapter.convert(event.getClickedBlock().getLocation());
+        Block block = event.getClickedBlock();
 
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+        if (block == null || event.getAction() != Action.RIGHT_CLICK_BLOCK) {
             return;
         }
 
-        if (event.getClickedBlock().getType() != Material.CHEST) {
+        if (block.getType() != Material.CHEST) {
             return;
         }
 
-        if (this.cache.get(blockPos).isPresent()) {
+        this.lockerManager.get(PositionAdapter.convert(block.getLocation())).thenAccept(optionalLocker -> {
+            if (optionalLocker.isEmpty()) {
+                return;
+            }
+            UUID uuid = optionalLocker.get().uuid();
+
             event.setCancelled(true);
-            this.lockerMainGUI.show(player);
-        }
+            this.lockerGUI.show(player, uuid);
+        });
     }
 }

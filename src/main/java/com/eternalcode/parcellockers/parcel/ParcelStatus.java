@@ -2,6 +2,6 @@ package com.eternalcode.parcellockers.parcel;
 
 public enum ParcelStatus {
 
-    PENDING,
+    IN_PROGRESS,
     DELIVERED
 }

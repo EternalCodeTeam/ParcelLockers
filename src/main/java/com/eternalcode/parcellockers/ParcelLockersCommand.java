@@ -1,10 +1,10 @@
 package com.eternalcode.parcellockers;
 
-import com.eternalcode.parcellockers.configuration.ConfigurationManager;
-import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
-import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
+import com.eternalcode.parcellockers.configuration.ConfigService;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
+import com.eternalcode.parcellockers.notification.NoticeService;
 import dev.rollczi.litecommands.annotations.command.Command;
-import dev.rollczi.litecommands.annotations.context.Context;
+import dev.rollczi.litecommands.annotations.context.Sender;
 import dev.rollczi.litecommands.annotations.execute.Execute;
 import dev.rollczi.litecommands.annotations.permission.Permission;
 import org.bukkit.command.CommandSender;
@@ -15,25 +15,28 @@ import org.bukkit.inventory.ItemStack;
 @Permission("parcellockers.admin")
 public class ParcelLockersCommand {
 
-    private final ConfigurationManager configManager;
-    private final PluginConfiguration config;
-    private final NotificationAnnouncer announcer;
+    private final ConfigService configManager;
+    private final PluginConfig config;
+    private final NoticeService noticeService;
 
-    public ParcelLockersCommand(ConfigurationManager configManager, PluginConfiguration config, NotificationAnnouncer announcer) {
+    public ParcelLockersCommand(ConfigService configManager, PluginConfig config, NoticeService noticeService) {
         this.configManager = configManager;
         this.config = config;
-        this.announcer = announcer;
+        this.noticeService = noticeService;
     }
 
     @Execute(name = "reload")
-    void reload(@Context CommandSender sender) {
+    void reload(@Sender CommandSender sender) {
         this.configManager.reload();
-        this.announcer.sendMessage(sender, this.config.messages.reload);
+        this.noticeService.create()
+            .viewer(sender)
+            .notice(messages -> messages.reload)
+            .send();
     }
 
-    @Execute(name = "give")
-    void give(@Context Player player) {
-        ItemStack parcelItem = this.config.settings.parcelLockerItem.toGuiItem().getItemStack();
-        player.getInventory().addItem(parcelItem);
+    @Execute(name = "get")
+    void get(@Sender Player player) {
+        ItemStack lockerItem = this.config.settings.parcelLockerItem.toGuiItem().getItemStack();
+        player.getInventory().addItem(lockerItem);
     }
 }

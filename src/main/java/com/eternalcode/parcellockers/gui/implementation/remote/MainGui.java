@@ -1,63 +1,49 @@
 package com.eternalcode.parcellockers.gui.implementation.remote;
 
-import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import static com.eternalcode.commons.adventure.AdventureUtil.resetItalic;
+
+import com.eternalcode.commons.scheduler.Scheduler;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig.GuiSettings;
+import com.eternalcode.parcellockers.gui.GuiManager;
 import com.eternalcode.parcellockers.gui.GuiView;
-import com.eternalcode.parcellockers.locker.repository.LockerRepository;
-import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
-import com.eternalcode.parcellockers.user.UserManager;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Server;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
-
-import static com.eternalcode.commons.adventure.AdventureUtil.resetItalic;
 
 public class MainGui implements GuiView {
 
-    private final Plugin plugin;
-    private final Server server;
+    private final Scheduler scheduler;
     private final MiniMessage miniMessage;
-    private final PluginConfiguration config;
-    private final ParcelRepository parcelRepository;
-    private final LockerRepository lockerRepository;
-    private final UserManager userManager;
+    private final GuiSettings guiSettings;
+    private final GuiManager guiManager;
 
     public MainGui(
-        Plugin plugin,
-        Server server,
+        Scheduler scheduler,
         MiniMessage miniMessage,
-        PluginConfiguration config,
-        ParcelRepository parcelRepository,
-        LockerRepository lockerRepository,
-        UserManager userManager
+        GuiSettings guiSettings,
+        GuiManager guiManager
     ) {
-        this.plugin = plugin;
-        this.server = server;
+        this.scheduler = scheduler;
         this.miniMessage = miniMessage;
-        this.config = config;
-        this.parcelRepository = parcelRepository;
-        this.lockerRepository = lockerRepository;
-        this.userManager = userManager;
+        this.guiSettings = guiSettings;
+        this.guiManager = guiManager;
     }
 
     @Override
     public void show(Player player) {
-        PluginConfiguration.GuiSettings guiSettings = this.config.guiSettings;
-
         Gui gui = Gui.gui()
-            .title(resetItalic(this.miniMessage.deserialize(guiSettings.mainGuiTitle)))
+            .title(resetItalic(this.miniMessage.deserialize(this.guiSettings.mainGuiTitle)))
             .rows(6)
             .disableAllInteractions()
             .create();
 
-        GuiItem backgroundItem = guiSettings.mainGuiBackgroundItem.toGuiItem();
-        GuiItem myParcelsItem = guiSettings.myParcelsItem.toGuiItem();
-        GuiItem sentParcelsItem = guiSettings.sentParcelsItem.toGuiItem();
-        GuiItem parcelArchiveItem = guiSettings.parcelArchiveItem.toGuiItem();
-        GuiItem closeItem = guiSettings.closeItem.toGuiItem(event -> gui.close(player));
-        GuiItem cornerItem = guiSettings.cornerItem.toGuiItem();
+        GuiItem backgroundItem = this.guiSettings.mainGuiBackgroundItem.toGuiItem();
+        GuiItem myParcelsItem = this.guiSettings.myParcelsItem.toGuiItem();
+        GuiItem sentParcelsItem = this.guiSettings.sentParcelsItem.toGuiItem();
+        GuiItem parcelArchiveItem = this.guiSettings.parcelArchiveItem.toGuiItem();
+        GuiItem closeItem = this.guiSettings.closeItem.toGuiItem(event -> gui.close(player));
+        GuiItem cornerItem = this.guiSettings.cornerItem.toGuiItem();
 
         int size = gui.getRows() * 9;
         for (int i = 0; i < size; i++) {
@@ -73,10 +59,9 @@ public class MainGui implements GuiView {
         gui.setItem(24, parcelArchiveItem);
         gui.setItem(40, closeItem);
 
-        gui.addSlotAction(20, event -> new ParcelListGui(this.plugin, this.server, this.miniMessage, this.config, this.parcelRepository, this.lockerRepository, this.userManager, this).show(player));
-        gui.addSlotAction(22, event -> new SentParcelsGui(this.plugin, this.server, this.miniMessage, this.config, this.parcelRepository, this.lockerRepository, this, this.userManager).show(player));
+        gui.addSlotAction(20, event -> new ParcelListGui(this.scheduler, this.miniMessage, this.guiSettings, this.guiManager, this).show(player));
+        gui.addSlotAction(22, event -> new SentParcelsGui(this.scheduler, this.miniMessage, this.guiSettings, this, this.guiManager).show(player));
         gui.setDefaultClickAction(event -> event.setCancelled(true));
         gui.open(player);
-
     }
 }

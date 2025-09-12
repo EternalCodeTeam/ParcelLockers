@@ -5,7 +5,6 @@ import com.j256.ormlite.field.FieldType;
 import com.j256.ormlite.field.SqlType;
 import com.j256.ormlite.field.types.BaseDataType;
 import com.j256.ormlite.support.DatabaseResults;
-
 import java.sql.SQLException;
 
 public class PositionPersister extends BaseDataType {
@@ -13,7 +12,7 @@ public class PositionPersister extends BaseDataType {
     private static final PositionPersister INSTANCE = new PositionPersister();
 
     private PositionPersister() {
-        super(SqlType.LONG_STRING, new Class<?>[] { PositionPersister.class });
+        super(SqlType.LONG_STRING, new Class<?>[] { Position.class });
     }
 
     public static PositionPersister getSingleton() {
@@ -23,13 +22,7 @@ public class PositionPersister extends BaseDataType {
     @Override
     public Object javaToSqlArg(FieldType fieldType, Object javaObject) {
         Position pos = (Position) javaObject;
-        String worldName = "world";
-
-        if (!pos.isNoneWorld()) {
-            worldName = pos.world();
-        }
-
-        return worldName + "/" + pos.x() + "/" + pos.y() + "/" + pos.z();
+        return pos.toString();
     }
 
 
@@ -45,21 +38,8 @@ public class PositionPersister extends BaseDataType {
 
     @Override
     public Object sqlArgToJava(FieldType fieldType, Object sqlArg, int columnPos) {
-        String s = (String) sqlArg;
-        String[] params = s.split("/");
-        if (params.length != 4) {
-            throw new IllegalArgumentException("Invalid position format: " + s);
-        }
-        try {
-            return new Position(
-                Integer.parseInt(params[1]),
-                Integer.parseInt(params[2]),
-                Integer.parseInt(params[3]),
-                params[0]
-            );
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Invalid coordinate format: " + s, e);
-        }
+        String string = (String) sqlArg;
+        return Position.parse(string);
     }
 
 }

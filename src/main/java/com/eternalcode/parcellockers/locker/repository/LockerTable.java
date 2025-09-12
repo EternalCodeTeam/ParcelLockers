@@ -29,7 +29,7 @@ class LockerTable {
     }
 
     static LockerTable from(Locker locker) {
-        return new LockerTable(locker.uuid(), locker.description(), locker.position());
+        return new LockerTable(locker.uuid(), locker.name(), locker.position());
     }
 
     Locker toLocker() {

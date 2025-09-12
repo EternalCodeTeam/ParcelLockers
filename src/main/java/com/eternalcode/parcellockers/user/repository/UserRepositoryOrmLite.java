@@ -4,9 +4,9 @@ import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.eternalcode.parcellockers.database.wrapper.AbstractRepositoryOrmLite;
 import com.eternalcode.parcellockers.shared.Page;
+import com.eternalcode.parcellockers.shared.PageResult;
 import com.eternalcode.parcellockers.user.User;
 import com.j256.ormlite.table.TableUtils;
-import io.sentry.Sentry;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
@@ -22,20 +22,19 @@ public class UserRepositoryOrmLite extends AbstractRepositoryOrmLite implements 
         try {
             TableUtils.createTableIfNotExists(databaseManager.connectionSource(), UserTable.class);
         } catch (SQLException exception) {
-            Sentry.captureException(exception);
             exception.printStackTrace();
         }
     }
 
     @Override
-    public CompletableFuture<Optional<User>> find(UUID uuid) {
-        return this.select(UserTable.class, uuid).thenApply(userTable -> Optional.ofNullable(userTable)
+    public CompletableFuture<Optional<User>> fetch(UUID uuid) {
+        return this.selectSafe(UserTable.class, uuid).thenApply(optional -> optional
             .map(UserTable::toUser)
         );
     }
 
     @Override
-    public CompletableFuture<Optional<User>> find(String name) {
+    public CompletableFuture<Optional<User>> fetch(String name) {
         return this.action(
             UserTable.class, dao -> {
             UserTable userTable = dao.queryForEq("username", name).stream().findFirst().orElse(null);
@@ -45,7 +44,11 @@ public class UserRepositoryOrmLite extends AbstractRepositoryOrmLite implements 
 
     @Override
     public CompletableFuture<Void> save(User user) {
-        return this.save(UserTable.class, UserTable.from(user)).thenApply(dao -> null);
+        return this.save(UserTable.class, UserTable.from(user)).exceptionally(ex -> {
+            System.err.println("Failed to save user: " + ex.getMessage());
+            ex.printStackTrace();
+            return null;
+        }).thenApply(dao -> null);
     }
 
     @Override
@@ -60,7 +63,7 @@ public class UserRepositoryOrmLite extends AbstractRepositoryOrmLite implements 
     }
 
     @Override
-    public CompletableFuture<UserPageResult> findPage(Page page) {
+    public CompletableFuture<PageResult<User>> fetchPage(Page page) {
         return this.action(
             UserTable.class, dao -> {
             List<User> users = dao.queryBuilder()
@@ -72,9 +75,9 @@ public class UserRepositoryOrmLite extends AbstractRepositoryOrmLite implements 
 
             boolean hasNext = users.size() > page.getLimit();
             if (hasNext) {
-                users.remove(users.size() - 1);
+                users.removeLast();
             }
-            return new UserPageResult(users, hasNext);
+            return new PageResult<>(users, hasNext);
         });
     }
 }

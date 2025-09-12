@@ -5,112 +5,88 @@ import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.eternalcode.parcellockers.database.wrapper.AbstractRepositoryOrmLite;
 import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.shared.Page;
+import com.eternalcode.parcellockers.shared.PageResult;
+import com.eternalcode.parcellockers.shared.ParcelLockersException;
 import com.eternalcode.parcellockers.shared.Position;
 import com.j256.ormlite.table.TableUtils;
-import io.sentry.Sentry;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implements LockerRepository {
 
-    private final LockerCache cache;
-
-    public LockerRepositoryOrmLite(DatabaseManager databaseManager, Scheduler scheduler, LockerCache cache) {
+    public LockerRepositoryOrmLite(DatabaseManager databaseManager, Scheduler scheduler) {
         super(databaseManager, scheduler);
-        this.cache = cache;
 
         try {
             TableUtils.createTableIfNotExists(databaseManager.connectionSource(), LockerTable.class);
         } catch (SQLException ex) {
-            Sentry.captureException(ex);
             ex.printStackTrace();
-            throw new RuntimeException("Failed to initialize locker table", ex);
+            throw new ParcelLockersException("Failed to initialize locker table", ex);
         }
     }
 
     @Override
-    public CompletableFuture<Void> save(Locker locker) {
-        return this.save(LockerTable.class, LockerTable.from(locker)).thenApply(dao -> {
-            this.cache.put(locker);
-            return null;
-        });
+    public CompletableFuture<Locker> save(Locker locker) {
+        return this.saveIfNotExist(LockerTable.class, LockerTable.from(locker)).thenApply(LockerTable::toLocker);
     }
 
     @Override
-    public CompletableFuture<List<Locker>> findAll() {
-        return this.selectAll(LockerTable.class).thenApply(lockers -> lockers.stream()
+    public CompletableFuture<Optional<List<Locker>>> fetchAll() {
+        return this.selectAll(LockerTable.class).thenApply(lockers -> Optional.of(lockers.stream()
             .map(LockerTable::toLocker)
-            .collect(Collectors.toList()));
+            .collect(Collectors.toList())));
     }
 
     @Override
-    public CompletableFuture<Optional<Locker>> find(UUID uuid) {
+    public CompletableFuture<Optional<Locker>> fetch(UUID uuid) {
         return this.selectSafe(LockerTable.class, uuid).thenApply(optional -> optional.map(LockerTable::toLocker));
     }
 
     @Override
-    public CompletableFuture<Optional<Locker>> find(Position position) {
-        // We have to assume that there is only one locker per position
+    public CompletableFuture<Optional<Locker>> fetch(Position position) {
         return this.action(
-                LockerTable.class, dao -> {
-            List<LockerTable> lockers = dao.queryForEq("position", position);
-            return lockers.isEmpty() ? Optional.empty() : Optional.of(lockers.getFirst().toLocker());
-        });
-    }
-
-    @Override
-    public CompletableFuture<Integer> remove(UUID uuid) {
-        return this.deleteById(LockerTable.class, uuid)
-            .thenApply(result -> {
-                if (result > 0) {
-                    this.cache.remove(uuid);
-                }
-                return result;
+            LockerTable.class, dao -> {
+                List<LockerTable> lockers = dao.queryForEq("position", position);
+                return lockers.isEmpty() ? Optional.empty() : Optional.of(lockers.getFirst().toLocker());
             });
     }
 
     @Override
-    public CompletableFuture<Integer> remove(Locker locker) {
-        return this.remove(locker.uuid());
+    public CompletableFuture<Integer> delete(UUID uuid) {
+        return this.deleteById(LockerTable.class, uuid);
     }
 
     @Override
-    public CompletableFuture<LockerPageResult> findPage(Page page) {
+    public CompletableFuture<Integer> delete(Locker locker) {
+        return this.delete(locker.uuid());
+    }
+
+    @Override
+    public CompletableFuture<PageResult<Locker>> fetchPage(Page page) {
         return this.action(
-                LockerTable.class, dao -> {
-            List<Locker> lockers = dao.queryBuilder()
-                .offset((long) page.getOffset())
-                .limit((long) page.getLimit() + 1)
-                .query()
-                .stream().map(LockerTable::toLocker)
-                .collect(Collectors.toList());
+            LockerTable.class, dao -> {
+                List<Locker> lockers = dao.queryBuilder()
+                    .offset((long) page.getOffset())
+                    .limit((long) page.getLimit() + 1)
+                    .query()
+                    .stream().map(LockerTable::toLocker)
+                    .collect(Collectors.toList());
 
             boolean hasNext = lockers.size() > page.getLimit();
             if (hasNext) {
                 lockers.removeLast();
             }
 
-            return new LockerPageResult(lockers, hasNext);
+            return new PageResult<>(lockers, hasNext);
         });
     }
 
     @Override
-    public CompletableFuture<Integer> removeAll() {
+    public CompletableFuture<Integer> deleteAll() {
         return this.deleteAll(LockerTable.class);
-    }
-
-    public void updateCaches() {
-        this.findAll().thenAccept(lockers -> {
-            Map<UUID, Locker> newCache = new ConcurrentHashMap<>();
-            lockers.forEach(locker -> newCache.put(locker.uuid(), locker));
-            this.cache.clear();
-            this.cache.putAll(newCache);
-        });
     }
 }

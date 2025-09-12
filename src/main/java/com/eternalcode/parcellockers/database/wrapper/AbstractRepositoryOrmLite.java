@@ -1,11 +1,9 @@
 package com.eternalcode.parcellockers.database.wrapper;
 
+import com.eternalcode.commons.ThrowingFunction;
 import com.eternalcode.commons.scheduler.Scheduler;
-import com.eternalcode.parcellockers.ParcelLockers;
 import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.j256.ormlite.dao.Dao;
-import panda.std.function.ThrowingFunction;
-
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
@@ -22,56 +20,34 @@ public abstract class AbstractRepositoryOrmLite {
     }
 
     protected <T> CompletableFuture<Dao.CreateOrUpdateStatus> save(Class<T> type, T entity) {
-        return this.action(type, dao -> {
-            ParcelLockers.DEBUG_LOGGER.info("Saving entity: {}", entity);
-            return dao.createOrUpdate(entity);
-        });
+        return this.action(type, dao -> dao.createOrUpdate(entity));
     }
 
     protected <T> CompletableFuture<T> saveIfNotExist(Class<T> type, T entity) {
-        return this.action(type, dao -> {
-            ParcelLockers.DEBUG_LOGGER.info("Saving entity (IF NOT EXIST mode): {}", entity);
-            return dao.createIfNotExists(entity);
-        });
+        return this.action(type, dao -> dao.createIfNotExists(entity));
     }
 
     protected <T, ID> CompletableFuture<T> select(Class<T> type, ID id) {
-        return this.action(type, dao -> {
-            ParcelLockers.DEBUG_LOGGER.info("Selecting: {}", id);
-            return dao.queryForId(id);
-        });
+        return this.action(type, dao -> dao.queryForId(id));
     }
 
     protected <T, ID> CompletableFuture<Optional<T>> selectSafe(Class<T> type, ID id) {
-        return this.action(type, dao -> {
-            ParcelLockers.DEBUG_LOGGER.info("Selecting (safe mode): {}", id);
-            return Optional.ofNullable(dao.queryForId(id));
-        });
+        return this.action(type, dao -> Optional.ofNullable(dao.queryForId(id)));
     }
 
     protected <T> CompletableFuture<Integer> delete(Class<T> type, T entity) {
-        return this.action(type, dao -> {
-            ParcelLockers.DEBUG_LOGGER.info("Deleting: {}", entity);
-            return dao.delete(entity);
-        });
+        return this.action(type, dao -> dao.delete(entity));
     }
 
     protected <T> CompletableFuture<Integer> deleteAll(Class<T> type) {
-        return this.action(type, dao -> {
-            ParcelLockers.DEBUG_LOGGER.info("Deleting all entities of type: {}", type.getSimpleName());
-            return dao.deleteBuilder().delete();
-        });
+        return this.action(type, dao -> dao.deleteBuilder().delete());
     }
 
     protected <T, ID> CompletableFuture<Integer> deleteById(Class<T> type, ID id) {
-        return this.action(type, dao -> {
-            ParcelLockers.DEBUG_LOGGER.info("Deleting: {}", id);
-            return dao.deleteById(id);
-        });
+        return this.action(type, dao -> dao.deleteById(id));
     }
 
     protected <T> CompletableFuture<List<T>> selectAll(Class<T> type) {
-        ParcelLockers.DEBUG_LOGGER.info("Selecting all entities of type: {}", type.getSimpleName());
         return this.action(type, Dao::queryForAll);
     }
 

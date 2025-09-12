@@ -1,70 +1,111 @@
 package com.eternalcode.parcellockers.gui.implementation.remote;
 
-import com.eternalcode.parcellockers.configuration.implementation.ConfigItem;
-import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import static com.eternalcode.commons.adventure.AdventureUtil.resetItalic;
+
+import com.eternalcode.commons.scheduler.Scheduler;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig.GuiSettings;
+import com.eternalcode.parcellockers.configuration.serializable.ConfigItem;
+import com.eternalcode.parcellockers.gui.GuiManager;
 import com.eternalcode.parcellockers.gui.GuiView;
-import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.parcel.Parcel;
-import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
-import com.eternalcode.parcellockers.parcel.util.ParcelPlaceholderUtil;
-import com.eternalcode.parcellockers.shared.SentryExceptionHandler;
-import com.eternalcode.parcellockers.user.UserManager;
-import dev.triumphteam.gui.builder.item.ItemBuilder;
+import com.eternalcode.parcellockers.parcel.util.PlaceholderUtil;
+import com.eternalcode.parcellockers.shared.Page;
+import com.spotify.futures.CompletableFutures;
+import dev.triumphteam.gui.builder.item.PaperItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Server;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
-
-import java.util.Collections;
-import java.util.List;
 
 public class SentParcelsGui implements GuiView {
 
-    private final Plugin plugin;
-    private final Server server;
+    private static final int WIDTH = 7;
+    private static final int HEIGHT = 4;
+    private static final Page FIRST_PAGE = new Page(0, WIDTH * HEIGHT);
+
+    private final Scheduler scheduler;
     private final MiniMessage miniMessage;
-    private final PluginConfiguration config;
-    private final ParcelRepository parcelRepository;
-    private final LockerRepository lockerRepository;
+    private final GuiSettings guiSettings;
     private final MainGui mainGUI;
-    private final UserManager userManager;
+    private final GuiManager guiManager;
 
     public SentParcelsGui(
-        Plugin plugin,
-        Server server,
+        Scheduler scheduler,
         MiniMessage miniMessage,
-        PluginConfiguration config,
-        ParcelRepository parcelRepository,
-        LockerRepository lockerRepository,
+        GuiSettings guiSettings,
         MainGui mainGUI,
-        UserManager userManager
+        GuiManager guiManager
     ) {
-        this.plugin = plugin;
-        this.server = server;
+        this.scheduler = scheduler;
         this.miniMessage = miniMessage;
-        this.config = config;
-        this.parcelRepository = parcelRepository;
-        this.lockerRepository = lockerRepository;
+        this.guiSettings = guiSettings;
         this.mainGUI = mainGUI;
-        this.userManager = userManager;
+        this.guiManager = guiManager;
+    }
+
+    public void show(Player player) {
+        this.show(player, FIRST_PAGE);
     }
 
     @Override
-    public void show(Player player) {
+    public void show(Player player, Page page) {
         PaginatedGui gui = Gui.paginated()
-            .title(this.miniMessage.deserialize(this.config.guiSettings.sentParcelsTitle))
+            .title(this.miniMessage.deserialize(this.guiSettings.sentParcelsTitle))
             .rows(6)
             .disableAllInteractions()
             .create();
 
-        ConfigItem parcelItem = this.config.guiSettings.parcelItem;
-        GuiItem cornerItem = this.config.guiSettings.cornerItem.toGuiItem();
-        GuiItem backgroundItem = this.config.guiSettings.mainGuiBackgroundItem.toGuiItem();
-        GuiItem closeItem = this.config.guiSettings.closeItem.toGuiItem(event -> this.mainGUI.show(player));
+        ConfigItem parcelItem = this.guiSettings.parcelItem;
+        this.setupStaticItems(player, gui);
+
+        this.guiManager.getParcelsBySender(player.getUniqueId(), page).thenAccept(result -> {
+            List<Parcel> parcels = result.items();
+
+            List<CompletableFuture<GuiItem>> itemFutures = parcels.stream()
+                .map(parcel -> PlaceholderUtil.replaceParcelPlaceholdersAsync(
+                        parcel,
+                        parcelItem.lore(),
+                        this.guiManager)
+                    .thenApply(processedLore -> {
+                        PaperItemBuilder item = parcelItem.toBuilder();
+
+                        List<Component> newLore = processedLore
+                            .stream()
+                            .map(line -> resetItalic(this.miniMessage.deserialize(line)))
+                            .toList();
+
+                        item.lore(newLore);
+                        item.name(resetItalic(
+                            this.miniMessage.deserialize(
+                                parcelItem.name().replace("{NAME}", parcel.name())
+                            )
+                        ));
+
+                        return item.asGuiItem();
+                    }))
+                .toList();
+
+            CompletableFutures.allAsList(itemFutures)
+                .thenAccept(guiItems -> {
+                    guiItems.forEach(gui::addItem);
+                    this.scheduler.run(() -> gui.open(player));
+                })
+                .exceptionally(throwable -> {
+                    System.err.println("Failed to process parcel items: " + throwable.getMessage());
+                    this.scheduler.run(() -> gui.open(player));
+                    return null;
+                });
+        });
+    }
+
+    private void setupStaticItems(Player player, PaginatedGui gui) {
+        GuiItem cornerItem = this.guiSettings.cornerItem.toGuiItem();
+        GuiItem backgroundItem = this.guiSettings.mainGuiBackgroundItem.toGuiItem();
+        GuiItem closeItem = this.guiSettings.closeItem.toGuiItem(event -> this.mainGUI.show(player));
 
         for (int slot : CORNER_SLOTS) {
             gui.setItem(slot, cornerItem);
@@ -75,24 +116,5 @@ public class SentParcelsGui implements GuiView {
         }
 
         gui.setItem(49, closeItem);
-
-
-        this.parcelRepository.findBySender(player.getUniqueId()).thenAccept(optionalParcels -> {
-            List<Parcel> parcels = optionalParcels.orElse(Collections.emptyList());
-
-            for (Parcel parcel : parcels) {
-                ItemBuilder item = parcelItem.toBuilder();
-
-                List<Component> newLore = ParcelPlaceholderUtil.replaceParcelPlaceholders(parcel, parcelItem.lore, this.userManager, this.lockerRepository)
-                    .stream()
-                    .map(line -> this.miniMessage.deserialize(line))
-                    .toList();
-                item.lore(newLore);
-                item.name(this.miniMessage.deserialize(parcelItem.name.replace("{NAME}", parcel.name())));
-
-                gui.addItem(item.asGuiItem());
-            }
-            this.server.getScheduler().runTask(this.plugin, () -> gui.open(player));
-        }).whenComplete(SentryExceptionHandler.handler());
     }
 }

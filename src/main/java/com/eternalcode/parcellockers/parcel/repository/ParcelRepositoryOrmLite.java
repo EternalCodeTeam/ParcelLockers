@@ -5,15 +5,13 @@ import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.eternalcode.parcellockers.database.wrapper.AbstractRepositoryOrmLite;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.shared.Page;
+import com.eternalcode.parcellockers.shared.PageResult;
 import com.j256.ormlite.table.TableUtils;
-import io.sentry.Sentry;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implements ParcelRepository {
@@ -21,44 +19,33 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     private static final String RECEIVER_COLUMN = "receiver";
     private static final String SENDER_COLUMN = "sender";
 
-    private final ParcelCache cache;
-
-    public ParcelRepositoryOrmLite(DatabaseManager databaseManager, Scheduler scheduler, ParcelCache cache) {
+    public ParcelRepositoryOrmLite(DatabaseManager databaseManager, Scheduler scheduler) {
         super(databaseManager, scheduler);
-        this.cache = cache;
 
         try {
             TableUtils.createTableIfNotExists(databaseManager.connectionSource(), ParcelTable.class);
         } catch (SQLException ex) {
-            Sentry.captureException(ex);
             throw new RuntimeException("Failed to initialize parcel table", ex);
         }
     }
 
     @Override
     public CompletableFuture<Void> save(Parcel parcel) {
-        return this.saveIfNotExist(ParcelTable.class, ParcelTable.from(parcel)).thenApply(dao -> {
-            this.cache.put(parcel);
-            return null;
-        });
+        return this.saveIfNotExist(ParcelTable.class, ParcelTable.from(parcel)).thenApply(dao -> null);
     }
 
     @Override
     public CompletableFuture<Void> update(Parcel parcel) {
-        return this.save(ParcelTable.class, ParcelTable.from(parcel)).thenApply(dao -> {
-            this.cache.remove(parcel.uuid());
-            this.cache.put(parcel);
-            return null;
-        });
+        return this.save(ParcelTable.class, ParcelTable.from(parcel)).thenApply(dao -> null);
     }
 
     @Override
-    public CompletableFuture<Optional<Parcel>> findById(UUID uuid) {
+    public CompletableFuture<Optional<Parcel>> fetchById(UUID uuid) {
         return this.selectSafe(ParcelTable.class, uuid).thenApply(optional -> optional.map(ParcelTable::toParcel));
     }
 
     @Override
-    public CompletableFuture<Optional<List<Parcel>>> findBySender(UUID sender) {
+    public CompletableFuture<Optional<List<Parcel>>> fetchBySender(UUID sender) {
         return this.action(
                 ParcelTable.class, dao -> Optional.of(dao.queryForEq(SENDER_COLUMN, sender)
             .stream()
@@ -66,8 +53,12 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
             .toList()));
     }
 
+    public CompletableFuture<PageResult<Parcel>> fetchBySender(UUID sender, Page page) {
+        return this.fetchByPaged(sender, page, SENDER_COLUMN);
+    }
+
     @Override
-    public CompletableFuture<Optional<List<Parcel>>> findByReceiver(UUID receiver) {
+    public CompletableFuture<Optional<List<Parcel>>> fetchByReceiver(UUID receiver) {
         return this.action(
                 ParcelTable.class, dao -> Optional.of(dao.queryForEq(RECEIVER_COLUMN, receiver)
             .stream()
@@ -75,45 +66,43 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
             .toList()));
     }
 
-    public CompletableFuture<ParcelPageResult> findByReceiver(UUID receiver, Page page) {
+    public CompletableFuture<PageResult<Parcel>> fetchByReceiver(UUID receiver, Page page) {
+        return this.fetchByPaged(receiver, page, RECEIVER_COLUMN);
+    }
+
+    private CompletableFuture<PageResult<Parcel>> fetchByPaged(UUID key, Page page, String column) {
         return this.action(
-                ParcelTable.class, dao -> {
-            List<Parcel> parcels = dao.queryBuilder()
-                .limit((long) page.getLimit() + 1)
-                .offset((long) page.getOffset())
-                .where()
-                .eq(RECEIVER_COLUMN, receiver)
-                .query()
-                .stream()
-                .map(ParcelTable::toParcel)
-                .toList();
+            ParcelTable.class, dao -> {
+                List<Parcel> parcels = dao.queryBuilder()
+                    .limit((long) page.getLimit() + 1)
+                    .offset((long) page.getOffset())
+                    .where()
+                    .eq(column, key)
+                    .query()
+                    .stream()
+                    .map(ParcelTable::toParcel)
+                    .collect(Collectors.toList());
 
-            boolean hasNext = parcels.size() > page.getLimit();
-            if (hasNext) {
-                parcels.removeLast();
-            }
-            return new ParcelPageResult(parcels, hasNext);
-        });
+                boolean hasNext = parcels.size() > page.getLimit();
+                if (hasNext) {
+                    parcels.removeLast();
+                }
+                return new PageResult<>(parcels, hasNext);
+            });
     }
 
     @Override
-    public CompletableFuture<Integer> remove(Parcel parcel) {
-        return this.remove(parcel.uuid());
+    public CompletableFuture<Integer> delete(Parcel parcel) {
+        return this.delete(parcel.uuid());
     }
 
     @Override
-    public CompletableFuture<Integer> remove(UUID uuid) {
-        CompletableFuture<Integer> removeFuture = this.deleteById(ParcelTable.class, uuid);
-        removeFuture.thenAccept(deletedCount -> {
-            if (deletedCount > 0) {
-                this.cache.remove(uuid);
-            }
-        });
-        return removeFuture;
+    public CompletableFuture<Integer> delete(UUID uuid) {
+        return this.deleteById(ParcelTable.class, uuid);
     }
 
     @Override
-    public CompletableFuture<ParcelPageResult> findPage(Page page) {
+    public CompletableFuture<PageResult<Parcel>> fetchPage(Page page) {
         return this.action(
                 ParcelTable.class, dao -> {
             List<Parcel> parcels = dao.queryBuilder()
@@ -127,30 +116,19 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
             if (hasNext) {
                 parcels.removeLast();
             }
-            return new ParcelPageResult(parcels, hasNext);
+            return new PageResult<>(parcels, hasNext);
         });
     }
 
     @Override
-    public CompletableFuture<Optional<List<Parcel>>> findAll() {
+    public CompletableFuture<Optional<List<Parcel>>> fetchAll() {
         return this.selectAll(ParcelTable.class).thenApply(parcels -> Optional.of(parcels.stream()
             .map(ParcelTable::toParcel)
             .toList()));
     }
 
     @Override
-    public CompletableFuture<Integer> removeAll() {
+    public CompletableFuture<Integer> deleteAll() {
         return this.deleteAll(ParcelTable.class);
-    }
-
-    public void updateCaches() {
-        this.findAll().thenAccept(parcels -> {
-            List<Parcel> parcelList = parcels.orElse(List.of());
-            Map<UUID, Parcel> newCache = new ConcurrentHashMap<>();
-
-            parcelList.forEach(parcel -> newCache.put(parcel.uuid(), parcel));
-            this.cache.clear();
-            this.cache.putAll(newCache);
-        });
     }
 }

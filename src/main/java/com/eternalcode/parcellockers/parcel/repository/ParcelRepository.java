@@ -2,10 +2,12 @@ package com.eternalcode.parcellockers.parcel.repository;
 
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.shared.Page;
+import com.eternalcode.parcellockers.shared.PageResult;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import org.jetbrains.annotations.TestOnly;
 
 public interface ParcelRepository {
 
@@ -13,21 +15,25 @@ public interface ParcelRepository {
 
     CompletableFuture<Void> update(Parcel parcel);
 
-    CompletableFuture<Optional<List<Parcel>>> findAll();
+    CompletableFuture<Optional<List<Parcel>>> fetchAll();
 
-    CompletableFuture<Optional<Parcel>> findById(UUID uuid);
+    CompletableFuture<Optional<Parcel>> fetchById(UUID uuid);
 
-    CompletableFuture<Optional<List<Parcel>>> findBySender(UUID sender);
+    @TestOnly
+    CompletableFuture<Optional<List<Parcel>>> fetchBySender(UUID sender);
 
-    CompletableFuture<Optional<List<Parcel>>> findByReceiver(UUID receiver);
+    CompletableFuture<PageResult<Parcel>> fetchBySender(UUID sender, Page page);
 
-    CompletableFuture<ParcelPageResult> findByReceiver(UUID receiver, Page page);
+    @TestOnly
+    CompletableFuture<Optional<List<Parcel>>> fetchByReceiver(UUID receiver);
 
-    CompletableFuture<Integer> remove(Parcel parcel);
+    CompletableFuture<PageResult<Parcel>> fetchByReceiver(UUID receiver, Page page);
 
-    CompletableFuture<Integer> remove(UUID uuid);
+    CompletableFuture<Integer> delete(Parcel parcel);
 
-    CompletableFuture<Integer> removeAll();
+    CompletableFuture<Integer> delete(UUID uuid);
 
-    CompletableFuture<ParcelPageResult> findPage(Page page);
+    CompletableFuture<Integer> deleteAll();
+
+    CompletableFuture<PageResult<Parcel>> fetchPage(Page page);
 }

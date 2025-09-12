@@ -1,14 +1,20 @@
 package com.eternalcode.parcellockers.locker.controller;
 
-import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
-import com.eternalcode.parcellockers.locker.repository.LockerCache;
-import com.eternalcode.parcellockers.locker.repository.LockerRepository;
-import com.eternalcode.parcellockers.notification.NotificationAnnouncer;
+import com.eternalcode.commons.scheduler.Scheduler;
+import com.eternalcode.multification.shared.Formatter;
+import com.eternalcode.parcellockers.locker.LockerManager;
+import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.shared.Position;
 import com.eternalcode.parcellockers.shared.PositionAdapter;
-import java.util.UUID;
+import com.spotify.futures.CompletableFutures;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -18,26 +24,20 @@ import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.BlockIgniteEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
-import panda.utilities.text.Formatter;
-
 
 public class LockerBreakController implements Listener {
 
-    private final LockerRepository lockerRepository;
-    private final LockerCache cache;
-    private final NotificationAnnouncer announcer;
-    private final PluginConfiguration.Messages messages;
+    private final LockerManager lockerManager;
+    private final NoticeService noticeService;
+    private final Scheduler scheduler;
 
     public LockerBreakController(
-            LockerRepository lockerRepository,
-            LockerCache cache,
-            NotificationAnnouncer announcer,
-            PluginConfiguration.Messages messages
+            LockerManager lockerManager,
+            NoticeService noticeService, Scheduler scheduler
     ) {
-        this.lockerRepository = lockerRepository;
-        this.cache = cache;
-        this.announcer = announcer;
-        this.messages = messages;
+        this.lockerManager = lockerManager;
+        this.noticeService = noticeService;
+        this.scheduler = scheduler;
     }
 
     @EventHandler
@@ -47,87 +47,107 @@ public class LockerBreakController implements Listener {
         Position position = PositionAdapter.convert(location);
         Player player = event.getPlayer();
 
-        if (this.cache.get(position).isEmpty()) {
-            return;
-        }
-
-        if (!player.hasPermission("parcellockers.admin.break")) {
-            event.setCancelled(true);
-            this.announcer.sendMessage(player, this.messages.cannotBreakParcelLocker);
-            return;
-        }
-
-        this.lockerRepository.find(position).thenAccept((locker) -> {
+        this.lockerManager.get(position).thenAccept((locker) -> {
             if (locker.isEmpty()) {
                 return;
             }
 
-            UUID toRemove = this.cache.get(position).get().uuid();
-            this.lockerRepository.remove(toRemove);
+            if (!player.hasPermission("parcellockers.admin.break")) {
+                event.setCancelled(true);
+                this.noticeService.create()
+                    .player(player.getUniqueId())
+                    .notice(messages -> messages.locker.cannotBreak)
+                    .send();
+                return;
+            }
 
-            this.announcer.sendMessage(player, this.messages.parcelLockerSuccessfullyDeleted);
+            this.lockerManager.delete(locker.get().uuid());
+
+            this.noticeService.create()
+                .player(player.getUniqueId())
+                .notice(messages -> messages.locker.deleted)
+                .send();
 
             Formatter formatter = new Formatter()
-                    .register("{X}", position.x())
-                    .register("{Y}", position.y())
-                    .register("{Z}", position.z())
-                    .register("{WORLD}", position.world())
-                    .register("{PLAYER}", player.getName());
+                .register("{X}", position.x())
+                .register("{Y}", position.y())
+                .register("{Z}", position.z())
+                .register("{WORLD}", position.world())
+                .register("{PLAYER}", player.getName());
 
-            this.announcer.broadcast(formatter.format(this.messages.broadcastParcelLockerRemoved));
+            this.noticeService.create()
+                .onlinePlayers()
+                .notice(messages -> messages.locker.broadcastRemoved)
+                .formatter(formatter)
+                .send();
         });
     }
 
     @EventHandler
     public void onBlockBurn(BlockBurnEvent event) {
-        Block block = event.getBlock();
-        Location location = block.getLocation();
-        Position position = PositionAdapter.convert(location);
+        Position position = PositionAdapter.convert(event.getBlock().getLocation());
 
-        if (this.cache.get(position).isPresent()) {
-            event.setCancelled(true);
-        }
-    }
-
-    @EventHandler
-    public void onBlockExplode(BlockExplodeEvent event) {
-        Block block = event.getBlock();
-        Location location = block.getLocation();
-        Position position = PositionAdapter.convert(location);
-
-        if (this.cache.get(position).isPresent()) {
-            event.setCancelled(true);
-        }
-    }
-
-    @EventHandler
-    public void onEntityExplode(EntityExplodeEvent event) {
-        event.blockList().removeIf(block -> {
-            Location location = block.getLocation();
-            Position position = PositionAdapter.convert(location);
-            return this.cache.get(position).isPresent();
+        this.lockerManager.get(position).thenAccept(locker -> {
+            if (locker.isPresent()) {
+                event.setCancelled(true);
+            }
         });
     }
 
     @EventHandler
-    public void onBlockIgnite(BlockIgniteEvent event) {
-        Block block = event.getBlock();
-        Location location = block.getLocation();
-        Position position = PositionAdapter.convert(location);
+    public void onBlockExplode(BlockExplodeEvent event) {
+        BlockState explodedBlockState = event.getExplodedBlockState();
+        Position position = PositionAdapter.convert(explodedBlockState.getLocation());
 
-        if (this.cache.get(position).isPresent()) {
-            event.setCancelled(true);
-        }
+        this.lockerManager.get(position).thenAccept(locker -> {
+            if (locker.isPresent()) {
+                this.scheduler.run(() -> event.blockList().remove(explodedBlockState.getBlock()));
+            }
+        });
+    }
+
+    @EventHandler
+    public void onEntityExplode(EntityExplodeEvent event) {
+        List<Block> blocks = new ArrayList<>(event.blockList());
+
+        List<CompletableFuture<Optional<Block>>> futures = blocks.stream()
+            .map(block -> {
+                Position position = PositionAdapter.convert(block.getLocation());
+                return this.lockerManager.get(position)
+                    .thenApply(locker -> locker.isPresent() ? Optional.of(block) : Optional.<Block>empty());
+            })
+            .collect(Collectors.toList());
+
+        CompletableFutures.allAsList(futures)
+            .thenAccept(results -> {
+                List<Block> blocksToRemove = results.stream()
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .toList();
+
+                this.scheduler.run(() -> event.blockList().removeAll(blocksToRemove));
+            });
+    }
+
+    @EventHandler
+    public void onBlockIgnite(BlockIgniteEvent event) {
+        Position position = PositionAdapter.convert(event.getBlock().getLocation());
+
+        this.lockerManager.get(position).thenAccept(locker -> {
+            if (locker.isPresent()) {
+                event.setCancelled(true);
+            }
+        });
     }
 
     @EventHandler
     public void onBlockDamage(BlockDamageEvent event) {
-        Block block = event.getBlock();
-        Location location = block.getLocation();
-        Position position = PositionAdapter.convert(location);
+        Position position = PositionAdapter.convert(event.getBlock().getLocation());
 
-        if (this.cache.get(position).isPresent()) {
-            event.setCancelled(true);
-        }
+        this.lockerManager.get(position).thenAccept(locker -> {
+            if (locker.isPresent()) {
+                event.setCancelled(true);
+            }
+        });
     }
 }

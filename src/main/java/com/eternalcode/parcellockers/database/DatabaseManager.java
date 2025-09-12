@@ -1,13 +1,12 @@
 package com.eternalcode.parcellockers.database;
 
-import com.eternalcode.parcellockers.configuration.implementation.PluginConfiguration;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.google.common.base.Stopwatch;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.jdbc.DataSourceConnectionSource;
 import com.j256.ormlite.support.ConnectionSource;
 import com.zaxxer.hikari.HikariDataSource;
-
 import java.io.File;
 import java.sql.SQLException;
 import java.util.Map;
@@ -17,7 +16,7 @@ import java.util.logging.Logger;
 
 public class DatabaseManager {
 
-    private final PluginConfiguration config;
+    private final PluginConfig config;
     private final Logger logger;
 
     private final File dataFolder;
@@ -26,7 +25,7 @@ public class DatabaseManager {
     private HikariDataSource dataSource;
     private ConnectionSource connectionSource;
 
-    public DatabaseManager(PluginConfiguration config, Logger logger, File dataFolder) {
+    public DatabaseManager(PluginConfig config, Logger logger, File dataFolder) {
         this.config = config;
         this.logger = logger;
         this.dataFolder = dataFolder;

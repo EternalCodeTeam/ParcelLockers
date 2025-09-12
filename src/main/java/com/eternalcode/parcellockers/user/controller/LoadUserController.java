@@ -17,7 +17,10 @@ public class LoadUserController implements Listener {
         this.server = server;
     }
 
+    // Deprecated: This event handler is no longer recommended for loading users.
+    // Use PlayerJoinEvent to handle user creation when players join the server instead.
     @EventHandler
+    @Deprecated
     void onLoad(ServerLoadEvent event) {
         for (Player player : this.server.getOnlinePlayers()) {
             this.userManager.create(player.getUniqueId(), player.getName());
