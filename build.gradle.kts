@@ -1,8 +1,8 @@
 plugins {
     `java-library`
-    id("de.eldoria.plugin-yml.paper") version "0.7.1"
-    id("xyz.jpenilla.run-paper") version "3.0.0"
-    id("com.gradleup.shadow") version "9.1.0"
+    id("de.eldoria.plugin-yml.paper") version "0.8.0"
+    id("xyz.jpenilla.run-paper") version "3.0.1"
+    id("com.gradleup.shadow") version "9.2.2"
 }
 
 group = "com.eternalcode"
@@ -28,13 +28,13 @@ dependencies {
     paperLibrary("dev.rollczi:liteskullapi:2.0.0")
 
     // gui
-    paperLibrary("dev.triumphteam:triumph-gui-paper:3.1.13-SNAPSHOT")
+    paperLibrary("dev.triumphteam:triumph-gui-paper:3.1.13")
     paperLibrary("de.rapha149.signgui:signgui:2.5.4")
 
     // configs
-    paperLibrary("eu.okaeri:okaeri-configs-serdes-commons:5.0.9")
-    paperLibrary("eu.okaeri:okaeri-configs-serdes-bukkit:5.0.9")
-    paperLibrary("eu.okaeri:okaeri-configs-yaml-bukkit:5.0.9")
+    paperLibrary("eu.okaeri:okaeri-configs-serdes-commons:5.0.13")
+    paperLibrary("eu.okaeri:okaeri-configs-serdes-bukkit:5.0.13")
+    paperLibrary("eu.okaeri:okaeri-configs-yaml-bukkit:5.0.13")
 
     // gitcheck
     paperLibrary("com.eternalcode:gitcheck:1.0.0")
@@ -45,18 +45,18 @@ dependencies {
     // database
     paperLibrary("com.zaxxer:HikariCP:7.0.2")
     paperLibrary("com.j256.ormlite:ormlite-jdbc:6.1")
-    paperLibrary("com.h2database:h2:2.3.232")
-    paperLibrary("org.postgresql:postgresql:42.7.7")
+    paperLibrary("com.h2database:h2:2.4.240")
+    paperLibrary("org.postgresql:postgresql:42.7.8")
 
     // lombok
-    compileOnly("org.projectlombok:lombok:1.18.40")
-    annotationProcessor("org.projectlombok:lombok:1.18.40")
+    compileOnly("org.projectlombok:lombok:1.18.42")
+    annotationProcessor("org.projectlombok:lombok:1.18.42")
 
     // jetbrains annotations
-    compileOnly("org.jetbrains:annotations:26.0.2")
+    compileOnly("org.jetbrains:annotations:26.0.2-1")
 
     // jackson-bukkit
-    paperLibrary("de.eldoria.jacksonbukkit:paper:1.2.0")
+    paperLibrary("de.eldoria.jacksonbukkit:paper:1.4.0")
 
     // completable-futures
     paperLibrary("com.spotify:completable-futures:0.3.6")
@@ -73,9 +73,9 @@ dependencies {
     // caffeine
     paperLibrary("com.github.ben-manes.caffeine:caffeine:3.2.2")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.4")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.13.4")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.13.4")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:6.0.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:6.0.0")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:6.0.0")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     testImplementation("org.testcontainers:junit-jupiter:1.21.3")
