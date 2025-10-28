@@ -71,7 +71,7 @@ dependencies {
     paperLibrary("com.eternalcode:multification-okaeri:1.2.2")
 
     // caffeine
-    paperLibrary("com.github.ben-manes.caffeine:caffeine:3.2.2")
+    paperLibrary("com.github.ben-manes.caffeine:caffeine:3.2.3")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:6.0.0")
     testImplementation("org.junit.jupiter:junit-jupiter-params:6.0.0")
