@@ -70,17 +70,24 @@ public class GuiManager {
             Duration delay = parcel.priority()
                 ? this.config.settings.priorityParcelSendDuration
                 : this.config.settings.parcelSendDuration;
-            this.parcelService.send(sender, parcel, items);
-            this.deliveryManager.create(parcel.uuid(), Instant.now().plus(delay));
-            this.parcelContentManager.create(parcel.uuid(), items);
 
-            ParcelSendTask task = new ParcelSendTask(
-                parcel,
-                this.parcelService,
-                this.deliveryManager
-            );
+            this.parcelService.send(sender, parcel, items)
+                .thenRun(() -> this.deliveryManager.create(parcel.uuid(), Instant.now().plus(delay)))
+                .thenRun(() -> {
+                    ParcelSendTask task = new ParcelSendTask(
+                        parcel,
+                        this.parcelService,
+                        this.deliveryManager
+                    );
 
-            this.scheduler.runLaterAsync(task, delay);
+                    this.scheduler.runLaterAsync(task, delay);
+                });
+        }).exceptionally(throwable -> {
+            this.noticeService.create()
+                .notice(messages -> messages.parcel.cannotSend)
+                .player(sender.getUniqueId())
+                .send();
+            return null;
         });
     }
 

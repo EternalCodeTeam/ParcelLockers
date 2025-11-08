@@ -4,6 +4,7 @@ import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.eternalcode.parcellockers.database.wrapper.AbstractRepositoryOrmLite;
 import com.eternalcode.parcellockers.parcel.Parcel;
+import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.PageResult;
 import com.j256.ormlite.table.TableUtils;
@@ -77,6 +78,7 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
             long count = dao.queryBuilder()
                 .where()
                 .eq(DESTINATION_LOCKER_COLUMN, destinationLocker)
+                .eq("status", ParcelStatus.DELIVERED)
                 .countOf();
             return (int) count;
         });
