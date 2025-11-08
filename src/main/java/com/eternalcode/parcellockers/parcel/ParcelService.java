@@ -29,6 +29,7 @@ public interface ParcelService {
 
     CompletableFuture<PageResult<Parcel>> getByReceiver(UUID receiver, Page page);
 
+
     CompletableFuture<Integer> delete(UUID uuid);
 
     CompletableFuture<Integer> delete(Parcel parcel);

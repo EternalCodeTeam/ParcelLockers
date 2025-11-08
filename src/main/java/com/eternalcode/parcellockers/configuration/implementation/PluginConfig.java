@@ -58,6 +58,9 @@ public class PluginConfig extends OkaeriConfig {
 
         @Comment({"", "# Parcel sending duration for priority parcels"})
         public Duration priorityParcelSendDuration = Duration.ofSeconds(30);
+
+        @Comment({"", "# Maximum number of parcels that can be stored in a single locker"})
+        public int maxParcelsPerLocker = 30;
     }
 
     public static class GuiSettings extends OkaeriConfig {

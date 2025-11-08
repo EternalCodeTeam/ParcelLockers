@@ -18,6 +18,7 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     private static final String RECEIVER_COLUMN = "receiver";
     private static final String SENDER_COLUMN = "sender";
+    private static final String DESTINATION_LOCKER_COLUMN = "destinationLocker";
 
     public ParcelRepositoryOrmLite(DatabaseManager databaseManager, Scheduler scheduler) {
         super(databaseManager, scheduler);
@@ -68,6 +69,17 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     public CompletableFuture<PageResult<Parcel>> fetchByReceiver(UUID receiver, Page page) {
         return this.fetchByPaged(receiver, page, RECEIVER_COLUMN);
+    }
+
+    @Override
+    public CompletableFuture<Integer> countByDestinationLocker(UUID destinationLocker) {
+        return this.action(ParcelTable.class, dao -> {
+            long count = dao.queryBuilder()
+                .where()
+                .eq(DESTINATION_LOCKER_COLUMN, destinationLocker)
+                .countOf();
+            return (int) count;
+        });
     }
 
     private CompletableFuture<PageResult<Parcel>> fetchByPaged(UUID key, Page page, String column) {

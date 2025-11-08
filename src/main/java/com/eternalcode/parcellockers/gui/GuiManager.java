@@ -8,6 +8,7 @@ import com.eternalcode.parcellockers.itemstorage.ItemStorage;
 import com.eternalcode.parcellockers.itemstorage.ItemStorageManager;
 import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.locker.LockerManager;
+import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelService;
 import com.eternalcode.parcellockers.parcel.task.ParcelSendTask;
@@ -28,6 +29,7 @@ public class GuiManager {
 
     private final PluginConfig config;
     private final Scheduler scheduler;
+    private final NoticeService noticeService;
     private final ParcelService parcelService;
     private final LockerManager lockerManager;
     private final UserManager userManager;
@@ -36,7 +38,7 @@ public class GuiManager {
     private final DeliveryManager deliveryManager;
 
     public GuiManager(
-        PluginConfig config, Scheduler scheduler, ParcelService parcelService,
+        PluginConfig config, Scheduler scheduler, NoticeService noticeService, ParcelService parcelService,
         LockerManager lockerManager,
         UserManager userManager,
         ItemStorageManager itemStorageManager,
@@ -45,6 +47,7 @@ public class GuiManager {
     ) {
         this.config = config;
         this.scheduler = scheduler;
+        this.noticeService = noticeService;
         this.parcelService = parcelService;
         this.lockerManager = lockerManager;
         this.userManager = userManager;
@@ -54,20 +57,31 @@ public class GuiManager {
     }
 
     public void sendParcel(Player sender, Parcel parcel, List<ItemStack> items) {
-        Duration delay = parcel.priority()
-            ? this.config.settings.priorityParcelSendDuration
-            : this.config.settings.parcelSendDuration;
-        this.parcelService.send(sender, parcel, items);
-        this.deliveryManager.create(parcel.uuid(), Instant.now().plus(delay));
-        this.parcelContentManager.create(parcel.uuid(), items);
+        // Check if the locker is full before sending
+        this.lockerManager.isLockerFull(parcel.destinationLocker()).thenAccept(isFull -> {
+            if (isFull) {
+                this.noticeService.create()
+                    .notice(messages -> messages.parcel.lockerFull)
+                    .player(sender.getUniqueId())
+                    .send();
+                return;
+            }
 
-        ParcelSendTask task = new ParcelSendTask(
-            parcel,
-            this.parcelService,
-            this.deliveryManager
-        );
+            Duration delay = parcel.priority()
+                ? this.config.settings.priorityParcelSendDuration
+                : this.config.settings.parcelSendDuration;
+            this.parcelService.send(sender, parcel, items);
+            this.deliveryManager.create(parcel.uuid(), Instant.now().plus(delay));
+            this.parcelContentManager.create(parcel.uuid(), items);
 
-        this.scheduler.runLaterAsync(task, delay);
+            ParcelSendTask task = new ParcelSendTask(
+                parcel,
+                this.parcelService,
+                this.deliveryManager
+            );
+
+            this.scheduler.runLaterAsync(task, delay);
+        });
     }
 
     public void collectParcel(Player player, Parcel parcel) {

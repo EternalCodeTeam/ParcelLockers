@@ -1,8 +1,10 @@
 package com.eternalcode.parcellockers.locker;
 
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.locker.validation.LockerValidationService;
 import com.eternalcode.parcellockers.notification.NoticeService;
+import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.PageResult;
 import com.eternalcode.parcellockers.shared.Position;
@@ -19,15 +21,24 @@ import org.bukkit.command.CommandSender;
 
 public class LockerManager {
 
+    private final PluginConfig config;
     private final LockerRepository lockerRepository;
     private final LockerValidationService validationService;
+    private final ParcelRepository parcelRepository;
 
     private final Cache<UUID, Locker> lockersByUUID;
     private final Cache<Position, Locker> lockersByPosition;
 
-    public LockerManager(LockerRepository lockerRepository, LockerValidationService validationService) {
+    public LockerManager(
+        PluginConfig config,
+        LockerRepository lockerRepository,
+        LockerValidationService validationService,
+        ParcelRepository parcelRepository
+    ) {
+        this.config = config;
         this.lockerRepository = lockerRepository;
         this.validationService = validationService;
+        this.parcelRepository = parcelRepository;
 
         this.lockersByUUID = Caffeine.newBuilder()
             .expireAfterAccess(Duration.ofHours(2))
@@ -148,6 +159,11 @@ public class LockerManager {
         });
     }
 
+    public CompletableFuture<Boolean> isLockerFull(UUID lockerUuid) {
+        return this.parcelRepository.countByDestinationLocker(lockerUuid)
+            .thenApply(count -> count >= this.config.settings.maxParcelsPerLocker);
+    }
+
     private void cacheAll() {
         this.lockerRepository.fetchAll()
             .thenAccept(optionalLockers -> optionalLockers.ifPresent(lockers -> lockers.forEach(locker -> {
@@ -156,3 +172,4 @@ public class LockerManager {
             })));
     }
 }
+

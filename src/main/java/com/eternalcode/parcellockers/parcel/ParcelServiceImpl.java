@@ -196,6 +196,7 @@ public class ParcelServiceImpl implements ParcelService {
             });
     }
 
+
     private void cacheAll() {
         this.parcelRepository.fetchAll()
             .thenAccept(optional -> optional.ifPresent(parcels -> parcels.forEach(this::cache)));
