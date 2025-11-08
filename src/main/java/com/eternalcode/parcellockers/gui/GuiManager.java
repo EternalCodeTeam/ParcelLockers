@@ -72,7 +72,7 @@ public class GuiManager {
                 : this.config.settings.parcelSendDuration;
 
             this.parcelService.send(sender, parcel, items)
-                .thenRun(() -> this.deliveryManager.create(parcel.uuid(), Instant.now().plus(delay)))
+                .thenAccept(v -> this.deliveryManager.create(parcel.uuid(), Instant.now().plus(delay)))
                 .thenRun(() -> {
                     ParcelSendTask task = new ParcelSendTask(
                         parcel,
