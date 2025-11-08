@@ -18,7 +18,7 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     private static final String RECEIVER_COLUMN = "receiver";
     private static final String SENDER_COLUMN = "sender";
-    private static final String DESTINATION_LOCKER_COLUMN = "destinationLocker";
+    private static final String DESTINATION_LOCKER_COLUMN = "destination_locker";
 
     public ParcelRepositoryOrmLite(DatabaseManager databaseManager, Scheduler scheduler) {
         super(databaseManager, scheduler);
