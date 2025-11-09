@@ -57,7 +57,6 @@ public class GuiManager {
     }
 
     public void sendParcel(Player sender, Parcel parcel, List<ItemStack> items) {
-        // Check if the locker is full before sending
         this.lockerManager.isLockerFull(parcel.destinationLocker()).thenAccept(isFull -> {
             if (isFull) {
                 this.noticeService.create()
