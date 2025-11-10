@@ -78,6 +78,7 @@ public class GuiManager {
                         this.parcelService,
                         this.deliveryManager
                     );
+                    this.itemStorageManager.delete(sender.getUniqueId());
 
                     this.scheduler.runLaterAsync(task, delay);
                 });

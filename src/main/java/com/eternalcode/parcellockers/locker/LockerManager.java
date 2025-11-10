@@ -161,7 +161,7 @@ public class LockerManager {
 
     public CompletableFuture<Boolean> isLockerFull(UUID lockerUuid) {
         return this.parcelRepository.countByDestinationLocker(lockerUuid)
-            .thenApply(count -> count >= this.config.settings.maxParcelsPerLocker);
+            .thenApply(count -> count > 0 && count >= this.config.settings.maxParcelsPerLocker);
     }
 
     private void cacheAll() {
