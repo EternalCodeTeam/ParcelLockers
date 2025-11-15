@@ -9,8 +9,6 @@
 [![Website](https://raw.githubusercontent.com/intergrav/devins-badges/v3/assets/cozy/documentation/website_vector.svg)](https://eternalcode.pl/)
 [![Chat on Discord](https://raw.githubusercontent.com/vLuckyyy/badges/main//chat-with-us-on-discord.svg)](https://discord.com/invite/FQ7jmGBd6c)
 
-[![LiteCommands](https://raw.githubusercontent.com/Jakubk15/devins-badges/refs/heads/v3/assets/cozy/built-with/litecommands_vector.svg)](https://github.com/Rollczi/LiteCommands)
-
 </div>
 
 # Welcome to ParcelLockers! 🚀
