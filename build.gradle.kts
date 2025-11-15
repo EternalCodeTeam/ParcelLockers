@@ -68,7 +68,7 @@ dependencies {
 
     // multification
     paperLibrary("com.eternalcode:multification-bukkit:1.2.2")
-    paperLibrary("com.eternalcode:multification-okaeri:1.2.2")
+    paperLibrary("com.eternalcode:multification-okaeri:1.2.3")
 
     // caffeine
     paperLibrary("com.github.ben-manes.caffeine:caffeine:3.2.3")
