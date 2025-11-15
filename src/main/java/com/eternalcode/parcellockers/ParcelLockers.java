@@ -59,9 +59,11 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.stream.Stream;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.milkbowl.vault.economy.Economy;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class ParcelLockers extends JavaPlugin {
@@ -69,6 +71,7 @@ public final class ParcelLockers extends JavaPlugin {
     private LiteCommands<CommandSender> liteCommands;
     private SkullAPI skullAPI;
     private DatabaseManager databaseManager;
+    private Economy economy;
 
     @Override
     public void onEnable() {
@@ -83,6 +86,12 @@ public final class ParcelLockers extends JavaPlugin {
         Server server = this.getServer();
         NoticeService noticeService = new NoticeService(messageConfig, miniMessage);
         Scheduler scheduler = new BukkitSchedulerImpl(this);
+
+        if (!this.setupEconomy()) {
+            this.getLogger().severe("No economy provider registered! Disabling...");
+            server.getPluginManager().disablePlugin(this);
+            return;
+        }
 
         DatabaseManager databaseManager = new DatabaseManager(config, this.getLogger(), this.getDataFolder());
         this.databaseManager = databaseManager;
@@ -206,6 +215,18 @@ public final class ParcelLockers extends JavaPlugin {
         if (this.skullAPI != null) {
             this.skullAPI.shutdown();
         }
+    }
+
+    private boolean setupEconomy() {
+        if (this.getServer().getPluginManager().getPlugin("Vault") == null) {
+            return false;
+        }
+        RegisteredServiceProvider<Economy> rsp = this.getServer().getServicesManager().getRegistration(Economy.class);
+        if (rsp == null) {
+            return false;
+        }
+        this.economy = rsp.getProvider();
+        return this.economy != null;
     }
 }
 

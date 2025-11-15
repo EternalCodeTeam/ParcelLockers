@@ -1,3 +1,5 @@
+import net.minecrell.pluginyml.paper.PaperPluginDescription
+
 plugins {
     `java-library`
     id("de.eldoria.plugin-yml.paper") version "0.8.0"
@@ -10,12 +12,13 @@ version = "0.0.2-SNAPSHOT"
 
 repositories {
     gradlePluginPortal()
-    maven { url = uri("https://maven-central.storage-download.googleapis.com/maven2/")}
+    maven("https://maven-central.storage-download.googleapis.com/maven2/") // maven central mirror
 
-    maven { url = uri("https://repo.triumphteam.dev/snapshots/")}
-    maven { url = uri("https://repo.papermc.io/repository/maven-public/") }
-    maven { url = uri("https://repo.eternalcode.pl/releases") }
-    maven { url  = uri("https://storehouse.okaeri.eu/repository/maven-public/") }
+    maven("https://repo.triumphteam.dev/snapshots/")
+    maven("https://jitpack.io")
+    maven("https://repo.papermc.io/repository/maven-public/")
+    maven("https://repo.eternalcode.pl/releases")
+    maven("https://storehouse.okaeri.eu/repository/maven-public/")
 }
 
 dependencies {
@@ -73,6 +76,9 @@ dependencies {
     // caffeine
     paperLibrary("com.github.ben-manes.caffeine:caffeine:3.2.3")
 
+    // vault
+    compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
+
     testImplementation("org.junit.jupiter:junit-jupiter-api:6.0.1")
     testImplementation("org.junit.jupiter:junit-jupiter-params:6.0.1")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:6.0.1")
@@ -98,6 +104,12 @@ paper {
     loader = "com.eternalcode.parcellockers.ParcelLockersLibraryLoader"
     generateLibrariesJson = true
     foliaSupported = false
+    serverDependencies {
+        register("Vault") {
+            required = true
+            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
+        }
+    }
 }
 
 tasks.withType<JavaCompile> {
@@ -110,7 +122,9 @@ tasks.withType<JavaCompile> {
 tasks {
     runServer {
         minecraftVersion("1.21.10")
-        downloadPlugins.modrinth("luckperms", "v5.5.0-bukkit")
+        downloadPlugins.modrinth("luckperms", "v5.5.17-bukkit")
+        downloadPlugins.modrinth("vaultunlocked", "2.17.0")
+        // TODO add eternaleconomy
     }
 
     test {
