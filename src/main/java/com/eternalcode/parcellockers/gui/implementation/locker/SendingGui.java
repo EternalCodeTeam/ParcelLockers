@@ -244,8 +244,6 @@ public class SendingGui implements GuiView {
                 );
 
                 this.guiManager.sendParcel(player, parcel, result.items());
-                this.guiManager.deleteItemStorage(player.getUniqueId());
-
                 this.gui.close(player);
             }).orTimeout(5, TimeUnit.SECONDS));
 

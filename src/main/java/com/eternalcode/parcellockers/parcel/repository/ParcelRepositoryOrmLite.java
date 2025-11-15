@@ -4,6 +4,7 @@ import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.eternalcode.parcellockers.database.wrapper.AbstractRepositoryOrmLite;
 import com.eternalcode.parcellockers.parcel.Parcel;
+import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.PageResult;
 import com.j256.ormlite.table.TableUtils;
@@ -18,6 +19,7 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     private static final String RECEIVER_COLUMN = "receiver";
     private static final String SENDER_COLUMN = "sender";
+    private static final String DESTINATION_LOCKER_COLUMN = "destination_locker";
 
     public ParcelRepositoryOrmLite(DatabaseManager databaseManager, Scheduler scheduler) {
         super(databaseManager, scheduler);
@@ -68,6 +70,18 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     public CompletableFuture<PageResult<Parcel>> fetchByReceiver(UUID receiver, Page page) {
         return this.fetchByPaged(receiver, page, RECEIVER_COLUMN);
+    }
+
+    @Override
+    public CompletableFuture<Integer> countByDestinationLocker(UUID destinationLocker) {
+        return this.action(ParcelTable.class, dao -> {
+            long count = dao.queryBuilder()
+                .where()
+                .eq(DESTINATION_LOCKER_COLUMN, destinationLocker)
+                .eq("status", ParcelStatus.DELIVERED)
+                .countOf();
+            return (int) count;
+        });
     }
 
     private CompletableFuture<PageResult<Parcel>> fetchByPaged(UUID key, Page page, String column) {

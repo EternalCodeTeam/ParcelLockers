@@ -96,6 +96,10 @@ public class MessageConfig extends OkaeriConfig {
             .chat("&4✘ &cThe parcel destination locker is not set!")
             .sound(Sound.ENTITY_ENDERMAN_AMBIENT.key())
             .build();
+        public Notice lockerFull = Notice.builder()
+            .chat("&4✘ &cThe destination locker is full! Please select another locker.")
+            .sound(Sound.ENTITY_VILLAGER_NO.key())
+            .build();
         public Notice illegalItem = Notice.builder()
             .chat("&4✘ &cThe parcel contains illegal items that cannot be sent. ({ITEMS})")
             .build();

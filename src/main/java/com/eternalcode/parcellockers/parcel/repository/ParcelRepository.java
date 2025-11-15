@@ -29,6 +29,8 @@ public interface ParcelRepository {
 
     CompletableFuture<PageResult<Parcel>> fetchByReceiver(UUID receiver, Page page);
 
+    CompletableFuture<Integer> countByDestinationLocker(UUID destinationLocker);
+
     CompletableFuture<Integer> delete(Parcel parcel);
 
     CompletableFuture<Integer> delete(UUID uuid);

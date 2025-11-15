@@ -20,7 +20,7 @@ repositories {
 
 dependencies {
     // minecraft development api
-    compileOnly("io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.21.10-R0.1-SNAPSHOT")
     paperLibrary("dev.rollczi:litecommands-bukkit:3.10.6")
     paperLibrary("dev.rollczi:litecommands-adventure:3.10.6")
 
@@ -109,7 +109,7 @@ tasks.withType<JavaCompile> {
 
 tasks {
     runServer {
-        minecraftVersion("1.21.8")
+        minecraftVersion("1.21.10")
         downloadPlugins.modrinth("luckperms", "v5.5.0-bukkit")
     }
 
