@@ -61,6 +61,15 @@ public class PluginConfig extends OkaeriConfig {
 
         @Comment({"", "# Maximum number of parcels that can be stored in a single locker"})
         public int maxParcelsPerLocker = 30;
+
+        @Comment({"", "# Small parcel fee in in-game currency"})
+        public double smallParcelFee = 10.0;
+
+        @Comment({"", "# Medium parcel fee in in-game currency"})
+        public double mediumParcelFee = 25.0;
+
+        @Comment({"", "# Large parcel fee in in-game currency"})
+        public double largeParcelFee = 50.0;
     }
 
     public static class GuiSettings extends OkaeriConfig {
