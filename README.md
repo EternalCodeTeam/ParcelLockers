@@ -3,9 +3,9 @@
 ![ParcelLockers.svg](.github/assets/ParcelLockers.svg)
 
 [![Supports Paper](https://raw.githubusercontent.com/intergrav/devins-badges/v3/assets/cozy/supported/paper_vector.svg)](https://papermc.io)
-
 [![ko-fi](https://github.com/intergrav/devins-badges/blob/v3/assets/cozy/donate/kofi-plural_vector.svg)](https://ko-fi.com/eternalcodeteam)
 [![Website](https://raw.githubusercontent.com/intergrav/devins-badges/v3/assets/cozy/documentation/website_vector.svg)](https://eternalcode.pl/)
+
 [![Chat on Discord](https://raw.githubusercontent.com/vLuckyyy/badges/main//chat-with-us-on-discord.svg)](https://discord.com/invite/FQ7jmGBd6c)
 
 </div>
