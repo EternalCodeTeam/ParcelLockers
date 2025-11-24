@@ -111,6 +111,14 @@ public class MessageConfig extends OkaeriConfig {
             .chat("&2✔ &aParcel deleted successfully.")
             .sound(Sound.ENTITY_ITEM_BREAK.key())
             .build();
+        public Notice insufficientFunds = Notice.builder()
+            .chat("&4✘ &cYou do not have enough funds to send this parcel! Required: &6${AMOUNT}&c.")
+            .sound(Sound.ENTITY_VILLAGER_NO.key())
+            .build();
+        public Notice feeWithdrawn = Notice.builder()
+            .chat("&2✔ &a${AMOUNT} has been withdrawn from your account to cover the parcel sending fee.")
+            .sound(Sound.ENTITY_EXPERIENCE_ORB_PICKUP.key())
+            .build();
 
         @Comment({"", "# The parcel info message." })
         public Notice parcelInfoMessages = Notice.builder()
