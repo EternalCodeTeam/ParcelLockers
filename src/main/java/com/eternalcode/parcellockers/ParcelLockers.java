@@ -124,7 +124,9 @@ public final class ParcelLockers extends JavaPlugin {
             noticeService,
             parcelRepository,
             parcelContentRepository,
-            scheduler
+            scheduler,
+            config,
+            this.economy
         );
 
         UserValidationService userValidationService = new UserValidator();
