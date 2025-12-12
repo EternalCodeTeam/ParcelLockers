@@ -14,7 +14,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.Blocking;
 
 public class PlaceholderUtil {
 
@@ -37,11 +36,11 @@ public class PlaceholderUtil {
                 (senderName, receiverName, lockerOptional) -> {
 
                     Formatter formatter = new Formatter()
-                        .register("{UUID}", parcel.uuid().toString())
-                        .register("{NAME}", parcel.name())
+                        .register("{UUID}", parcel.uuid() != null ? parcel.uuid().toString() : "-")
+                        .register("{NAME}", parcel.name() != null ? parcel.name() : "-")
                         .register("{SENDER}", senderName)
                         .register("{RECEIVER}", receiverName)
-                        .register("{SIZE}", StringUtils.capitalize(parcel.size().toString().toLowerCase()))
+                        .register("{SIZE}", parcel.size() != null ? StringUtils.capitalize(parcel.size().toString().toLowerCase()) : "-")
                         .register("{PRIORITY}", parcel.priority() ? "&aYes" : "&cNo")
                         .register("{DESCRIPTION}", parcel.description() != null ? parcel.description() : "-");
 
