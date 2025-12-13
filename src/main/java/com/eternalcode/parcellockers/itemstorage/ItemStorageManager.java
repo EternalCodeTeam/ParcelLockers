@@ -61,9 +61,11 @@ public class ItemStorageManager {
                 itemStorage))));
     }
     
-    public CompletableFuture<Boolean> delete(UUID parcel) {
-        this.cache.invalidate(parcel);
-        return this.itemStorageRepository.delete(parcel).thenApply(i -> i > 0);
+    public CompletableFuture<Boolean> delete(UUID owner) {
+        return this.itemStorageRepository.delete(owner).thenApply(i -> {
+            this.cache.invalidate(owner);
+            return i > 0;
+        });
     }
 
     public CompletableFuture<Void> deleteAll(CommandSender sender, NoticeService noticeService) {

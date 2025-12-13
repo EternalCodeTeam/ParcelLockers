@@ -10,6 +10,7 @@ import com.eternalcode.parcellockers.parcel.task.ParcelSendTask;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -42,42 +43,48 @@ public class ParcelDispatchService {
     }
 
     public void dispatch(Player sender, Parcel parcel, List<ItemStack> items) {
-        this.lockerManager.isLockerFull(parcel.destinationLocker()).thenAccept(isFull -> {
-            if (isFull) {
+        this.lockerManager.isLockerFull(parcel.destinationLocker())
+            .thenCompose(isFull -> {
+                if (isFull) {
+                    this.noticeService.create()
+                        .notice(messages -> messages.parcel.lockerFull)
+                        .player(sender.getUniqueId())
+                        .send();
+                    return CompletableFuture.completedFuture(null);
+                }
+
+                Duration delay = parcel.priority()
+                    ? this.config.settings.priorityParcelSendDuration
+                    : this.config.settings.parcelSendDuration;
+
+                return this.parcelService.send(sender, parcel, items)
+                    .thenAccept(success -> {
+                        if (!Boolean.TRUE.equals(success)) {
+                            return;
+                        }
+
+                        this.deliveryManager.create(parcel.uuid(), Instant.now().plus(delay));
+
+                        ParcelSendTask task = new ParcelSendTask(
+                            parcel,
+                            this.parcelService,
+                            this.deliveryManager
+                        );
+
+                        this.itemStorageManager.delete(sender.getUniqueId()).exceptionally(throwable -> {
+                            throwable.printStackTrace();
+                            return false;
+                        });
+
+                        this.scheduler.runLaterAsync(task, delay);
+                    });
+            })
+            .exceptionally(throwable -> {
                 this.noticeService.create()
-                    .notice(messages -> messages.parcel.lockerFull)
+                    .notice(messages -> messages.parcel.cannotSend)
                     .player(sender.getUniqueId())
                     .send();
-                return;
-            }
-
-            Duration delay = parcel.priority()
-                ? this.config.settings.priorityParcelSendDuration
-                : this.config.settings.parcelSendDuration;
-
-            this.parcelService.send(sender, parcel, items)
-                .thenAccept(success -> {
-                    if (!Boolean.TRUE.equals(success)) {
-                        return;
-                    }
-
-                    this.deliveryManager.create(parcel.uuid(), Instant.now().plus(delay));
-
-                    ParcelSendTask task = new ParcelSendTask(
-                        parcel,
-                        this.parcelService,
-                        this.deliveryManager
-                    );
-                    this.itemStorageManager.delete(sender.getUniqueId());
-
-                    this.scheduler.runLaterAsync(task, delay);
-                });
-        }).exceptionally(throwable -> {
-            this.noticeService.create()
-                .notice(messages -> messages.parcel.cannotSend)
-                .player(sender.getUniqueId())
-                .send();
-            return null;
-        });
+                return null;
+            });
     }
 }
