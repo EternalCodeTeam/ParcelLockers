@@ -30,6 +30,7 @@ import com.eternalcode.parcellockers.locker.repository.LockerRepositoryOrmLite;
 import com.eternalcode.parcellockers.locker.validation.LockerValidationService;
 import com.eternalcode.parcellockers.locker.validation.LockerValidator;
 import com.eternalcode.parcellockers.notification.NoticeService;
+import com.eternalcode.parcellockers.parcel.ParcelDispatchService;
 import com.eternalcode.parcellockers.parcel.ParcelService;
 import com.eternalcode.parcellockers.parcel.ParcelServiceImpl;
 import com.eternalcode.parcellockers.parcel.ParcelStatus;
@@ -137,18 +138,24 @@ public final class ParcelLockers extends JavaPlugin {
         ItemStorageManager itemStorageManager = new ItemStorageManager(itemStorageRepository);
         DeliveryManager deliveryManager = new DeliveryManager(deliveryRepository);
 
+        ParcelDispatchService parcelDispatchService = new ParcelDispatchService(
+            lockerManager,
+            parcelService,
+            deliveryManager,
+            itemStorageManager,
+            scheduler,
+            config,
+            noticeService
+        );
+
         // guis
         TriumphGui.init(this);
         GuiManager guiManager = new GuiManager(
-            config,
-            scheduler,
-            noticeService,
             parcelService,
             lockerManager,
             userManager,
             itemStorageManager,
-            parcelContentManager,
-            deliveryManager
+            parcelDispatchService
         );
 
         MainGui mainGUI = new MainGui(
@@ -231,5 +238,3 @@ public final class ParcelLockers extends JavaPlugin {
         return this.economy != null;
     }
 }
-
-
