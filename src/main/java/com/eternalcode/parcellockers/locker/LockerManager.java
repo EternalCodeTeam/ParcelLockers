@@ -11,6 +11,7 @@ import com.eternalcode.parcellockers.shared.Position;
 import com.eternalcode.parcellockers.shared.validation.ValidationResult;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import eu.okaeri.configs.exception.ValidationException;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
@@ -116,7 +117,7 @@ public class LockerManager {
 
             ValidationResult validation = this.validationService.validateCreateParameters(uniqueId, name, position);
             if (!validation.isValid()) {
-                throw new IllegalArgumentException(validation.errorMessage());
+                throw new ValidationException("Invalid locker parameters: " + validation.errorMessage());
             }
 
             Optional<Locker> existingByUUID = Optional.ofNullable(this.lockersByUUID.get(uniqueId, uuid -> null));
@@ -126,7 +127,7 @@ public class LockerManager {
                 uniqueId, position, existingByUUID, existingByPosition);
 
             if (!conflictCheck.isValid()) {
-                throw new IllegalStateException(conflictCheck.errorMessage());
+                throw new ValidationException(conflictCheck.errorMessage());
             }
 
             Locker locker = new Locker(uniqueId, name, position);
@@ -172,4 +173,3 @@ public class LockerManager {
             })));
     }
 }
-

@@ -6,8 +6,8 @@ import com.eternalcode.parcellockers.database.wrapper.AbstractRepositoryOrmLite;
 import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.PageResult;
-import com.eternalcode.parcellockers.shared.ParcelLockersException;
 import com.eternalcode.parcellockers.shared.Position;
+import com.eternalcode.parcellockers.shared.exception.DatabaseException;
 import com.j256.ormlite.table.TableUtils;
 import java.sql.SQLException;
 import java.util.List;
@@ -24,8 +24,7 @@ public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implement
         try {
             TableUtils.createTableIfNotExists(databaseManager.connectionSource(), LockerTable.class);
         } catch (SQLException ex) {
-            ex.printStackTrace();
-            throw new ParcelLockersException("Failed to initialize locker table", ex);
+            throw new DatabaseException("Failed to initialize locker table", ex);
         }
     }
 

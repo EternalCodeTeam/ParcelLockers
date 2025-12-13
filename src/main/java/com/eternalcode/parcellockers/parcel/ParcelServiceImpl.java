@@ -11,7 +11,7 @@ import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.PageResult;
-import com.eternalcode.parcellockers.shared.ParcelLockersException;
+import com.eternalcode.parcellockers.shared.exception.ParcelOperationException;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import java.util.ArrayList;
@@ -105,7 +105,7 @@ public class ParcelServiceImpl implements ParcelService {
                     .notice(messages -> messages.parcel.cannotSend)
                     .player(sender.getUniqueId())
                     .send();
-                throw new ParcelLockersException("Failed to save parcel", throwable);
+                throw new ParcelOperationException("Failed to save parcel", throwable);
             }
 
             this.parcelContentRepository.save(new ParcelContent(parcel.uuid(), items));
