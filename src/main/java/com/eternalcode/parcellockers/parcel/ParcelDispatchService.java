@@ -71,6 +71,7 @@ public class ParcelDispatchService {
                             this.deliveryManager
                         );
 
+                        // FIXME: Items will remain in the storage if this fails and parcel will be sent
                         this.itemStorageManager.delete(sender.getUniqueId()).exceptionally(throwable -> {
                             throwable.printStackTrace();
                             return false;
@@ -84,6 +85,7 @@ public class ParcelDispatchService {
                     .notice(messages -> messages.parcel.cannotSend)
                     .player(sender.getUniqueId())
                     .send();
+                throwable.printStackTrace();
                 return null;
             });
     }
