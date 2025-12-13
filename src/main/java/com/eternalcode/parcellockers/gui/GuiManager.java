@@ -81,7 +81,7 @@ public class GuiManager {
         this.itemStorageManager.create(player, items);
     }
 
-    public CompletableFuture<Void> deleteItemStorage(UUID owner) {
+    public CompletableFuture<Boolean> deleteItemStorage(UUID owner) {
         return this.itemStorageManager.delete(owner);
     }
 }
