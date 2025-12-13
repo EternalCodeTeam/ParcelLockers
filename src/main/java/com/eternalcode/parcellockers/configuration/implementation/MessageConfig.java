@@ -144,10 +144,7 @@ public class MessageConfig extends OkaeriConfig {
             .chat("&2✔ &aParcel locker created successfully.")
             .sound(Sound.BLOCK_ANVIL_USE.key())
             .build();
-        public Notice descriptionPrompt = Notice.builder()
-            .chat("&6\uD83D\uDDC8 &eEnter a name for the parcel locker:")
-            .sound(Sound.BLOCK_NOTE_BLOCK_PLING.key())
-            .build();
+        public String descriptionPrompt = "&6Enter a name for the parcel locker:";
         public Notice cannotBreak = Notice.builder()
             .chat("&4✘ &cYou have no permission to break the parcel locker.")
             .sound(Sound.ENTITY_VILLAGER_NO.key())

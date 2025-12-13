@@ -1,31 +1,43 @@
 package com.eternalcode.parcellockers.locker.controller;
 
+import com.eternalcode.parcellockers.configuration.implementation.MessageConfig;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.locker.LockerManager;
-import com.eternalcode.parcellockers.locker.prompt.LockerPlacePrompt;
 import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.shared.PositionAdapter;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import java.util.HashSet;
+import io.papermc.paper.dialog.Dialog;
+import io.papermc.paper.dialog.DialogResponseView;
+import io.papermc.paper.registry.data.dialog.ActionButton;
+import io.papermc.paper.registry.data.dialog.DialogBase;
+import io.papermc.paper.registry.data.dialog.action.DialogAction;
+import io.papermc.paper.registry.data.dialog.input.DialogInput;
+import io.papermc.paper.registry.data.dialog.type.DialogType;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickCallback;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Location;
-import org.bukkit.conversations.ConversationFactory;
-import org.bukkit.conversations.NullConversationPrefix;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.plugin.Plugin;
 
+@SuppressWarnings("UnstableApiUsage")
 public class LockerPlaceController implements Listener {
 
     private final PluginConfig config;
-    private final Plugin plugin;
+    private final MessageConfig messages;
+    private final MiniMessage miniMessage;
     private final LockerManager lockerManager;
     private final NoticeService noticeService;
     private final Cache<UUID, Boolean> lockerCreators = Caffeine.newBuilder()
@@ -33,35 +45,15 @@ public class LockerPlaceController implements Listener {
         .build();
 
     public LockerPlaceController(
-        PluginConfig config,
-        Plugin plugin,
+        PluginConfig config, MessageConfig messages, MiniMessage miniMessage,
         LockerManager lockerManager,
         NoticeService noticeService
     ) {
         this.config = config;
-        this.plugin = plugin;
+        this.messages = messages;
+        this.miniMessage = miniMessage;
         this.lockerManager = lockerManager;
         this.noticeService = noticeService;
-    }
-
-    private static boolean compareMeta(ItemStack first, ItemStack second) {
-        ItemMeta firstMeta = first.getItemMeta();
-        if (firstMeta == null) {
-            return false;
-        }
-
-        ItemMeta secondMeta = second.getItemMeta();
-
-        if (secondMeta == null) {
-            return false;
-        }
-
-        if (first.getType() != second.getType()) {
-            return false;
-        }
-
-        return new HashSet<>(firstMeta.getLore()).containsAll(secondMeta.getLore())
-                && firstMeta.getDisplayName().equals(secondMeta.getDisplayName());
     }
 
     @EventHandler
@@ -74,37 +66,76 @@ public class LockerPlaceController implements Listener {
 
         ItemStack parcelLockerItem = this.config.settings.parcelLockerItem.toGuiItem().getItemStack();
 
-        if (!compareMeta(itemInMainHand, parcelLockerItem) && !compareMeta(itemInOffHand, parcelLockerItem)) {
+        if (parcelLockerItem.isSimilar(itemInMainHand) && !parcelLockerItem.isSimilar(itemInOffHand)) {
             return;
         }
+
+        Block block = event.getBlockPlaced();
+        Material type = block.getType();
+        BlockData data = block.getBlockData();
+        Location location = block.getLocation();
+        event.setCancelled(true);
 
         if (this.lockerCreators.getIfPresent(player.getUniqueId()) != null) {
-            event.setCancelled(true);
-            this.noticeService.player(player.getUniqueId(), messages -> messages.locker.alreadyCreating);
+            this.noticeService.create()
+                .player(player.getUniqueId())
+                .notice(messages -> messages.locker.alreadyCreating)
+                .send();
             return;
         }
+
         this.lockerCreators.put(player.getUniqueId(), true);
 
-        ConversationFactory conversationFactory = new ConversationFactory(this.plugin)
-                .addConversationAbandonedListener(e -> {
-                    if (!e.gracefulExit()) {
-                        event.setCancelled(true);
-                        return;
-                    }
-                    String description = (String) e.getContext().getSessionData("description");
-                    Location location = event.getBlockPlaced().getLocation();
+        Component promptMessage = this.miniMessage.deserialize(this.messages.locker.descriptionPrompt); // Replace with actual config message
 
-                    this.lockerManager.create(UUID.randomUUID(), description, PositionAdapter.convert(location));
-                    this.lockerCreators.invalidate(player.getUniqueId());
+        Dialog dialog = Dialog.create(builder -> builder.empty()
+            .base(DialogBase.builder(promptMessage)
+                .inputs(List.of(
+                    DialogInput.text("description", this.miniMessage.deserialize("<yellow>Parcel locker description"))
+                        .build()
+                ))
+                .build()
+            )
+            .type(DialogType.confirmation(
+                ActionButton.create(
+                    this.miniMessage.deserialize("<dark_green>Create"),
+                    this.miniMessage.deserialize("<green>Click to create the locker"),
+                    100,
+                    DialogAction.customClick((DialogResponseView view, Audience audience) -> {
+                        String description = view.getText("description");
+                        if (description == null || description.isEmpty()) {
+                            this.lockerCreators.invalidate(player.getUniqueId());
+                            return;
+                        }
+                        location.getWorld().getBlockAt(location).setType(type);
+                        location.getWorld().getBlockAt(location).setBlockData(data); // ensures the block is facing correctly
+                        this.lockerManager.create(UUID.randomUUID(), description, PositionAdapter.convert(location));
 
-                    this.noticeService.player(player.getUniqueId(), messages -> messages.locker.created);
-                })
-                .withPrefix(new NullConversationPrefix())
-                .withModality(false)
-                .withLocalEcho(false)
-                .withTimeout(60)
-                .withFirstPrompt(new LockerPlacePrompt(this.noticeService));
+                        this.noticeService.create()
+                            .player(player.getUniqueId())
+                            .notice(messages -> messages.locker.created)
+                            .send();
 
-        player.beginConversation(conversationFactory.buildConversation(player));
+                        this.lockerCreators.invalidate(player.getUniqueId());
+                    }, ClickCallback.Options.builder()
+                        .uses(1)
+                        .lifetime(ClickCallback.DEFAULT_LIFETIME)
+                        .build())
+                ),
+                ActionButton.create(
+                    this.miniMessage.deserialize("<dark_red>Cancel"),
+                    this.miniMessage.deserialize("<red>Click to cancel"),
+                    100,
+                    DialogAction.customClick(
+                        (DialogResponseView view, Audience audience) ->
+                            this.lockerCreators.invalidate(player.getUniqueId()), ClickCallback.Options.builder()
+                            .uses(1)
+                            .lifetime(ClickCallback.DEFAULT_LIFETIME)
+                            .build())
+                )
+            ))
+        );
+
+        player.showDialog(dialog);
     }
 }
