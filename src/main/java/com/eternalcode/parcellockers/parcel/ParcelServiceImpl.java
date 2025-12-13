@@ -72,7 +72,7 @@ public class ParcelServiceImpl implements ParcelService {
     }
 
     @Override
-    public CompletableFuture<Void> send(Player sender, Parcel parcel, List<ItemStack> items) {
+    public CompletableFuture<Boolean> send(Player sender, Parcel parcel, List<ItemStack> items) {
         if (!sender.hasPermission(PARCEL_FEE_BYPASS_PERMISSION)) {
             double fee = switch (parcel.size()) {
                 case SMALL -> this.config.settings.smallParcelFee;
@@ -88,7 +88,7 @@ public class ParcelServiceImpl implements ParcelService {
                         .player(sender.getUniqueId())
                         .placeholder("{AMOUNT}", String.format("%.2f", fee))
                         .send();
-                    return CompletableFuture.completedFuture(null);
+                    return CompletableFuture.completedFuture(false);
                 }
 
                 this.noticeService.create()
@@ -99,7 +99,7 @@ public class ParcelServiceImpl implements ParcelService {
             }
         }
 
-        return this.parcelRepository.save(parcel).whenComplete((unused, throwable) -> {
+        return this.parcelRepository.save(parcel).handle((unused, throwable) -> {
             if (throwable != null) {
                 this.noticeService.create()
                     .notice(messages -> messages.parcel.cannotSend)
@@ -113,6 +113,7 @@ public class ParcelServiceImpl implements ParcelService {
                 .notice(messages -> messages.parcel.sent)
                 .player(sender.getUniqueId())
                 .send();
+            return true;
         });
     }
 
