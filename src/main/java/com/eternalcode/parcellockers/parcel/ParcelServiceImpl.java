@@ -11,7 +11,7 @@ import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.PageResult;
-import com.eternalcode.parcellockers.shared.ParcelLockersException;
+import com.eternalcode.parcellockers.shared.exception.ParcelOperationException;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import java.util.ArrayList;
@@ -101,18 +101,12 @@ public class ParcelServiceImpl implements ParcelService {
 
         return this.parcelRepository.save(parcel).handle((unused, throwable) -> {
             if (throwable != null) {
-                this.noticeService.create()
-                    .notice(messages -> messages.parcel.cannotSend)
-                    .player(sender.getUniqueId())
-                    .send();
-                throw new ParcelLockersException("Failed to save parcel", throwable);
+                this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.cannotSend);
+                throw new ParcelOperationException("Failed to save parcel", throwable);
             }
 
             this.parcelContentRepository.save(new ParcelContent(parcel.uuid(), items));
-            this.noticeService.create()
-                .notice(messages -> messages.parcel.sent)
-                .player(sender.getUniqueId())
-                .send();
+            this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.sent);
             return true;
         });
     }
@@ -146,19 +140,13 @@ public class ParcelServiceImpl implements ParcelService {
     public CompletableFuture<Void> collect(Player player, Parcel parcel) {
         return this.parcelContentRepository.fetch(parcel.uuid()).thenAccept(optional -> {
             if (optional.isEmpty()) {
-                this.noticeService.create()
-                    .notice(messages -> messages.parcel.cannotCollect)
-                    .player(player.getUniqueId())
-                    .send();
+                this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.cannotCollect);
                 return;
             }
 
             List<ItemStack> items = optional.get().items();
             if (items.size() > freeSlotsInInventory(player)) {
-                this.noticeService.create()
-                    .notice(messages -> messages.parcel.noInventorySpace)
-                    .player(player.getUniqueId())
-                    .send();
+                this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.noInventorySpace);
                 return;
             }
 
@@ -170,10 +158,7 @@ public class ParcelServiceImpl implements ParcelService {
             this.parcelRepository.delete(parcel);
             this.parcelContentRepository.delete(parcel.uuid());
 
-            this.noticeService.create()
-                .notice(messages -> messages.parcel.collected)
-                .player(player.getUniqueId())
-                .send();
+            this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.collected);
         });
     }
 

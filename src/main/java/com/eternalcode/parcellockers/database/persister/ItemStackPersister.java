@@ -1,6 +1,6 @@
 package com.eternalcode.parcellockers.database.persister;
 
-import com.eternalcode.parcellockers.shared.ParcelLockersException;
+import com.eternalcode.parcellockers.shared.exception.DatabaseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
@@ -39,7 +39,7 @@ public class ItemStackPersister extends BaseDataType {
         try {
             return JSON.writeValueAsString(stacks);
         } catch (JsonProcessingException e) {
-            throw new ParcelLockersException("Failed to serialize itemstacks", e);
+            throw new DatabaseException("Failed to serialize itemstacks", e);
         }
     }
 
@@ -60,7 +60,7 @@ public class ItemStackPersister extends BaseDataType {
         try {
             return JSON.readValue(string, JSON.getTypeFactory().constructCollectionType(List.class, ItemStack.class));
         } catch (JsonProcessingException exception) {
-            throw new ParcelLockersException("Failed to deserialize itemstacks", exception);
+            throw new DatabaseException("Failed to deserialize itemstacks", exception);
         }
     }
 }

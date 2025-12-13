@@ -3,13 +3,18 @@ package com.eternalcode.parcellockers.database.wrapper;
 import com.eternalcode.commons.ThrowingFunction;
 import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.database.DatabaseManager;
+import com.eternalcode.parcellockers.shared.exception.DatabaseException;
 import com.j256.ormlite.dao.Dao;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public abstract class AbstractRepositoryOrmLite {
+
+    private static final Logger LOGGER = Logger.getLogger(AbstractRepositoryOrmLite.class.getName());
 
     protected final DatabaseManager databaseManager;
     protected final Scheduler scheduler;
@@ -59,9 +64,16 @@ public abstract class AbstractRepositoryOrmLite {
 
             try {
                 completableFuture.complete(action.apply(dao));
+            } catch (SQLException sqlException) {
+                DatabaseException databaseException = new DatabaseException(
+                    "Database operation failed for type: " + type.getSimpleName(),
+                    sqlException
+                );
+                LOGGER.log(Level.SEVERE, "Database operation failed", databaseException);
+                completableFuture.completeExceptionally(databaseException);
             } catch (Throwable throwable) {
+                LOGGER.log(Level.SEVERE, "Unexpected error during database operation", throwable);
                 completableFuture.completeExceptionally(throwable);
-                throwable.printStackTrace();
             }
         });
 

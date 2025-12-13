@@ -51,10 +51,10 @@ public class ParcelContentManager {
         return content;
     }
 
-    public CompletableFuture<Void> delete(UUID parcel) {
+    public CompletableFuture<Boolean> delete(UUID parcel) {
         return this.contentRepository.delete(parcel).thenApply(i -> {
             this.cache.invalidate(parcel);
-            return null;
+            return i > 0;
         });
     }
 

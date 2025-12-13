@@ -19,6 +19,7 @@ import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.ApiStatus;
 
 @Getter
 @Setter
@@ -54,6 +55,28 @@ public class ConfigItem implements Serializable, Cloneable {
 
     public ItemStack toItemStack() {
         return this.toBuilder().build();
+    }
+
+    /**
+     * By default, ConfigItem#toItemStack adds a "parcellockers-mfgui" value to the item's PersistentDataContainer
+     * to identify it as a GUI item.
+     * This method, on the other hand creates a raw ItemStack without that extra data.
+     */
+
+    @ApiStatus.Internal
+    public ItemStack toRawItemStack() {
+        ItemStack itemStack = new ItemStack(this.type);
+        itemStack.editMeta(meta -> {
+            meta.displayName(resetItalic(MINI_MESSAGE.deserialize(this.name)));
+            meta.lore(this.lore.stream()
+                .map(element -> resetItalic(MINI_MESSAGE.deserialize(element)))
+                .toList());
+            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+            if (this.glow) {
+                meta.setEnchantmentGlintOverride(true);
+            }
+        });
+        return itemStack;
     }
 
     @Override

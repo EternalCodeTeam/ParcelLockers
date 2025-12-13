@@ -80,26 +80,20 @@ public class DebugCommand {
     @Execute(name = "getrandomitem")
     void getRandomItem(@Sender Player player, @Arg int stacks) {
         if (stacks <= 0 || stacks > 36) {
-            this.noticeService.create()
-                .notice(Notice.chat("&cInvalid number of stacks. Must be between 1 and 36."))
-                .player(player.getUniqueId())
-                .send();
+            this.noticeService.player(player.getUniqueId(), messages -> Notice.chat("&cInvalid number of stacks. Must be between 1 and 36."));
             return;
         }
 
         List<Material> itemMaterials = Arrays.stream(Material.values()).filter(Material::isItem).toList();
 
-        if (itemMaterials.isEmpty()) {
-            this.noticeService.create()
-                .notice(Notice.chat("&cNo valid item materials found."))
-                .player(player.getUniqueId())
-                .send();
+        if (itemMaterials.isEmpty()) { // should never happen
+            this.noticeService.player(player.getUniqueId(), messages -> Notice.chat("&cNo valid item materials found."));
             return;
         }
 
         Random random = ThreadLocalRandom.current();
 
-        // give player random items
+        // Give player random items
         for (int i = 0; i < stacks; i++) {
             Material randomMaterial = itemMaterials.get(random.nextInt(itemMaterials.size()));
             int randomAmount = Math.min(random.nextInt(64) + 1, randomMaterial.getMaxStackSize());

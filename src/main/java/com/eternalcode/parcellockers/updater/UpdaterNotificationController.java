@@ -40,10 +40,7 @@ public class UpdaterNotificationController implements Listener {
 
         upToDate.thenAccept(isUpToDate -> {
             if (!isUpToDate) {
-                this.noticeService.create()
-                    .player(player.getUniqueId())
-                    .notice(Notice.chat(NEW_VERSION_AVAILABLE))
-                    .send();
+                this.noticeService.player(player.getUniqueId(), messages -> Notice.chat(NEW_VERSION_AVAILABLE));
             }
         }).orTimeout(5, TimeUnit.SECONDS);
     }

@@ -7,6 +7,7 @@ import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.PageResult;
+import com.eternalcode.parcellockers.shared.exception.DatabaseException;
 import com.j256.ormlite.table.TableUtils;
 import java.sql.SQLException;
 import java.util.List;
@@ -27,7 +28,7 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
         try {
             TableUtils.createTableIfNotExists(databaseManager.connectionSource(), ParcelTable.class);
         } catch (SQLException ex) {
-            throw new RuntimeException("Failed to initialize parcel table", ex);
+            throw new DatabaseException("Failed to initialize parcel table", ex);
         }
     }
 

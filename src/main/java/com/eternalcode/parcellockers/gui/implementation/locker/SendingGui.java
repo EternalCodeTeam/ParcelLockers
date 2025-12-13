@@ -98,19 +98,13 @@ public class SendingGui implements GuiView {
                     .setLine(0, "Enter parcel name:")
                     .setHandler((p, result) -> {
                         String name = result.getLineWithoutColor(1);
-                        if (name.isBlank()) {
-                            this.noticeService.create()
-                                .notice(messages -> messages.parcel.emptyName)
-                                .player(player.getUniqueId())
-                                .send();
+                        if (name == null || name.isBlank()) {
+                            this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.nameCannotBeEmpty);
                             return Collections.emptyList();
                         }
 
                         this.state.parcelName(name);
-                        this.noticeService.create()
-                            .notice(messages -> messages.parcel.nameSet)
-                            .player(player.getUniqueId())
-                            .send();
+                        this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.nameSet);
 
                         List<String> lore = nameItem.lore();
                         if (lore.size() > 1) {
@@ -146,10 +140,7 @@ public class SendingGui implements GuiView {
                         String description = result.getLineWithoutColor(1);
 
                         this.state.parcelDescription(description);
-                        this.noticeService.create()
-                            .notice(messages -> messages.parcel.descriptionSet)
-                            .player(player.getUniqueId())
-                            .send();
+                        this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.descriptionSet);
 
                         List<String> lore = descriptionItem.clone().lore();
                         if (lore.size() > 1) {
@@ -199,34 +190,22 @@ public class SendingGui implements GuiView {
         GuiItem submitItem = this.guiSettings.submitParcelItem.toGuiItem(event ->
             this.guiManager.getItemStorage(player.getUniqueId()).thenAccept(result -> {
                 if (result.items().isEmpty()) {
-                    this.noticeService.create()
-                        .notice(messages -> messages.parcel.empty)
-                        .player(player.getUniqueId())
-                        .send();
+                    this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.cannotBeEmpty);
                     return;
                 }
 
                 if (this.state.parcelName() == null || this.state.parcelName().isEmpty()) {
-                    this.noticeService.create()
-                        .notice(messages -> messages.parcel.nameNotSet)
-                        .player(player.getUniqueId())
-                        .send();
+                    this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.nameNotSet);
                     return;
                 }
 
                 if (this.state.receiver() == null) {
-                    this.noticeService.create()
-                        .notice(messages -> messages.parcel.receiverNotSet)
-                        .player(player.getUniqueId())
-                        .send();
+                    this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.receiverNotSet);
                     return;
                 }
 
                 if (this.state.destinationLocker() == null) {
-                    this.noticeService.create()
-                        .notice(messages -> messages.parcel.destinationNotSet)
-                        .player(player.getUniqueId())
-                        .send();
+                    this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.destinationNotSet);
                     return;
                 }
 
@@ -379,10 +358,7 @@ public class SendingGui implements GuiView {
 
     public void updateDestinationItem(Player player, String destinationLockerDesc, boolean sendNotice) {
         if (sendNotice){
-            this.noticeService.create()
-                .notice(messages -> messages.parcel.destinationSet)
-                .player(player.getUniqueId())
-                .send();
+            this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.destinationSet);
         }
 
         if (destinationLockerDesc == null || destinationLockerDesc.isEmpty()) {

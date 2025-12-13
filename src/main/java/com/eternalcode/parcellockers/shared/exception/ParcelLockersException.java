@@ -1,9 +1,10 @@
-package com.eternalcode.parcellockers.shared;
+package com.eternalcode.parcellockers.shared.exception;
 
+/**
+ * Base exception for the ParcelLockers plugin.
+ * All plugin-specific exceptions should extend this class.
+ */
 public class ParcelLockersException extends RuntimeException {
-
-    public ParcelLockersException() {
-    }
 
     public ParcelLockersException(String message) {
         super(message);
@@ -13,3 +14,4 @@ public class ParcelLockersException extends RuntimeException {
         super(message, cause);
     }
 }
+
