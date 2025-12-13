@@ -46,10 +46,7 @@ public class ParcelDispatchService {
         this.lockerManager.isLockerFull(parcel.destinationLocker())
             .thenCompose(isFull -> {
                 if (isFull) {
-                    this.noticeService.create()
-                        .notice(messages -> messages.parcel.lockerFull)
-                        .player(sender.getUniqueId())
-                        .send();
+                    this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.lockerFull);
                     return CompletableFuture.completedFuture(null);
                 }
 
@@ -81,10 +78,7 @@ public class ParcelDispatchService {
                     });
             })
             .exceptionally(throwable -> {
-                this.noticeService.create()
-                    .notice(messages -> messages.parcel.cannotSend)
-                    .player(sender.getUniqueId())
-                    .send();
+                this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.cannotSend);
                 throwable.printStackTrace();
                 return null;
             });

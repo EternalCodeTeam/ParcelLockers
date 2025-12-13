@@ -80,10 +80,7 @@ public class LockerPlaceController implements Listener {
 
         if (this.lockerCreators.getIfPresent(player.getUniqueId()) != null) {
             event.setCancelled(true);
-            this.noticeService.create()
-                .player(player.getUniqueId())
-                .notice(messages -> messages.locker.alreadyCreating)
-                .send();
+            this.noticeService.player(player.getUniqueId(), messages -> messages.locker.alreadyCreating);
             return;
         }
         this.lockerCreators.put(player.getUniqueId(), true);
@@ -98,13 +95,9 @@ public class LockerPlaceController implements Listener {
                     Location location = event.getBlockPlaced().getLocation();
 
                     this.lockerManager.create(UUID.randomUUID(), description, PositionAdapter.convert(location));
-
-                    this.noticeService.create()
-                        .player(player.getUniqueId())
-                        .notice(messages -> messages.locker.created)
-                        .send();
-
                     this.lockerCreators.invalidate(player.getUniqueId());
+
+                    this.noticeService.player(player.getUniqueId(), messages -> messages.locker.created);
                 })
                 .withPrefix(new NullConversationPrefix())
                 .withModality(false)

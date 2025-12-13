@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+// TODO replace with dialog api
 public class LockerPlacePrompt implements Prompt {
 
     private final NoticeService noticeService;
@@ -26,10 +27,7 @@ public class LockerPlacePrompt implements Prompt {
     @Override
     public String getPromptText(@NotNull ConversationContext context) {
         if (context.getForWhom() instanceof Player player) {
-            this.noticeService.create()
-                .player(player.getUniqueId())
-                .notice(messages -> messages.locker.descriptionPrompt)
-                .send();
+            this.noticeService.player(player.getUniqueId(), messages -> messages.locker.descriptionPrompt);
         }
         return StringUtils.EMPTY;
     }

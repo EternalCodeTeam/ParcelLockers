@@ -43,12 +43,11 @@ public class MessageConfig extends OkaeriConfig {
             .chat("&2✔ &aParcel sent successfully.")
             .sound(Sound.ENTITY_ITEM_PICKUP.key())
             .build();
-
         public Notice cannotSend = Notice.builder()
             .chat("&4✘ &cAn error occurred while sending the parcel. Check the console for more information.")
             .sound(Sound.ENTITY_VILLAGER_NO.key())
             .build();
-        public Notice emptyName = Notice.builder()
+        public Notice nameCannotBeEmpty = Notice.builder()
             .chat("&4✘ &cThe parcel name cannot be empty!")
             .sound(Sound.ENTITY_VILLAGER_NO.key())
             .build();
@@ -56,7 +55,7 @@ public class MessageConfig extends OkaeriConfig {
             .chat("&2✔ &aParcel name set successfully.")
             .sound(Sound.ENTITY_EXPERIENCE_ORB_PICKUP.key())
             .build();
-        public Notice empty = Notice.builder()
+        public Notice cannotBeEmpty = Notice.builder()
             .chat("&4✘ &cThe parcel cannot be empty!")
             .sound(Sound.ENTITY_ENDERMAN_AMBIENT.key())
             .build();
@@ -161,6 +160,10 @@ public class MessageConfig extends OkaeriConfig {
         public Notice alreadyCreating = Notice.builder()
             .chat("&4✘ &cYou are already creating a parcel locker!")
             .sound(Sound.ENTITY_VILLAGER_NO.key())
+            .build();
+        public Notice addedToInventory = Notice.builder()
+            .chat("&2✔ &aParcel locker item added to your inventory.")
+            .sound(Sound.ENTITY_ITEM_PICKUP.key())
             .build();
     }
 
