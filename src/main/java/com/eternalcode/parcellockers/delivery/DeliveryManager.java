@@ -39,10 +39,10 @@ public class DeliveryManager {
         return delivery;
     }
 
-    public CompletableFuture<Void> delete(UUID parcel) {
+    public CompletableFuture<Boolean> delete(UUID parcel) {
         return this.deliveryRepository.delete(parcel).thenApply(i -> {
             this.deliveryCache.invalidate(parcel);
-            return null;
+            return i > 0;
         });
     }
 
