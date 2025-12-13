@@ -114,7 +114,7 @@ paper {
 
 tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
-    options.setIncremental(true)
+    options.isIncremental = true
     options.compilerArgs.add("-parameters")
     options.release = 21
 }

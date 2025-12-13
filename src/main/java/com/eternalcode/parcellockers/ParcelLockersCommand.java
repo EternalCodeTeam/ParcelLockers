@@ -38,5 +38,6 @@ public class ParcelLockersCommand {
     void get(@Sender Player player) {
         ItemStack lockerItem = this.config.settings.parcelLockerItem.toGuiItem().getItemStack();
         player.getInventory().addItem(lockerItem);
+        this.noticeService.player(player.getUniqueId(), messages -> messages.locker.addedToInventory);
     }
 }

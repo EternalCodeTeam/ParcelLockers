@@ -7,6 +7,7 @@ import com.eternalcode.parcellockers.user.repository.UserRepository;
 import com.eternalcode.parcellockers.user.validation.UserValidationService;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import eu.okaeri.configs.exception.ValidationException;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -83,7 +84,7 @@ public class UserManagerImpl implements UserManager {
             ValidationResult validation = this.validationService.validateCreateParameters(uuid, name);
 
             if (!validation.isValid()) {
-                throw new IllegalArgumentException("Invalid parameters: " + validation.errorMessage());
+                throw new ValidationException("Invalid user parameters: " + validation.errorMessage());
             }
 
             Optional<User> existingByUUID = Optional.ofNullable(this.usersByUUID.get(uuid, uniqueId -> null));
@@ -93,7 +94,7 @@ public class UserManagerImpl implements UserManager {
                 uuid, name, existingByUUID, existingByName);
 
             if (!conflictCheck.isValid()) {
-                throw new IllegalStateException(conflictCheck.errorMessage());
+                throw new ValidationException(conflictCheck.errorMessage());
             }
 
             User user = new User(uuid, name);

@@ -54,19 +54,13 @@ public class LockerBreakController implements Listener {
 
             if (!player.hasPermission("parcellockers.admin.break")) {
                 event.setCancelled(true);
-                this.noticeService.create()
-                    .player(player.getUniqueId())
-                    .notice(messages -> messages.locker.cannotBreak)
-                    .send();
+                this.noticeService.player(player.getUniqueId(), messages -> messages.locker.cannotBreak);
                 return;
             }
 
             this.lockerManager.delete(locker.get().uuid());
 
-            this.noticeService.create()
-                .player(player.getUniqueId())
-                .notice(messages -> messages.locker.deleted)
-                .send();
+            this.noticeService.player(player.getUniqueId(), messages -> messages.locker.deleted);
 
             Formatter formatter = new Formatter()
                 .register("{X}", position.x())

@@ -1,6 +1,7 @@
 package com.eternalcode.parcellockers.database;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
+import com.eternalcode.parcellockers.shared.exception.DatabaseException;
 import com.google.common.base.Stopwatch;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
@@ -106,7 +107,7 @@ public class DatabaseManager {
 
             return (Dao<T, ID>) dao;
         } catch (SQLException exception) {
-            throw new RuntimeException(exception);
+            throw new DatabaseException("Failed to get DAO for type: " + type.getSimpleName(), exception);
         }
     }
 
