@@ -64,9 +64,9 @@ public class LockerPlaceController implements Listener {
         ItemStack itemInMainHand = playerInventory.getItemInMainHand();
         ItemStack itemInOffHand = playerInventory.getItemInOffHand();
 
-        ItemStack parcelLockerItem = this.config.settings.parcelLockerItem.toGuiItem().getItemStack();
+        ItemStack parcelLockerItem = this.config.settings.parcelLockerItem.toRawItemStack();
 
-        if (parcelLockerItem.isSimilar(itemInMainHand) && !parcelLockerItem.isSimilar(itemInOffHand)) {
+        if (!parcelLockerItem.isSimilar(itemInMainHand) && !parcelLockerItem.isSimilar(itemInOffHand)) {
             return;
         }
 
@@ -100,7 +100,7 @@ public class LockerPlaceController implements Listener {
                 ActionButton.create(
                     this.miniMessage.deserialize("<dark_green>Create"),
                     this.miniMessage.deserialize("<green>Click to create the locker"),
-                    100,
+                    200,
                     DialogAction.customClick((DialogResponseView view, Audience audience) -> {
                         String description = view.getText("description");
                         if (description == null || description.isEmpty()) {
@@ -125,7 +125,7 @@ public class LockerPlaceController implements Listener {
                 ActionButton.create(
                     this.miniMessage.deserialize("<dark_red>Cancel"),
                     this.miniMessage.deserialize("<red>Click to cancel"),
-                    100,
+                    200,
                     DialogAction.customClick(
                         (DialogResponseView view, Audience audience) ->
                             this.lockerCreators.invalidate(player.getUniqueId()), ClickCallback.Options.builder()
