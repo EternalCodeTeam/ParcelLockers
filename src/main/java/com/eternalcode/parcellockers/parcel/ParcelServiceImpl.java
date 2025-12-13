@@ -4,6 +4,7 @@ import static com.eternalcode.parcellockers.util.InventoryUtil.freeSlotsInInvent
 
 import com.eternalcode.commons.bukkit.ItemUtil;
 import com.eternalcode.commons.scheduler.Scheduler;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.content.ParcelContent;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.notification.NoticeService;
@@ -19,16 +20,21 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 public class ParcelServiceImpl implements ParcelService {
 
+    private static final String PARCEL_FEE_BYPASS_PERMISSION = "parcellockers.fee.bypass";
+
     private final NoticeService noticeService;
     private final ParcelRepository parcelRepository;
     private final ParcelContentRepository parcelContentRepository;
     private final Scheduler scheduler;
+    private final PluginConfig config;
+    private final Economy economy;
 
     private final Cache<UUID, Parcel> parcelsByUuid;
     private final Cache<UUID, List<Parcel>> parcelsBySender;
@@ -38,12 +44,14 @@ public class ParcelServiceImpl implements ParcelService {
         NoticeService noticeService,
         ParcelRepository parcelRepository,
         ParcelContentRepository parcelContentRepository,
-        Scheduler scheduler
+        Scheduler scheduler, PluginConfig config, Economy economy
     ) {
         this.noticeService = noticeService;
         this.parcelRepository = parcelRepository;
         this.parcelContentRepository = parcelContentRepository;
         this.scheduler = scheduler;
+        this.config = config;
+        this.economy = economy;
 
         this.parcelsByUuid = Caffeine.newBuilder()
             .expireAfterAccess(3, TimeUnit.HOURS)
@@ -64,8 +72,34 @@ public class ParcelServiceImpl implements ParcelService {
     }
 
     @Override
-    public CompletableFuture<Void> send(Player sender, Parcel parcel, List<ItemStack> items) {
-        return this.parcelRepository.save(parcel).whenComplete((unused, throwable) -> {
+    public CompletableFuture<Boolean> send(Player sender, Parcel parcel, List<ItemStack> items) {
+        if (!sender.hasPermission(PARCEL_FEE_BYPASS_PERMISSION)) {
+            double fee = switch (parcel.size()) {
+                case SMALL -> this.config.settings.smallParcelFee;
+                case MEDIUM -> this.config.settings.mediumParcelFee;
+                case LARGE -> this.config.settings.largeParcelFee;
+            };
+
+            if (fee > 0) {
+                boolean success = this.economy.withdrawPlayer(sender, fee).transactionSuccess();
+                if (!success) {
+                    this.noticeService.create()
+                        .notice(messages -> messages.parcel.insufficientFunds)
+                        .player(sender.getUniqueId())
+                        .placeholder("{AMOUNT}", String.format("%.2f", fee))
+                        .send();
+                    return CompletableFuture.completedFuture(false);
+                }
+
+                this.noticeService.create()
+                    .notice(messages -> messages.parcel.feeWithdrawn)
+                    .player(sender.getUniqueId())
+                    .placeholder("{AMOUNT}", String.format("%.2f", fee))
+                    .send();
+            }
+        }
+
+        return this.parcelRepository.save(parcel).handle((unused, throwable) -> {
             if (throwable != null) {
                 this.noticeService.create()
                     .notice(messages -> messages.parcel.cannotSend)
@@ -79,6 +113,7 @@ public class ParcelServiceImpl implements ParcelService {
                 .notice(messages -> messages.parcel.sent)
                 .player(sender.getUniqueId())
                 .send();
+            return true;
         });
     }
 

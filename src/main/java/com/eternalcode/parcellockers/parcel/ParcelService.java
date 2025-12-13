@@ -13,7 +13,7 @@ import org.bukkit.inventory.ItemStack;
 
 public interface ParcelService {
 
-    CompletableFuture<Void> send(Player sender, Parcel parcel, List<ItemStack> items);
+    CompletableFuture<Boolean> send(Player sender, Parcel parcel, List<ItemStack> items);
 
     CompletableFuture<Void> update(Parcel parcel);
 

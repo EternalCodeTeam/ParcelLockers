@@ -78,6 +78,7 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
             long count = dao.queryBuilder()
                 .where()
                 .eq(DESTINATION_LOCKER_COLUMN, destinationLocker)
+                .and()
                 .eq("status", ParcelStatus.DELIVERED)
                 .countOf();
             return (int) count;
