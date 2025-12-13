@@ -160,7 +160,7 @@ public class PluginConfig extends OkaeriConfig {
         public ConfigItem cornerItem = new ConfigItem()
             .name("")
             .lore(Collections.emptyList())
-            .type(Material.ORANGE_STAINED_GLASS_PANE);
+            .type(Material.BLUE_STAINED_GLASS_PANE);
 
         @Comment({ "", "# The item of the parcel submit button" })
         public ConfigItem submitParcelItem = new ConfigItem()
@@ -215,6 +215,9 @@ public class PluginConfig extends OkaeriConfig {
                 )
             )
             .type(Material.CHEST_MINECART);
+
+        @Comment({ "", "# The lore line showing when the parcel will arrive. Placeholders: {DURATION} - time remaining, {DATE} - arrival date" })
+        public String parcelArrivingLine = "&6Arriving in: &e{DURATION} &7({DATE})";
 
         @Comment({ "", "# The item of the parcel item storage button" })
         public ConfigItem parcelStorageItem = new ConfigItem()
@@ -328,6 +331,12 @@ public class PluginConfig extends OkaeriConfig {
             Material.END_PORTAL_FRAME
         );
 
+        @Comment({ "", "# The first line of lore when the parcel contains items in the collection GUI."})
+        public String parcelItemsCollectionGui = "&6Items:";
+
+        @Comment({ "", "# The line of lore containing the item name and amount when the parcel contains items in the collection GUI."})
+        public String parcelItemCollectionFormat = "&6- <gradient:#f6d14a:#862f51>{AMOUNT}x {ITEM}</gradient>";
+
         @Comment({ "", "# The item of the parcel item in the collection GUI" })
         public ConfigItem parcelCollectionItem = new ConfigItem()
             .name("&a{NAME}")
@@ -344,5 +353,8 @@ public class PluginConfig extends OkaeriConfig {
             .name("&4✘ &cNo parcels found")
             .lore(List.of("&cYou don't have any parcels to collect."))
             .type(Material.STRUCTURE_VOID);
+
+        @Comment({ "", "# The lore line showing when the parcel has arrived. Placeholders: {DATE} - arrival date" })
+        public String parcelArrivedLine = "&aArrived on: &2{DATE}";
     }
 }

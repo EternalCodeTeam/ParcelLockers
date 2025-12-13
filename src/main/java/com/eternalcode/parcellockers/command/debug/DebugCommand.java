@@ -86,6 +86,7 @@ public class DebugCommand {
 
         List<Material> itemMaterials = Arrays.stream(Material.values()).filter(Material::isItem).toList();
 
+        // FIXME: Use Registry API
         if (itemMaterials.isEmpty()) { // should never happen
             this.noticeService.player(player.getUniqueId(), messages -> Notice.chat("&cNo valid item materials found."));
             return;

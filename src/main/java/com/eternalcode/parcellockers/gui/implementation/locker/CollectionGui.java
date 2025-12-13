@@ -10,15 +10,19 @@ import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import com.eternalcode.parcellockers.parcel.util.PlaceholderUtil;
 import com.eternalcode.parcellockers.shared.Page;
+import com.eternalcode.parcellockers.util.MaterialUtil;
 import com.spotify.futures.CompletableFutures;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 public class CollectionGui implements GuiView {
 
@@ -112,18 +116,32 @@ public class CollectionGui implements GuiView {
         Player player,
         PaginatedGuiRefresher refresher
     ) {
+        CompletableFuture<List<String>> loreFuture = PlaceholderUtil.replaceParcelPlaceholdersAsync(parcel, parcelItem.lore(), this.guiManager);
+        CompletableFuture<List<ItemStack>> contentFuture = this.guiManager.getParcelContent(parcel.uuid())
+            .thenApply(optional -> optional.map(content -> content.items()).orElse(List.of()));
 
-        return PlaceholderUtil.replaceParcelPlaceholdersAsync(parcel, parcelItem.lore(), this.guiManager)
-            .thenApply(processedLore -> () -> {
-                ConfigItem item = parcelItem.clone();
-                item.name(item.name().replace("{NAME}", parcel.name()));
-                item.lore(processedLore);
-                item.glow(true);
+        return loreFuture.thenCombine(contentFuture, (processedLore, items) -> () -> {
+            ConfigItem item = parcelItem.clone();
+            item.name(item.name().replace("{NAME}", parcel.name()));
 
-                return item.toGuiItem(event -> {
-                    this.guiManager.collectParcel(player, parcel);
-                    refresher.removeItemBySlot(event.getSlot());
-                });
+            List<String> loreWithItems = new ArrayList<>(processedLore);
+            if (!items.isEmpty()) {
+                loreWithItems.add(this.guiSettings.parcelItemsCollectionGui);
+                for (ItemStack itemStack : items) {
+                    loreWithItems.add(this.guiSettings.parcelItemCollectionFormat
+                        .replace("{ITEM}", MaterialUtil.format(itemStack.getType()))
+                        .replace("{AMOUNT}", Integer.toString(itemStack.getAmount()))
+                    );
+                }
+            }
+
+            item.lore(loreWithItems);
+            item.glow(true);
+
+            return item.toGuiItem(event -> {
+                this.guiManager.collectParcel(player, parcel);
+                refresher.removeItemBySlot(event.getSlot());
             });
+        });
     }
 }

@@ -29,7 +29,7 @@ public class SendingGuiState {
         this.priority = false;
         this.entryLocker = UUID.randomUUID();
         this.destinationLocker = null;
-        this.status = ParcelStatus.IN_PROGRESS;
+        this.status = ParcelStatus.SENT;
     }
 
 }

@@ -54,7 +54,7 @@ class ParcelRepositoryIntegrationTest extends IntegrationTestSpec {
         UUID destinationLocker = UUID.randomUUID();
 
         parcelRepository.save(new Parcel(uuid, sender, "name", "description", true, receiver,
-            ParcelSize.SMALL, entryLocker, destinationLocker, ParcelStatus.IN_PROGRESS));
+            ParcelSize.SMALL, entryLocker, destinationLocker, ParcelStatus.SENT));
 
         Optional<Parcel> parcel = this.await(parcelRepository.fetchById(uuid));
         assertTrue(parcel.isPresent());

@@ -5,6 +5,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -27,6 +28,17 @@ public class DeliveryManager {
 
     public Delivery getOrCreate(UUID parcel, Instant deliveryTimestamp) {
         return this.deliveryCache.get(parcel, key -> this.create(key, deliveryTimestamp));
+    }
+
+    public CompletableFuture<Optional<Delivery>> get(UUID parcel) {
+        Delivery cached = this.deliveryCache.getIfPresent(parcel);
+        if (cached != null) {
+            return CompletableFuture.completedFuture(Optional.of(cached));
+        }
+        return this.deliveryRepository.fetch(parcel).thenApply(optional -> {
+            optional.ifPresent(delivery -> this.deliveryCache.put(parcel, delivery));
+            return optional;
+        });
     }
 
     public Delivery create(UUID parcel, Instant deliveryTimestamp) {

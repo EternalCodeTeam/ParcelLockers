@@ -155,7 +155,9 @@ public final class ParcelLockers extends JavaPlugin {
             lockerManager,
             userManager,
             itemStorageManager,
-            parcelDispatchService
+            parcelDispatchService,
+            parcelContentManager,
+            deliveryManager
         );
 
         MainGui mainGUI = new MainGui(
