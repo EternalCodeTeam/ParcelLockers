@@ -107,16 +107,38 @@ public class LockerPlaceController implements Listener {
                             this.lockerCreators.invalidate(player.getUniqueId());
                             return;
                         }
-                        location.getWorld().getBlockAt(location).setType(type);
-                        location.getWorld().getBlockAt(location).setBlockData(data); // ensures the block is facing correctly
-                        this.lockerManager.create(UUID.randomUUID(), description, PositionAdapter.convert(location));
 
-                        this.noticeService.create()
-                            .player(player.getUniqueId())
-                            .notice(messages -> messages.locker.created)
-                            .send();
+                        // Re-validate before creating to prevent race conditions
+                        this.lockerManager.get(PositionAdapter.convert(location)).thenAccept(existingLocker -> {
+                            if (existingLocker.isPresent()) {
+                                this.noticeService.create()
+                                    .player(player.getUniqueId())
+                                    .notice(messages -> messages.locker.alreadyExists)
+                                    .send();
+                                this.lockerCreators.invalidate(player.getUniqueId());
+                                return;
+                            }
 
-                        this.lockerCreators.invalidate(player.getUniqueId());
+                            location.getWorld().getBlockAt(location).setType(type);
+                            location.getWorld().getBlockAt(location).setBlockData(data);
+                            this.lockerManager.create(UUID.randomUUID(), description, PositionAdapter.convert(location))
+                                .thenAccept(locker -> {
+                                    this.noticeService.create()
+                                        .player(player.getUniqueId())
+                                        .notice(messages -> messages.locker.created)
+                                        .send();
+
+                                    this.lockerCreators.invalidate(player.getUniqueId());
+                                })
+                                .exceptionally(ex -> {
+                                    this.noticeService.create()
+                                        .player(player.getUniqueId())
+                                        .notice(messages -> messages.locker.cannotCreate)
+                                        .send();
+                                    this.lockerCreators.invalidate(player.getUniqueId());
+                                    return null;
+                                });
+                        });
                     }, ClickCallback.Options.builder()
                         .uses(1)
                         .lifetime(ClickCallback.DEFAULT_LIFETIME)

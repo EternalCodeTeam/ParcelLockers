@@ -1,5 +1,6 @@
 package com.eternalcode.parcellockers.locker.controller;
 
+import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.gui.implementation.locker.LockerGui;
 import com.eternalcode.parcellockers.locker.LockerManager;
 import com.eternalcode.parcellockers.shared.PositionAdapter;
@@ -16,10 +17,12 @@ public class LockerInteractionController implements Listener {
 
     private final LockerManager lockerManager;
     private final LockerGui lockerGUI;
+    private final Scheduler scheduler;
 
-    public LockerInteractionController(LockerManager lockerManager, LockerGui lockerGUI) {
+    public LockerInteractionController(LockerManager lockerManager, LockerGui lockerGUI, Scheduler scheduler) {
         this.lockerManager = lockerManager;
         this.lockerGUI = lockerGUI;
+        this.scheduler = scheduler;
     }
 
     @EventHandler
@@ -41,8 +44,10 @@ public class LockerInteractionController implements Listener {
             }
             UUID uuid = optionalLocker.get().uuid();
 
-            event.setCancelled(true);
-            this.lockerGUI.show(player, uuid);
+            this.scheduler.run(() -> {
+                event.setCancelled(true);
+                this.lockerGUI.show(player, uuid);
+            });
         });
     }
 }

@@ -68,7 +68,6 @@ public class ParcelServiceImpl implements ParcelService {
             .maximumSize(10_000)
             .build();
 
-        this.cacheAll();
     }
 
     @Override
@@ -99,16 +98,25 @@ public class ParcelServiceImpl implements ParcelService {
             }
         }
 
-        return this.parcelRepository.save(parcel).handle((unused, throwable) -> {
-            if (throwable != null) {
+        // Save parcel first, then content. If content fails, delete parcel (transactional behavior)
+        return this.parcelRepository.save(parcel)
+            .thenCompose(unused -> this.parcelContentRepository.save(new ParcelContent(parcel.uuid(), items))
+                .thenApply(contentSaved -> {
+                    this.cache(parcel);
+                    this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.sent);
+                    return true;
+                })
+                .exceptionally(contentError -> {
+                    // Rollback: delete parcel if content save failed
+                    this.parcelRepository.delete(parcel.uuid());
+                    this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.cannotSend);
+                    throw new ParcelOperationException("Failed to save parcel content, rolled back parcel", contentError);
+                })
+            )
+            .exceptionally(throwable -> {
                 this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.cannotSend);
                 throw new ParcelOperationException("Failed to save parcel", throwable);
-            }
-
-            this.parcelContentRepository.save(new ParcelContent(parcel.uuid(), items));
-            this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.sent);
-            return true;
-        });
+            });
     }
 
     @Override
@@ -138,27 +146,37 @@ public class ParcelServiceImpl implements ParcelService {
 
     @Override
     public CompletableFuture<Void> collect(Player player, Parcel parcel) {
-        return this.parcelContentRepository.fetch(parcel.uuid()).thenAccept(optional -> {
+        return this.parcelContentRepository.fetch(parcel.uuid()).thenCompose(optional -> {
             if (optional.isEmpty()) {
                 this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.cannotCollect);
-                return;
+                return CompletableFuture.completedFuture(null);
             }
 
             List<ItemStack> items = optional.get().items();
             if (items.size() > freeSlotsInInventory(player)) {
                 this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.noInventorySpace);
-                return;
+                return CompletableFuture.completedFuture(null);
             }
 
+            // Give items first
             items.forEach(item -> this.scheduler.run(() -> ItemUtil.giveItem(player, item)));
 
-
-            // TODO in the future: Do not delete, archive instead
-            this.invalidate(parcel);
-            this.parcelRepository.delete(parcel);
-            this.parcelContentRepository.delete(parcel.uuid());
-
-            this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.collected);
+            // Then delete from database, only invalidate cache if successful
+            return this.parcelRepository.delete(parcel)
+                .thenCompose(deleted -> this.parcelContentRepository.delete(parcel.uuid())
+                    .thenAccept(contentDeleted -> {
+                        if (deleted > 0 && contentDeleted > 0) {
+                            this.invalidate(parcel);
+                            this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.collected);
+                        } else {
+                            this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.cannotCollect);
+                        }
+                    })
+                )
+                .exceptionally(throwable -> {
+                    this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.cannotCollect);
+                    return null;
+                });
         });
     }
 
@@ -216,12 +234,6 @@ public class ParcelServiceImpl implements ParcelService {
             });
     }
 
-
-    private void cacheAll() {
-        this.parcelRepository.fetchAll()
-            .thenAccept(optional -> optional.ifPresent(parcels -> parcels.forEach(this::cache)));
-    }
-
     @Override
     public CompletableFuture<Integer> delete(UUID uuid) {
         return this.parcelRepository.delete(uuid).thenApply(deleted -> {
@@ -271,12 +283,25 @@ public class ParcelServiceImpl implements ParcelService {
     private void invalidate(Parcel parcel) {
         this.parcelsByUuid.invalidate(parcel.uuid());
 
-        List<Parcel> bySender = this.parcelsBySender.get(parcel.sender(), k -> new ArrayList<>());
-        bySender.remove(parcel);
-        this.parcelsBySender.put(parcel.sender(), bySender);
+        // Use getIfPresent to avoid creating empty entries
+        List<Parcel> bySender = this.parcelsBySender.getIfPresent(parcel.sender());
+        if (bySender != null) {
+            bySender.remove(parcel);
+            if (bySender.isEmpty()) {
+                this.parcelsBySender.invalidate(parcel.sender());
+            } else {
+                this.parcelsBySender.put(parcel.sender(), bySender);
+            }
+        }
 
-        List<Parcel> byReceiver = this.parcelsByReceiver.get(parcel.receiver(), k -> new ArrayList<>());
-        byReceiver.remove(parcel);
-        this.parcelsByReceiver.put(parcel.receiver(), byReceiver);
+        List<Parcel> byReceiver = this.parcelsByReceiver.getIfPresent(parcel.receiver());
+        if (byReceiver != null) {
+            byReceiver.remove(parcel);
+            if (byReceiver.isEmpty()) {
+                this.parcelsByReceiver.invalidate(parcel.receiver());
+            } else {
+                this.parcelsByReceiver.put(parcel.receiver(), byReceiver);
+            }
+        }
     }
 }

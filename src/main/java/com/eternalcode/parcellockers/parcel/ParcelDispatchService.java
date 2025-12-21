@@ -11,10 +11,13 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Logger;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 public class ParcelDispatchService {
+
+    private static final Logger LOGGER = Logger.getLogger(ParcelDispatchService.class.getName());
 
     private final LockerManager lockerManager;
     private final ParcelService parcelService;
@@ -82,8 +85,8 @@ public class ParcelDispatchService {
                     });
             })
             .exceptionally(throwable -> {
+                LOGGER.severe("Failed to dispatch parcel for player " + sender.getName() + ": " + throwable.getMessage());
                 this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.cannotSend);
-                throwable.printStackTrace();
                 return null;
             });
     }

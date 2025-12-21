@@ -157,6 +157,10 @@ public class MessageConfig extends OkaeriConfig {
             .chat("&4✘ &cYou are already creating a parcel locker!")
             .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
             .build();
+        public Notice alreadyExists = Notice.builder()
+            .chat("&4✘ &cA parcel locker already exists at this location!")
+            .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
+            .build();
         public Notice addedToInventory = Notice.builder()
             .chat("&2✔ &aParcel locker item added to your inventory.")
             .sound(SoundEventKeys.ENTITY_ITEM_PICKUP)

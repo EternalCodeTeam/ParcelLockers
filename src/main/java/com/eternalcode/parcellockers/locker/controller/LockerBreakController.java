@@ -52,28 +52,31 @@ public class LockerBreakController implements Listener {
                 return;
             }
 
-            if (!player.hasPermission("parcellockers.admin.break")) {
-                event.setCancelled(true);
-                this.noticeService.player(player.getUniqueId(), messages -> messages.locker.cannotBreak);
-                return;
-            }
+            this.scheduler.run(() -> {
+                if (!player.hasPermission("parcellockers.admin.break")) {
+                    // Block was already broken, need to restore it
+                    block.getLocation().getBlock().setType(block.getType());
+                    this.noticeService.player(player.getUniqueId(), messages -> messages.locker.cannotBreak);
+                    return;
+                }
 
-            this.lockerManager.delete(locker.get().uuid());
+                this.lockerManager.delete(locker.get().uuid());
 
-            this.noticeService.player(player.getUniqueId(), messages -> messages.locker.deleted);
+                this.noticeService.player(player.getUniqueId(), messages -> messages.locker.deleted);
 
-            Formatter formatter = new Formatter()
-                .register("{X}", position.x())
-                .register("{Y}", position.y())
-                .register("{Z}", position.z())
-                .register("{WORLD}", position.world())
-                .register("{PLAYER}", player.getName());
+                Formatter formatter = new Formatter()
+                    .register("{X}", position.x())
+                    .register("{Y}", position.y())
+                    .register("{Z}", position.z())
+                    .register("{WORLD}", position.world())
+                    .register("{PLAYER}", player.getName());
 
-            this.noticeService.create()
-                .onlinePlayers()
-                .notice(messages -> messages.locker.broadcastRemoved)
-                .formatter(formatter)
-                .send();
+                this.noticeService.create()
+                    .onlinePlayers()
+                    .notice(messages -> messages.locker.broadcastRemoved)
+                    .formatter(formatter)
+                    .send();
+            });
         });
     }
 
@@ -83,7 +86,7 @@ public class LockerBreakController implements Listener {
 
         this.lockerManager.get(position).thenAccept(locker -> {
             if (locker.isPresent()) {
-                event.setCancelled(true);
+                this.scheduler.run(() -> event.setCancelled(true));
             }
         });
     }
@@ -129,7 +132,7 @@ public class LockerBreakController implements Listener {
 
         this.lockerManager.get(position).thenAccept(locker -> {
             if (locker.isPresent()) {
-                event.setCancelled(true);
+                this.scheduler.run(() -> event.setCancelled(true));
             }
         });
     }
@@ -140,7 +143,7 @@ public class LockerBreakController implements Listener {
 
         this.lockerManager.get(position).thenAccept(locker -> {
             if (locker.isPresent()) {
-                event.setCancelled(true);
+                this.scheduler.run(() -> event.setCancelled(true));
             }
         });
     }

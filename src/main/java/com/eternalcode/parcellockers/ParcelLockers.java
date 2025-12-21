@@ -191,7 +191,7 @@ public final class ParcelLockers extends JavaPlugin {
             .build();
 
         Stream.of(
-            new LockerInteractionController(lockerManager, lockerGUI),
+            new LockerInteractionController(lockerManager, lockerGUI, scheduler),
             new LockerPlaceController(config, messageConfig, miniMessage, lockerManager, noticeService),
             new LockerBreakController(lockerManager, noticeService, scheduler),
             new PrepareUserController(userManager),

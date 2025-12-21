@@ -4,9 +4,12 @@ import com.eternalcode.parcellockers.delivery.DeliveryManager;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelService;
 import com.eternalcode.parcellockers.parcel.ParcelStatus;
+import java.util.logging.Logger;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class ParcelSendTask extends BukkitRunnable {
+
+    private static final Logger LOGGER = Logger.getLogger(ParcelSendTask.class.getName());
 
     private final Parcel parcel;
     private final ParcelService parcelService;
@@ -37,9 +40,17 @@ public class ParcelSendTask extends BukkitRunnable {
             ParcelStatus.DELIVERED
         );
 
+        this.parcelService.update(updated)
+            .exceptionally(throwable -> {
+                LOGGER.severe("Failed to update parcel " + updated.uuid() + " to DELIVERED status: " + throwable.getMessage());
+                return null;
+            });
 
-        this.parcelService.update(updated);
-        this.deliveryManager.delete(updated.uuid());
+        this.deliveryManager.delete(updated.uuid())
+            .exceptionally(throwable -> {
+                LOGGER.warning("Failed to delete delivery for parcel " + updated.uuid() + ": " + throwable.getMessage());
+                return null;
+            });
     }
 
 }

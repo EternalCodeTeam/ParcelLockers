@@ -49,8 +49,6 @@ public class LockerManager {
             .expireAfterAccess(Duration.ofHours(2))
             .maximumSize(10_000)
             .build();
-
-        this.cacheAll();
     }
 
     public CompletableFuture<Optional<Locker>> get(UUID uniqueId) {
@@ -163,13 +161,5 @@ public class LockerManager {
     public CompletableFuture<Boolean> isLockerFull(UUID lockerUuid) {
         return this.parcelRepository.countByDestinationLocker(lockerUuid)
             .thenApply(count -> count > 0 && count >= this.config.settings.maxParcelsPerLocker);
-    }
-
-    private void cacheAll() {
-        this.lockerRepository.fetchAll()
-            .thenAccept(optionalLockers -> optionalLockers.ifPresent(lockers -> lockers.forEach(locker -> {
-                this.lockersByUUID.put(locker.uuid(), locker);
-                this.lockersByPosition.put(locker.position(), locker);
-            })));
     }
 }

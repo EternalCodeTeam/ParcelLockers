@@ -13,9 +13,12 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 import org.apache.commons.lang3.StringUtils;
 
 public class PlaceholderUtil {
+
+    private static final Logger LOGGER = Logger.getLogger(PlaceholderUtil.class.getName());
 
     public static CompletableFuture<List<String>> replaceParcelPlaceholdersAsync(
         Parcel parcel,
@@ -65,7 +68,7 @@ public class PlaceholderUtil {
             .toCompletableFuture()
             .orTimeout(5, TimeUnit.SECONDS)
             .exceptionally(throwable -> {
-                throwable.printStackTrace();
+                LOGGER.log(java.util.logging.Level.WARNING, "Failed to replace parcel placeholders for parcel " + parcel.uuid(), throwable);
                 return createFallbackLore(parcel, lore);
             });
     }
@@ -77,7 +80,7 @@ public class PlaceholderUtil {
                 .map(User::name)
                 .orElse("Unknown"))
             .exceptionally(throwable -> {
-                System.err.println("Failed to get user name for " + userUuid + ": " + throwable.getMessage());
+                LOGGER.log(java.util.logging.Level.WARNING, "Failed to get user name for " + userUuid, throwable);
                 return "Unknown";
             });
     }
@@ -90,18 +93,18 @@ public class PlaceholderUtil {
         return guiManager.getLocker(lockerId)
             .orTimeout(3, TimeUnit.SECONDS)
             .exceptionally(throwable -> {
-                System.err.println("Failed to get locker info for " + lockerId + ": " + throwable.getMessage());
+                LOGGER.log(java.util.logging.Level.WARNING, "Failed to get locker info for " + lockerId, throwable);
                 return Optional.empty();
             });
     }
 
     private static List<String> createFallbackLore(Parcel parcel, List<String> originalLore) {
         Formatter fallbackFormatter = new Formatter()
-            .register("{UUID}", parcel.uuid().toString())
-            .register("{NAME}", parcel.name())
+            .register("{UUID}", parcel.uuid() != null ? parcel.uuid().toString() : "-")
+            .register("{NAME}", parcel.name() != null ? parcel.name() : "-")
             .register("{SENDER}", "Loading...")
             .register("{RECEIVER}", "Loading...")
-            .register("{SIZE}", StringUtils.capitalize(parcel.size().toString().toLowerCase()))
+            .register("{SIZE}", parcel.size() != null ? StringUtils.capitalize(parcel.size().toString().toLowerCase()) : "-")
             .register("{PRIORITY}", parcel.priority() ? "&aYes" : "&cNo")
             .register("{DESCRIPTION}", parcel.description() != null ? parcel.description() : "-")
             .register("{POSITION_X}", "-")
