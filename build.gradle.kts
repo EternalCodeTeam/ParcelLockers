@@ -84,8 +84,8 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:6.0.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
-    testImplementation("org.testcontainers:junit-jupiter:1.21.3")
-    testImplementation("org.testcontainers:mysql:1.21.3")
+    testImplementation("org.testcontainers:junit-jupiter:1.21.4")
+    testImplementation("org.testcontainers:mysql:1.21.4")
     testImplementation("mysql:mysql-connector-java:8.0.33")
     testImplementation("com.eternalcode:eternalcode-commons-shared:1.3.1")
 }
