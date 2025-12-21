@@ -3,6 +3,7 @@ package com.eternalcode.parcellockers.command.debug;
 import com.eternalcode.commons.bukkit.ItemUtil;
 import com.eternalcode.multification.notice.Notice;
 import com.eternalcode.parcellockers.content.ParcelContentManager;
+import com.eternalcode.parcellockers.delivery.DeliveryManager;
 import com.eternalcode.parcellockers.itemstorage.ItemStorageManager;
 import com.eternalcode.parcellockers.locker.LockerManager;
 import com.eternalcode.parcellockers.notification.NoticeService;
@@ -31,19 +32,21 @@ public class DebugCommand {
     private final ItemStorageManager itemStorageManager;
     private final ParcelContentManager contentManager;
     private final NoticeService noticeService;
+    private final DeliveryManager deliveryManager;
 
     public DebugCommand(
         ParcelService parcelService,
         LockerManager lockerManager,
         ItemStorageManager itemStorageManager,
         ParcelContentManager contentManager,
-        NoticeService noticeService
+        NoticeService noticeService, DeliveryManager deliveryManager
     ) {
         this.parcelService = parcelService;
         this.lockerManager = lockerManager;
         this.itemStorageManager = itemStorageManager;
         this.contentManager = contentManager;
         this.noticeService = noticeService;
+        this.deliveryManager = deliveryManager;
     }
 
     @Execute(name = "delete parcels")
@@ -66,9 +69,15 @@ public class DebugCommand {
         this.contentManager.deleteAll(sender, this.noticeService);
     }
 
+    @Execute(name = "delete delivieries")
+    void deleteDeliveries(@Sender CommandSender sender) {
+        this.deliveryManager.deleteAll(sender, this.noticeService);
+    }
+
     @Execute(name = "delete all")
     void deleteAll(@Sender CommandSender sender) {
         this.deleteItemStorages(sender);
+        this.deleteDeliveries(sender);
         this.deleteLockers(sender);
         this.deleteParcels(sender);
         this.deleteItems(sender);

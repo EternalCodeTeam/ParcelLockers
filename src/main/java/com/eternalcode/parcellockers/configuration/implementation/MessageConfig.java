@@ -4,9 +4,8 @@ import com.eternalcode.multification.notice.Notice;
 import eu.okaeri.configs.OkaeriConfig;
 import eu.okaeri.configs.annotation.Comment;
 import eu.okaeri.configs.annotation.Header;
-import org.bukkit.Sound;
+import io.papermc.paper.registry.keys.SoundEventKeys;
 
-@SuppressWarnings("ALL")
 @Header({
     "# This file contains messages used by the ParcelLockers plugin.",
     "# You can customize these messages to fit your server's theme or language.",
@@ -21,7 +20,7 @@ public class MessageConfig extends OkaeriConfig {
     public Notice playerNotFound = Notice.chat("&4✘ &cThe specified player could not be found!");
     public Notice invalidUsage = Notice.builder()
         .chat("&4» &cCorrect usage: &6{USAGE}")
-        .sound(Sound.BLOCK_NOTE_BLOCK_PLING.key())
+        .sound(SoundEventKeys.BLOCK_NOTE_BLOCK_PLING)
         .build();
 
     public Notice reload = Notice.chat("&3❣ &bConfiguration has been successfully reloaded!");
@@ -41,82 +40,82 @@ public class MessageConfig extends OkaeriConfig {
     public static class ParcelMessages extends OkaeriConfig {
         public Notice sent = Notice.builder()
             .chat("&2✔ &aParcel sent successfully.")
-            .sound(Sound.ENTITY_ITEM_PICKUP.key())
+            .sound(SoundEventKeys.ENTITY_ITEM_PICKUP)
             .build();
         public Notice cannotSend = Notice.builder()
             .chat("&4✘ &cAn error occurred while sending the parcel. Check the console for more information.")
-            .sound(Sound.ENTITY_VILLAGER_NO.key())
+            .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
             .build();
         public Notice nameCannotBeEmpty = Notice.builder()
             .chat("&4✘ &cThe parcel name cannot be empty!")
-            .sound(Sound.ENTITY_VILLAGER_NO.key())
+            .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
             .build();
         public Notice nameSet = Notice.builder()
             .chat("&2✔ &aParcel name set successfully.")
-            .sound(Sound.ENTITY_EXPERIENCE_ORB_PICKUP.key())
+            .sound(SoundEventKeys.ENTITY_EXPERIENCE_ORB_PICKUP)
             .build();
         public Notice cannotBeEmpty = Notice.builder()
             .chat("&4✘ &cThe parcel cannot be empty!")
-            .sound(Sound.ENTITY_ENDERMAN_AMBIENT.key())
+            .sound(SoundEventKeys.ENTITY_ENDERMAN_AMBIENT)
             .build();
         public Notice receiverSet = Notice.builder()
             .chat("&2✔ &aParcel receiver set successfully.")
-            .sound(Sound.ENTITY_EXPERIENCE_ORB_PICKUP.key())
+            .sound(SoundEventKeys.ENTITY_EXPERIENCE_ORB_PICKUP)
             .build();
         public Notice descriptionSet = Notice.builder()
             .chat("&2✔ &aParcel description set successfully.")
-            .sound(Sound.ENTITY_EXPERIENCE_ORB_PICKUP.key())
+            .sound(SoundEventKeys.ENTITY_EXPERIENCE_ORB_PICKUP)
             .build();
         public Notice destinationSet = Notice.builder()
             .chat("&2✔ &aParcel destination locker set successfully.")
-            .sound(Sound.ENTITY_EXPERIENCE_ORB_PICKUP.key())
+            .sound(SoundEventKeys.ENTITY_EXPERIENCE_ORB_PICKUP)
             .build();
         public Notice cannotCollect = Notice.builder()
             .chat("&4✘ &cAn error occurred while collecting the parcel.")
-            .sound(Sound.ENTITY_VILLAGER_NO.key())
+            .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
             .build();
         public Notice noInventorySpace = Notice.builder()
             .chat("&4✘ &cYou don't have enough space in your inventory to collect the parcel!")
-            .sound(Sound.ENTITY_VILLAGER_NO.key())
+            .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
             .build();
         public Notice collected = Notice.builder()
             .chat("&2✔ &aParcel collected successfully.")
-            .sound(Sound.ENTITY_PLAYER_LEVELUP.key())
+            .sound(SoundEventKeys.ENTITY_PLAYER_LEVELUP)
             .build();
         public Notice nameNotSet = Notice.builder()
             .chat("&4✘ &cThe parcel name is not set!")
-            .sound(Sound.ENTITY_ENDERMAN_AMBIENT.key())
+            .sound(SoundEventKeys.ENTITY_ENDERMAN_AMBIENT)
             .build();
         public Notice receiverNotSet = Notice.builder()
             .chat("&4✘ &cThe parcel receiver is not set!")
-            .sound(Sound.ENTITY_ENDERMAN_AMBIENT.key())
+            .sound(SoundEventKeys.ENTITY_ENDERMAN_AMBIENT)
             .build();
         public Notice destinationNotSet = Notice.builder()
             .chat("&4✘ &cThe parcel destination locker is not set!")
-            .sound(Sound.ENTITY_ENDERMAN_AMBIENT.key())
+            .sound(SoundEventKeys.ENTITY_ENDERMAN_AMBIENT)
             .build();
         public Notice lockerFull = Notice.builder()
             .chat("&4✘ &cThe destination locker is full! Please select another locker.")
-            .sound(Sound.ENTITY_VILLAGER_NO.key())
+            .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
             .build();
         public Notice illegalItem = Notice.builder()
             .chat("&4✘ &cThe parcel contains illegal items that cannot be sent. ({ITEMS})")
             .build();
         public Notice cannotDelete = Notice.builder()
             .chat("&4✘ &cAn error occurred while deleting the parcel.")
-            .sound(Sound.ENTITY_VILLAGER_NO.key())
+            .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
             .build();
         public Notice deleted = Notice.builder()
             .chat("&2✔ &aParcel deleted successfully.")
-            .sound(Sound.ENTITY_ITEM_BREAK.key())
+            .sound(SoundEventKeys.ENTITY_ITEM_BREAK)
             .build();
         public Notice insufficientFunds = Notice.builder()
             .chat("&4✘ &cYou do not have enough funds to send this parcel! Required: &6${AMOUNT}&c.")
-            .sound(Sound.ENTITY_VILLAGER_NO.key())
+            .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
             .build();
         public Notice feeWithdrawn = Notice.builder()
             .chat("&2✔ &a${AMOUNT} has been withdrawn from your account to cover the parcel sending fee.")
-            .sound(Sound.ENTITY_EXPERIENCE_ORB_PICKUP.key())
+            .sound(SoundEventKeys.ENTITY_EXPERIENCE_ORB_PICKUP)
             .build();
 
         @Comment({"", "# The parcel info message." })
@@ -131,36 +130,36 @@ public class MessageConfig extends OkaeriConfig {
                 "&f• &6Priority: &e{PRIORITY}",
                 "&f• &6Description: &e{DESCRIPTION}"
             )
-            .sound(Sound.BLOCK_NOTE_BLOCK_CHIME.key())
+            .sound(SoundEventKeys.BLOCK_NOTE_BLOCK_CHIME)
             .build();
     }
 
     public static class LockerMessages extends OkaeriConfig {
         public Notice cannotCreate = Notice.builder()
             .chat("&4✘ &cCould not create the parcel locker.")
-            .sound(Sound.ENTITY_VILLAGER_NO.key())
+            .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
             .build();
         public Notice created = Notice.builder()
             .chat("&2✔ &aParcel locker created successfully.")
-            .sound(Sound.BLOCK_ANVIL_USE.key())
+            .sound(SoundEventKeys.BLOCK_ANVIL_USE)
             .build();
         public String descriptionPrompt = "&6Enter a name for the parcel locker:";
         public Notice cannotBreak = Notice.builder()
             .chat("&4✘ &cYou have no permission to break the parcel locker.")
-            .sound(Sound.ENTITY_VILLAGER_NO.key())
+            .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
             .build();
         public Notice deleted = Notice.builder()
             .chat("&2✔ &aParcel locker deleted successfully.")
-            .sound(Sound.BLOCK_ANVIL_BREAK.key())
+            .sound(SoundEventKeys.BLOCK_ANVIL_BREAK)
             .build();
         public Notice broadcastRemoved = Notice.chat("&4❣ &cThe parcel locker at &4{X} {Y} {Z} &cin &4{WORLD} &chas been removed by &4{PLAYER}!");
         public Notice alreadyCreating = Notice.builder()
             .chat("&4✘ &cYou are already creating a parcel locker!")
-            .sound(Sound.ENTITY_VILLAGER_NO.key())
+            .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
             .build();
         public Notice addedToInventory = Notice.builder()
             .chat("&2✔ &aParcel locker item added to your inventory.")
-            .sound(Sound.ENTITY_ITEM_PICKUP.key())
+            .sound(SoundEventKeys.ENTITY_ITEM_PICKUP)
             .build();
     }
 
@@ -170,8 +169,5 @@ public class MessageConfig extends OkaeriConfig {
         public Notice deletedItemStorages = Notice.chat("&4⚠ &cAll ({COUNT}) item storages have been deleted!");
         public Notice deletedContents = Notice.chat("&4⚠ &cAll ({COUNT}) parcel contents have been deleted!");
         public Notice deletedDeliveries = Notice.chat("&4⚠ &cAll ({COUNT}) deliveries have been deleted!");
-        public Notice deletedUsers = Notice.chat("&4⚠ &cAll ({COUNT}) users have been deleted!");
-        public Notice invalidNumberOfStacks = Notice.chat("&4✘ &cInvalid number of stacks. Must be between 1 and 36.");
-        public Notice invalidItemMaterials = Notice.chat("&4✘ &cItem materials to give are invalid (should never happen, if it does report this on our discord).");
     }
 }

@@ -184,7 +184,7 @@ public final class ParcelLockers extends JavaPlugin {
                 new ParcelCommand(mainGUI),
                 new ParcelLockersCommand(configService, config, noticeService),
                 new DebugCommand(parcelService, lockerManager, itemStorageManager, parcelContentManager,
-                    noticeService)
+                    noticeService, deliveryManager)
             ))
             .invalidUsage(new InvalidUsageHandlerImpl(noticeService))
             .missingPermission(new MissingPermissionsHandlerImpl(noticeService))
