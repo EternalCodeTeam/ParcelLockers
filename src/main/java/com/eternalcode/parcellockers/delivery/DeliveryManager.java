@@ -1,12 +1,15 @@
 package com.eternalcode.parcellockers.delivery;
 
 import com.eternalcode.parcellockers.delivery.repository.DeliveryRepository;
+import com.eternalcode.parcellockers.notification.NoticeService;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import org.bukkit.command.CommandSender;
 
 public class DeliveryManager {
 
@@ -29,6 +32,17 @@ public class DeliveryManager {
         return this.deliveryCache.get(parcel, key -> this.create(key, deliveryTimestamp));
     }
 
+    public CompletableFuture<Optional<Delivery>> get(UUID parcel) {
+        Delivery cached = this.deliveryCache.getIfPresent(parcel);
+        if (cached != null) {
+            return CompletableFuture.completedFuture(Optional.of(cached));
+        }
+        return this.deliveryRepository.fetch(parcel).thenApply(optional -> {
+            optional.ifPresent(delivery -> this.deliveryCache.put(parcel, delivery));
+            return optional;
+        });
+    }
+
     public Delivery create(UUID parcel, Instant deliveryTimestamp) {
         Delivery delivery = new Delivery(parcel, deliveryTimestamp);
         if (this.deliveryCache.getIfPresent(parcel) != null) {
@@ -43,6 +57,17 @@ public class DeliveryManager {
         return this.deliveryRepository.delete(parcel).thenApply(i -> {
             this.deliveryCache.invalidate(parcel);
             return i > 0;
+        });
+    }
+
+    public CompletableFuture<Void> deleteAll(CommandSender sender, NoticeService noticeService) {
+        return this.deliveryRepository.deleteAll().thenAccept(deleted -> {
+            this.deliveryCache.invalidateAll();
+            noticeService.create()
+                .viewer(sender)
+                .notice(messages -> messages.admin.deletedContents)
+                .placeholder("{COUNT}", deleted.toString())
+                .send();
         });
     }
 

@@ -1,5 +1,9 @@
 package com.eternalcode.parcellockers.gui;
 
+import com.eternalcode.parcellockers.content.ParcelContent;
+import com.eternalcode.parcellockers.content.ParcelContentManager;
+import com.eternalcode.parcellockers.delivery.Delivery;
+import com.eternalcode.parcellockers.delivery.DeliveryManager;
 import com.eternalcode.parcellockers.itemstorage.ItemStorage;
 import com.eternalcode.parcellockers.itemstorage.ItemStorageManager;
 import com.eternalcode.parcellockers.locker.Locker;
@@ -25,19 +29,25 @@ public class GuiManager {
     private final UserManager userManager;
     private final ItemStorageManager itemStorageManager;
     private final ParcelDispatchService parcelDispatchService;
+    private final ParcelContentManager parcelContentManager;
+    private final DeliveryManager deliveryManager;
 
     public GuiManager(
         ParcelService parcelService,
         LockerManager lockerManager,
         UserManager userManager,
         ItemStorageManager itemStorageManager,
-        ParcelDispatchService parcelDispatchService
+        ParcelDispatchService parcelDispatchService,
+        ParcelContentManager parcelContentManager,
+        DeliveryManager deliveryManager
     ) {
         this.parcelService = parcelService;
         this.lockerManager = lockerManager;
         this.userManager = userManager;
         this.itemStorageManager = itemStorageManager;
         this.parcelDispatchService = parcelDispatchService;
+        this.parcelContentManager = parcelContentManager;
+        this.deliveryManager = deliveryManager;
     }
 
     public void sendParcel(Player sender, Parcel parcel, List<ItemStack> items) {
@@ -83,5 +93,13 @@ public class GuiManager {
 
     public CompletableFuture<Boolean> deleteItemStorage(UUID owner) {
         return this.itemStorageManager.delete(owner);
+    }
+
+    public CompletableFuture<Optional<ParcelContent>> getParcelContent(UUID parcelId) {
+        return this.parcelContentManager.get(parcelId);
+    }
+
+    public CompletableFuture<Optional<Delivery>> getDelivery(UUID parcelId) {
+        return this.deliveryManager.get(parcelId);
     }
 }

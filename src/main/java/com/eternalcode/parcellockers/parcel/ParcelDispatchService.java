@@ -55,26 +55,30 @@ public class ParcelDispatchService {
                     : this.config.settings.parcelSendDuration;
 
                 return this.parcelService.send(sender, parcel, items)
-                    .thenAccept(success -> {
+                    .thenCompose(success -> {
                         if (!Boolean.TRUE.equals(success)) {
-                            return;
+                            this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.cannotSend);
+                            return CompletableFuture.completedFuture(null);
                         }
 
-                        this.deliveryManager.create(parcel.uuid(), Instant.now().plus(delay));
+                        return this.itemStorageManager.delete(sender.getUniqueId())
+                            .thenAccept(deleted -> {
+                                if (!Boolean.TRUE.equals(deleted)) {
+                                    this.parcelService.delete(parcel.uuid()); // Implement this method
+                                    this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.cannotSend);
+                                    return;
+                                }
 
-                        ParcelSendTask task = new ParcelSendTask(
-                            parcel,
-                            this.parcelService,
-                            this.deliveryManager
-                        );
+                                this.deliveryManager.create(parcel.uuid(), Instant.now().plus(delay));
 
-                        // FIXME: Items will remain in the storage if this fails and parcel will be sent
-                        this.itemStorageManager.delete(sender.getUniqueId()).exceptionally(throwable -> {
-                            throwable.printStackTrace();
-                            return false;
-                        });
+                                ParcelSendTask task = new ParcelSendTask(
+                                    parcel,
+                                    this.parcelService,
+                                    this.deliveryManager
+                                );
 
-                        this.scheduler.runLaterAsync(task, delay);
+                                this.scheduler.runLaterAsync(task, delay);
+                            });
                     });
             })
             .exceptionally(throwable -> {

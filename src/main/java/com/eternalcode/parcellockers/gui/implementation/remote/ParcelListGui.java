@@ -5,16 +5,25 @@ import static com.eternalcode.commons.adventure.AdventureUtil.resetItalic;
 import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig.GuiSettings;
 import com.eternalcode.parcellockers.configuration.serializable.ConfigItem;
+import com.eternalcode.parcellockers.delivery.Delivery;
 import com.eternalcode.parcellockers.gui.GuiManager;
 import com.eternalcode.parcellockers.gui.GuiView;
+import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.util.PlaceholderUtil;
 import com.eternalcode.parcellockers.shared.Page;
+import com.eternalcode.parcellockers.util.DurationUtil;
 import com.spotify.futures.CompletableFutures;
 import dev.triumphteam.gui.builder.item.PaperItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -25,6 +34,8 @@ public class ParcelListGui implements GuiView {
     private static final int WIDTH = 7;
     private static final int HEIGHT = 4;
     private static final Page FIRST_PAGE = new Page(0, WIDTH * HEIGHT);
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+
     private final Scheduler scheduler;
     private final MiniMessage miniMessage;
     private final GuiSettings guiSettings;
@@ -75,19 +86,7 @@ public class ParcelListGui implements GuiView {
             ConfigItem item = this.guiSettings.parcelItem;
 
             List<CompletableFuture<GuiItem>> itemFutures = result.items().stream()
-                .map(parcel -> PlaceholderUtil.replaceParcelPlaceholdersAsync(parcel, item.lore(), this.guiManager)
-                    .thenApply(processedLore -> {
-                        PaperItemBuilder parcelItem = item.toBuilder();
-
-                        List<Component> newLore = processedLore.stream()
-                            .map(line -> resetItalic(this.miniMessage.deserialize(line)))
-                            .toList();
-
-                        parcelItem.lore(newLore);
-                        parcelItem.name(resetItalic(this.miniMessage.deserialize(item.name().replace("{NAME}", parcel.name()))));
-
-                        return parcelItem.asGuiItem();
-                    }))
+                .map(parcel -> this.createParcelItemAsync(parcel, item))
                 .toList();
 
             CompletableFutures.allAsList(itemFutures)
@@ -119,4 +118,50 @@ public class ParcelListGui implements GuiView {
 
         gui.setItem(49, closeItem);
     }
+
+    // fixme: parcels not appearing when there are many deliveries?
+    private CompletableFuture<GuiItem> createParcelItemAsync(Parcel parcel, ConfigItem item) {
+        CompletableFuture<List<String>> loreFuture = PlaceholderUtil.replaceParcelPlaceholdersAsync(
+            parcel, item.lore(), this.guiManager
+        );
+        CompletableFuture<Optional<Delivery>> deliveryFuture = this.guiManager.getDelivery(parcel.uuid());
+
+        return loreFuture.thenCombine(deliveryFuture, (processedLore, deliveryOptional) -> {
+            PaperItemBuilder parcelItem = item.toBuilder();
+
+            List<String> loreWithArrival = new ArrayList<>(processedLore);
+
+            if (deliveryOptional.isPresent()) {
+                Delivery delivery = deliveryOptional.get();
+                Instant arrivalTime = delivery.deliveryTimestamp();
+                Instant now = Instant.now();
+
+                if (arrivalTime.isAfter(now)) {
+                    Duration remaining = Duration.between(now, arrivalTime);
+                    String formattedDuration = DurationUtil.format(remaining);
+                    String formattedDate = DATE_FORMATTER.format(arrivalTime.atZone(ZoneId.systemDefault()));
+
+                    String arrivingLine = this.guiSettings.parcelArrivingLine
+                        .replace("{DURATION}", formattedDuration)
+                        .replace("{DATE}", formattedDate);
+
+                    loreWithArrival.add(arrivingLine);
+                } else if (arrivalTime.isBefore(now)) { // not supported rn, because deliveries are deleted on arrival, so the if is always false
+                    String arrivedLine = this.guiSettings.parcelArrivedLine
+                        .replace("{DATE}", DATE_FORMATTER.format(arrivalTime.atZone(ZoneId.systemDefault())));
+                    loreWithArrival.add(arrivedLine);
+                }
+            }
+
+            List<Component> newLore = loreWithArrival.stream()
+                .map(line -> resetItalic(this.miniMessage.deserialize(line)))
+                .toList();
+
+            parcelItem.lore(newLore);
+            parcelItem.name(resetItalic(this.miniMessage.deserialize(item.name().replace("{NAME}", parcel.name()))));
+
+            return parcelItem.asGuiItem();
+        });
+    }
+
 }
