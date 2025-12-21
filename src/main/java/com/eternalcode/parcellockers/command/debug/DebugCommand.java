@@ -15,15 +15,18 @@ import dev.rollczi.litecommands.annotations.command.Command;
 import dev.rollczi.litecommands.annotations.context.Sender;
 import dev.rollczi.litecommands.annotations.execute.Execute;
 import dev.rollczi.litecommands.annotations.permission.Permission;
-import java.util.Arrays;
+import io.papermc.paper.registry.RegistryAccess;
+import io.papermc.paper.registry.RegistryKey;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import org.bukkit.Material;
+import org.bukkit.Registry;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 
 @Command(name = "parcel debug")
 @Permission("parcellockers.debug")
@@ -84,23 +87,20 @@ public class DebugCommand {
             return;
         }
 
-        List<Material> itemMaterials = Arrays.stream(Material.values()).filter(Material::isItem).toList();
+        Registry<ItemType> itemTypeRegistry = RegistryAccess.registryAccess().getRegistry(RegistryKey.ITEM);
+        List<ItemType> types = itemTypeRegistry.keyStream().map(itemTypeRegistry::get).toList();
 
-        // FIXME: Use Registry API
-        if (itemMaterials.isEmpty()) { // should never happen
+        if (types.isEmpty()) { // should never happen
             this.noticeService.player(player.getUniqueId(), messages -> Notice.chat("&cNo valid item materials found."));
             return;
         }
 
         Random random = ThreadLocalRandom.current();
 
-        // Give player random items
         for (int i = 0; i < stacks; i++) {
-            Material randomMaterial = itemMaterials.get(random.nextInt(itemMaterials.size()));
-            int randomAmount = Math.min(random.nextInt(64) + 1, randomMaterial.getMaxStackSize());
-
-            ItemStack itemStack = new ItemStack(randomMaterial, randomAmount);
-            ItemUtil.giveItem(player, itemStack);
+            ItemType randomItem = types.get(random.nextInt(types.size()));
+            int randomAmount = Math.min(random.nextInt(64) + 1, randomItem.getMaxStackSize());
+            ItemUtil.giveItem(player, randomItem.createItemStack(randomAmount));
         }
     }
 
