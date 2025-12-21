@@ -6,10 +6,7 @@ import com.eternalcode.parcellockers.content.ParcelContentManager;
 import com.eternalcode.parcellockers.itemstorage.ItemStorageManager;
 import com.eternalcode.parcellockers.locker.LockerManager;
 import com.eternalcode.parcellockers.notification.NoticeService;
-import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelService;
-import com.eternalcode.parcellockers.parcel.ParcelSize;
-import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import dev.rollczi.litecommands.annotations.argument.Arg;
 import dev.rollczi.litecommands.annotations.command.Command;
 import dev.rollczi.litecommands.annotations.context.Sender;
@@ -19,13 +16,10 @@ import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
 import java.util.List;
 import java.util.Random;
-import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
-import org.bukkit.Material;
 import org.bukkit.Registry;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ItemType;
 
 @Command(name = "parcel debug")
@@ -101,29 +95,6 @@ public class DebugCommand {
             ItemType randomItem = types.get(random.nextInt(types.size()));
             int randomAmount = Math.min(random.nextInt(64) + 1, randomItem.getMaxStackSize());
             ItemUtil.giveItem(player, randomItem.createItemStack(randomAmount));
-        }
-    }
-
-    @Execute(name = "send")
-    void send(@Sender Player player, @Arg int count) {
-        for (int i = 0; i < count; i++) {
-            UUID locker = UUID.randomUUID();
-            this.parcelService.send(
-                player,
-                new Parcel(
-                    UUID.randomUUID(),
-                    player.getUniqueId(),
-                    "test",
-                    "test",
-                    false,
-                    player.getUniqueId(),
-                    ParcelSize.MEDIUM,
-                    locker,
-                    locker,
-                    ParcelStatus.DELIVERED
-                    ),
-                List.of(new ItemStack(Material.DIRT, 1))
-            );
         }
     }
 }
