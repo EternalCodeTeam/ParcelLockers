@@ -64,7 +64,7 @@ public class MessageConfig extends OkaeriConfig {
             .sound(Sound.ENTITY_EXPERIENCE_ORB_PICKUP.key())
             .build();
         public Notice descriptionSet = Notice.builder()
-            .chat("&2✔ &aParcel name set successfully.")
+            .chat("&2✔ &aParcel description set successfully.")
             .sound(Sound.ENTITY_EXPERIENCE_ORB_PICKUP.key())
             .build();
         public Notice destinationSet = Notice.builder()

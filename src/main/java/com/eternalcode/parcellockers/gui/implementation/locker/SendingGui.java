@@ -10,26 +10,29 @@ import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
-import com.eternalcode.parcellockers.shared.ScheduledGuiAction;
 import com.eternalcode.parcellockers.util.MaterialUtil;
-import de.rapha149.signgui.SignGUI;
-import de.rapha149.signgui.exception.SignGUIVersionException;
 import dev.rollczi.liteskullapi.SkullAPI;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
+import io.papermc.paper.dialog.Dialog;
+import io.papermc.paper.dialog.DialogResponseView;
+import io.papermc.paper.registry.data.dialog.ActionButton;
+import io.papermc.paper.registry.data.dialog.DialogBase;
+import io.papermc.paper.registry.data.dialog.action.DialogAction;
+import io.papermc.paper.registry.data.dialog.input.DialogInput;
+import io.papermc.paper.registry.data.dialog.type.DialogType;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickCallback;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Bukkit;
-import org.bukkit.DyeColor;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+@SuppressWarnings("UnstableApiUsage")
 public class SendingGui implements GuiView {
 
     private static final int RECEIVER_ITEM_SLOT = 23;
@@ -91,77 +94,96 @@ public class SendingGui implements GuiView {
         GuiItem cornerItem = this.guiSettings.cornerItem.toGuiItem();
         ConfigItem nameItem = this.guiSettings.parcelNameItem.clone();
         GuiItem nameGuiItem = nameItem.toGuiItem(event -> {
-            try {
-                SignGUI nameSignGui = SignGUI.builder()
-                    .setColor(DyeColor.BLACK)
-                    .setType(Material.OAK_SIGN)
-                    .setLine(0, "Enter parcel name:")
-                    .setHandler((p, result) -> {
-                        String name = result.getLineWithoutColor(1);
-                        if (name == null || name.isBlank()) {
-                            this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.nameCannotBeEmpty);
-                            return Collections.emptyList();
-                        }
+            Dialog nameDialog = Dialog.create(builder -> builder.empty()
+                .base(DialogBase.builder(this.miniMessage.deserialize("<yellow>Enter parcel name:"))
+                    .inputs(List.of(
+                        DialogInput.text("name", this.miniMessage.deserialize("<gray>Parcel name"))
+                            .build()
+                    ))
+                    .build()
+                )
+                .type(DialogType.confirmation(
+                    ActionButton.create(
+                        this.miniMessage.deserialize("<dark_green>Confirm"),
+                        this.miniMessage.deserialize("<green>Click to set the name"),
+                        200,
+                        DialogAction.customClick((DialogResponseView view, Audience audience) -> {
+                            String name = view.getText("name");
+                            if (name == null || name.isBlank()) {
+                                this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.nameCannotBeEmpty);
+                                return;
+                            }
 
-                        this.state.parcelName(name);
-                        this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.nameSet);
+                            this.state.parcelName(name);
+                            this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.nameSet);
 
-                        List<String> lore = nameItem.lore();
-                        if (lore.size() > 1) {
-                            lore.remove(1);
-                        }
-
-                        lore.add(
-                            this.guiSettings.parcelNameSetLine.replace("{NAME}",
-                            this.state.parcelName() == null ? "None" : this.state.parcelName())
-                        );
-
-                        this.gui.updateItem(NAME_ITEM_SLOT, nameItem
-                            .lore(lore)
-                            .toItemStack());
-                        return List.of(new ScheduledGuiAction(this.scheduler, () -> this.gui.open(player)));
-                    })
-                    .build();
-                nameSignGui.open(player);
-            } catch (SignGUIVersionException e) {
-                Bukkit.getLogger().severe("The server version is unsupported by SignGUI API!");
-            }
+                            this.updateNameItem();
+                            this.scheduler.run(() -> this.gui.open(player));
+                        }, ClickCallback.Options.builder()
+                            .uses(1)
+                            .lifetime(ClickCallback.DEFAULT_LIFETIME)
+                            .build())
+                    ),
+                    ActionButton.create(
+                        this.miniMessage.deserialize("<dark_red>Cancel"),
+                        this.miniMessage.deserialize("<red>Click to cancel"),
+                        200,
+                        DialogAction.customClick(
+                            (DialogResponseView view, Audience audience) ->
+                                this.scheduler.run(() -> this.gui.open(player)),
+                            ClickCallback.Options.builder()
+                                .uses(1)
+                                .lifetime(ClickCallback.DEFAULT_LIFETIME)
+                                .build())
+                    )
+                ))
+            );
+            player.showDialog(nameDialog);
         });
 
         ConfigItem descriptionItem = this.guiSettings.parcelDescriptionItem.clone();
         GuiItem descriptionGuiItem = descriptionItem.toGuiItem(event -> {
-            SignGUI descriptionSignGui = null;
-            try {
-                descriptionSignGui = SignGUI.builder()
-                    .setColor(DyeColor.BLACK)
-                    .setType(Material.OAK_SIGN)
-                    .setLine(0, "Enter parcel description:")
-                    .setHandler((p, result) -> {
-                        String description = result.getLineWithoutColor(1);
+            Dialog descriptionDialog = Dialog.create(builder -> builder.empty()
+                .base(DialogBase.builder(this.miniMessage.deserialize("<yellow>Enter parcel description:"))
+                    .inputs(List.of(
+                        DialogInput.text("description", this.miniMessage.deserialize("<gray>Parcel description"))
+                            .build()
+                    ))
+                    .build()
+                )
+                .type(DialogType.confirmation(
+                    ActionButton.create(
+                        this.miniMessage.deserialize("<dark_green>Confirm"),
+                        this.miniMessage.deserialize("<green>Click to set the description"),
+                        200,
+                        DialogAction.customClick((DialogResponseView view, Audience audience) -> {
+                            String description = view.getText("description");
 
-                        this.state.parcelDescription(description);
-                        this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.descriptionSet);
+                            this.state.parcelDescription(description);
+                            this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.descriptionSet);
 
-                        List<String> lore = descriptionItem.clone().lore();
-                        if (lore.size() > 1) {
-                            lore.remove(1);
-                        }
-
-                        lore.add(this.guiSettings.parcelDescriptionSetLine.replace("{DESCRIPTION}", description));
-
-                        this.gui.updateItem(DESCRIPTION_ITEM_SLOT, descriptionItem
-                            .lore(lore)
-                            .toItemStack());
-                        return List.of(new ScheduledGuiAction(this.scheduler, () -> this.gui.open(player)));
-                    })
-                    .build();
-            } catch (SignGUIVersionException e) {
-                Bukkit.getLogger().severe("The server version is unsupported by SignGUI API!");
-            }
-
-            if (descriptionSignGui != null) {
-                descriptionSignGui.open(player);
-            }
+                            this.updateDescriptionItem();
+                            this.scheduler.run(() -> this.gui.open(player));
+                        }, ClickCallback.Options.builder()
+                            .uses(1)
+                            .lifetime(ClickCallback.DEFAULT_LIFETIME)
+                            .build())
+                    ),
+                    ActionButton.create(
+                        this.miniMessage.deserialize("<dark_red>Cancel"),
+                        this.miniMessage.deserialize("<red>Click to cancel"),
+                        200,
+                        DialogAction.customClick(
+                            (DialogResponseView view, Audience audience) ->
+                                this.scheduler.run(() -> this.gui.open(player)),
+                            ClickCallback.Options.builder()
+                                .uses(1)
+                                .lifetime(ClickCallback.DEFAULT_LIFETIME)
+                                .build())
+                    )
+                ))
+            );
+            player.showDialog(descriptionDialog);
         });
 
         ConfigItem parcelStorageItem = this.guiSettings.parcelStorageItem.clone();
