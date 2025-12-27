@@ -2,8 +2,8 @@ package com.eternalcode.parcellockers.parcel.task;
 
 import com.eternalcode.parcellockers.delivery.DeliveryManager;
 import com.eternalcode.parcellockers.parcel.Parcel;
-import com.eternalcode.parcellockers.parcel.ParcelService;
 import com.eternalcode.parcellockers.parcel.ParcelStatus;
+import com.eternalcode.parcellockers.parcel.service.ParcelService;
 import java.util.logging.Logger;
 import org.bukkit.scheduler.BukkitRunnable;
 

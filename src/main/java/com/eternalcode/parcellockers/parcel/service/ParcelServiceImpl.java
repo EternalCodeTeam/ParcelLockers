@@ -1,4 +1,4 @@
-package com.eternalcode.parcellockers.parcel;
+package com.eternalcode.parcellockers.parcel.service;
 
 import static com.eternalcode.parcellockers.util.InventoryUtil.freeSlotsInInventory;
 
@@ -8,6 +8,7 @@ import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.content.ParcelContent;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.notification.NoticeService;
+import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.PageResult;
@@ -158,14 +159,12 @@ public class ParcelServiceImpl implements ParcelService {
                 return CompletableFuture.completedFuture(null);
             }
 
-            // Give items first
             items.forEach(item -> this.scheduler.run(() -> ItemUtil.giveItem(player, item)));
 
-            // Then delete from database, only invalidate cache if successful
             return this.parcelRepository.delete(parcel)
                 .thenCompose(deleted -> this.parcelContentRepository.delete(parcel.uuid())
                     .thenAccept(contentDeleted -> {
-                        if (deleted > 0 && contentDeleted > 0) {
+                        if (deleted && contentDeleted > 0) {
                             this.invalidate(parcel);
                             this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.collected);
                         } else {
@@ -186,7 +185,7 @@ public class ParcelServiceImpl implements ParcelService {
         if (cached != null) {
             return CompletableFuture.completedFuture(Optional.of(cached));
         }
-        return this.parcelRepository.fetchById(uuid).thenApply(optional -> {
+        return this.parcelRepository.findById(uuid).thenApply(optional -> {
             optional.ifPresent(this::cache);
             return optional;
         });
@@ -206,7 +205,7 @@ public class ParcelServiceImpl implements ParcelService {
             return CompletableFuture.completedFuture(new PageResult<>(pageItems, hasNextPage));
         }
 
-        return this.parcelRepository.fetchBySender(receiver, page)
+        return this.parcelRepository.findBySender(receiver, page)
             .thenApply(result -> {
                 result.items().forEach(this::cache);
                 return result;
@@ -227,7 +226,7 @@ public class ParcelServiceImpl implements ParcelService {
             return CompletableFuture.completedFuture(new PageResult<>(pageItems, hasNextPage));
         }
 
-        return this.parcelRepository.fetchByReceiver(receiver, page)
+        return this.parcelRepository.findByReceiver(receiver, page)
             .thenApply(result -> {
                 result.items().forEach(this::cache);
                 return result;
@@ -235,9 +234,9 @@ public class ParcelServiceImpl implements ParcelService {
     }
 
     @Override
-    public CompletableFuture<Integer> delete(UUID uuid) {
+    public CompletableFuture<Boolean> delete(UUID uuid) {
         return this.parcelRepository.delete(uuid).thenApply(deleted -> {
-            if (deleted > 0) {
+            if (deleted) {
                 Parcel cached = this.parcelsByUuid.getIfPresent(uuid);
                 if (cached != null) {
                     this.invalidate(cached);
@@ -248,7 +247,7 @@ public class ParcelServiceImpl implements ParcelService {
     }
 
     @Override
-    public CompletableFuture<Integer> delete(Parcel parcel) {
+    public CompletableFuture<Boolean> delete(Parcel parcel) {
         return this.delete(parcel.uuid());
     }
 

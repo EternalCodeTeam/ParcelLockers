@@ -43,38 +43,38 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     }
 
     @Override
-    public CompletableFuture<Optional<Parcel>> fetchById(UUID uuid) {
+    public CompletableFuture<Optional<Parcel>> findById(UUID uuid) {
         return this.selectSafe(ParcelTable.class, uuid).thenApply(optional -> optional.map(ParcelTable::toParcel));
     }
 
     @Override
-    public CompletableFuture<Optional<List<Parcel>>> fetchBySender(UUID sender) {
+    public CompletableFuture<List<Parcel>> findBySender(UUID sender) {
         return this.action(
-                ParcelTable.class, dao -> Optional.of(dao.queryForEq(SENDER_COLUMN, sender)
+                ParcelTable.class, dao -> dao.queryForEq(SENDER_COLUMN, sender)
             .stream()
             .map(ParcelTable::toParcel)
-            .toList()));
+            .toList());
     }
 
-    public CompletableFuture<PageResult<Parcel>> fetchBySender(UUID sender, Page page) {
-        return this.fetchByPaged(sender, page, SENDER_COLUMN);
+    public CompletableFuture<PageResult<Parcel>> findBySender(UUID sender, Page page) {
+        return this.findByPaged(sender, page, SENDER_COLUMN);
     }
 
     @Override
-    public CompletableFuture<Optional<List<Parcel>>> fetchByReceiver(UUID receiver) {
+    public CompletableFuture<List<Parcel>> findByReceiver(UUID receiver) {
         return this.action(
-                ParcelTable.class, dao -> Optional.of(dao.queryForEq(RECEIVER_COLUMN, receiver)
+                ParcelTable.class, dao -> dao.queryForEq(RECEIVER_COLUMN, receiver)
             .stream()
             .map(ParcelTable::toParcel)
-            .toList()));
+            .toList());
     }
 
-    public CompletableFuture<PageResult<Parcel>> fetchByReceiver(UUID receiver, Page page) {
-        return this.fetchByPaged(receiver, page, RECEIVER_COLUMN);
+    public CompletableFuture<PageResult<Parcel>> findByReceiver(UUID receiver, Page page) {
+        return this.findByPaged(receiver, page, RECEIVER_COLUMN);
     }
 
     @Override
-    public CompletableFuture<Integer> countByDestinationLocker(UUID destinationLocker) {
+    public CompletableFuture<Integer> countDeliveredParcelsByDestinationLocker(UUID destinationLocker) {
         return this.action(ParcelTable.class, dao -> {
             long count = dao.queryBuilder()
                 .where()
@@ -86,7 +86,7 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
         });
     }
 
-    private CompletableFuture<PageResult<Parcel>> fetchByPaged(UUID key, Page page, String column) {
+    private CompletableFuture<PageResult<Parcel>> findByPaged(UUID key, Page page, String column) {
         return this.action(
             ParcelTable.class, dao -> {
                 List<Parcel> parcels = dao.queryBuilder()
@@ -108,39 +108,20 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     }
 
     @Override
-    public CompletableFuture<Integer> delete(Parcel parcel) {
+    public CompletableFuture<Boolean> delete(Parcel parcel) {
         return this.delete(parcel.uuid());
     }
 
     @Override
-    public CompletableFuture<Integer> delete(UUID uuid) {
-        return this.deleteById(ParcelTable.class, uuid);
+    public CompletableFuture<Boolean> delete(UUID uuid) {
+        return this.deleteById(ParcelTable.class, uuid).thenApply(i -> i > 0);
     }
 
     @Override
-    public CompletableFuture<PageResult<Parcel>> fetchPage(Page page) {
-        return this.action(
-                ParcelTable.class, dao -> {
-            List<Parcel> parcels = dao.queryBuilder()
-                .limit((long) page.getLimit() + 1)
-                .offset((long) page.getOffset())
-                .query()
-                .stream().map(ParcelTable::toParcel)
-                .collect(Collectors.toList());
-
-            boolean hasNext = parcels.size() > page.getLimit();
-            if (hasNext) {
-                parcels.removeLast();
-            }
-            return new PageResult<>(parcels, hasNext);
-        });
-    }
-
-    @Override
-    public CompletableFuture<Optional<List<Parcel>>> fetchAll() {
-        return this.selectAll(ParcelTable.class).thenApply(parcels -> Optional.of(parcels.stream()
+    public CompletableFuture<List<Parcel>> fetchAll() {
+        return this.selectAll(ParcelTable.class).thenApply(parcels -> parcels.stream()
             .map(ParcelTable::toParcel)
-            .toList()));
+            .toList());
     }
 
     @Override
