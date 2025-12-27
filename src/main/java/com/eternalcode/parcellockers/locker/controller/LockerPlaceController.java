@@ -1,5 +1,6 @@
 package com.eternalcode.parcellockers.locker.controller;
 
+import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.configuration.implementation.MessageConfig;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.locker.LockerManager;
@@ -40,6 +41,7 @@ public class LockerPlaceController implements Listener {
     private final MiniMessage miniMessage;
     private final LockerManager lockerManager;
     private final NoticeService noticeService;
+    private final Scheduler scheduler;
     private final Cache<UUID, Boolean> lockerCreators = Caffeine.newBuilder()
         .expireAfterWrite(2, TimeUnit.MINUTES)
         .build();
@@ -47,13 +49,14 @@ public class LockerPlaceController implements Listener {
     public LockerPlaceController(
         PluginConfig config, MessageConfig messages, MiniMessage miniMessage,
         LockerManager lockerManager,
-        NoticeService noticeService
+        NoticeService noticeService, Scheduler scheduler
     ) {
         this.config = config;
         this.messages = messages;
         this.miniMessage = miniMessage;
         this.lockerManager = lockerManager;
         this.noticeService = noticeService;
+        this.scheduler = scheduler;
     }
 
     @EventHandler
@@ -90,6 +93,7 @@ public class LockerPlaceController implements Listener {
 
         Dialog dialog = Dialog.create(builder -> builder.empty()
             .base(DialogBase.builder(promptMessage)
+                .canCloseWithEscape(false)
                 .inputs(List.of(
                     DialogInput.text("description", this.miniMessage.deserialize("<yellow>Parcel locker description"))
                         .build()
@@ -119,8 +123,11 @@ public class LockerPlaceController implements Listener {
                                 return;
                             }
 
-                            location.getWorld().getBlockAt(location).setType(type);
-                            location.getWorld().getBlockAt(location).setBlockData(data);
+                            this.scheduler.run(() -> {
+                                location.getWorld().getBlockAt(location).setType(type);
+                                location.getWorld().getBlockAt(location).setBlockData(data);
+                            });
+
                             this.lockerManager.create(UUID.randomUUID(), description, PositionAdapter.convert(location))
                                 .thenAccept(locker -> {
                                     this.noticeService.create()

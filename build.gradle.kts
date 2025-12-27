@@ -121,7 +121,7 @@ tasks.withType<JavaCompile> {
 
 tasks {
     runServer {
-        minecraftVersion("1.21.10")
+        minecraftVersion("1.21.11")
         downloadPlugins.modrinth("luckperms", "v5.5.17-bukkit")
         downloadPlugins.modrinth("vaultunlocked", "2.17.0")
         downloadPlugins.modrinth("essentialsx", "2.21.2")
