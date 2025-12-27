@@ -32,7 +32,6 @@ dependencies {
 
     // gui
     paperLibrary("dev.triumphteam:triumph-gui-paper:3.1.13")
-    paperLibrary("de.rapha149.signgui:signgui:2.5.4")
 
     // configs
     paperLibrary("eu.okaeri:okaeri-configs-serdes-commons:5.0.13")
