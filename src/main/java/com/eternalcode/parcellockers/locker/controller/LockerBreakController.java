@@ -83,7 +83,6 @@ public class LockerBreakController implements Listener {
             if (block.getType() != Material.CHEST) {
                 continue;
             }
-            Location location = block.getLocation();
             this.handleDamagedLocker(block);
         }
     }
