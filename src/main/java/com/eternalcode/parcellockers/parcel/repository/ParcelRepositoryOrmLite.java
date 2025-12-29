@@ -66,6 +66,7 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
         );
     }
 
+    @Override
     public CompletableFuture<PageResult<Parcel>> findBySender(UUID sender, Page page) {
         Objects.requireNonNull(sender, "Sender UUID cannot be null");
         Objects.requireNonNull(page, "Page cannot be null");
@@ -83,6 +84,7 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
         );
     }
 
+    @Override
     public CompletableFuture<PageResult<Parcel>> findByReceiver(UUID receiver, Page page) {
         Objects.requireNonNull(receiver, "Receiver UUID cannot be null");
         Objects.requireNonNull(page, "Page cannot be null");
