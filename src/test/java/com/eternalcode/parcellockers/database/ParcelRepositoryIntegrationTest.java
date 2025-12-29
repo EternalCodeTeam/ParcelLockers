@@ -29,7 +29,7 @@ import org.testcontainers.utility.DockerImageName;
 class ParcelRepositoryIntegrationTest extends IntegrationTestSpec {
 
     @Container
-    private static final MySQLContainer mySQLContainer = new MySQLContainer(DockerImageName.parse("mysql:latest"));
+    private static final MySQLContainer<?> mySQLContainer = new MySQLContainer<>(DockerImageName.parse("mysql:latest"));
 
     @TempDir
     private Path tempDir;

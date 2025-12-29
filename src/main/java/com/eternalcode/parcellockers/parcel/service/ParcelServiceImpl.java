@@ -112,10 +112,10 @@ public class ParcelServiceImpl implements ParcelService {
                     this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.sent);
                     return true;
                 })
-                .exceptionally(contentError -> {
+                .exceptionallyCompose(contentError -> {
                     this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.cannotSend);
-                    this.parcelRepository.delete(parcel.uuid()); // TODO handle failure async, ParcelOperationException can be thrown before delete completes
-                    throw new ParcelOperationException("Failed to save parcel content, rolled back parcel", contentError);
+                    return this.parcelRepository.delete(parcel.uuid())
+                        .thenCompose(deleted -> CompletableFuture.failedFuture(new ParcelOperationException("Failed to save parcel content, rolled back parcel", contentError)));
                 })
             )
             .exceptionally(throwable -> {
@@ -170,8 +170,6 @@ public class ParcelServiceImpl implements ParcelService {
                 return CompletableFuture.completedFuture(null);
             }
 
-            items.forEach(item -> this.scheduler.run(() -> ItemUtil.giveItem(player, item)));
-
             return this.parcelRepository.delete(parcel)
                 .thenCompose(deleted -> this.parcelContentRepository.delete(parcel.uuid())
                     .thenAccept(contentDeleted -> {
@@ -179,9 +177,11 @@ public class ParcelServiceImpl implements ParcelService {
                             this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.databaseError);
                             return;
                         }
+
+                        items.forEach(item -> this.scheduler.run(() -> ItemUtil.giveItem(player, item)));
+
                         this.parcelsByUuid.invalidate(parcel.uuid());
                         this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.collected);
-                        // FIXME: Delete failuje → itemy dodane, ale content pozostaje
                     })
                 )
                 .exceptionally(throwable -> {
