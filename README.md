@@ -3,10 +3,10 @@
 ![ParcelLockers.svg](.github/assets/ParcelLockers.svg)
 
 [![Supports Paper](https://raw.githubusercontent.com/intergrav/devins-badges/v3/assets/cozy/supported/paper_vector.svg)](https://papermc.io)
-[![ko-fi](https://github.com/intergrav/devins-badges/blob/v3/assets/cozy/donate/kofi-plural_vector.svg)](https://ko-fi.com/eternalcodeteam)
-[![Website](https://raw.githubusercontent.com/intergrav/devins-badges/v3/assets/cozy/documentation/website_vector.svg)](https://eternalcode.pl/)
 
+[![ko-fi](https://github.com/intergrav/devins-badges/blob/v3/assets/cozy/donate/kofi-plural_vector.svg)](https://ko-fi.com/eternalcodeteam)
 [![Chat on Discord](https://raw.githubusercontent.com/vLuckyyy/badges/main//chat-with-us-on-discord.svg)](https://discord.com/invite/FQ7jmGBd6c)
+[![Website](https://raw.githubusercontent.com/intergrav/devins-badges/v3/assets/cozy/documentation/website_vector.svg)](https://eternalcode.pl/)
 
 </div>
 
@@ -60,23 +60,6 @@ intended behavior or not, feel free to ask on our [Discord](https://discord.com/
 Additionally, if you enable automatic Sentry bug
 reporting in your config.yml file (we strongly advise to do so), errors will be automatically sent to us, which will
 greatly accelerate the bug fixing process 🥳
-
-## ❤️ Other dependencies usages
-
-- [LiteCommands (by Rollczi ❤️)](https://github.com/Rollczi/LiteCommands)
-- [Adventure API & MiniMessage](https://docs.adventure.kyori.net/)
-- [CDN Configs](https://github.com/dzikoysk/cdn)
-- [PaperLib](https://github.com/PaperMC/PaperLib)
-- [Lombok](https://projectlombok.org)
-- [Spigot API](https://www.spigotmc.org/wiki/spigot-maven/#build-gradle)
-- [expressible](https://github.com/dzikoysk/expressible)
-- [panda-utilities](https://github.com/panda-lang/panda)
-- [TriumphGUI](https://github.com/TriumphTeam/triumph-gui)
-- [bStats](https://bstats.org/)
-- [jackson-bukkit](https://github.com/eldoriarpg/jackson-bukkit)
-- [SignGUI](https://github.com/Rapha149/SignGUI)
-
-and many more...
 
 ## :heart: Special Thanks
 
