@@ -61,23 +61,6 @@ Additionally, if you enable automatic Sentry bug
 reporting in your config.yml file (we strongly advise to do so), errors will be automatically sent to us, which will
 greatly accelerate the bug fixing process 🥳
 
-## ❤️ Other dependencies usages
-
-- [LiteCommands (by Rollczi ❤️)](https://github.com/Rollczi/LiteCommands)
-- [Adventure API & MiniMessage](https://docs.adventure.kyori.net/)
-- [CDN Configs](https://github.com/dzikoysk/cdn)
-- [PaperLib](https://github.com/PaperMC/PaperLib)
-- [Lombok](https://projectlombok.org)
-- [Spigot API](https://www.spigotmc.org/wiki/spigot-maven/#build-gradle)
-- [expressible](https://github.com/dzikoysk/expressible)
-- [panda-utilities](https://github.com/panda-lang/panda)
-- [TriumphGUI](https://github.com/TriumphTeam/triumph-gui)
-- [bStats](https://bstats.org/)
-- [jackson-bukkit](https://github.com/eldoriarpg/jackson-bukkit)
-- [SignGUI](https://github.com/Rapha149/SignGUI)
-
-and many more...
-
 ## :heart: Special Thanks
 
 [<img src="https://user-images.githubusercontent.com/65517973/210912946-447a6b9a-2685-4796-9482-a44bffc727ce.png" alt="JetBrains" width="150">](https://www.jetbrains.com)
