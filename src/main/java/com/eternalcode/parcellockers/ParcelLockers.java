@@ -200,10 +200,10 @@ public final class ParcelLockers extends JavaPlugin {
         new Metrics(this, 17677);
         new UpdaterService(this.getPluginMeta().getVersion());
 
-        parcelRepository.fetchAll().thenAccept(optionalParcels -> optionalParcels
+        parcelRepository.findAll().thenAccept(optionalParcels -> optionalParcels
             .stream()
             .filter(parcel -> parcel.status() != ParcelStatus.DELIVERED)
-            .forEach(parcel -> deliveryRepository.fetch(parcel.uuid()).thenAccept(optionalDelivery ->
+            .forEach(parcel -> deliveryRepository.find(parcel.uuid()).thenAccept(optionalDelivery ->
                 optionalDelivery.ifPresent(delivery -> {
                     long delay = Math.max(0, delivery.deliveryTimestamp().toEpochMilli() - System.currentTimeMillis());
                     scheduler.runLaterAsync(new ParcelSendTask(parcel, parcelService, deliveryManager), Duration.ofMillis(delay));

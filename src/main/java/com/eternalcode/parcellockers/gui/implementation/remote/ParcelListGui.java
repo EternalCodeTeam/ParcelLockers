@@ -119,7 +119,7 @@ public class ParcelListGui implements GuiView {
         gui.setItem(49, closeItem);
     }
 
-    // fixme: parcels not appearing when there are many deliveries?
+    // todo: check parcels not appearing when there are many deliveries?
     private CompletableFuture<GuiItem> createParcelItemAsync(Parcel parcel, ConfigItem item) {
         CompletableFuture<List<String>> loreFuture = PlaceholderUtil.replaceParcelPlaceholdersAsync(
             parcel, item.lore(), this.guiManager

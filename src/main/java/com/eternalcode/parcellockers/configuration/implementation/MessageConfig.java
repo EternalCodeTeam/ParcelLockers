@@ -74,6 +74,10 @@ public class MessageConfig extends OkaeriConfig {
             .chat("&4✘ &cAn error occurred while collecting the parcel.")
             .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
             .build();
+        public Notice databaseError = Notice.builder()
+            .chat("&4✘ &cA database error occurred. Please contact an administrator.")
+            .sound(SoundEventKeys.ENTITY_ITEM_BREAK)
+            .build();
         public Notice noInventorySpace = Notice.builder()
             .chat("&4✘ &cYou don't have enough space in your inventory to collect the parcel!")
             .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
