@@ -30,12 +30,12 @@ import com.eternalcode.parcellockers.locker.repository.LockerRepositoryOrmLite;
 import com.eternalcode.parcellockers.locker.validation.LockerValidationService;
 import com.eternalcode.parcellockers.locker.validation.LockerValidator;
 import com.eternalcode.parcellockers.notification.NoticeService;
-import com.eternalcode.parcellockers.parcel.ParcelDispatchService;
-import com.eternalcode.parcellockers.parcel.ParcelService;
-import com.eternalcode.parcellockers.parcel.ParcelServiceImpl;
 import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import com.eternalcode.parcellockers.parcel.command.ParcelCommand;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryOrmLite;
+import com.eternalcode.parcellockers.parcel.service.ParcelDispatchService;
+import com.eternalcode.parcellockers.parcel.service.ParcelService;
+import com.eternalcode.parcellockers.parcel.service.ParcelServiceImpl;
 import com.eternalcode.parcellockers.parcel.task.ParcelSendTask;
 import com.eternalcode.parcellockers.updater.UpdaterService;
 import com.eternalcode.parcellockers.user.UserManager;
@@ -57,7 +57,6 @@ import dev.triumphteam.gui.TriumphGui;
 import java.io.File;
 import java.sql.SQLException;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.stream.Stream;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.milkbowl.vault.economy.Economy;
@@ -201,11 +200,10 @@ public final class ParcelLockers extends JavaPlugin {
         new Metrics(this, 17677);
         new UpdaterService(this.getPluginMeta().getVersion());
 
-        parcelRepository.fetchAll().thenAccept(optionalParcels -> optionalParcels
-            .orElseGet(ArrayList::new)
+        parcelRepository.findAll().thenAccept(optionalParcels -> optionalParcels
             .stream()
             .filter(parcel -> parcel.status() != ParcelStatus.DELIVERED)
-            .forEach(parcel -> deliveryRepository.fetch(parcel.uuid()).thenAccept(optionalDelivery ->
+            .forEach(parcel -> deliveryRepository.find(parcel.uuid()).thenAccept(optionalDelivery ->
                 optionalDelivery.ifPresent(delivery -> {
                     long delay = Math.max(0, delivery.deliveryTimestamp().toEpochMilli() - System.currentTimeMillis());
                     scheduler.runLaterAsync(new ParcelSendTask(parcel, parcelService, deliveryManager), Duration.ofMillis(delay));

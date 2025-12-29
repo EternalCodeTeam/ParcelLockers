@@ -1,6 +1,7 @@
-package com.eternalcode.parcellockers.parcel;
+package com.eternalcode.parcellockers.parcel.service;
 
 import com.eternalcode.parcellockers.notification.NoticeService;
+import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.PageResult;
 import java.util.List;
@@ -30,8 +31,8 @@ public interface ParcelService {
     CompletableFuture<PageResult<Parcel>> getByReceiver(UUID receiver, Page page);
 
 
-    CompletableFuture<Integer> delete(UUID uuid);
+    CompletableFuture<Boolean> delete(UUID uuid);
 
-    CompletableFuture<Integer> delete(Parcel parcel);
+    CompletableFuture<Boolean> delete(Parcel parcel);
 
 }

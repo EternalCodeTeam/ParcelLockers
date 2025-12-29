@@ -41,7 +41,7 @@ dependencies {
     // gitcheck
     paperLibrary("com.eternalcode:gitcheck:1.0.0")
 
-    // metrics and sentry
+    // metrics
     implementation("org.bstats:bstats-bukkit:3.1.0")
 
     // database
@@ -142,6 +142,7 @@ tasks {
         mergeServiceFiles()
 
         val relocationPrefix = "com.eternalcode.parcellockers.libs"
+
         listOf(
             "org.bstats"
         ).forEach { relocate(it, "$relocationPrefix.$it") }

@@ -29,8 +29,8 @@ public class ParcelContentRepositoryOrmLite extends AbstractRepositoryOrmLite im
     }
 
     @Override
-    public CompletableFuture<Integer> delete(UUID uniqueId) {
-        return this.deleteById(ParcelContentTable.class, uniqueId);
+    public CompletableFuture<Boolean> delete(UUID uniqueId) {
+        return this.deleteById(ParcelContentTable.class, uniqueId).thenApply(i -> i > 0);
     }
 
     @Override
@@ -39,7 +39,7 @@ public class ParcelContentRepositoryOrmLite extends AbstractRepositoryOrmLite im
     }
 
     @Override
-    public CompletableFuture<Optional<ParcelContent>> fetch(UUID uniqueId) {
+    public CompletableFuture<Optional<ParcelContent>> find(UUID uniqueId) {
         return this.selectSafe(ParcelContentTable.class, uniqueId)
             .thenApply(optional -> optional.map(ParcelContentTable::toParcelContent));
     }

@@ -28,16 +28,12 @@ public class DeliveryManager {
         this.cacheAll();
     }
 
-    public Delivery getOrCreate(UUID parcel, Instant deliveryTimestamp) {
-        return this.deliveryCache.get(parcel, key -> this.create(key, deliveryTimestamp));
-    }
-
     public CompletableFuture<Optional<Delivery>> get(UUID parcel) {
         Delivery cached = this.deliveryCache.getIfPresent(parcel);
         if (cached != null) {
             return CompletableFuture.completedFuture(Optional.of(cached));
         }
-        return this.deliveryRepository.fetch(parcel).thenApply(optional -> {
+        return this.deliveryRepository.find(parcel).thenApply(optional -> {
             optional.ifPresent(delivery -> this.deliveryCache.put(parcel, delivery));
             return optional;
         });
@@ -54,9 +50,9 @@ public class DeliveryManager {
     }
 
     public CompletableFuture<Boolean> delete(UUID parcel) {
-        return this.deliveryRepository.delete(parcel).thenApply(i -> {
+        return this.deliveryRepository.delete(parcel).thenApply(success -> {
             this.deliveryCache.invalidate(parcel);
-            return i > 0;
+            return success;
         });
     }
 
@@ -72,7 +68,7 @@ public class DeliveryManager {
     }
 
     private void cacheAll() {
-        this.deliveryRepository.fetchAll()
-            .thenAccept(all -> all.ifPresent(list -> list.forEach(delivery -> this.deliveryCache.put(delivery.parcel(), delivery))));
+        this.deliveryRepository.findAll()
+            .thenAccept(list -> list.forEach(delivery -> this.deliveryCache.put(delivery.parcel(), delivery)));
     }
 }

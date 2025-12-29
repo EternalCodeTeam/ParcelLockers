@@ -62,7 +62,7 @@ public class LockerManager {
             return CompletableFuture.completedFuture(Optional.of(locker));
         }
 
-        return this.lockerRepository.fetch(uniqueId).thenApply(optionalLocker -> {
+        return this.lockerRepository.find(uniqueId).thenApply(optionalLocker -> {
             optionalLocker.ifPresent(locker1 -> {
                 this.lockersByUUID.put(locker1.uuid(), locker1);
                 this.lockersByPosition.put(locker1.position(), locker1);
@@ -78,7 +78,7 @@ public class LockerManager {
             return CompletableFuture.completedFuture(Optional.of(locker));
         }
 
-        return this.lockerRepository.fetch(position).thenApply(optionalLocker -> {
+        return this.lockerRepository.find(position).thenApply(optionalLocker -> {
             optionalLocker.ifPresent(locker1 -> {
                 this.lockersByUUID.put(locker1.uuid(), locker1);
                 this.lockersByPosition.put(locker1.position(), locker1);
@@ -93,21 +93,7 @@ public class LockerManager {
         if (!cached.isEmpty() && page.getOffset() == 0 && !hasNextPage) {
             return CompletableFuture.completedFuture(new PageResult<>(cached, false));
         }
-        return this.lockerRepository.fetchPage(page);
-    }
-
-    public CompletableFuture<Locker> getOrCreate(UUID uniqueId, String name, Position position) {
-        Locker lockerByUUID = this.lockersByUUID.getIfPresent(uniqueId);
-        if (lockerByUUID != null) {
-            return CompletableFuture.completedFuture(lockerByUUID);
-        }
-
-        Locker lockerByPosition = this.lockersByPosition.getIfPresent(position);
-        if (lockerByPosition != null) {
-            return CompletableFuture.completedFuture(lockerByPosition);
-        }
-
-        return this.create(uniqueId, name, position);
+        return this.lockerRepository.findPage(page);
     }
 
     public CompletableFuture<Locker> create(UUID uniqueId, String name, Position position) {
@@ -158,8 +144,8 @@ public class LockerManager {
         });
     }
 
-    public CompletableFuture<Boolean> isLockerFull(UUID lockerUuid) {
-        return this.parcelRepository.countByDestinationLocker(lockerUuid)
+    public CompletableFuture<Boolean> isLockerFull(UUID uniqueId) {
+        return this.parcelRepository.countDeliveredParcelsByDestinationLocker(uniqueId)
             .thenApply(count -> count > 0 && count >= this.config.settings.maxParcelsPerLocker);
     }
 }

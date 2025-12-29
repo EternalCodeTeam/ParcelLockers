@@ -31,7 +31,7 @@ public class ParcelContentManager {
         if (content != null) {
             return CompletableFuture.completedFuture(Optional.of(content));
         }
-        return this.contentRepository.fetch(parcelId).thenApply(optional -> {
+        return this.contentRepository.find(parcelId).thenApply(optional -> {
             optional.ifPresent(value -> this.cache.put(parcelId, value));
             return optional;
         });
@@ -52,9 +52,9 @@ public class ParcelContentManager {
     }
 
     public CompletableFuture<Boolean> delete(UUID parcel) {
-        return this.contentRepository.delete(parcel).thenApply(i -> {
+        return this.contentRepository.delete(parcel).thenApply(success -> {
             this.cache.invalidate(parcel);
-            return i > 0;
+            return success;
         });
     }
 

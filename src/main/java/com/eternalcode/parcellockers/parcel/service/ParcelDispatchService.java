@@ -1,4 +1,4 @@
-package com.eternalcode.parcellockers.parcel;
+package com.eternalcode.parcellockers.parcel.service;
 
 import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
@@ -6,6 +6,7 @@ import com.eternalcode.parcellockers.delivery.DeliveryManager;
 import com.eternalcode.parcellockers.itemstorage.ItemStorageManager;
 import com.eternalcode.parcellockers.locker.LockerManager;
 import com.eternalcode.parcellockers.notification.NoticeService;
+import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.task.ParcelSendTask;
 import java.time.Duration;
 import java.time.Instant;
@@ -67,7 +68,7 @@ public class ParcelDispatchService {
                         return this.itemStorageManager.delete(sender.getUniqueId())
                             .thenAccept(deleted -> {
                                 if (!Boolean.TRUE.equals(deleted)) {
-                                    this.parcelService.delete(parcel.uuid()); // Implement this method
+                                    this.parcelService.delete(parcel.uuid());
                                     this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.cannotSend);
                                     return;
                                 }

@@ -7,7 +7,7 @@ import com.eternalcode.parcellockers.delivery.DeliveryManager;
 import com.eternalcode.parcellockers.itemstorage.ItemStorageManager;
 import com.eternalcode.parcellockers.locker.LockerManager;
 import com.eternalcode.parcellockers.notification.NoticeService;
-import com.eternalcode.parcellockers.parcel.ParcelService;
+import com.eternalcode.parcellockers.parcel.service.ParcelService;
 import dev.rollczi.litecommands.annotations.argument.Arg;
 import dev.rollczi.litecommands.annotations.command.Command;
 import dev.rollczi.litecommands.annotations.context.Sender;

@@ -29,21 +29,21 @@ public class DeliveryRepositoryOrmLite extends AbstractRepositoryOrmLite impleme
     }
 
     @Override
-    public CompletableFuture<Optional<Delivery>> fetch(UUID parcel) {
+    public CompletableFuture<Optional<Delivery>> find(UUID parcel) {
         return this.selectSafe(DeliveryTable.class, parcel)
             .thenApply(optional -> optional.map(DeliveryTable::toDelivery));
     }
 
     @Override
-    public CompletableFuture<Optional<List<Delivery>>> fetchAll() {
-        return this.selectAll(DeliveryTable.class).thenApply(parcels -> Optional.of(parcels.stream()
+    public CompletableFuture<List<Delivery>> findAll() {
+        return this.selectAll(DeliveryTable.class).thenApply(parcels -> parcels.stream()
             .map(DeliveryTable::toDelivery)
-            .toList()));
+            .toList());
     }
 
     @Override
-    public CompletableFuture<Integer> delete(UUID parcel) {
-        return this.deleteById(DeliveryTable.class, parcel);
+    public CompletableFuture<Boolean> delete(UUID parcel) {
+        return this.deleteById(DeliveryTable.class, parcel).thenApply(i -> i > 0);
     }
 
     @Override

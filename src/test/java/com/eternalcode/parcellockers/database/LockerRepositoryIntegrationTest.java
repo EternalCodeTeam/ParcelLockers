@@ -29,7 +29,7 @@ import org.testcontainers.utility.DockerImageName;
 class LockerRepositoryIntegrationTest extends IntegrationTestSpec {
 
     @Container
-    private static final MySQLContainer mySQLContainer = new MySQLContainer(DockerImageName.parse("mysql:latest"));
+    private static final MySQLContainer<?> mySQLContainer = new MySQLContainer<>(DockerImageName.parse("mysql:latest"));
 
     @TempDir
     private Path tempDir;
@@ -52,20 +52,20 @@ class LockerRepositoryIntegrationTest extends IntegrationTestSpec {
 
         parcelLockerRepository.save(new Locker(uuid, description, position));
 
-        Optional<Locker> parcelLocker = this.await(parcelLockerRepository.fetch(uuid));
+        Optional<Locker> parcelLocker = this.await(parcelLockerRepository.find(uuid));
         assertTrue(parcelLocker.isPresent());
         assertEquals(uuid, parcelLocker.get().uuid());
 
-        Optional<Locker> byPosition = this.await(parcelLockerRepository.fetch(position));
+        Optional<Locker> byPosition = this.await(parcelLockerRepository.find(position));
         assertTrue(byPosition.isPresent());
         assertEquals(uuid, byPosition.get().uuid());
 
-        PageResult<Locker> pageResult = this.await(parcelLockerRepository.fetchPage(new Page(0, 28)));
+        PageResult<Locker> pageResult = this.await(parcelLockerRepository.findPage(new Page(0, 28)));
         assertEquals(1, pageResult.items().size());
         assertEquals(uuid, pageResult.items().getFirst().uuid());
 
         this.await(parcelLockerRepository.delete(uuid));
-        Optional<Locker> removed = this.await(parcelLockerRepository.fetch(uuid));
+        Optional<Locker> removed = this.await(parcelLockerRepository.find(uuid));
         assertTrue(removed.isEmpty());
     }
 

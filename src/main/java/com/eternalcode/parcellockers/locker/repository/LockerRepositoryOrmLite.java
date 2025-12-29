@@ -34,19 +34,12 @@ public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     }
 
     @Override
-    public CompletableFuture<Optional<List<Locker>>> fetchAll() {
-        return this.selectAll(LockerTable.class).thenApply(lockers -> Optional.of(lockers.stream()
-            .map(LockerTable::toLocker)
-            .collect(Collectors.toList())));
-    }
-
-    @Override
-    public CompletableFuture<Optional<Locker>> fetch(UUID uuid) {
+    public CompletableFuture<Optional<Locker>> find(UUID uuid) {
         return this.selectSafe(LockerTable.class, uuid).thenApply(optional -> optional.map(LockerTable::toLocker));
     }
 
     @Override
-    public CompletableFuture<Optional<Locker>> fetch(Position position) {
+    public CompletableFuture<Optional<Locker>> find(Position position) {
         return this.action(
             LockerTable.class, dao -> {
                 List<LockerTable> lockers = dao.queryForEq("position", position);
@@ -65,7 +58,7 @@ public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     }
 
     @Override
-    public CompletableFuture<PageResult<Locker>> fetchPage(Page page) {
+    public CompletableFuture<PageResult<Locker>> findPage(Page page) {
         return this.action(
             LockerTable.class, dao -> {
                 List<Locker> lockers = dao.queryBuilder()
