@@ -9,6 +9,8 @@ import com.eternalcode.parcellockers.content.ParcelContent;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.parcel.Parcel;
+import com.eternalcode.parcellockers.parcel.event.ParcelCollectEvent;
+import com.eternalcode.parcellockers.parcel.event.ParcelSendEvent;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.PageResult;
@@ -23,6 +25,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -42,6 +45,7 @@ public class ParcelServiceImpl implements ParcelService {
     private final Scheduler scheduler;
     private final PluginConfig config;
     private final Economy economy;
+    private final Server server;
 
     private final Cache<UUID, Parcel> parcelsByUuid;
 
@@ -51,7 +55,8 @@ public class ParcelServiceImpl implements ParcelService {
         ParcelContentRepository parcelContentRepository,
         Scheduler scheduler,
         PluginConfig config,
-        Economy economy
+        Economy economy,
+        Server server
     ) {
         this.noticeService = noticeService;
         this.parcelRepository = parcelRepository;
@@ -59,6 +64,7 @@ public class ParcelServiceImpl implements ParcelService {
         this.scheduler = scheduler;
         this.config = config;
         this.economy = economy;
+        this.server = server;
 
         this.parcelsByUuid = Caffeine.newBuilder()
             .expireAfterAccess(CACHE_EXPIRE_HOURS, TimeUnit.HOURS)
@@ -72,6 +78,15 @@ public class ParcelServiceImpl implements ParcelService {
         Objects.requireNonNull(parcel, "Parcel cannot be null");
         Objects.requireNonNull(items, "Items list cannot be null");
         Preconditions.checkArgument(!items.isEmpty(), "Items list cannot be empty");
+
+        // Fire ParcelSendEvent
+        ParcelSendEvent event = new ParcelSendEvent(parcel);
+        this.server.getPluginManager().callEvent(event);
+        
+        if (event.isCancelled()) {
+            this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.cannotSend);
+            return CompletableFuture.completedFuture(false);
+        }
 
         List<ItemStack> itemsCopy = items.stream()
             .map(ItemStack::clone)
@@ -157,6 +172,15 @@ public class ParcelServiceImpl implements ParcelService {
     public CompletableFuture<Void> collect(Player player, Parcel parcel) {
         Objects.requireNonNull(player, "Player cannot be null");
         Objects.requireNonNull(parcel, "Parcel cannot be null");
+
+        // Fire ParcelCollectEvent
+        ParcelCollectEvent event = new ParcelCollectEvent(parcel);
+        this.server.getPluginManager().callEvent(event);
+        
+        if (event.isCancelled()) {
+            this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.cannotCollect);
+            return CompletableFuture.completedFuture(null);
+        }
 
         return this.parcelContentRepository.find(parcel.uuid()).thenCompose(optional -> {
             if (optional.isEmpty()) {

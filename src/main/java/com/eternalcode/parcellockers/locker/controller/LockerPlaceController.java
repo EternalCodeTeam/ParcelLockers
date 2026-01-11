@@ -128,7 +128,7 @@ public class LockerPlaceController implements Listener {
                                 location.getWorld().getBlockAt(location).setBlockData(data);
                             });
 
-                            this.lockerManager.create(UUID.randomUUID(), description, PositionAdapter.convert(location))
+                            this.lockerManager.create(UUID.randomUUID(), description, PositionAdapter.convert(location), player.getUniqueId())
                                 .thenAccept(locker -> {
                                     this.noticeService.create()
                                         .player(player.getUniqueId())
