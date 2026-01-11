@@ -61,7 +61,7 @@ public class DeliveryManager {
             this.deliveryCache.invalidateAll();
             noticeService.create()
                 .viewer(sender)
-                .notice(messages -> messages.admin.deletedContents)
+                .notice(messages -> messages.admin.deletedDeliveries)
                 .placeholder("{COUNT}", deleted.toString())
                 .send();
         });
