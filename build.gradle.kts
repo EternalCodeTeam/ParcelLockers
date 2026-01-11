@@ -58,7 +58,7 @@ dependencies {
     compileOnly("org.jetbrains:annotations:26.0.2-1")
 
     // jackson-bukkit
-    paperLibrary("de.eldoria.jacksonbukkit:paper:1.4.0")
+    paperLibrary("de.eldoria.jacksonbukkit:paper:2.0.0")
 
     // completable-futures
     paperLibrary("com.spotify:completable-futures:0.3.6")
