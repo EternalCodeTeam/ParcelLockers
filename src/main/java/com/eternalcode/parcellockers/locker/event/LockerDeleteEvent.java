@@ -42,7 +42,7 @@ public class LockerDeleteEvent extends Event implements Cancellable {
     }
 
     @Override
-    public HandlerList getHandlers() {
+    public @org.jetbrains.annotations.NotNull HandlerList getHandlers() {
         return HANDLER_LIST;
     }
 
