@@ -138,25 +138,52 @@ public class LockerManager {
     }
 
     public CompletableFuture<Void> delete(UUID uniqueId, UUID playerUUID) {
-        return this.lockerRepository.delete(uniqueId).thenAccept(deleted -> {
-            if (deleted > 0) {
-                // Get locker before deleting from cache for the event
-                Locker locker = this.lockersByUUID.getIfPresent(uniqueId);
+        // Get locker from cache first for the event
+        Locker locker = this.lockersByUUID.getIfPresent(uniqueId);
+        
+        // If not in cache, try to fetch from database
+        if (locker == null) {
+            return this.lockerRepository.find(uniqueId).thenCompose(optionalLocker -> {
+                if (optionalLocker.isEmpty()) {
+                    // Locker doesn't exist, nothing to delete
+                    return CompletableFuture.completedFuture(null);
+                }
                 
-                if (locker != null) {
-                    // Fire LockerDeleteEvent
-                    LockerDeleteEvent event = new LockerDeleteEvent(locker, playerUUID);
-                    this.server.getPluginManager().callEvent(event);
-                    
-                    if (!event.isCancelled()) {
+                Locker foundLocker = optionalLocker.get();
+                
+                // Fire LockerDeleteEvent before deletion
+                LockerDeleteEvent event = new LockerDeleteEvent(foundLocker, playerUUID);
+                this.server.getPluginManager().callEvent(event);
+                
+                if (event.isCancelled()) {
+                    // Event was cancelled, don't delete
+                    return CompletableFuture.completedFuture(null);
+                }
+                
+                // Proceed with deletion
+                return this.lockerRepository.delete(uniqueId).thenAccept(deleted -> {
+                    if (deleted > 0) {
                         this.lockersByUUID.invalidate(uniqueId);
                         this.lockersByPosition.asMap().values().removeIf(l -> l.uuid().equals(uniqueId));
                     }
-                } else {
-                    // If locker is not in cache, still delete it
-                    this.lockersByUUID.invalidate(uniqueId);
-                    this.lockersByPosition.asMap().values().removeIf(l -> l.uuid().equals(uniqueId));
-                }
+                });
+            });
+        }
+        
+        // Fire LockerDeleteEvent before deletion
+        LockerDeleteEvent event = new LockerDeleteEvent(locker, playerUUID);
+        this.server.getPluginManager().callEvent(event);
+        
+        if (event.isCancelled()) {
+            // Event was cancelled, don't delete
+            return CompletableFuture.completedFuture(null);
+        }
+        
+        // Proceed with deletion
+        return this.lockerRepository.delete(uniqueId).thenAccept(deleted -> {
+            if (deleted > 0) {
+                this.lockersByUUID.invalidate(uniqueId);
+                this.lockersByPosition.asMap().values().removeIf(l -> l.uuid().equals(uniqueId));
             }
         });
     }
