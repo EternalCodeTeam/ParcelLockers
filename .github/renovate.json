@@ -1,4 +1,5 @@
 {
+  "automerge": true,
   "extends": [
     "local>EternalCodeTeam/.github:renovate-config"
   ]
