@@ -1,6 +1,8 @@
 package com.eternalcode.parcellockers.locker;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
+import com.eternalcode.parcellockers.locker.event.LockerCreateEvent;
+import com.eternalcode.parcellockers.locker.event.LockerDeleteEvent;
 import com.eternalcode.parcellockers.locker.repository.LockerRepository;
 import com.eternalcode.parcellockers.locker.validation.LockerValidationService;
 import com.eternalcode.parcellockers.notification.NoticeService;
@@ -18,6 +20,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
+import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
 
 public class LockerManager {
@@ -26,6 +29,7 @@ public class LockerManager {
     private final LockerRepository lockerRepository;
     private final LockerValidationService validationService;
     private final ParcelRepository parcelRepository;
+    private final Server server;
 
     private final Cache<UUID, Locker> lockersByUUID;
     private final Cache<Position, Locker> lockersByPosition;
@@ -34,12 +38,14 @@ public class LockerManager {
         PluginConfig config,
         LockerRepository lockerRepository,
         LockerValidationService validationService,
-        ParcelRepository parcelRepository
+        ParcelRepository parcelRepository,
+        Server server
     ) {
         this.config = config;
         this.lockerRepository = lockerRepository;
         this.validationService = validationService;
         this.parcelRepository = parcelRepository;
+        this.server = server;
 
         this.lockersByUUID = Caffeine.newBuilder()
             .expireAfterAccess(Duration.ofHours(2))
@@ -96,7 +102,7 @@ public class LockerManager {
         return this.lockerRepository.findPage(page);
     }
 
-    public CompletableFuture<Locker> create(UUID uniqueId, String name, Position position) {
+    public CompletableFuture<Locker> create(UUID uniqueId, String name, Position position, UUID playerUUID) {
         return CompletableFuture.supplyAsync(() -> {
 
             ValidationResult validation = this.validationService.validateCreateParameters(uniqueId, name, position);
@@ -115,6 +121,15 @@ public class LockerManager {
             }
 
             Locker locker = new Locker(uniqueId, name, position);
+            
+            // Fire LockerCreateEvent
+            LockerCreateEvent event = new LockerCreateEvent(locker, playerUUID);
+            this.server.getPluginManager().callEvent(event);
+            
+            if (event.isCancelled()) {
+                throw new ValidationException("Locker creation cancelled by event");
+            }
+
             this.lockersByUUID.put(uniqueId, locker);
             this.lockersByPosition.put(position, locker);
 
@@ -122,11 +137,53 @@ public class LockerManager {
         }).thenCompose(Function.identity());
     }
 
-    public CompletableFuture<Void> delete(UUID uniqueId) {
+    public CompletableFuture<Void> delete(UUID uniqueId, UUID playerUUID) {
+        // Get locker from cache first for the event
+        Locker locker = this.lockersByUUID.getIfPresent(uniqueId);
+        
+        // If not in cache, try to fetch from database
+        if (locker == null) {
+            return this.lockerRepository.find(uniqueId).thenCompose(optionalLocker -> {
+                if (optionalLocker.isEmpty()) {
+                    // Locker doesn't exist, nothing to delete
+                    return CompletableFuture.completedFuture(null);
+                }
+                
+                Locker foundLocker = optionalLocker.get();
+                
+                // Fire LockerDeleteEvent before deletion
+                LockerDeleteEvent event = new LockerDeleteEvent(foundLocker, playerUUID);
+                this.server.getPluginManager().callEvent(event);
+                
+                if (event.isCancelled()) {
+                    // Event was cancelled, don't delete
+                    return CompletableFuture.completedFuture(null);
+                }
+                
+                // Proceed with deletion
+                return this.lockerRepository.delete(uniqueId).thenAccept(deleted -> {
+                    if (deleted > 0) {
+                        this.lockersByUUID.invalidate(uniqueId);
+                        this.lockersByPosition.asMap().values().removeIf(l -> l.uuid().equals(uniqueId));
+                    }
+                });
+            });
+        }
+        
+        // Fire LockerDeleteEvent before deletion
+        LockerDeleteEvent event = new LockerDeleteEvent(locker, playerUUID);
+        this.server.getPluginManager().callEvent(event);
+        
+        if (event.isCancelled()) {
+            // Event was cancelled, don't delete
+            return CompletableFuture.completedFuture(null);
+        }
+        
+        // Proceed with deletion
         return this.lockerRepository.delete(uniqueId).thenAccept(deleted -> {
             if (deleted > 0) {
                 this.lockersByUUID.invalidate(uniqueId);
-                this.lockersByPosition.asMap().values().removeIf(locker -> locker.uuid().equals(uniqueId));
+                this.lockersByPosition.asMap().values().removeIf(l -> l.uuid().equals(uniqueId));
             }
         });
     }

@@ -57,7 +57,7 @@ public class LockerBreakController implements Listener {
                     return;
                 }
 
-                this.lockerManager.delete(locker.get().uuid());
+                this.lockerManager.delete(locker.get().uuid(), player.getUniqueId());
 
                 this.noticeService.player(player.getUniqueId(), messages -> messages.locker.deleted);
 

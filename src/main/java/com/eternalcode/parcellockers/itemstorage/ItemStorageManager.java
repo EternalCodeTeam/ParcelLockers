@@ -1,5 +1,6 @@
 package com.eternalcode.parcellockers.itemstorage;
 
+import com.eternalcode.parcellockers.itemstorage.event.ItemStorageUpdateEvent;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
 import com.eternalcode.parcellockers.notification.NoticeService;
 import com.github.benmanes.caffeine.cache.Cache;
@@ -9,6 +10,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.ItemStack;
 
@@ -17,9 +19,11 @@ public class ItemStorageManager {
     private final Cache<UUID, ItemStorage> cache;
 
     private final ItemStorageRepository itemStorageRepository;
+    private final Server server;
 
-    public ItemStorageManager(ItemStorageRepository itemStorageRepository) {
+    public ItemStorageManager(ItemStorageRepository itemStorageRepository, Server server) {
         this.itemStorageRepository = itemStorageRepository;
+        this.server = server;
 
         this.cache = Caffeine.newBuilder()
             .expireAfterWrite(6, TimeUnit.HOURS)
@@ -45,13 +49,22 @@ public class ItemStorageManager {
     }
 
     public ItemStorage create(UUID owner, List<ItemStack> items) {
-        ItemStorage itemStorage = new ItemStorage(owner, items);
-        if (this.cache.getIfPresent(owner) != null) {
-            throw new IllegalStateException("ItemStorage for owner " + owner + " already exists. Use ItemStorageManager#getOrCreate method instead.");
+        ItemStorage oldItemStorage = this.cache.getIfPresent(owner);
+        ItemStorage newItemStorage = new ItemStorage(owner, items);
+        
+        if (oldItemStorage != null) {
+            // This is an update operation - fire ItemStorageUpdateEvent
+            ItemStorageUpdateEvent event = new ItemStorageUpdateEvent(oldItemStorage, newItemStorage);
+            this.server.getPluginManager().callEvent(event);
+            
+            if (event.isCancelled()) {
+                throw new IllegalStateException("ItemStorage update was cancelled by event");
+            }
         }
-        this.cache.put(owner, itemStorage);
-        this.itemStorageRepository.save(itemStorage);
-        return itemStorage;
+        
+        this.cache.put(owner, newItemStorage);
+        this.itemStorageRepository.save(newItemStorage);
+        return newItemStorage;
     }
 
     private void cacheAll() {

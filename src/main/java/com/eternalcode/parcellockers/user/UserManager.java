@@ -17,4 +17,6 @@ public interface UserManager {
     CompletableFuture<Optional<User>> get(UUID uniqueId);
 
     CompletableFuture<PageResult<User>> getPage(Page page);
+    
+    CompletableFuture<Void> changeName(UUID uuid, String newName);
 }
