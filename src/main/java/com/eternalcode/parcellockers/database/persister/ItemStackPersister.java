@@ -1,9 +1,6 @@
 package com.eternalcode.parcellockers.database.persister;
 
 import com.eternalcode.parcellockers.shared.exception.DatabaseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.j256.ormlite.field.FieldType;
 import com.j256.ormlite.field.SqlType;
 import com.j256.ormlite.field.types.BaseDataType;
@@ -12,6 +9,9 @@ import de.eldoria.jacksonbukkit.JacksonPaper;
 import java.sql.SQLException;
 import java.util.List;
 import org.bukkit.inventory.ItemStack;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 @SuppressWarnings("unchecked")
 public class ItemStackPersister extends BaseDataType {
@@ -38,7 +38,7 @@ public class ItemStackPersister extends BaseDataType {
 
         try {
             return JSON.writeValueAsString(stacks);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new DatabaseException("Failed to serialize itemstacks", e);
         }
     }
@@ -59,7 +59,7 @@ public class ItemStackPersister extends BaseDataType {
 
         try {
             return JSON.readValue(string, JSON.getTypeFactory().constructCollectionType(List.class, ItemStack.class));
-        } catch (JsonProcessingException exception) {
+        } catch (JacksonException exception) {
             throw new DatabaseException("Failed to deserialize itemstacks", exception);
         }
     }
