@@ -69,7 +69,7 @@ dependencies {
     paperLibrary("com.eternalcode:eternalcode-commons-shared:1.3.1")
 
     // multification
-    paperLibrary("com.eternalcode:multification-bukkit:1.2.3")
+    paperLibrary("com.eternalcode:multification-bukkit:1.2.4")
     paperLibrary("com.eternalcode:multification-okaeri:1.2.3")
 
     // caffeine
