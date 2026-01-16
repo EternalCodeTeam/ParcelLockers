@@ -16,6 +16,7 @@ import com.eternalcode.parcellockers.content.repository.ParcelContentRepositoryO
 import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.eternalcode.parcellockers.delivery.DeliveryManager;
 import com.eternalcode.parcellockers.delivery.repository.DeliveryRepositoryOrmLite;
+import com.eternalcode.parcellockers.discord.DiscordClientManager;
 import com.eternalcode.parcellockers.gui.GuiManager;
 import com.eternalcode.parcellockers.gui.implementation.locker.LockerGui;
 import com.eternalcode.parcellockers.gui.implementation.remote.MainGui;
@@ -197,6 +198,19 @@ public final class ParcelLockers extends JavaPlugin {
             new PrepareUserController(userManager),
             new LoadUserController(userManager, server)
         ).forEach(controller -> server.getPluginManager().registerEvents(controller, this));
+
+        DiscordClientManager discordClientManager;
+
+        if (config.discord.enabled) {
+            discordClientManager = new DiscordClientManager(
+                config.discord.botToken,
+                config.discord.serverId,
+                config.discord.channelId,
+                config.discord.botAdminRoleId,
+                this.getLogger()
+            );
+            discordClientManager.initialize();
+        }
 
         new Metrics(this, 17677);
         new UpdaterService(this.getPluginMeta().getVersion());

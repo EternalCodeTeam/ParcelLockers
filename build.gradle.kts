@@ -78,6 +78,9 @@ dependencies {
     // vault
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
 
+    // discord integration library
+    paperLibrary("com.discord4j:discord4j-core:3.3.0")
+
     testImplementation("org.junit.jupiter:junit-jupiter-api:6.0.2")
     testImplementation("org.junit.jupiter:junit-jupiter-params:6.0.2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:6.0.2")

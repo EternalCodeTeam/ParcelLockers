@@ -24,6 +24,9 @@ public class PluginConfig extends OkaeriConfig {
     @Comment({ "", "# The plugin GUI settings." })
     public GuiSettings guiSettings = new GuiSettings();
 
+    @Comment({ "", "# The plugin Discord integration settings." })
+    public DiscordSettings discord = new DiscordSettings();
+
     public static class Settings extends OkaeriConfig {
 
         @Comment("# Whether the player after entering the server should receive information about the new version of the plugin?")
@@ -356,5 +359,23 @@ public class PluginConfig extends OkaeriConfig {
 
         @Comment({ "", "# The lore line showing when the parcel has arrived. Placeholders: {DATE} - arrival date" })
         public String parcelArrivedLine = "&aArrived on: &2{DATE}";
+    }
+
+    public static class DiscordSettings extends OkaeriConfig {
+
+        @Comment("# Whether Discord integration is enabled.")
+        public boolean enabled = false;
+
+        @Comment("# The Discord bot token.")
+        public String botToken = "";
+
+        @Comment("# The Discord server ID.")
+        public String serverId = "";
+
+        @Comment("# The Discord channel ID for parcel notifications.")
+        public String channelId = "";
+
+        @Comment("# The Discord role ID for bot administrators.")
+        public String botAdminRoleId = "";
     }
 }
