@@ -3,8 +3,10 @@ package com.eternalcode.parcellockers.parcel.task;
 import com.eternalcode.parcellockers.delivery.DeliveryManager;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelStatus;
+import com.eternalcode.parcellockers.parcel.event.ParcelDeliverEvent;
 import com.eternalcode.parcellockers.parcel.service.ParcelService;
 import java.util.logging.Logger;
+import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class ParcelSendTask extends BukkitRunnable {
@@ -39,6 +41,15 @@ public class ParcelSendTask extends BukkitRunnable {
             this.parcel.destinationLocker(),
             ParcelStatus.DELIVERED
         );
+
+        // Fire ParcelDeliverEvent
+        ParcelDeliverEvent event = new ParcelDeliverEvent(updated);
+        Bukkit.getPluginManager().callEvent(event);
+        
+        if (event.isCancelled()) {
+            LOGGER.info("ParcelDeliverEvent was cancelled for parcel " + updated.uuid());
+            return;
+        }
 
         this.parcelService.update(updated)
             .exceptionally(throwable -> {

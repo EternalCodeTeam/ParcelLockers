@@ -24,8 +24,8 @@ repositories {
 dependencies {
     // minecraft development api
     compileOnly("io.papermc.paper:paper-api:1.21.10-R0.1-SNAPSHOT")
-    paperLibrary("dev.rollczi:litecommands-bukkit:3.10.6")
-    paperLibrary("dev.rollczi:litecommands-adventure:3.10.6")
+    paperLibrary("dev.rollczi:litecommands-bukkit:3.10.8")
+    paperLibrary("dev.rollczi:litecommands-adventure:3.10.8")
 
     // skull api
     paperLibrary("dev.rollczi:liteskullapi:2.0.0")
@@ -48,7 +48,7 @@ dependencies {
     paperLibrary("com.zaxxer:HikariCP:7.0.2")
     paperLibrary("com.j256.ormlite:ormlite-jdbc:6.1")
     paperLibrary("com.h2database:h2:2.4.240")
-    paperLibrary("org.postgresql:postgresql:42.7.8")
+    paperLibrary("org.postgresql:postgresql:42.7.9")
 
     // lombok
     compileOnly("org.projectlombok:lombok:1.18.42")
@@ -69,8 +69,8 @@ dependencies {
     paperLibrary("com.eternalcode:eternalcode-commons-shared:1.3.1")
 
     // multification
-    paperLibrary("com.eternalcode:multification-bukkit:1.2.3")
-    paperLibrary("com.eternalcode:multification-okaeri:1.2.3")
+    paperLibrary("com.eternalcode:multification-bukkit:1.2.4")
+    paperLibrary("com.eternalcode:multification-okaeri:1.2.4")
 
     // caffeine
     paperLibrary("com.github.ben-manes.caffeine:caffeine:3.2.3")
