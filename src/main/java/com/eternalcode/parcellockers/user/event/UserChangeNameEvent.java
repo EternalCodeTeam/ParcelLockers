@@ -3,7 +3,7 @@ package com.eternalcode.parcellockers.user.event;
 import com.eternalcode.parcellockers.user.User;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
-import org.jspecify.annotations.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 public class UserChangeNameEvent extends Event {
 
@@ -30,7 +30,7 @@ public class UserChangeNameEvent extends Event {
     }
 
     @Override
-    public @NonNull HandlerList getHandlers() {
+    public @NotNull HandlerList getHandlers() {
         return HANDLER_LIST;
     }
 }

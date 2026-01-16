@@ -51,15 +51,13 @@ public class ItemStorageManager {
     public ItemStorage create(UUID owner, List<ItemStack> items) {
         ItemStorage oldItemStorage = this.cache.getIfPresent(owner);
         ItemStorage newItemStorage = new ItemStorage(owner, items);
-        
-        if (oldItemStorage != null) {
-            // This is an update operation - fire ItemStorageUpdateEvent
-            ItemStorageUpdateEvent event = new ItemStorageUpdateEvent(oldItemStorage, newItemStorage);
-            this.server.getPluginManager().callEvent(event);
-            
-            if (event.isCancelled()) {
-                throw new IllegalStateException("ItemStorage update was cancelled by event");
-            }
+
+        // This is an update operation - fire ItemStorageUpdateEvent
+        ItemStorageUpdateEvent event = new ItemStorageUpdateEvent(oldItemStorage, newItemStorage);
+        this.server.getPluginManager().callEvent(event);
+
+        if (event.isCancelled()) {
+            throw new IllegalStateException("ItemStorage update was cancelled by event");
         }
         
         this.cache.put(owner, newItemStorage);

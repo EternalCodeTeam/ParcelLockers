@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
+import org.jetbrains.annotations.NotNull;
 
 public class LockerCreateEvent extends Event implements Cancellable {
 
@@ -15,6 +16,7 @@ public class LockerCreateEvent extends Event implements Cancellable {
     private boolean cancelled;
 
     public LockerCreateEvent(Locker locker, UUID player) {
+        super(true);
         this.locker = locker;
         this.player = player;
     }
@@ -42,7 +44,7 @@ public class LockerCreateEvent extends Event implements Cancellable {
     }
 
     @Override
-    public @org.jetbrains.annotations.NotNull HandlerList getHandlers() {
+    public @NotNull HandlerList getHandlers() {
         return HANDLER_LIST;
     }
 

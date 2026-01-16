@@ -4,7 +4,7 @@ import com.eternalcode.parcellockers.parcel.Parcel;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
-import org.jspecify.annotations.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 public class ParcelCollectEvent extends Event implements Cancellable {
 
@@ -14,6 +14,7 @@ public class ParcelCollectEvent extends Event implements Cancellable {
     private boolean cancelled;
 
     public ParcelCollectEvent(Parcel parcel) {
+        super(true);
         this.parcel = parcel;
     }
 
@@ -26,7 +27,7 @@ public class ParcelCollectEvent extends Event implements Cancellable {
     }
 
     @Override
-    public @NonNull HandlerList getHandlers() {
+    public @NotNull HandlerList getHandlers() {
         return HANDLER_LIST;
     }
 
