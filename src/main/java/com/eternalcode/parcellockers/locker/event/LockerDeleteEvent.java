@@ -16,7 +16,6 @@ public class LockerDeleteEvent extends Event implements Cancellable {
     private boolean cancelled;
 
     public LockerDeleteEvent(Locker locker, UUID player) {
-        super(true);
         this.locker = locker;
         this.player = player;
     }

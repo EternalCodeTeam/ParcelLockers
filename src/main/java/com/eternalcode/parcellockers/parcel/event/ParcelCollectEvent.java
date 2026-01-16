@@ -14,7 +14,6 @@ public class ParcelCollectEvent extends Event implements Cancellable {
     private boolean cancelled;
 
     public ParcelCollectEvent(Parcel parcel) {
-        super(true);
         this.parcel = parcel;
     }
 

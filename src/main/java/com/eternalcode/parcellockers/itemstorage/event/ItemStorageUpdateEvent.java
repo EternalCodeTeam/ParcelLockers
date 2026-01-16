@@ -16,7 +16,6 @@ public class ItemStorageUpdateEvent extends Event implements Cancellable {
     private boolean cancelled;
 
     public ItemStorageUpdateEvent(ItemStorage oldItemStorage, ItemStorage updatedItemStorage) {
-        super(true);
         this.oldItemStorage = oldItemStorage;
         this.updatedItemStorage = updatedItemStorage;
     }

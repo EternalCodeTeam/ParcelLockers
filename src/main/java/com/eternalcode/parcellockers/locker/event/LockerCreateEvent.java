@@ -16,7 +16,6 @@ public class LockerCreateEvent extends Event implements Cancellable {
     private boolean cancelled;
 
     public LockerCreateEvent(Locker locker, UUID player) {
-        super(true);
         this.locker = locker;
         this.player = player;
     }
