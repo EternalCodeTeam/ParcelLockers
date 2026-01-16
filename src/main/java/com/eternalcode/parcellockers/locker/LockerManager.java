@@ -121,11 +121,11 @@ public class LockerManager {
             }
 
             Locker locker = new Locker(uniqueId, name, position);
-            
+
             // Fire LockerCreateEvent
             LockerCreateEvent event = new LockerCreateEvent(locker, playerUUID);
             this.server.getPluginManager().callEvent(event);
-            
+
             if (event.isCancelled()) {
                 throw new ValidationException("Locker creation cancelled by event");
             }

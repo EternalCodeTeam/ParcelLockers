@@ -59,7 +59,7 @@ public class ItemStorageManager {
         if (event.isCancelled()) {
             throw new IllegalStateException("ItemStorage update was cancelled by event");
         }
-        
+
         this.cache.put(owner, newItemStorage);
         this.itemStorageRepository.save(newItemStorage);
         return newItemStorage;
