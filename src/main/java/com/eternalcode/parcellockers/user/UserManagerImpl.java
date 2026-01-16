@@ -3,6 +3,8 @@ package com.eternalcode.parcellockers.user;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.PageResult;
 import com.eternalcode.parcellockers.shared.validation.ValidationResult;
+import com.eternalcode.parcellockers.user.event.UserChangeNameEvent;
+import com.eternalcode.parcellockers.user.event.UserCreateEvent;
 import com.eternalcode.parcellockers.user.repository.UserRepository;
 import com.eternalcode.parcellockers.user.validation.UserValidationService;
 import com.github.benmanes.caffeine.cache.Cache;
@@ -12,18 +14,21 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import org.bukkit.Server;
 
 public class UserManagerImpl implements UserManager {
 
     private final UserRepository userRepository;
     private final UserValidationService validationService;
+    private final Server server;
 
     private final Cache<UUID, User> usersByUUID;
     private final Cache<String, User> usersByName;
 
-    public UserManagerImpl(UserRepository userRepository, UserValidationService validationService) {
+    public UserManagerImpl(UserRepository userRepository, UserValidationService validationService, Server server) {
         this.userRepository = userRepository;
         this.validationService = validationService;
+        this.server = server;
         this.usersByUUID = Caffeine.newBuilder()
             .expireAfterAccess(2, TimeUnit.HOURS)
             .maximumSize(10_000)
@@ -98,11 +103,42 @@ public class UserManagerImpl implements UserManager {
             }
 
             User user = new User(uuid, name);
+            
+            // Fire UserCreateEvent
+            UserCreateEvent event = new UserCreateEvent(user);
+            this.server.getPluginManager().callEvent(event);
+
             this.usersByUUID.put(uuid, user);
             this.usersByName.put(name, user);
             this.userRepository.save(user);
 
             return user;
         });
+    }
+
+    @Override
+    public CompletableFuture<Void> changeName(UUID uuid, String newName) {
+        return CompletableFuture.supplyAsync(() -> {
+            User oldUser = this.usersByUUID.getIfPresent(uuid);
+            
+            if (oldUser == null) {
+                throw new ValidationException("User not found with UUID: " + uuid);
+            }
+            
+            String oldName = oldUser.name();
+            
+            // Fire UserChangeNameEvent
+            UserChangeNameEvent event = new UserChangeNameEvent(oldUser, oldName);
+            this.server.getPluginManager().callEvent(event);
+            
+            // Update cache
+            User updatedUser = new User(uuid, newName);
+            this.usersByUUID.put(uuid, updatedUser);
+            this.usersByName.invalidate(oldName);
+            this.usersByName.put(newName, updatedUser);
+            
+            // Update in repository
+            return this.userRepository.changeName(uuid, newName);
+        }).thenCompose(future -> future);
     }
 }
