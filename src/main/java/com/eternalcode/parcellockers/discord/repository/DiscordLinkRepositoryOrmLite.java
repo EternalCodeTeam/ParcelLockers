@@ -45,7 +45,7 @@ public class DiscordLinkRepositoryOrmLite extends AbstractRepositoryOrmLite impl
             var queryBuilder = dao.queryBuilder()
             .where().eq(ID_COLUMN_NAME, discordId);
             return dao.queryForFirst(queryBuilder.prepare());
-        }).thenApply(optionalEntity -> optionalEntity != null ? Optional.of(optionalEntity.toDomain()) : Optional.empty());
+        }).thenApply(entity -> Optional.ofNullable(entity).map(DiscordLinkEntity::toDomain));
     }
 
     @Override
