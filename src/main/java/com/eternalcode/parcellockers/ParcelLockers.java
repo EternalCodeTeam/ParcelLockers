@@ -200,7 +200,6 @@ public final class ParcelLockers extends JavaPlugin {
 
         if (config.discord.enabled) {
             if (config.discord.botToken.isBlank() ||
-                config.discord.botAdminRoleId.isBlank() ||
                 config.discord.serverId.isBlank() ||
                 config.discord.channelId.isBlank() ||
                 config.discord.botAdminRoleId.isBlank()
