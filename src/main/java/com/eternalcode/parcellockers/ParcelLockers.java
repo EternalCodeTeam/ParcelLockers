@@ -222,7 +222,6 @@ public final class ParcelLockers extends JavaPlugin {
                     discordLinkRepository,
                     noticeService,
                     miniMessage,
-                    scheduler,
                     messageConfig),
                 new DiscordUnlinkCommand(discordLinkRepository, noticeService)
             );

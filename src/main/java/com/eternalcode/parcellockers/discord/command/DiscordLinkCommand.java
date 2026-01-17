@@ -1,6 +1,6 @@
 package com.eternalcode.parcellockers.discord.command;
 
-import com.eternalcode.commons.scheduler.Scheduler;
+import com.eternalcode.multification.notice.provider.NoticeProvider;
 import com.eternalcode.parcellockers.configuration.implementation.MessageConfig;
 import com.eternalcode.parcellockers.discord.DiscordLink;
 import com.eternalcode.parcellockers.discord.repository.DiscordLinkRepository;
@@ -25,12 +25,16 @@ import io.papermc.paper.registry.data.dialog.type.DialogType;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.event.ClickCallback;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import reactor.core.publisher.Mono;
 
 @SuppressWarnings("UnstableApiUsage")
 @Command(name = "parcel linkdiscord")
@@ -42,7 +46,6 @@ public class DiscordLinkCommand {
     private final DiscordLinkRepository discordLinkRepository;
     private final NoticeService noticeService;
     private final MiniMessage miniMessage;
-    private final Scheduler scheduler;
     private final MessageConfig messageConfig;
 
     private final Cache<UUID, VerificationData> authCodesCache = Caffeine.newBuilder()
@@ -54,14 +57,12 @@ public class DiscordLinkCommand {
         DiscordLinkRepository discordLinkRepository,
         NoticeService noticeService,
         MiniMessage miniMessage,
-        Scheduler scheduler,
         MessageConfig messageConfig
     ) {
         this.client = client;
         this.discordLinkRepository = discordLinkRepository;
         this.noticeService = noticeService;
         this.miniMessage = miniMessage;
-        this.scheduler = scheduler;
         this.messageConfig = messageConfig;
     }
 
@@ -70,96 +71,88 @@ public class DiscordLinkCommand {
         UUID playerUuid = player.getUniqueId();
         String discordIdString = String.valueOf(discordId);
 
-        // Check if the player already has a pending verification
         if (this.authCodesCache.getIfPresent(playerUuid) != null) {
             this.noticeService.player(playerUuid, messages -> messages.discord.verificationAlreadyPending);
             return;
         }
 
-        // Check if the player already has a linked Discord account
-        this.discordLinkRepository.findByPlayerUuid(playerUuid).thenAccept(existingLink -> {
-            if (existingLink.isPresent()) {
-                this.noticeService.player(playerUuid, messages -> messages.discord.alreadyLinked);
-                return;
-            }
-
-            // Check if the Discord account is already linked to another Minecraft account
-            this.discordLinkRepository.findByDiscordId(discordIdString).thenAccept(existingDiscordLink -> {
-                if (existingDiscordLink.isPresent()) {
-                    this.noticeService.player(playerUuid, messages -> messages.discord.discordAlreadyLinked);
-                    return;
+        this.validateAndLink(playerUuid, discordIdString)
+            .thenCompose(validationResult -> {
+                if (!validationResult.isValid()) {
+                    this.noticeService.player(playerUuid, validationResult.errorMessage());
+                    return CompletableFuture.completedFuture(null);
                 }
 
-                // Try to get the Discord user
-                User discordUser;
-                try {
-                    discordUser = this.client.getUserById(Snowflake.of(discordId)).block();
-                } catch (Exception ex) {
-                    this.noticeService.player(playerUuid, messages -> messages.discord.userNotFound);
-                    return;
-                }
-
-                if (discordUser == null) {
-                    this.noticeService.player(playerUuid, messages -> messages.discord.userNotFound);
-                    return;
-                }
-
-                // Generate a 4-digit verification code
-                String verificationCode = this.generateVerificationCode();
-
-                // Store the verification data in cache
-                this.authCodesCache.put(playerUuid, new VerificationData(discordIdString, verificationCode));
-
-                // Send the verification code to the Discord user via DM
-                discordUser.getPrivateChannel()
-                    .flatMap(channel -> channel.createMessage(
-                        this.messageConfig.discord.discordDmVerificationMessage
-                            .replace("{CODE}", verificationCode)
-                            .replace("{PLAYER}", player.getName())
-                    ))
-                    .doOnSuccess(message -> {
-                        this.noticeService.player(playerUuid, messages -> messages.discord.verificationCodeSent);
-                        this.scheduler.run(() -> this.showVerificationDialog(player));
-                    })
-                    .doOnError(error -> {
-                        this.authCodesCache.invalidate(playerUuid);
-                        this.noticeService.player(playerUuid, messages -> messages.discord.cannotSendDm);
-                    })
-                    .subscribe();
+                return this.sendVerification(playerUuid, discordIdString, player, validationResult.discordUser())
+                    .toFuture();
+            })
+            .exceptionally(error -> {
+                this.noticeService.player(playerUuid, messages -> messages.discord.linkFailed);
+                return null;
             });
-        });
     }
 
     @Execute
     @Permission("parcellockers.admin")
-    void linkOther(@Context CommandSender sender, @Arg Player player, @Arg long discordId) {
-        UUID playerUuid = player.getUniqueId();
+    void linkOther(@Context CommandSender sender, @Arg String playerName, @Arg long discordId) {
         String discordIdString = String.valueOf(discordId);
 
-        // Admin bypass - directly link without verification
-        this.discordLinkRepository.findByPlayerUuid(playerUuid).thenAccept(existingLink -> {
-            if (existingLink.isPresent()) {
-                this.noticeService.console(messages -> messages.discord.playerAlreadyLinked);
-                return;
-            }
-
-            this.discordLinkRepository.findByDiscordId(discordIdString).thenAccept(existingDiscordLink -> {
-                if (existingDiscordLink.isPresent()) {
-                    this.noticeService.console(messages -> messages.discord.discordAlreadyLinked);
-                    return;
+        this.resolvePlayerUuid(playerName)
+            .thenCompose(playerUuid -> {
+                if (playerUuid == null) {
+                    this.noticeService.viewer(sender, messages -> messages.discord.userNotFound);
+                    return CompletableFuture.completedFuture(null);
                 }
 
-                DiscordLink link = new DiscordLink(playerUuid, discordIdString);
-                this.discordLinkRepository.save(link).thenAccept(success -> {
-                    if (success) {
-                        this.noticeService.viewer(sender, messages -> messages.discord.adminLinkSuccess);
-                        this.noticeService.player(playerUuid, messages -> messages.discord.linkSuccess);
-                    } else {
-                        this.noticeService.viewer(sender, messages -> messages.discord.linkFailed);
-                    }
-                });
+                return this.validateAndLink(playerUuid, discordIdString)
+                    .thenCompose(validationResult -> {
+                        if (!validationResult.isValid()) {
+                            this.noticeService.viewer(sender, validationResult.errorMessage());
+                            return CompletableFuture.completedFuture(null);
+                        }
+
+                        DiscordLink link = new DiscordLink(playerUuid, discordIdString);
+                        return this.discordLinkRepository.save(link)
+                            .thenAccept(success -> {
+                                if (success) {
+                                    this.noticeService.viewer(sender, messages -> messages.discord.adminLinkSuccess);
+                                    this.noticeService.player(playerUuid, messages -> messages.discord.linkSuccess);
+                                } else {
+                                    this.noticeService.viewer(sender, messages -> messages.discord.linkFailed);
+                                }
+                            });
+                    });
+            })
+            .exceptionally(error -> {
+                this.noticeService.viewer(sender, messages -> messages.discord.linkFailed);
+                return null;
             });
-        });
+    }
+
+    private Mono<Void> sendVerification(UUID playerUuid, String discordId, Player player, User discordUser) {
+        String code = this.generateVerificationCode();
+
+        VerificationData data = new VerificationData(discordId, code);
+        if (this.authCodesCache.asMap().putIfAbsent(playerUuid, data) != null) {
+            this.noticeService.player(playerUuid, messages -> messages.discord.verificationAlreadyPending);
+            return Mono.empty();
+        }
+
+        return discordUser.getPrivateChannel()
+            .flatMap(channel -> channel.createMessage(
+                this.messageConfig.discord.discordDmVerificationMessage
+                    .replace("{CODE}", code)
+                    .replace("{PLAYER}", player.getName())
+            ))
+            .doOnSuccess(msg -> {
+                this.noticeService.player(playerUuid, messages -> messages.discord.verificationCodeSent);
+                this.showVerificationDialog(player);
+            })
+            .doOnError(error -> {
+                this.authCodesCache.invalidate(playerUuid);
+                this.noticeService.player(playerUuid, messages -> messages.discord.cannotSendDm);
+            })
+            .then();
     }
 
     private void showVerificationDialog(Player player) {
@@ -232,10 +225,72 @@ public class DiscordLinkCommand {
         });
     }
 
+    private CompletableFuture<ValidationResult> validateAndLink(UUID playerUuid, String discordIdString) {
+        return this.discordLinkRepository.findByPlayerUuid(playerUuid)
+            .thenCompose(existingPlayerLink -> {
+                if (existingPlayerLink.isPresent()) {
+                    return CompletableFuture.completedFuture(
+                        ValidationResult.error(messages -> messages.discord.alreadyLinked)
+                    );
+                }
+
+                return this.discordLinkRepository.findByDiscordId(discordIdString)
+                    .thenCompose(existingDiscordLink -> {
+                        if (existingDiscordLink.isPresent()) {
+                            return CompletableFuture.completedFuture(
+                                ValidationResult.error(messages -> messages.discord.discordAlreadyLinked)
+                            );
+                        }
+
+                        return this.client.getUserById(Snowflake.of(Long.parseLong(discordIdString)))
+                            .map(ValidationResult::success)
+                            .onErrorResume(error -> Mono.just(
+                                ValidationResult.error(messages -> messages.discord.userNotFound)
+                            ))
+                            .toFuture();
+                    });
+            });
+    }
+
     private String generateVerificationCode() {
         int code = 1000 + RANDOM.nextInt(9000); // generates 1000-9999
         return String.valueOf(code);
     }
 
+    private CompletableFuture<UUID> resolvePlayerUuid(String playerName) {
+        return CompletableFuture.supplyAsync(() -> {
+            Player online = Bukkit.getPlayerExact(playerName);
+            if (online != null) {
+                return online.getUniqueId();
+            }
+
+            OfflinePlayer offline = Bukkit.getOfflinePlayer(playerName);
+            return offline.hasPlayedBefore() ? offline.getUniqueId() : null;
+        });
+    }
+
     private record VerificationData(String discordId, String code) {}
+
+    private record ValidationResult(
+        boolean valid,
+        User discordUser,
+        NoticeProvider<MessageConfig> errorMessageGetter
+    ) {
+        static ValidationResult success(User user) {
+            return new ValidationResult(true, user, null);
+        }
+
+        static ValidationResult error(NoticeProvider<MessageConfig> messageGetter) {
+            return new ValidationResult(false, null, messageGetter);
+        }
+
+        boolean isValid() {
+            return this.valid;
+        }
+
+        NoticeProvider<MessageConfig> errorMessage() {
+            return this.errorMessageGetter;
+        }
+    }
 }
+
