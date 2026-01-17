@@ -25,7 +25,7 @@ dependencies {
     // minecraft development api
     compileOnly("io.papermc.paper:paper-api:1.21.10-R0.1-SNAPSHOT")
     paperLibrary("dev.rollczi:litecommands-bukkit:3.10.8")
-    paperLibrary("dev.rollczi:litecommands-adventure:3.10.8")
+    paperLibrary("dev.rollczi:litecommands-adventure:3.10.9")
 
     // skull api
     paperLibrary("dev.rollczi:liteskullapi:2.0.0")
