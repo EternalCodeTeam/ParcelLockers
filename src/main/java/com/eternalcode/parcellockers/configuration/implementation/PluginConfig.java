@@ -364,18 +364,18 @@ public class PluginConfig extends OkaeriConfig {
     public static class DiscordSettings extends OkaeriConfig {
 
         @Comment("# Whether Discord integration is enabled.")
-        public boolean enabled = false;
+        public boolean enabled = true;
 
         @Comment("# The Discord bot token.")
-        public String botToken = "";
+        public String botToken = System.getenv("DISCORD_BOT_TOKEN");
 
         @Comment("# The Discord server ID.")
-        public String serverId = "";
+        public String serverId = "1179117429301977251";
 
         @Comment("# The Discord channel ID for parcel notifications.")
-        public String channelId = "";
+        public String channelId = "1317827115147853834";
 
         @Comment("# The Discord role ID for bot administrators.")
-        public String botAdminRoleId = "";
+        public String botAdminRoleId = "1317589501169893427";
     }
 }

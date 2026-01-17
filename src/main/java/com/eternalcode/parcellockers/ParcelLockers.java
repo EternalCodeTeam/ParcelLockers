@@ -17,6 +17,10 @@ import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.eternalcode.parcellockers.delivery.DeliveryManager;
 import com.eternalcode.parcellockers.delivery.repository.DeliveryRepositoryOrmLite;
 import com.eternalcode.parcellockers.discord.DiscordClientManager;
+import com.eternalcode.parcellockers.discord.command.DiscordLinkCommand;
+import com.eternalcode.parcellockers.discord.command.DiscordUnlinkCommand;
+import com.eternalcode.parcellockers.discord.repository.DiscordLinkRepository;
+import com.eternalcode.parcellockers.discord.repository.DiscordLinkRepositoryOrmLite;
 import com.eternalcode.parcellockers.gui.GuiManager;
 import com.eternalcode.parcellockers.gui.implementation.locker.LockerGui;
 import com.eternalcode.parcellockers.gui.implementation.remote.MainGui;
@@ -73,6 +77,7 @@ public final class ParcelLockers extends JavaPlugin {
     private SkullAPI skullAPI;
     private DatabaseManager databaseManager;
     private Economy economy;
+    private DiscordClientManager discordClientManager;
 
     @Override
     public void onEnable() {
@@ -177,19 +182,53 @@ public final class ParcelLockers extends JavaPlugin {
             this.skullAPI
         );
 
-        this.liteCommands = LiteBukkitFactory.builder(this.getName(), this)
+        var liteCommandsBuilder = LiteBukkitFactory.builder(this.getName(), this)
             .extension(new LiteAdventureExtension<>())
             .message(LiteBukkitMessages.PLAYER_ONLY, messageConfig.playerOnlyCommand)
             .message(LiteBukkitMessages.PLAYER_NOT_FOUND, messageConfig.playerNotFound)
             .commands(LiteCommandsAnnotations.of(
                 new ParcelCommand(mainGUI),
                 new ParcelLockersCommand(configService, config, noticeService),
-                new DebugCommand(parcelService, lockerManager, itemStorageManager, parcelContentManager,
+                new DebugCommand(
+                    parcelService, lockerManager, itemStorageManager, parcelContentManager,
                     noticeService, deliveryManager)
             ))
             .invalidUsage(new InvalidUsageHandlerImpl(noticeService))
-            .missingPermission(new MissingPermissionsHandlerImpl(noticeService))
-            .build();
+            .missingPermission(new MissingPermissionsHandlerImpl(noticeService));
+
+        DiscordLinkRepository discordLinkRepository = new DiscordLinkRepositoryOrmLite(databaseManager, scheduler);
+
+        if (config.discord.enabled) {
+            if (config.discord.botToken.isBlank() ||
+                config.discord.botAdminRoleId.isBlank() ||
+                config.discord.serverId.isBlank() ||
+                config.discord.channelId.isBlank() ||
+                config.discord.botAdminRoleId.isBlank()
+            ) {
+                this.getLogger().severe("Discord integration is enabled but some of the properties are not set! Disabling...");
+                server.getPluginManager().disablePlugin(this);
+                return;
+            }
+
+            this.discordClientManager = new DiscordClientManager(
+                config.discord.botToken,
+                this.getLogger()
+            );
+            this.discordClientManager.initialize();
+
+            liteCommandsBuilder.commands(
+                new DiscordLinkCommand(
+                    this.discordClientManager.getClient(),
+                    discordLinkRepository,
+                    noticeService,
+                    miniMessage,
+                    scheduler,
+                    messageConfig),
+                new DiscordUnlinkCommand(discordLinkRepository, noticeService)
+            );
+        }
+
+        this.liteCommands = liteCommandsBuilder.build();
 
         Stream.of(
             new LockerInteractionController(lockerManager, lockerGUI, scheduler),
@@ -199,21 +238,8 @@ public final class ParcelLockers extends JavaPlugin {
             new LoadUserController(userManager, server)
         ).forEach(controller -> server.getPluginManager().registerEvents(controller, this));
 
-        DiscordClientManager discordClientManager;
-
-        if (config.discord.enabled) {
-            discordClientManager = new DiscordClientManager(
-                config.discord.botToken,
-                config.discord.serverId,
-                config.discord.channelId,
-                config.discord.botAdminRoleId,
-                this.getLogger()
-            );
-            discordClientManager.initialize();
-        }
-
-        new Metrics(this, 17677);
-        new UpdaterService(this.getPluginMeta().getVersion());
+        Metrics metrics = new Metrics(this, 17677);
+        UpdaterService updaterService = new UpdaterService(this.getPluginMeta().getVersion());
 
         parcelRepository.findAll().thenAccept(optionalParcels -> optionalParcels
             .stream()
@@ -238,6 +264,10 @@ public final class ParcelLockers extends JavaPlugin {
 
         if (this.skullAPI != null) {
             this.skullAPI.shutdown();
+        }
+
+        if (this.discordClientManager != null) {
+            this.discordClientManager.shutdown();
         }
     }
 

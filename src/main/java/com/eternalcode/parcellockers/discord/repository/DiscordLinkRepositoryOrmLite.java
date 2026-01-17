@@ -6,6 +6,7 @@ import com.eternalcode.parcellockers.database.wrapper.AbstractRepositoryOrmLite;
 import com.eternalcode.parcellockers.discord.DiscordLink;
 import com.eternalcode.parcellockers.shared.exception.DatabaseException;
 import com.j256.ormlite.dao.Dao.CreateOrUpdateStatus;
+import com.j256.ormlite.stmt.DeleteBuilder;
 import com.j256.ormlite.table.TableUtils;
 import java.sql.SQLException;
 import java.util.Optional;
@@ -20,7 +21,7 @@ public class DiscordLinkRepositoryOrmLite extends AbstractRepositoryOrmLite impl
         super(databaseManager, scheduler);
 
         try {
-            TableUtils.createTableIfNotExists(databaseManager.connectionSource(), DiscordLink.class);
+            TableUtils.createTableIfNotExists(databaseManager.connectionSource(), DiscordLinkEntity.class);
         } catch (SQLException ex) {
             throw new DatabaseException("Failed to initialize DiscordLink table", ex);
         }
@@ -56,7 +57,7 @@ public class DiscordLinkRepositoryOrmLite extends AbstractRepositoryOrmLite impl
     @Override
     public CompletableFuture<Boolean> deleteByDiscordId(String discordId) {
         return this.action(DiscordLinkEntity.class, dao -> {
-            var deleteBuilder = dao.deleteBuilder();
+            DeleteBuilder<DiscordLinkEntity, Object> deleteBuilder = dao.deleteBuilder();
             deleteBuilder.where().eq(ID_COLUMN_NAME, discordId);
             return deleteBuilder.delete();
         }).thenApply(deletedRows -> deletedRows > 0);
