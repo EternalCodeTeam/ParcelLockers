@@ -66,7 +66,7 @@ dependencies {
     // eternalcode commons
     paperLibrary("com.eternalcode:eternalcode-commons-adventure:1.3.1")
     paperLibrary("com.eternalcode:eternalcode-commons-bukkit:1.3.1")
-    paperLibrary("com.eternalcode:eternalcode-commons-shared:1.3.1")
+    paperLibrary("com.eternalcode:eternalcode-commons-shared:1.3.2")
 
     // multification
     paperLibrary("com.eternalcode:multification-bukkit:1.2.4")
@@ -86,7 +86,7 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter:1.21.4")
     testImplementation("org.testcontainers:mysql:1.21.4")
     testImplementation("mysql:mysql-connector-java:8.0.33")
-    testImplementation("com.eternalcode:eternalcode-commons-shared:1.3.1")
+    testImplementation("com.eternalcode:eternalcode-commons-shared:1.3.2")
 }
 
 java {
