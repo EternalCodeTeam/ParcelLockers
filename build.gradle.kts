@@ -24,8 +24,8 @@ repositories {
 dependencies {
     // minecraft development api
     compileOnly("io.papermc.paper:paper-api:1.21.10-R0.1-SNAPSHOT")
-    paperLibrary("dev.rollczi:litecommands-bukkit:3.10.8")
-    paperLibrary("dev.rollczi:litecommands-adventure:3.10.8")
+    paperLibrary("dev.rollczi:litecommands-bukkit:3.10.9")
+    paperLibrary("dev.rollczi:litecommands-adventure:3.10.9")
 
     // skull api
     paperLibrary("dev.rollczi:liteskullapi:2.0.0")
@@ -64,9 +64,9 @@ dependencies {
     paperLibrary("com.spotify:completable-futures:0.3.6")
 
     // eternalcode commons
-    paperLibrary("com.eternalcode:eternalcode-commons-adventure:1.3.1")
-    paperLibrary("com.eternalcode:eternalcode-commons-bukkit:1.3.1")
-    paperLibrary("com.eternalcode:eternalcode-commons-shared:1.3.1")
+    paperLibrary("com.eternalcode:eternalcode-commons-adventure:1.3.2")
+    paperLibrary("com.eternalcode:eternalcode-commons-bukkit:1.3.2")
+    paperLibrary("com.eternalcode:eternalcode-commons-shared:1.3.2")
 
     // multification
     paperLibrary("com.eternalcode:multification-bukkit:1.2.4")
@@ -89,7 +89,7 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter:1.21.4")
     testImplementation("org.testcontainers:mysql:1.21.4")
     testImplementation("mysql:mysql-connector-java:8.0.33")
-    testImplementation("com.eternalcode:eternalcode-commons-shared:1.3.1")
+    testImplementation("com.eternalcode:eternalcode-commons-shared:1.3.2")
 }
 
 java {
