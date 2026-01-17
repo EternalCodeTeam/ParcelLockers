@@ -30,7 +30,7 @@ public class DiscordLinkRepositoryOrmLite extends AbstractRepositoryOrmLite impl
     @Override
     public CompletableFuture<Boolean> save(DiscordLink link) {
         return this.save(DiscordLinkEntity.class, DiscordLinkEntity.fromDomain(link))
-            .thenApply(CreateOrUpdateStatus::isCreated);
+            .thenApply(status -> status.isCreated() || status.isUpdated());
     }
 
     @Override
