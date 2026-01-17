@@ -8,6 +8,7 @@ import com.eternalcode.parcellockers.notification.NoticeService;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import dev.rollczi.litecommands.annotations.argument.Arg;
+import dev.rollczi.litecommands.annotations.async.Async;
 import dev.rollczi.litecommands.annotations.command.Command;
 import dev.rollczi.litecommands.annotations.context.Context;
 import dev.rollczi.litecommands.annotations.execute.Execute;
@@ -65,6 +66,7 @@ public class DiscordLinkCommand {
         this.messageConfig = messageConfig;
     }
 
+    @Async
     @Execute
     void linkSelf(@Context Player player, @Arg long discordId) {
         UUID playerUuid = player.getUniqueId();
@@ -130,6 +132,7 @@ public class DiscordLinkCommand {
         });
     }
 
+    @Async
     @Execute
     @Permission("parcellockers.admin")
     void linkOther(@Context CommandSender sender, @Arg Player player, @Arg long discordId) {
