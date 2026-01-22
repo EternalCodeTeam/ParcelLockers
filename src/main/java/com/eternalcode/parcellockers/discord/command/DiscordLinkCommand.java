@@ -2,8 +2,7 @@ package com.eternalcode.parcellockers.discord.command;
 
 import com.eternalcode.multification.notice.provider.NoticeProvider;
 import com.eternalcode.parcellockers.configuration.implementation.MessageConfig;
-import com.eternalcode.parcellockers.discord.DiscordLink;
-import com.eternalcode.parcellockers.discord.repository.DiscordLinkRepository;
+import com.eternalcode.parcellockers.discord.DiscordLinkService;
 import com.eternalcode.parcellockers.notification.NoticeService;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -43,7 +42,7 @@ public class DiscordLinkCommand {
     private static final Random RANDOM = new Random();
 
     private final GatewayDiscordClient client;
-    private final DiscordLinkRepository discordLinkRepository;
+    private final DiscordLinkService discordLinkService;
     private final NoticeService noticeService;
     private final MiniMessage miniMessage;
     private final MessageConfig messageConfig;
@@ -54,13 +53,13 @@ public class DiscordLinkCommand {
 
     public DiscordLinkCommand(
         GatewayDiscordClient client,
-        DiscordLinkRepository discordLinkRepository,
+        DiscordLinkService discordLinkService,
         NoticeService noticeService,
         MiniMessage miniMessage,
         MessageConfig messageConfig
     ) {
         this.client = client;
-        this.discordLinkRepository = discordLinkRepository;
+        this.discordLinkService = discordLinkService;
         this.noticeService = noticeService;
         this.miniMessage = miniMessage;
         this.messageConfig = messageConfig;
@@ -111,8 +110,7 @@ public class DiscordLinkCommand {
                             return CompletableFuture.completedFuture(null);
                         }
 
-                        DiscordLink link = new DiscordLink(playerUuid, discordIdString);
-                        return this.discordLinkRepository.save(link)
+                        return this.discordLinkService.createLink(playerUuid, discordIdString)
                             .thenAccept(success -> {
                                 if (success) {
                                     this.noticeService.viewer(sender, messages -> messages.discord.adminLinkSuccess);
@@ -215,8 +213,7 @@ public class DiscordLinkCommand {
         // Code matches - remove from cache and create the link
         this.authCodesCache.invalidate(playerUuid);
 
-        DiscordLink link = new DiscordLink(playerUuid, verificationData.discordId());
-        this.discordLinkRepository.save(link).thenAccept(success -> {
+        this.discordLinkService.createLink(playerUuid, verificationData.discordId()).thenAccept(success -> {
             if (success) {
                 this.noticeService.player(playerUuid, messages -> messages.discord.linkSuccess);
             } else {
@@ -226,7 +223,7 @@ public class DiscordLinkCommand {
     }
 
     private CompletableFuture<ValidationResult> validateAndLink(UUID playerUuid, String discordIdString) {
-        return this.discordLinkRepository.findByPlayerUuid(playerUuid)
+        return this.discordLinkService.findLinkByPlayer(playerUuid)
             .thenCompose(existingPlayerLink -> {
                 if (existingPlayerLink.isPresent()) {
                     return CompletableFuture.completedFuture(
@@ -234,7 +231,7 @@ public class DiscordLinkCommand {
                     );
                 }
 
-                return this.discordLinkRepository.findByDiscordId(discordIdString)
+                return this.discordLinkService.findLinkByDiscordId(discordIdString)
                     .thenCompose(existingDiscordLink -> {
                         if (existingDiscordLink.isPresent()) {
                             return CompletableFuture.completedFuture(

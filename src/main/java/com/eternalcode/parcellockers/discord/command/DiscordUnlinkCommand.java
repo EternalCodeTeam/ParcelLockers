@@ -1,6 +1,6 @@
 package com.eternalcode.parcellockers.discord.command;
 
-import com.eternalcode.parcellockers.discord.repository.DiscordLinkRepository;
+import com.eternalcode.parcellockers.discord.DiscordLinkService;
 import com.eternalcode.parcellockers.notification.NoticeService;
 import dev.rollczi.litecommands.annotations.argument.Arg;
 import dev.rollczi.litecommands.annotations.command.Command;
@@ -14,14 +14,14 @@ import org.bukkit.entity.Player;
 @Command(name = "parcel unlinkdiscord")
 public class DiscordUnlinkCommand {
 
-    private final DiscordLinkRepository discordLinkRepository;
+    private final DiscordLinkService discordLinkService;
     private final NoticeService noticeService;
 
     public DiscordUnlinkCommand(
-        DiscordLinkRepository discordLinkRepository,
+        DiscordLinkService discordLinkService,
         NoticeService noticeService
     ) {
-        this.discordLinkRepository = discordLinkRepository;
+        this.discordLinkService = discordLinkService;
         this.noticeService = noticeService;
     }
 
@@ -29,13 +29,13 @@ public class DiscordUnlinkCommand {
     void unlinkSelf(@Context Player player) {
         UUID playerUuid = player.getUniqueId();
 
-        this.discordLinkRepository.findByPlayerUuid(playerUuid).thenAccept(existingLink -> {
+        this.discordLinkService.findLinkByPlayer(playerUuid).thenAccept(existingLink -> {
             if (existingLink.isEmpty()) {
                 this.noticeService.player(playerUuid, messages -> messages.discord.notLinked);
                 return;
             }
 
-            this.discordLinkRepository.deleteByPlayerUuid(playerUuid).thenAccept(success -> {
+            this.discordLinkService.unlinkPlayer(playerUuid).thenAccept(success -> {
                 if (success) {
                     this.noticeService.player(playerUuid, messages -> messages.discord.unlinkSuccess);
                 } else {
@@ -50,13 +50,13 @@ public class DiscordUnlinkCommand {
     void unlinkPlayer(@Context CommandSender sender, @Arg Player targetPlayer) {
         UUID targetUuid = targetPlayer.getUniqueId();
 
-        this.discordLinkRepository.findByPlayerUuid(targetUuid).thenAccept(existingLink -> {
+        this.discordLinkService.findLinkByPlayer(targetUuid).thenAccept(existingLink -> {
             if (existingLink.isEmpty()) {
                 this.noticeService.viewer(sender, messages -> messages.discord.playerNotLinked);
                 return;
             }
 
-            this.discordLinkRepository.deleteByPlayerUuid(targetUuid).thenAccept(success -> {
+            this.discordLinkService.unlinkPlayer(targetUuid).thenAccept(success -> {
                 if (success) {
                     this.noticeService.viewer(sender, messages -> messages.discord.adminUnlinkSuccess);
                     this.noticeService.player(targetUuid, messages -> messages.discord.unlinkSuccess);
@@ -72,13 +72,13 @@ public class DiscordUnlinkCommand {
     void unlinkByDiscordId(@Context CommandSender sender, @Arg long discordId) {
         String discordIdString = String.valueOf(discordId);
 
-        this.discordLinkRepository.findByDiscordId(discordIdString).thenAccept(existingLink -> {
+        this.discordLinkService.findLinkByDiscordId(discordIdString).thenAccept(existingLink -> {
             if (existingLink.isEmpty()) {
                 this.noticeService.viewer(sender, messages -> messages.discord.discordNotLinked);
                 return;
             }
 
-            this.discordLinkRepository.deleteByDiscordId(discordIdString).thenAccept(success -> {
+            this.discordLinkService.unlinkDiscordId(discordIdString).thenAccept(success -> {
                 if (success) {
                     this.noticeService.viewer(sender, messages -> messages.discord.adminUnlinkByDiscordSuccess);
                 } else {

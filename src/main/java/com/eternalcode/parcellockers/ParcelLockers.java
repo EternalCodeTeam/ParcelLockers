@@ -17,6 +17,8 @@ import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.eternalcode.parcellockers.delivery.DeliveryManager;
 import com.eternalcode.parcellockers.delivery.repository.DeliveryRepositoryOrmLite;
 import com.eternalcode.parcellockers.discord.DiscordClientManager;
+import com.eternalcode.parcellockers.discord.DiscordLinkService;
+import com.eternalcode.parcellockers.discord.DiscordLinkServiceImpl;
 import com.eternalcode.parcellockers.discord.command.DiscordLinkCommand;
 import com.eternalcode.parcellockers.discord.command.DiscordUnlinkCommand;
 import com.eternalcode.parcellockers.discord.repository.DiscordLinkRepository;
@@ -197,6 +199,7 @@ public final class ParcelLockers extends JavaPlugin {
             .missingPermission(new MissingPermissionsHandlerImpl(noticeService));
 
         DiscordLinkRepository discordLinkRepository = new DiscordLinkRepositoryOrmLite(databaseManager, scheduler);
+        DiscordLinkService discordLinkService = new DiscordLinkServiceImpl(discordLinkRepository);
 
         if (config.discord.enabled) {
             if (config.discord.botToken.isBlank() ||
@@ -218,11 +221,11 @@ public final class ParcelLockers extends JavaPlugin {
             liteCommandsBuilder.commands(
                 new DiscordLinkCommand(
                     this.discordClientManager.getClient(),
-                    discordLinkRepository,
+                    discordLinkService,
                     noticeService,
                     miniMessage,
                     messageConfig),
-                new DiscordUnlinkCommand(discordLinkRepository, noticeService)
+                new DiscordUnlinkCommand(discordLinkService, noticeService)
             );
         }
 
