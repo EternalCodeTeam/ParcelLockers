@@ -1,0 +1,54 @@
+package com.eternalcode.parcellockers.discord.command;
+
+import com.eternalcode.parcellockers.discord.DiscordSrvLinkService;
+import com.eternalcode.parcellockers.notification.NoticeService;
+import dev.rollczi.litecommands.annotations.command.Command;
+import dev.rollczi.litecommands.annotations.context.Context;
+import dev.rollczi.litecommands.annotations.execute.Execute;
+import java.util.Optional;
+import java.util.UUID;
+import org.bukkit.entity.Player;
+
+/**
+ * Command for linking Discord accounts when DiscordSRV is installed.
+ * Redirects users to use DiscordSRV's linking system.
+ */
+@Command(name = "parcel linkdiscord")
+public class DiscordSrvLinkCommand {
+
+    private final DiscordSrvLinkService discordSrvLinkService;
+    private final NoticeService noticeService;
+
+    public DiscordSrvLinkCommand(
+        DiscordSrvLinkService discordSrvLinkService,
+        NoticeService noticeService
+    ) {
+        this.discordSrvLinkService = discordSrvLinkService;
+        this.noticeService = noticeService;
+    }
+
+    @Execute
+    void linkSelf(@Context Player player) {
+        UUID playerUuid = player.getUniqueId();
+
+        this.discordSrvLinkService.findLinkByPlayer(playerUuid).thenAccept(existingLink -> {
+            if (existingLink.isPresent()) {
+                this.noticeService.player(playerUuid, messages -> messages.discord.discordSrvAlreadyLinked);
+                return;
+            }
+
+            Optional<String> linkingCode = this.discordSrvLinkService.getLinkingCode(playerUuid);
+            if (linkingCode.isEmpty()) {
+                // This shouldn't happen if the player is not linked, but handle it gracefully
+                this.noticeService.player(playerUuid, messages -> messages.discord.discordSrvAlreadyLinked);
+                return;
+            }
+
+            this.noticeService.create()
+                .notice(messages -> messages.discord.discordSrvLinkRedirect)
+                .placeholder("{CODE}", linkingCode.get())
+                .player(playerUuid)
+                .send();
+        });
+    }
+}

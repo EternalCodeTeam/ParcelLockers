@@ -19,6 +19,7 @@ repositories {
     maven("https://repo.papermc.io/repository/maven-public/")
     maven("https://repo.eternalcode.pl/releases")
     maven("https://storehouse.okaeri.eu/repository/maven-public/")
+    maven("https://nexus.scarsz.me/content/groups/public/") // DiscordSRV
 }
 
 dependencies {
@@ -81,6 +82,9 @@ dependencies {
     // discord integration library
     paperLibrary("com.discord4j:discord4j-core:3.3.0")
 
+    // discordsrv (optional integration)
+    compileOnly("com.discordsrv:discordsrv:1.29.0")
+
     testImplementation("org.junit.jupiter:junit-jupiter-api:6.0.2")
     testImplementation("org.junit.jupiter:junit-jupiter-params:6.0.2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:6.0.2")
@@ -109,6 +113,10 @@ paper {
     serverDependencies {
         register("Vault") {
             required = true
+            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
+        }
+        register("DiscordSRV") {
+            required = false
             load = PaperPluginDescription.RelativeLoadOrder.BEFORE
         }
     }

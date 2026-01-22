@@ -256,5 +256,22 @@ public class MessageConfig extends OkaeriConfig {
         @Comment({"", "# The message sent to the Discord user via DM" })
         @Comment("# Placeholders: {CODE} - the verification code, {PLAYER} - the Minecraft player name")
         public String discordDmVerificationMessage = "**📦 ParcelLockers Verification**\n\nPlayer **{PLAYER}** is trying to link their Minecraft account to your Discord account.\n\nYour verification code is: **{CODE}**\n\nThis code will expire in 2 minutes.";
+
+        @Comment({"", "# DiscordSRV integration messages" })
+        @Comment("# These messages are shown when DiscordSRV is installed and handles account linking")
+        public Notice discordSrvLinkRedirect = Notice.builder()
+            .chat("&6⚠ &eTo link your Discord account, use the DiscordSRV linking system.")
+            .chat("&6⚠ &eYour linking code is: &a{CODE}")
+            .chat("&6⚠ &eSend this code to the Discord bot in a private message.")
+            .sound(SoundEventKeys.BLOCK_NOTE_BLOCK_CHIME)
+            .build();
+        public Notice discordSrvAlreadyLinked = Notice.builder()
+            .chat("&2✔ &aYour account is already linked via DiscordSRV!")
+            .sound(SoundEventKeys.ENTITY_VILLAGER_YES)
+            .build();
+        public Notice discordSrvUnlinkRedirect = Notice.builder()
+            .chat("&6⚠ &eTo unlink your Discord account, please use the DiscordSRV unlinking system.")
+            .sound(SoundEventKeys.BLOCK_NOTE_BLOCK_CHIME)
+            .build();
     }
 }

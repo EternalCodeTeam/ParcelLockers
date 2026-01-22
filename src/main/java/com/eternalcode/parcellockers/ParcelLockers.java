@@ -19,7 +19,10 @@ import com.eternalcode.parcellockers.delivery.repository.DeliveryRepositoryOrmLi
 import com.eternalcode.parcellockers.discord.DiscordClientManager;
 import com.eternalcode.parcellockers.discord.DiscordLinkService;
 import com.eternalcode.parcellockers.discord.DiscordLinkServiceImpl;
+import com.eternalcode.parcellockers.discord.DiscordSrvLinkService;
 import com.eternalcode.parcellockers.discord.command.DiscordLinkCommand;
+import com.eternalcode.parcellockers.discord.command.DiscordSrvLinkCommand;
+import com.eternalcode.parcellockers.discord.command.DiscordSrvUnlinkCommand;
 import com.eternalcode.parcellockers.discord.command.DiscordUnlinkCommand;
 import com.eternalcode.parcellockers.discord.repository.DiscordLinkRepository;
 import com.eternalcode.parcellockers.discord.repository.DiscordLinkRepositoryOrmLite;
@@ -201,7 +204,19 @@ public final class ParcelLockers extends JavaPlugin {
         DiscordLinkRepository discordLinkRepository = new DiscordLinkRepositoryOrmLite(databaseManager, scheduler);
         DiscordLinkService discordLinkService = new DiscordLinkServiceImpl(discordLinkRepository);
 
-        if (config.discord.enabled) {
+        // Check if DiscordSRV is installed and available
+        boolean discordSrvAvailable = server.getPluginManager().isPluginEnabled("DiscordSRV")
+            && DiscordSrvLinkService.isAvailable();
+
+        if (discordSrvAvailable) {
+            this.getLogger().info("DiscordSRV detected! Using DiscordSRV for account linking.");
+            DiscordSrvLinkService discordSrvLinkService = new DiscordSrvLinkService();
+
+            liteCommandsBuilder.commands(
+                new DiscordSrvLinkCommand(discordSrvLinkService, noticeService),
+                new DiscordSrvUnlinkCommand(discordSrvLinkService, noticeService)
+            );
+        } else if (config.discord.enabled) {
             if (config.discord.botToken.isBlank() ||
                 config.discord.serverId.isBlank() ||
                 config.discord.channelId.isBlank() ||
