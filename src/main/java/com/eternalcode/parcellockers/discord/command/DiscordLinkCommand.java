@@ -22,9 +22,9 @@ import io.papermc.paper.registry.data.dialog.action.DialogAction;
 import io.papermc.paper.registry.data.dialog.input.DialogInput;
 import io.papermc.paper.registry.data.dialog.type.DialogType;
 import java.util.List;
-import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.event.ClickCallback;
@@ -45,8 +45,6 @@ import reactor.core.publisher.Mono;
  */
 @Command(name = "parcel linkdiscord")
 public class DiscordLinkCommand {
-
-    private static final Random RANDOM = new Random();
 
     private final GatewayDiscordClient client;
     private final DiscordLinkService discordLinkService;
