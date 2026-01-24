@@ -268,7 +268,7 @@ public class DiscordLinkCommand {
     }
 
     private String generateVerificationCode() {
-        int code = 1000 + RANDOM.nextInt(9000); // generates 1000-9999
+        int code = ThreadLocalRandom.current().nextInt(1000, 10000);
         return String.valueOf(code);
     }
 
