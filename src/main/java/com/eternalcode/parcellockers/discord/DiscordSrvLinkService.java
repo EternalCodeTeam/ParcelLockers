@@ -13,18 +13,6 @@ import java.util.concurrent.CompletableFuture;
  */
 public class DiscordSrvLinkService implements DiscordLinkService {
 
-    /**
-     * Checks if DiscordSRV is properly initialized and ready.
-     */
-    public static boolean isAvailable() {
-        try {
-            return DiscordSRV.getPlugin() != null
-                && DiscordSRV.getPlugin().getAccountLinkManager() != null;
-        } catch (Exception | NoClassDefFoundError e) {
-            return false;
-        }
-    }
-
     @Override
     public CompletableFuture<Optional<DiscordLink>> findLinkByPlayer(UUID playerUuid) {
         return CompletableFuture.supplyAsync(() -> {

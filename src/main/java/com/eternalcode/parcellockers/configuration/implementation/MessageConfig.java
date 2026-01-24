@@ -257,6 +257,10 @@ public class MessageConfig extends OkaeriConfig {
         @Comment("# Placeholders: {CODE} - the verification code, {PLAYER} - the Minecraft player name")
         public String discordDmVerificationMessage = "**📦 ParcelLockers Verification**\n\nPlayer **{PLAYER}** is trying to link their Minecraft account to your Discord account.\n\nYour verification code is: **{CODE}**\n\nThis code will expire in 2 minutes.";
 
+        @Comment({"", "# The message sent to the Discord user when a parcel is delivered" })
+        @Comment("# Placeholders: {PARCEL_NAME}, {SENDER}, {RECEIVER}, {DESCRIPTION}, {SIZE}, {PRIORITY}")
+        public String parcelDeliveryNotification = "**📦 Parcel Delivered!**\n\nYour parcel **{PARCEL_NAME}** has been delivered!\n\n**From:** {SENDER}\n**Size:** {SIZE}\n**Priority:** {PRIORITY}\n**Description:** {DESCRIPTION}";
+
         @Comment({"", "# DiscordSRV integration messages" })
         @Comment("# These messages are shown when DiscordSRV is installed and handles account linking")
         public Notice discordSrvLinkRedirect = Notice.builder()

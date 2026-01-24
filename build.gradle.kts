@@ -83,7 +83,7 @@ dependencies {
     paperLibrary("com.discord4j:discord4j-core:3.3.0")
 
     // discordsrv (optional integration)
-    compileOnly("com.discordsrv:discordsrv:1.29.0")
+    compileOnly("com.discordsrv:discordsrv:1.30.4")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:6.0.2")
     testImplementation("org.junit.jupiter:junit-jupiter-params:6.0.2")
@@ -135,6 +135,7 @@ tasks {
         downloadPlugins.modrinth("luckperms", "v5.5.17-bukkit")
         downloadPlugins.modrinth("vaultunlocked", "2.17.0")
         downloadPlugins.modrinth("essentialsx", "2.21.2")
+        downloadPlugins.modrinth("discordsrv", "1.30.4")
     }
 
     test {

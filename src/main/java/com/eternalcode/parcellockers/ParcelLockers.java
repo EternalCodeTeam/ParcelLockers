@@ -24,6 +24,7 @@ import com.eternalcode.parcellockers.discord.command.DiscordLinkCommand;
 import com.eternalcode.parcellockers.discord.command.DiscordSrvLinkCommand;
 import com.eternalcode.parcellockers.discord.command.DiscordSrvUnlinkCommand;
 import com.eternalcode.parcellockers.discord.command.DiscordUnlinkCommand;
+import com.eternalcode.parcellockers.discord.controller.ParcelDeliverNotificationController;
 import com.eternalcode.parcellockers.discord.repository.DiscordLinkRepository;
 import com.eternalcode.parcellockers.discord.repository.DiscordLinkRepositoryOrmLite;
 import com.eternalcode.parcellockers.gui.GuiManager;
@@ -204,43 +205,52 @@ public final class ParcelLockers extends JavaPlugin {
         DiscordLinkRepository discordLinkRepository = new DiscordLinkRepositoryOrmLite(databaseManager, scheduler);
         DiscordLinkService discordLinkService = new DiscordLinkServiceImpl(discordLinkRepository);
 
-        // Check if DiscordSRV is installed and available
-        boolean discordSrvAvailable = server.getPluginManager().isPluginEnabled("DiscordSRV")
-            && DiscordSrvLinkService.isAvailable();
+        if (config.discord.enabled) {
+            if (server.getPluginManager().isPluginEnabled("DiscordSRV")) {
+                this.getLogger().info("DiscordSRV detected! Using DiscordSRV for account linking.");
+                DiscordSrvLinkService discordSrvLinkService = new DiscordSrvLinkService();
 
-        if (discordSrvAvailable) {
-            this.getLogger().info("DiscordSRV detected! Using DiscordSRV for account linking.");
-            DiscordSrvLinkService discordSrvLinkService = new DiscordSrvLinkService();
+                liteCommandsBuilder.commands(
+                    new DiscordSrvLinkCommand(discordSrvLinkService, noticeService),
+                    new DiscordSrvUnlinkCommand(discordSrvLinkService, noticeService)
+                );
+            } else if (config.discord.enabled) {
+                if (config.discord.botToken.isBlank() ||
+                    config.discord.serverId.isBlank() ||
+                    config.discord.channelId.isBlank() ||
+                    config.discord.botAdminRoleId.isBlank()
+                ) {
+                    this.getLogger()
+                        .severe("Discord integration is enabled but some of the properties are not set! Disabling...");
+                    server.getPluginManager().disablePlugin(this);
+                    return;
+                }
 
-            liteCommandsBuilder.commands(
-                new DiscordSrvLinkCommand(discordSrvLinkService, noticeService),
-                new DiscordSrvUnlinkCommand(discordSrvLinkService, noticeService)
-            );
-        } else if (config.discord.enabled) {
-            if (config.discord.botToken.isBlank() ||
-                config.discord.serverId.isBlank() ||
-                config.discord.channelId.isBlank() ||
-                config.discord.botAdminRoleId.isBlank()
-            ) {
-                this.getLogger().severe("Discord integration is enabled but some of the properties are not set! Disabling...");
-                server.getPluginManager().disablePlugin(this);
-                return;
+                this.discordClientManager = new DiscordClientManager(
+                    config.discord.botToken,
+                    this.getLogger()
+                );
+                this.discordClientManager.initialize();
+
+                liteCommandsBuilder.commands(
+                    new DiscordLinkCommand(
+                        this.discordClientManager.getClient(),
+                        discordLinkService,
+                        noticeService,
+                        miniMessage,
+                        messageConfig),
+                    new DiscordUnlinkCommand(discordLinkService, noticeService)
+                );
             }
-
-            this.discordClientManager = new DiscordClientManager(
-                config.discord.botToken,
-                this.getLogger()
-            );
-            this.discordClientManager.initialize();
-
-            liteCommandsBuilder.commands(
-                new DiscordLinkCommand(
+            server.getPluginManager().registerEvents(
+                new ParcelDeliverNotificationController(
                     this.discordClientManager.getClient(),
                     discordLinkService,
-                    noticeService,
-                    miniMessage,
-                    messageConfig),
-                new DiscordUnlinkCommand(discordLinkService, noticeService)
+                    userManager,
+                    messageConfig,
+                    this.getLogger()
+                ),
+                this
             );
         }
 
