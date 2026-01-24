@@ -246,7 +246,16 @@ public class DiscordLinkCommand {
                             );
                         }
 
-                        return this.client.getUserById(Snowflake.of(Long.parseLong(discordIdString)))
+                        final long discordIdLong;
+                        try {
+                            discordIdLong = Long.parseLong(discordIdString);
+                        } catch (NumberFormatException e) {
+                            return CompletableFuture.completedFuture(
+                                ValidationResult.error(messages -> messages.discord.userNotFound)
+                            );
+                        }
+
+                        return this.client.getUserById(Snowflake.of(discordIdLong))
                             .map(ValidationResult::success)
                             .onErrorResume(error -> Mono.just(
                                 ValidationResult.error(messages -> messages.discord.userNotFound)
