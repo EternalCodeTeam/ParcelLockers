@@ -13,7 +13,9 @@ public class ParcelSendEvent extends Event implements Cancellable {
     private final Parcel parcel;
     private boolean cancelled;
 
-    public ParcelSendEvent(Parcel parcel) {this.parcel = parcel;
+    public ParcelSendEvent(Parcel parcel) {
+        super(true);
+        this.parcel = parcel;
     }
 
     public static HandlerList getHandlerList() {
