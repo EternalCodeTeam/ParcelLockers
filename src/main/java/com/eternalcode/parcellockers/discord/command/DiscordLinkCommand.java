@@ -213,6 +213,8 @@ public class DiscordLinkCommand {
         }
 
         if (!verificationData.code().equals(enteredCode)) {
+            // Invalidate the verification code after a failed attempt to prevent repeated guessing
+            this.authCodesCache.invalidate(playerUuid);
             this.noticeService.player(playerUuid, messages -> messages.discord.invalidCode);
             return;
         }
