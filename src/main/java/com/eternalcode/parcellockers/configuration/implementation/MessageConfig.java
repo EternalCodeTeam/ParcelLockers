@@ -213,7 +213,7 @@ public class MessageConfig extends OkaeriConfig {
             .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
             .build();
         public Notice invalidCode = Notice.builder()
-            .chat("&4✘ &cInvalid verification code. Please try again in 2 minutes.")
+            .chat("&4✘ &cInvalid verification code. Please run the command again to restart the verification process.")
             .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
             .build();
         public Notice linkSuccess = Notice.builder()
