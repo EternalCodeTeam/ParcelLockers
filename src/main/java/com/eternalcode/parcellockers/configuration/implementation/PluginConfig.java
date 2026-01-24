@@ -368,14 +368,5 @@ public class PluginConfig extends OkaeriConfig {
 
         @Comment("# The Discord bot token.")
         public String botToken = System.getenv("DISCORD_BOT_TOKEN");
-
-        @Comment("# The Discord server ID.")
-        public String serverId = "1179117429301977251";
-
-        @Comment("# The Discord channel ID for parcel notifications.")
-        public String channelId = "1317827115147853834";
-
-        @Comment("# The Discord role ID for bot administrators.")
-        public String botAdminRoleId = "1317589501169893427";
     }
 }

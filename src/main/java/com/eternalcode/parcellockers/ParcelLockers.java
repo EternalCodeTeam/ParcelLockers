@@ -223,11 +223,7 @@ public final class ParcelLockers extends JavaPlugin {
                     new DiscordSrvUnlinkCommand(discordSrvLinkService, noticeService)
                 );
             } else {
-                if ((discordSettings.botToken == null || discordSettings.botToken.isBlank()) ||
-                    discordSettings.serverId.isBlank() ||
-                    discordSettings.channelId.isBlank() ||
-                    discordSettings.botAdminRoleId.isBlank()
-                ) {
+                if (config.discord.botToken == null || config.discord.botToken.isBlank()) {
                     this.getLogger()
                         .severe("Discord integration is enabled but some of the properties are not set! Disabling...");
                     server.getPluginManager().disablePlugin(this);
