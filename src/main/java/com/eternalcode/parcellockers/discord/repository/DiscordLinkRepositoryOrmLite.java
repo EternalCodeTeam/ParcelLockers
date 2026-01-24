@@ -5,7 +5,6 @@ import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.eternalcode.parcellockers.database.wrapper.AbstractRepositoryOrmLite;
 import com.eternalcode.parcellockers.discord.DiscordLink;
 import com.eternalcode.parcellockers.shared.exception.DatabaseException;
-import com.j256.ormlite.dao.Dao.CreateOrUpdateStatus;
 import com.j256.ormlite.stmt.DeleteBuilder;
 import com.j256.ormlite.table.TableUtils;
 import java.sql.SQLException;
@@ -43,7 +42,8 @@ public class DiscordLinkRepositoryOrmLite extends AbstractRepositoryOrmLite impl
     public CompletableFuture<Optional<DiscordLink>> findByDiscordId(String discordId) {
         return this.action(DiscordLinkEntity.class, dao -> {
             var queryBuilder = dao.queryBuilder()
-            .where().eq(ID_COLUMN_NAME, discordId);
+                .where()
+                .eq(ID_COLUMN_NAME, discordId);
             return dao.queryForFirst(queryBuilder.prepare());
         }).thenApply(entity -> Optional.ofNullable(entity).map(DiscordLinkEntity::toDomain));
     }

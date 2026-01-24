@@ -3,7 +3,6 @@ package com.eternalcode.parcellockers.discord;
 import discord4j.core.DiscordClient;
 import discord4j.core.GatewayDiscordClient;
 import java.util.logging.Logger;
-import reactor.core.scheduler.Schedulers;
 
 public class DiscordClientManager {
 
@@ -19,18 +18,20 @@ public class DiscordClientManager {
 
     public void initialize() {
         this.logger.info("Discord integration is enabled. Logging in to Discord...");
-        DiscordClient.create(this.token)
-            .login()
-            .subscribeOn(Schedulers.boundedElastic())
-            .doOnSuccess(client -> {
-                this.client = client;
+        try {
+            GatewayDiscordClient discordClient = DiscordClient.create(this.token)
+                .login()
+                .block();
+            if (discordClient != null) {
+                this.client = discordClient;
                 this.logger.info("Successfully logged in to Discord.");
-            })
-            .doOnError(error -> {
-                this.logger.severe("Failed to log in to Discord: " + error.getMessage());
-                error.printStackTrace();
-            })
-            .subscribe();
+            } else {
+                this.logger.severe("Failed to log in to Discord: login returned null client.");
+            }
+        } catch (Exception exception) {
+            this.logger.severe("Failed to log in to Discord: " + exception.getMessage());
+            exception.printStackTrace();
+        }
     }
 
     public void shutdown() {
