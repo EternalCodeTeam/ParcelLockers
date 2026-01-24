@@ -59,7 +59,7 @@ public class ParcelDeliverNotificationController implements Listener {
                 .replace("{PARCEL_NAME}", parcel.name())
                 .replace("{SENDER}", senderName)
                 .replace("{RECEIVER}", receiverName)
-                .replace("{DESCRIPTION}", parcel.description() != null ? parcel.description() : "")
+                .replace("{DESCRIPTION}", parcel.description() != null ? parcel.description() : "No description")
                 .replace("{SIZE}", parcel.size().name())
                 .replace("{PRIORITY}", parcel.priority() ? "Yes" : "No");
 
