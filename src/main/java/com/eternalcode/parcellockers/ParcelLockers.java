@@ -206,7 +206,6 @@ public final class ParcelLockers extends JavaPlugin {
             .invalidUsage(new InvalidUsageHandlerImpl(noticeService))
             .missingPermission(new MissingPermissionsHandlerImpl(noticeService));
 
-        DiscordLinkRepository discordLinkRepository = new DiscordLinkRepositoryOrmLite(databaseManager, scheduler);
         DiscordSettings discordSettings = config.discord;
         if (discordSettings.enabled) {
             DiscordNotificationService notificationService;
@@ -236,6 +235,7 @@ public final class ParcelLockers extends JavaPlugin {
                 );
                 this.discordClientManager.initialize();
 
+                DiscordLinkRepository discordLinkRepository = new DiscordLinkRepositoryOrmLite(databaseManager, scheduler);
                 activeLinkService = new DiscordFallbackLinkService(discordLinkRepository);
                 notificationService = new Discord4JNotificationService(
                     this.discordClientManager.getClient(),
