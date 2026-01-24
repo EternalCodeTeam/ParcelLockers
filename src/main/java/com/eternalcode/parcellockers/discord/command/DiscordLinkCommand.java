@@ -35,7 +35,14 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import reactor.core.publisher.Mono;
 
-@SuppressWarnings("UnstableApiUsage")
+/**
+ * Command responsible for linking a Minecraft account with a Discord account.
+ * <p>
+ * This implementation relies on Paper's Dialog API ({@code io.papermc.paper.dialog}),
+ * which is marked as unstable and may change or be removed in future Paper versions.
+ * If the Dialog API becomes unavailable, this command may need to be updated or
+ * replaced with a more stable flow (for example, chat-based verification).
+ */
 @Command(name = "parcel linkdiscord")
 public class DiscordLinkCommand {
 
