@@ -5,11 +5,11 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-public class DiscordLinkServiceImpl implements DiscordLinkService {
+public class DiscordFallbackLinkService implements DiscordLinkService {
 
     private final DiscordLinkRepository repository;
 
-    public DiscordLinkServiceImpl(DiscordLinkRepository repository) {
+    public DiscordFallbackLinkService(DiscordLinkRepository repository) {
         this.repository = repository;
     }
 

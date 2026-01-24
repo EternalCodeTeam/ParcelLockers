@@ -10,6 +10,7 @@ import com.eternalcode.parcellockers.command.handler.MissingPermissionsHandlerIm
 import com.eternalcode.parcellockers.configuration.ConfigService;
 import com.eternalcode.parcellockers.configuration.implementation.MessageConfig;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig.DiscordSettings;
 import com.eternalcode.parcellockers.content.ParcelContentManager;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepositoryOrmLite;
@@ -17,14 +18,17 @@ import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.eternalcode.parcellockers.delivery.DeliveryManager;
 import com.eternalcode.parcellockers.delivery.repository.DeliveryRepositoryOrmLite;
 import com.eternalcode.parcellockers.discord.DiscordClientManager;
+import com.eternalcode.parcellockers.discord.DiscordFallbackLinkService;
 import com.eternalcode.parcellockers.discord.DiscordLinkService;
-import com.eternalcode.parcellockers.discord.DiscordLinkServiceImpl;
 import com.eternalcode.parcellockers.discord.DiscordSrvLinkService;
 import com.eternalcode.parcellockers.discord.command.DiscordLinkCommand;
 import com.eternalcode.parcellockers.discord.command.DiscordSrvLinkCommand;
 import com.eternalcode.parcellockers.discord.command.DiscordSrvUnlinkCommand;
 import com.eternalcode.parcellockers.discord.command.DiscordUnlinkCommand;
 import com.eternalcode.parcellockers.discord.controller.ParcelDeliverNotificationController;
+import com.eternalcode.parcellockers.discord.notification.Discord4JNotificationService;
+import com.eternalcode.parcellockers.discord.notification.DiscordNotificationService;
+import com.eternalcode.parcellockers.discord.notification.DiscordSrvNotificationService;
 import com.eternalcode.parcellockers.discord.repository.DiscordLinkRepository;
 import com.eternalcode.parcellockers.discord.repository.DiscordLinkRepositoryOrmLite;
 import com.eternalcode.parcellockers.gui.GuiManager;
@@ -203,22 +207,26 @@ public final class ParcelLockers extends JavaPlugin {
             .missingPermission(new MissingPermissionsHandlerImpl(noticeService));
 
         DiscordLinkRepository discordLinkRepository = new DiscordLinkRepositoryOrmLite(databaseManager, scheduler);
-        DiscordLinkService discordLinkService = new DiscordLinkServiceImpl(discordLinkRepository);
+        DiscordSettings discordSettings = config.discord;
+        if (discordSettings.enabled) {
+            DiscordNotificationService notificationService;
+            DiscordLinkService activeLinkService;
 
-        if (config.discord.enabled) {
             if (server.getPluginManager().isPluginEnabled("DiscordSRV")) {
                 this.getLogger().info("DiscordSRV detected! Using DiscordSRV for account linking.");
                 DiscordSrvLinkService discordSrvLinkService = new DiscordSrvLinkService();
+                activeLinkService = discordSrvLinkService;
+                notificationService = new DiscordSrvNotificationService(this.getLogger());
 
                 liteCommandsBuilder.commands(
                     new DiscordSrvLinkCommand(discordSrvLinkService, noticeService),
                     new DiscordSrvUnlinkCommand(discordSrvLinkService, noticeService)
                 );
-            } else if (config.discord.enabled) {
-                if (config.discord.botToken.isBlank() ||
-                    config.discord.serverId.isBlank() ||
-                    config.discord.channelId.isBlank() ||
-                    config.discord.botAdminRoleId.isBlank()
+            } else {
+                if ((discordSettings.botToken == null || discordSettings.botToken.isBlank()) ||
+                    discordSettings.serverId.isBlank() ||
+                    discordSettings.channelId.isBlank() ||
+                    discordSettings.botAdminRoleId.isBlank()
                 ) {
                     this.getLogger()
                         .severe("Discord integration is enabled but some of the properties are not set! Disabling...");
@@ -227,28 +235,34 @@ public final class ParcelLockers extends JavaPlugin {
                 }
 
                 this.discordClientManager = new DiscordClientManager(
-                    config.discord.botToken,
+                    discordSettings.botToken,
                     this.getLogger()
                 );
                 this.discordClientManager.initialize();
 
+                activeLinkService = new DiscordFallbackLinkService(discordLinkRepository);
+                notificationService = new Discord4JNotificationService(
+                    this.discordClientManager.getClient(),
+                    this.getLogger()
+                );
+
                 liteCommandsBuilder.commands(
                     new DiscordLinkCommand(
                         this.discordClientManager.getClient(),
-                        discordLinkService,
+                        activeLinkService,
                         noticeService,
                         miniMessage,
                         messageConfig),
-                    new DiscordUnlinkCommand(discordLinkService, noticeService)
+                    new DiscordUnlinkCommand(activeLinkService, noticeService)
                 );
             }
+
             server.getPluginManager().registerEvents(
                 new ParcelDeliverNotificationController(
-                    this.discordClientManager.getClient(),
-                    discordLinkService,
+                    notificationService,
+                    activeLinkService,
                     userManager,
-                    messageConfig,
-                    this.getLogger()
+                    messageConfig
                 ),
                 this
             );
