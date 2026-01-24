@@ -6,12 +6,20 @@ import github.scarsz.discordsrv.util.DiscordUtil;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * DiscordSRV-based implementation of DiscordLinkService.
  * Delegates account linking functionality to DiscordSRV plugin.
  */
 public class DiscordSrvLinkService implements DiscordLinkService {
+
+    private final Logger logger;
+
+    public DiscordSrvLinkService(Logger logger) {
+        this.logger = logger;
+    }
 
     @Override
     public CompletableFuture<Optional<DiscordLink>> findLinkByPlayer(UUID playerUuid) {
@@ -42,6 +50,7 @@ public class DiscordSrvLinkService implements DiscordLinkService {
                 DiscordSRV.getPlugin().getAccountLinkManager().link(discordId, playerUuid);
                 return true;
             } catch (Exception e) {
+                this.logger.log(Level.WARNING, "Failed to create DiscordSRV link", e);
                 return false;
             }
         });
@@ -53,7 +62,8 @@ public class DiscordSrvLinkService implements DiscordLinkService {
             try {
                 DiscordSRV.getPlugin().getAccountLinkManager().unlink(playerUuid);
                 return true;
-            } catch (Exception e) {
+            } catch (Exception exception) {
+                this.logger.log(Level.WARNING, "Failed to unlink DiscordSRV player", exception);
                 return false;
             }
         });
@@ -69,7 +79,8 @@ public class DiscordSrvLinkService implements DiscordLinkService {
                 }
                 DiscordSRV.getPlugin().getAccountLinkManager().unlink(playerUuid);
                 return true;
-            } catch (Exception e) {
+            } catch (Exception exception) {
+                this.logger.log(Level.WARNING, "Failed to unlink DiscordSRV user by Discord ID", exception);
                 return false;
             }
         });

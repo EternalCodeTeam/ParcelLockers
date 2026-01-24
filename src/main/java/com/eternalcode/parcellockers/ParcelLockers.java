@@ -213,7 +213,7 @@ public final class ParcelLockers extends JavaPlugin {
 
             if (server.getPluginManager().isPluginEnabled("DiscordSRV")) {
                 this.getLogger().info("DiscordSRV detected! Using DiscordSRV for account linking.");
-                DiscordSrvLinkService discordSrvLinkService = new DiscordSrvLinkService();
+                DiscordSrvLinkService discordSrvLinkService = new DiscordSrvLinkService(this.getLogger());
                 activeLinkService = discordSrvLinkService;
                 notificationService = new DiscordSrvNotificationService(this.getLogger());
 
