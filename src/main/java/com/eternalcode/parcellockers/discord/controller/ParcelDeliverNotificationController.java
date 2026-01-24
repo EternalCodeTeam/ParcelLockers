@@ -61,7 +61,7 @@ public class ParcelDeliverNotificationController implements Listener {
                 .replace("{RECEIVER}", receiverName)
                 .replace("{DESCRIPTION}", parcel.description() != null ? parcel.description() : "No description")
                 .replace("{SIZE}", parcel.size().name())
-                .replace("{PRIORITY}", parcel.priority() ? "Yes" : "No");
+                .replace("{PRIORITY}", parcel.priority() ? "🔴 High Priority" : "⚪ Normal Priority");
 
             this.notificationService.sendPrivateMessage(discordId, message);
 
