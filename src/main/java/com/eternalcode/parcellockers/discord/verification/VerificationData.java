@@ -6,4 +6,4 @@ package com.eternalcode.parcellockers.discord.verification;
  * @param discordId the Discord user ID
  * @param code the verification code
  */
-public record VerificationData(String discordId, String code) {}
+record VerificationData(String discordId, String code) {}

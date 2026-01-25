@@ -20,12 +20,12 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
  * This implementation relies on Paper's Dialog API ({@code io.papermc.paper.dialog}),
  * which is marked as unstable and may change or be removed in future Paper versions.
  */
-public class DiscordVerificationDialogFactory {
+class DiscordVerificationDialogFactory {
 
     private final MiniMessage miniMessage;
     private final MessageConfig messageConfig;
 
-    public DiscordVerificationDialogFactory(MiniMessage miniMessage, MessageConfig messageConfig) {
+    DiscordVerificationDialogFactory(MiniMessage miniMessage, MessageConfig messageConfig) {
         this.miniMessage = miniMessage;
         this.messageConfig = messageConfig;
     }
@@ -37,21 +37,16 @@ public class DiscordVerificationDialogFactory {
      * @param onCancel callback when the user clicks cancel
      * @return the created dialog
      */
-    public Dialog create(BiConsumer<DialogResponseView, String> onVerify, Runnable onCancel) {
+    Dialog create(BiConsumer<DialogResponseView, String> onVerify, Runnable onCancel) {
         return Dialog.create(builder -> builder.empty()
             .base(DialogBase.builder(this.miniMessage.deserialize(this.messageConfig.discord.verificationDialogTitle))
                 .canCloseWithEscape(false)
-                .inputs(List.of(
-                    DialogInput.text("code", this.miniMessage.deserialize(this.messageConfig.discord.verificationDialogPlaceholder))
-                        .build()
-                ))
-                .build()
-            )
-            .type(DialogType.confirmation(
-                this.createVerifyButton(onVerify),
-                this.createCancelButton(onCancel)
-            ))
-        );
+                .inputs(List.of(DialogInput.text(
+                        "code",
+                        this.miniMessage.deserialize(this.messageConfig.discord.verificationDialogPlaceholder))
+                    .build()))
+                .build())
+            .type(DialogType.confirmation(this.createVerifyButton(onVerify), this.createCancelButton(onCancel))));
     }
 
     private ActionButton createVerifyButton(BiConsumer<DialogResponseView, String> onVerify) {
@@ -59,14 +54,11 @@ public class DiscordVerificationDialogFactory {
             this.miniMessage.deserialize("<dark_green>Verify"),
             this.miniMessage.deserialize("<green>Click to verify your Discord account"),
             200,
-            DialogAction.customClick((DialogResponseView view, Audience audience) -> {
-                String enteredCode = view.getText("code");
-                onVerify.accept(view, enteredCode);
-            }, ClickCallback.Options.builder()
-                .uses(1)
-                .lifetime(ClickCallback.DEFAULT_LIFETIME)
-                .build())
-        );
+            DialogAction.customClick(
+                (DialogResponseView view, Audience audience) -> {
+                    String enteredCode = view.getText("code");
+                    onVerify.accept(view, enteredCode);
+                }, ClickCallback.Options.builder().uses(1).lifetime(ClickCallback.DEFAULT_LIFETIME).build()));
     }
 
     private ActionButton createCancelButton(Runnable onCancel) {
@@ -76,10 +68,6 @@ public class DiscordVerificationDialogFactory {
             200,
             DialogAction.customClick(
                 (DialogResponseView view, Audience audience) -> onCancel.run(),
-                ClickCallback.Options.builder()
-                    .uses(1)
-                    .lifetime(ClickCallback.DEFAULT_LIFETIME)
-                    .build())
-        );
+                ClickCallback.Options.builder().uses(1).lifetime(ClickCallback.DEFAULT_LIFETIME).build()));
     }
 }

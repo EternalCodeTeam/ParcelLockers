@@ -33,10 +33,7 @@ import com.eternalcode.parcellockers.discord.notification.DiscordSrvNotification
 import com.eternalcode.parcellockers.discord.repository.DiscordLinkRepository;
 import com.eternalcode.parcellockers.discord.repository.DiscordLinkRepositoryOrmLite;
 import com.eternalcode.parcellockers.discord.verification.DiscordLinkValidationService;
-import com.eternalcode.parcellockers.discord.verification.DiscordVerificationDialogFactory;
 import com.eternalcode.parcellockers.discord.verification.DiscordVerificationService;
-import com.eternalcode.parcellockers.discord.verification.VerificationCache;
-import com.eternalcode.parcellockers.discord.verification.VerificationCodeGenerator;
 import com.eternalcode.parcellockers.gui.GuiManager;
 import com.eternalcode.parcellockers.gui.implementation.locker.LockerGui;
 import com.eternalcode.parcellockers.gui.implementation.remote.MainGui;
@@ -105,7 +102,8 @@ public final class ParcelLockers extends JavaPlugin {
 
         ConfigService configService = new ConfigService();
         PluginConfig config = configService.create(PluginConfig.class, new File(this.getDataFolder(), "config.yml"));
-        MessageConfig messageConfig = configService.create(MessageConfig.class, new File(this.getDataFolder(), "messages.yml"));
+        MessageConfig messageConfig =
+            configService.create(MessageConfig.class, new File(this.getDataFolder(), "messages.yml"));
         Server server = this.getServer();
         NoticeService noticeService = new NoticeService(messageConfig, miniMessage);
         Scheduler scheduler = new BukkitSchedulerImpl(this);
@@ -137,7 +135,8 @@ public final class ParcelLockers extends JavaPlugin {
         // database repositories
         ParcelRepositoryOrmLite parcelRepository = new ParcelRepositoryOrmLite(databaseManager, scheduler);
         LockerRepositoryOrmLite lockerRepository = new LockerRepositoryOrmLite(databaseManager, scheduler);
-        ParcelContentRepository parcelContentRepository = new ParcelContentRepositoryOrmLite(databaseManager, scheduler);
+        ParcelContentRepository parcelContentRepository =
+            new ParcelContentRepositoryOrmLite(databaseManager, scheduler);
         DeliveryRepositoryOrmLite deliveryRepository = new DeliveryRepositoryOrmLite(databaseManager, scheduler);
         ItemStorageRepository itemStorageRepository = new ItemStorageRepositoryOrmLite(databaseManager, scheduler);
         UserRepository userRepository = new UserRepositoryOrmLite(databaseManager, scheduler);
@@ -156,7 +155,8 @@ public final class ParcelLockers extends JavaPlugin {
         UserValidationService userValidationService = new UserValidator();
         UserManager userManager = new UserManagerImpl(userRepository, userValidationService, server);
         LockerValidationService lockerValidationService = new LockerValidator();
-        LockerManager lockerManager = new LockerManager(config, lockerRepository, lockerValidationService, parcelRepository, server);
+        LockerManager lockerManager =
+            new LockerManager(config, lockerRepository, lockerValidationService, parcelRepository, server);
         ParcelContentManager parcelContentManager = new ParcelContentManager(parcelContentRepository);
         ItemStorageManager itemStorageManager = new ItemStorageManager(itemStorageRepository, server);
         DeliveryManager deliveryManager = new DeliveryManager(deliveryRepository);
@@ -243,7 +243,8 @@ public final class ParcelLockers extends JavaPlugin {
                 );
                 this.discordClientManager.initialize();
 
-                DiscordLinkRepository discordLinkRepository = new DiscordLinkRepositoryOrmLite(databaseManager, scheduler);
+                DiscordLinkRepository discordLinkRepository =
+                    new DiscordLinkRepositoryOrmLite(databaseManager, scheduler);
                 activeLinkService = new DiscordFallbackLinkService(discordLinkRepository);
                 notificationService = new Discord4JNotificationService(
                     this.discordClientManager.getClient(),
@@ -255,20 +256,11 @@ public final class ParcelLockers extends JavaPlugin {
                     this.discordClientManager.getClient()
                 );
 
-                VerificationCache verificationCache = new VerificationCache();
-                VerificationCodeGenerator codeGenerator = new VerificationCodeGenerator();
-                DiscordVerificationDialogFactory dialogFactory = new DiscordVerificationDialogFactory(
-                    miniMessage,
-                    messageConfig
-                );
-
-                DiscordVerificationService verificationService = new DiscordVerificationService(
-                    verificationCache,
-                    codeGenerator,
-                    dialogFactory,
+                DiscordVerificationService verificationService = DiscordVerificationService.create(
                     activeLinkService,
                     noticeService,
-                    messageConfig
+                    messageConfig,
+                    miniMessage
                 );
 
                 liteCommandsBuilder.commands(
@@ -311,7 +303,9 @@ public final class ParcelLockers extends JavaPlugin {
             .forEach(parcel -> deliveryRepository.find(parcel.uuid()).thenAccept(optionalDelivery ->
                 optionalDelivery.ifPresent(delivery -> {
                     long delay = Math.max(0, delivery.deliveryTimestamp().toEpochMilli() - System.currentTimeMillis());
-                    scheduler.runLaterAsync(new ParcelSendTask(parcel, parcelService, deliveryManager), Duration.ofMillis(delay));
+                    scheduler.runLaterAsync(
+                        new ParcelSendTask(parcel, parcelService, deliveryManager),
+                        Duration.ofMillis(delay));
                 })
             )));
     }

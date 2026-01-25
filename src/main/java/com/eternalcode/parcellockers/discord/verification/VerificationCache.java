@@ -9,13 +9,11 @@ import java.util.UUID;
 /**
  * Cache for storing pending Discord verification requests.
  */
-public class VerificationCache {
+class VerificationCache {
 
     private static final Duration EXPIRATION_TIME = Duration.ofMinutes(2);
 
-    private final Cache<UUID, VerificationData> cache = Caffeine.newBuilder()
-        .expireAfterWrite(EXPIRATION_TIME)
-        .build();
+    private final Cache<UUID, VerificationData> cache = Caffeine.newBuilder().expireAfterWrite(EXPIRATION_TIME).build();
 
     /**
      * Checks if a player has a pending verification.
@@ -23,7 +21,7 @@ public class VerificationCache {
      * @param playerUuid the player's UUID
      * @return true if a pending verification exists
      */
-    public boolean hasPendingVerification(UUID playerUuid) {
+    boolean hasPendingVerification(UUID playerUuid) {
         return this.cache.getIfPresent(playerUuid) != null;
     }
 
@@ -33,7 +31,7 @@ public class VerificationCache {
      * @param playerUuid the player's UUID
      * @return an Optional containing the verification data, or empty if none exists
      */
-    public Optional<VerificationData> get(UUID playerUuid) {
+    Optional<VerificationData> get(UUID playerUuid) {
         return Optional.ofNullable(this.cache.getIfPresent(playerUuid));
     }
 
@@ -41,10 +39,10 @@ public class VerificationCache {
      * Stores verification data for a player if no pending verification exists.
      *
      * @param playerUuid the player's UUID
-     * @param data the verification data to store
+     * @param data       the verification data to store
      * @return true if the data was stored, false if a pending verification already exists
      */
-    public boolean putIfAbsent(UUID playerUuid, VerificationData data) {
+    boolean putIfAbsent(UUID playerUuid, VerificationData data) {
         return this.cache.asMap().putIfAbsent(playerUuid, data) == null;
     }
 
@@ -53,7 +51,7 @@ public class VerificationCache {
      *
      * @param playerUuid the player's UUID
      */
-    public void invalidate(UUID playerUuid) {
+    void invalidate(UUID playerUuid) {
         this.cache.invalidate(playerUuid);
     }
 }

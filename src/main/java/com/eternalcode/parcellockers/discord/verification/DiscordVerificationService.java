@@ -6,6 +6,7 @@ import com.eternalcode.parcellockers.notification.NoticeService;
 import discord4j.core.object.entity.User;
 import io.papermc.paper.dialog.Dialog;
 import java.util.UUID;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 import reactor.core.publisher.Mono;
 
@@ -22,7 +23,7 @@ public class DiscordVerificationService {
     private final NoticeService noticeService;
     private final MessageConfig messageConfig;
 
-    public DiscordVerificationService(
+    private DiscordVerificationService(
         VerificationCache verificationCache,
         VerificationCodeGenerator codeGenerator,
         DiscordVerificationDialogFactory dialogFactory,
@@ -39,6 +40,36 @@ public class DiscordVerificationService {
     }
 
     /**
+     * Creates a new DiscordVerificationService with all required dependencies.
+     *
+     * @param discordLinkService the Discord link service
+     * @param noticeService      the notice service
+     * @param messageConfig      the message configuration
+     * @param miniMessage        the MiniMessage instance for text formatting
+     * @return a new DiscordVerificationService instance
+     */
+    public static DiscordVerificationService create(
+        DiscordLinkService discordLinkService,
+        NoticeService noticeService,
+        MessageConfig messageConfig,
+        MiniMessage miniMessage
+    ) {
+        VerificationCache verificationCache = new VerificationCache();
+        VerificationCodeGenerator codeGenerator = new VerificationCodeGenerator();
+        DiscordVerificationDialogFactory dialogFactory =
+            new DiscordVerificationDialogFactory(miniMessage, messageConfig);
+
+        return new DiscordVerificationService(
+            verificationCache,
+            codeGenerator,
+            dialogFactory,
+            discordLinkService,
+            noticeService,
+            messageConfig
+        );
+    }
+
+    /**
      * Checks if a player has a pending verification.
      *
      * @param playerUuid the player's UUID
@@ -51,8 +82,8 @@ public class DiscordVerificationService {
     /**
      * Initiates the verification process by sending a code to Discord and showing the dialog.
      *
-     * @param player the Minecraft player
-     * @param discordId the Discord user ID
+     * @param player      the Minecraft player
+     * @param discordId   the Discord user ID
      * @param discordUser the Discord user
      * @return a Mono that completes when the verification message is sent
      */

@@ -5,7 +5,7 @@ import java.util.concurrent.ThreadLocalRandom;
 /**
  * Generates random verification codes for Discord account linking.
  */
-public class VerificationCodeGenerator {
+class VerificationCodeGenerator {
 
     private static final int MIN_CODE = 1000;
     private static final int MAX_CODE = 10000;
@@ -15,7 +15,7 @@ public class VerificationCodeGenerator {
      *
      * @return a 4-digit verification code as a string
      */
-    public String generate() {
+    String generate() {
         int code = ThreadLocalRandom.current().nextInt(MIN_CODE, MAX_CODE);
         return String.valueOf(code);
     }
