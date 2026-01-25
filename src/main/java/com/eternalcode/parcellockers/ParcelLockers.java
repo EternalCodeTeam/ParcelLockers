@@ -32,6 +32,11 @@ import com.eternalcode.parcellockers.discord.notification.DiscordNotificationSer
 import com.eternalcode.parcellockers.discord.notification.DiscordSrvNotificationService;
 import com.eternalcode.parcellockers.discord.repository.DiscordLinkRepository;
 import com.eternalcode.parcellockers.discord.repository.DiscordLinkRepositoryOrmLite;
+import com.eternalcode.parcellockers.discord.verification.DiscordLinkValidationService;
+import com.eternalcode.parcellockers.discord.verification.DiscordVerificationDialogFactory;
+import com.eternalcode.parcellockers.discord.verification.DiscordVerificationService;
+import com.eternalcode.parcellockers.discord.verification.VerificationCache;
+import com.eternalcode.parcellockers.discord.verification.VerificationCodeGenerator;
 import com.eternalcode.parcellockers.gui.GuiManager;
 import com.eternalcode.parcellockers.gui.implementation.locker.LockerGui;
 import com.eternalcode.parcellockers.gui.implementation.remote.MainGui;
@@ -245,13 +250,33 @@ public final class ParcelLockers extends JavaPlugin {
                     this.getLogger()
                 );
 
+                DiscordLinkValidationService validationService = new DiscordLinkValidationService(
+                    activeLinkService,
+                    this.discordClientManager.getClient()
+                );
+
+                VerificationCache verificationCache = new VerificationCache();
+                VerificationCodeGenerator codeGenerator = new VerificationCodeGenerator();
+                DiscordVerificationDialogFactory dialogFactory = new DiscordVerificationDialogFactory(
+                    miniMessage,
+                    messageConfig
+                );
+
+                DiscordVerificationService verificationService = new DiscordVerificationService(
+                    verificationCache,
+                    codeGenerator,
+                    dialogFactory,
+                    activeLinkService,
+                    noticeService,
+                    messageConfig
+                );
+
                 liteCommandsBuilder.commands(
                     new DiscordLinkCommand(
-                        this.discordClientManager.getClient(),
                         activeLinkService,
-                        noticeService,
-                        miniMessage,
-                        messageConfig),
+                        validationService,
+                        verificationService,
+                        noticeService),
                     new DiscordUnlinkCommand(activeLinkService, noticeService)
                 );
             }
