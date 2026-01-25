@@ -253,6 +253,12 @@ public class MessageConfig extends OkaeriConfig {
         public String verificationDialogTitle = "&6Enter your Discord verification code:";
         public String verificationDialogPlaceholder = "&7Enter 4-digit code";
 
+        @Comment({"", "# Dialog button configuration" })
+        public String verificationButtonVerifyText = "<dark_green>Verify";
+        public String verificationButtonVerifyDescription = "<green>Click to verify your Discord account";
+        public String verificationButtonCancelText = "<dark_red>Cancel";
+        public String verificationButtonCancelDescription = "<red>Click to cancel verification";
+
         @Comment({"", "# The message sent to the Discord user via DM" })
         @Comment("# Placeholders: {CODE} - the verification code, {PLAYER} - the Minecraft player name")
         public String discordDmVerificationMessage = "**📦 ParcelLockers Verification**\n\nPlayer **{PLAYER}** is trying to link their Minecraft account to your Discord account.\n\nYour verification code is: **{CODE}**\n\nThis code will expire in 2 minutes.";

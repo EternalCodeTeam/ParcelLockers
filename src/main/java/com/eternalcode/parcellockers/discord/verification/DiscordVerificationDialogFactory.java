@@ -51,8 +51,8 @@ class DiscordVerificationDialogFactory {
 
     private ActionButton createVerifyButton(BiConsumer<DialogResponseView, String> onVerify) {
         return ActionButton.create(
-            this.miniMessage.deserialize("<dark_green>Verify"),
-            this.miniMessage.deserialize("<green>Click to verify your Discord account"),
+            this.miniMessage.deserialize(this.messageConfig.discord.verificationButtonVerifyText),
+            this.miniMessage.deserialize(this.messageConfig.discord.verificationButtonVerifyDescription),
             200,
             DialogAction.customClick(
                 (DialogResponseView view, Audience audience) -> {
@@ -63,8 +63,8 @@ class DiscordVerificationDialogFactory {
 
     private ActionButton createCancelButton(Runnable onCancel) {
         return ActionButton.create(
-            this.miniMessage.deserialize("<dark_red>Cancel"),
-            this.miniMessage.deserialize("<red>Click to cancel verification"),
+            this.miniMessage.deserialize(this.messageConfig.discord.verificationButtonCancelText),
+            this.miniMessage.deserialize(this.messageConfig.discord.verificationButtonCancelDescription),
             200,
             DialogAction.customClick(
                 (DialogResponseView view, Audience audience) -> onCancel.run(),

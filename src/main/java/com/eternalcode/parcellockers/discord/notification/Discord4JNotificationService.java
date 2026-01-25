@@ -21,7 +21,7 @@ public class Discord4JNotificationService implements DiscordNotificationService 
     }
 
     @Override
-    public CompletableFuture<Boolean> sendPrivateMessage(String discordId, String message) {
+    public void sendPrivateMessage(String discordId, String message) {
         CompletableFuture<Boolean> future = new CompletableFuture<>();
 
         this.client.getUserById(Snowflake.of(Long.parseLong(discordId)))
@@ -34,7 +34,5 @@ public class Discord4JNotificationService implements DiscordNotificationService 
                 future.complete(false);
             })
             .subscribe();
-
-        return future;
     }
 }
