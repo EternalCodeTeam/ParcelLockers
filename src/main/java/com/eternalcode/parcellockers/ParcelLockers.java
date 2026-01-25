@@ -99,8 +99,7 @@ public final class ParcelLockers extends JavaPlugin {
         try {
             databaseManager.connect();
         } catch (SQLException exception) {
-            this.getLogger().severe("Could not connect to database! Disabling...");
-            exception.printStackTrace();
+            this.getLogger().severe("Could not connect to database! Disabling..." + exception.getMessage());
             this.getServer().getPluginManager().disablePlugin(this);
             return;
         }
