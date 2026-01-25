@@ -2,6 +2,7 @@ package com.eternalcode.parcellockers.discord;
 
 import discord4j.core.DiscordClient;
 import discord4j.core.GatewayDiscordClient;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class DiscordClientManager {
@@ -29,8 +30,7 @@ public class DiscordClientManager {
                 this.logger.severe("Failed to log in to Discord: login returned null client.");
             }
         } catch (Exception exception) {
-            this.logger.severe("Failed to log in to Discord: " + exception.getMessage());
-            exception.printStackTrace();
+            this.logger.log(Level.SEVERE, "Failed to log in to Discord", exception);
         }
     }
 
