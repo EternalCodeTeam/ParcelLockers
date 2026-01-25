@@ -12,5 +12,5 @@ public interface DiscordNotificationService {
      * @param discordId the Discord user ID to send the message to
      * @param message   the message content to send
      */
-    void sendPrivateMessage(String discordId, String message);
+    void sendPrivateMessage(long discordId, String message);
 }

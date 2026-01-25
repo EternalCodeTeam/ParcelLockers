@@ -8,15 +8,17 @@ import java.util.UUID;
 @DatabaseTable(tableName = "discord_links")
 class DiscordLinkEntity {
 
+    static final String ID_COLUMN_NAME = "discord_id";
+
     @DatabaseField(id = true, columnName = "minecraft_uuid")
     private UUID minecraftUuid;
 
-    @DatabaseField(index = true, columnName = "discord_id")
-    private String discordId;
+    @DatabaseField(index = true, columnName = ID_COLUMN_NAME)
+    private long discordId;
 
     DiscordLinkEntity() {}
 
-    DiscordLinkEntity(UUID minecraftUuid, String discordId) {
+    DiscordLinkEntity(UUID minecraftUuid, long discordId) {
         this.minecraftUuid = minecraftUuid;
         this.discordId = discordId;
     }

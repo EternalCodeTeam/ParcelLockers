@@ -14,12 +14,6 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.event.ClickCallback;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 
-/**
- * Factory for creating Discord verification dialogs.
- * <p>
- * This implementation relies on Paper's Dialog API ({@code io.papermc.paper.dialog}),
- * which is marked as unstable and may change or be removed in future Paper versions.
- */
 class DiscordVerificationDialogFactory {
 
     private final MiniMessage miniMessage;
@@ -30,13 +24,6 @@ class DiscordVerificationDialogFactory {
         this.messageConfig = messageConfig;
     }
 
-    /**
-     * Creates a verification dialog for Discord account linking.
-     *
-     * @param onVerify callback when the user clicks verify, receives the entered code
-     * @param onCancel callback when the user clicks cancel
-     * @return the created dialog
-     */
     Dialog create(BiConsumer<DialogResponseView, String> onVerify, Runnable onCancel) {
         return Dialog.create(builder -> builder.empty()
             .base(DialogBase.builder(this.miniMessage.deserialize(this.messageConfig.discord.verificationDialogTitle))

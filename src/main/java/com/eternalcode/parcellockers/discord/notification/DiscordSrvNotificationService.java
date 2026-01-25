@@ -18,28 +18,24 @@ public class DiscordSrvNotificationService implements DiscordNotificationService
     }
 
     @Override
-    public void sendPrivateMessage(String discordId, String message) {
+    public void sendPrivateMessage(long discordId, String message) {
         CompletableFuture.supplyAsync(() -> {
             try {
-                User user = DiscordUtil.getUserById(discordId);
+                User user = DiscordUtil.getUserById(Long.toString(discordId));
                 if (user == null) {
                     this.logger.warning("Could not find Discord user with ID: " + discordId);
                     return false;
                 }
 
-                user.openPrivateChannel()
-                        .flatMap(channel -> channel.sendMessage(message))
-                        .queue(
-                                success -> {},
-                                error -> this.logger.warning(
-                                        "Failed to send private message to Discord user " + discordId + ": "
-                                                + error.getMessage())
-                        );
+                user.openPrivateChannel().flatMap(channel -> channel.sendMessage(message)).queue(
+                    success -> {},
+                    error -> this.logger.warning(
+                        "Failed to send private message to Discord user " + discordId + ": " + error.getMessage())
+                );
 
                 return true;
             } catch (Exception e) {
-                this.logger.warning(
-                        "Failed to send private message to Discord user " + discordId + ": " + e.getMessage());
+                this.logger.warning("Failed to send private message to Discord user " + discordId + ": " + e.getMessage());
                 return false;
             }
         });

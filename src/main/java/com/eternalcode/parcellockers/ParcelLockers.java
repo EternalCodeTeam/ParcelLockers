@@ -4,9 +4,11 @@ import com.eternalcode.commons.adventure.AdventureLegacyColorPostProcessor;
 import com.eternalcode.commons.adventure.AdventureLegacyColorPreProcessor;
 import com.eternalcode.commons.bukkit.scheduler.BukkitSchedulerImpl;
 import com.eternalcode.commons.scheduler.Scheduler;
+import com.eternalcode.multification.notice.Notice;
 import com.eternalcode.parcellockers.command.debug.DebugCommand;
 import com.eternalcode.parcellockers.command.handler.InvalidUsageHandlerImpl;
 import com.eternalcode.parcellockers.command.handler.MissingPermissionsHandlerImpl;
+import com.eternalcode.parcellockers.command.handler.NoticeHandler;
 import com.eternalcode.parcellockers.configuration.ConfigService;
 import com.eternalcode.parcellockers.configuration.implementation.MessageConfig;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
@@ -102,8 +104,7 @@ public final class ParcelLockers extends JavaPlugin {
 
         ConfigService configService = new ConfigService();
         PluginConfig config = configService.create(PluginConfig.class, new File(this.getDataFolder(), "config.yml"));
-        MessageConfig messageConfig =
-            configService.create(MessageConfig.class, new File(this.getDataFolder(), "messages.yml"));
+        MessageConfig messageConfig = configService.create(MessageConfig.class, new File(this.getDataFolder(), "messages.yml"));
         Server server = this.getServer();
         NoticeService noticeService = new NoticeService(messageConfig, miniMessage);
         Scheduler scheduler = new BukkitSchedulerImpl(this);
@@ -134,8 +135,7 @@ public final class ParcelLockers extends JavaPlugin {
         // database repositories
         ParcelRepositoryOrmLite parcelRepository = new ParcelRepositoryOrmLite(databaseManager, scheduler);
         LockerRepositoryOrmLite lockerRepository = new LockerRepositoryOrmLite(databaseManager, scheduler);
-        ParcelContentRepository parcelContentRepository =
-            new ParcelContentRepositoryOrmLite(databaseManager, scheduler);
+        ParcelContentRepository parcelContentRepository = new ParcelContentRepositoryOrmLite(databaseManager, scheduler);
         DeliveryRepositoryOrmLite deliveryRepository = new DeliveryRepositoryOrmLite(databaseManager, scheduler);
         ItemStorageRepository itemStorageRepository = new ItemStorageRepositoryOrmLite(databaseManager, scheduler);
         UserRepository userRepository = new UserRepositoryOrmLite(databaseManager, scheduler);
@@ -154,8 +154,7 @@ public final class ParcelLockers extends JavaPlugin {
         UserValidationService userValidationService = new UserValidator();
         UserManager userManager = new UserManagerImpl(userRepository, userValidationService, server);
         LockerValidationService lockerValidationService = new LockerValidator();
-        LockerManager lockerManager =
-            new LockerManager(config, lockerRepository, lockerValidationService, parcelRepository, server);
+        LockerManager lockerManager = new LockerManager(config, lockerRepository, lockerValidationService, parcelRepository, server);
         ParcelContentManager parcelContentManager = new ParcelContentManager(parcelContentRepository);
         ItemStorageManager itemStorageManager = new ItemStorageManager(itemStorageRepository, server);
         DeliveryManager deliveryManager = new DeliveryManager(deliveryRepository);
@@ -200,7 +199,7 @@ public final class ParcelLockers extends JavaPlugin {
 
         var liteCommandsBuilder = LiteBukkitFactory.builder(this.getName(), this)
             .extension(new LiteAdventureExtension<>())
-            .argument(Snowflake.class, new SnowflakeArgument())
+            .argument(Snowflake.class, new SnowflakeArgument(messageConfig))
             .message(LiteBukkitMessages.PLAYER_ONLY, messageConfig.playerOnlyCommand)
             .message(LiteBukkitMessages.PLAYER_NOT_FOUND, messageConfig.playerNotFound)
             .commands(LiteCommandsAnnotations.of(
@@ -211,7 +210,8 @@ public final class ParcelLockers extends JavaPlugin {
                     noticeService, deliveryManager)
             ))
             .invalidUsage(new InvalidUsageHandlerImpl(noticeService))
-            .missingPermission(new MissingPermissionsHandlerImpl(noticeService));
+            .missingPermission(new MissingPermissionsHandlerImpl(noticeService))
+            .result(Notice.class, new NoticeHandler(noticeService));
 
         DiscordSettings discordSettings = config.discord;
         if (discordSettings.enabled) {
@@ -230,8 +230,7 @@ public final class ParcelLockers extends JavaPlugin {
                 );
             } else {
                 if (config.discord.botToken == null || config.discord.botToken.isBlank()) {
-                    this.getLogger()
-                        .severe("Discord integration is enabled but some of the properties are not set! Disabling...");
+                    this.getLogger().severe("Discord integration is enabled but some of the properties are not set! Disabling...");
                     server.getPluginManager().disablePlugin(this);
                     return;
                 }
@@ -240,10 +239,14 @@ public final class ParcelLockers extends JavaPlugin {
                     discordSettings.botToken,
                     this.getLogger()
                 );
-                this.discordClientManager.initialize();
 
-                DiscordLinkRepository discordLinkRepository =
-                    new DiscordLinkRepositoryOrmLite(databaseManager, scheduler);
+                if (!this.discordClientManager.initialize()) {
+                    this.getLogger().severe("Failed to initialize Discord client! Disabling...");
+                    server.getPluginManager().disablePlugin(this);
+                    return;
+                }
+
+                DiscordLinkRepository discordLinkRepository = new DiscordLinkRepositoryOrmLite(databaseManager, scheduler);
                 activeLinkService = new DiscordFallbackLinkService(discordLinkRepository);
                 notificationService = new Discord4JNotificationService(
                     this.discordClientManager.getClient(),

@@ -17,20 +17,24 @@ public class DiscordClientManager {
         this.logger = logger;
     }
 
-    public void initialize() {
+    public boolean initialize() {
         this.logger.info("Discord integration is enabled. Logging in to Discord...");
         try {
             GatewayDiscordClient discordClient = DiscordClient.create(this.token)
                 .login()
                 .block();
-            if (discordClient != null) {
-                this.client = discordClient;
-                this.logger.info("Successfully logged in to Discord.");
-            } else {
+
+            if (discordClient == null) {
                 this.logger.severe("Failed to log in to Discord: login returned null client.");
+                return false;
             }
+
+            this.client = discordClient;
+            this.logger.info("Successfully logged in to Discord.");
+            return true;
         } catch (Exception exception) {
             this.logger.log(Level.SEVERE, "Failed to log in to Discord", exception);
+            return false;
         }
     }
 

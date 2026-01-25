@@ -21,10 +21,10 @@ public class Discord4JNotificationService implements DiscordNotificationService 
     }
 
     @Override
-    public void sendPrivateMessage(String discordId, String message) {
+    public void sendPrivateMessage(long discordId, String message) {
         CompletableFuture<Boolean> future = new CompletableFuture<>();
 
-        this.client.getUserById(Snowflake.of(Long.parseLong(discordId)))
+        this.client.getUserById(Snowflake.of(discordId))
             .flatMap(user -> user.getPrivateChannel())
             .flatMap(channel -> channel.createMessage(message))
             .subscribeOn(Schedulers.boundedElastic())

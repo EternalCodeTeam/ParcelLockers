@@ -9,10 +9,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * DiscordSRV-based implementation of DiscordLinkService.
- * Delegates account linking functionality to DiscordSRV plugin.
- */
 public class DiscordSrvLinkService implements DiscordLinkService {
 
     private final Logger logger;
@@ -28,14 +24,14 @@ public class DiscordSrvLinkService implements DiscordLinkService {
             if (discordId == null) {
                 return Optional.empty();
             }
-            return Optional.of(new DiscordLink(playerUuid, discordId));
+            return Optional.of(new DiscordLink(playerUuid, Long.parseLong(discordId)));
         });
     }
 
     @Override
-    public CompletableFuture<Optional<DiscordLink>> findLinkByDiscordId(String discordId) {
+    public CompletableFuture<Optional<DiscordLink>> findLinkByDiscordId(long discordId) {
         return CompletableFuture.supplyAsync(() -> {
-            UUID playerUuid = DiscordSRV.getPlugin().getAccountLinkManager().getUuid(discordId);
+            UUID playerUuid = DiscordSRV.getPlugin().getAccountLinkManager().getUuid(Long.toString(discordId));
             if (playerUuid == null) {
                 return Optional.empty();
             }
@@ -44,10 +40,10 @@ public class DiscordSrvLinkService implements DiscordLinkService {
     }
 
     @Override
-    public CompletableFuture<Boolean> createLink(UUID playerUuid, String discordId) {
+    public CompletableFuture<Boolean> createLink(UUID playerUuid, long discordId) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                DiscordSRV.getPlugin().getAccountLinkManager().link(discordId, playerUuid);
+                DiscordSRV.getPlugin().getAccountLinkManager().link(Long.toString(discordId), playerUuid);
                 return true;
             } catch (Exception e) {
                 this.logger.log(Level.WARNING, "Failed to create DiscordSRV link", e);
@@ -70,10 +66,10 @@ public class DiscordSrvLinkService implements DiscordLinkService {
     }
 
     @Override
-    public CompletableFuture<Boolean> unlinkDiscordId(String discordId) {
+    public CompletableFuture<Boolean> unlinkDiscordId(long discordId) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                UUID playerUuid = DiscordSRV.getPlugin().getAccountLinkManager().getUuid(discordId);
+                UUID playerUuid = DiscordSRV.getPlugin().getAccountLinkManager().getUuid(Long.toString(discordId));
                 if (playerUuid == null) {
                     return false;
                 }
@@ -86,9 +82,6 @@ public class DiscordSrvLinkService implements DiscordLinkService {
         });
     }
 
-    /**
-     * Gets the Discord user by their ID using DiscordSRV's JDA instance.
-     */
     public Optional<User> getDiscordUser(String discordId) {
         try {
             return Optional.ofNullable(DiscordUtil.getUserById(discordId));
@@ -97,10 +90,6 @@ public class DiscordSrvLinkService implements DiscordLinkService {
         }
     }
 
-    /**
-     * Gets the linking code for a player to use in Discord.
-     * Returns empty if the player is already linked.
-     */
     public Optional<String> getLinkingCode(UUID playerUuid) {
         String existingDiscordId = DiscordSRV.getPlugin().getAccountLinkManager().getDiscordId(playerUuid);
         if (existingDiscordId != null) {

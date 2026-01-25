@@ -12,11 +12,6 @@ import java.util.UUID;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-/**
- * Command for unlinking Discord accounts when DiscordSRV is installed.
- * Regular players are redirected to use DiscordSRV's unlinking system,
- * while admins can still forcefully unlink accounts.
- */
 @Command(name = "parcel unlinkdiscord")
 public class DiscordSrvUnlinkCommand {
 
@@ -61,9 +56,9 @@ public class DiscordSrvUnlinkCommand {
                 if (success) {
                     this.noticeService.viewer(sender, messages -> messages.discord.adminUnlinkSuccess);
                     this.noticeService.player(targetUuid, messages -> messages.discord.unlinkSuccess);
-                } else {
-                    this.noticeService.viewer(sender, messages -> messages.discord.unlinkFailed);
+                    return;
                 }
+                this.noticeService.viewer(sender, messages -> messages.discord.unlinkFailed);
             });
         });
     }
@@ -71,20 +66,20 @@ public class DiscordSrvUnlinkCommand {
     @Execute
     @Permission("parcellockers.admin")
     void unlinkByDiscordId(@Context CommandSender sender, @Arg Snowflake discordId) {
-        String discordIdString = discordId.asString();
+        long discordIdLong = discordId.asLong();
 
-        this.discordSrvLinkService.findLinkByDiscordId(discordIdString).thenAccept(optionalLink -> {
+        this.discordSrvLinkService.findLinkByDiscordId(discordIdLong).thenAccept(optionalLink -> {
             if (optionalLink.isEmpty()) {
                 this.noticeService.viewer(sender, messages -> messages.discord.discordNotLinked);
                 return;
             }
 
-            this.discordSrvLinkService.unlinkDiscordId(discordIdString).thenAccept(success -> {
+            this.discordSrvLinkService.unlinkDiscordId(discordIdLong).thenAccept(success -> {
                 if (success) {
                     this.noticeService.viewer(sender, messages -> messages.discord.adminUnlinkByDiscordSuccess);
-                } else {
-                    this.noticeService.viewer(sender, messages -> messages.discord.unlinkFailed);
+                    return;
                 }
+                this.noticeService.viewer(sender, messages -> messages.discord.unlinkFailed);
             });
         });
     }

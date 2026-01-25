@@ -40,9 +40,9 @@ public class DiscordUnlinkCommand {
             this.discordLinkService.unlinkPlayer(playerUuid).thenAccept(success -> {
                 if (success) {
                     this.noticeService.player(playerUuid, messages -> messages.discord.unlinkSuccess);
-                } else {
-                    this.noticeService.player(playerUuid, messages -> messages.discord.unlinkFailed);
+                    return;
                 }
+                this.noticeService.player(playerUuid, messages -> messages.discord.unlinkFailed);
             });
         });
     }
@@ -62,9 +62,9 @@ public class DiscordUnlinkCommand {
                 if (success) {
                     this.noticeService.viewer(sender, messages -> messages.discord.adminUnlinkSuccess);
                     this.noticeService.player(targetUuid, messages -> messages.discord.unlinkSuccess);
-                } else {
-                    this.noticeService.viewer(sender, messages -> messages.discord.unlinkFailed);
+                    return;
                 }
+                this.noticeService.viewer(sender, messages -> messages.discord.unlinkFailed);
             });
         });
     }
@@ -72,20 +72,20 @@ public class DiscordUnlinkCommand {
     @Execute
     @Permission("parcellockers.admin")
     void unlinkByDiscordId(@Context CommandSender sender, @Arg Snowflake discordId) {
-        String discordIdString = discordId.asString();
+        long discordIdLong = discordId.asLong();
 
-        this.discordLinkService.findLinkByDiscordId(discordIdString).thenAccept(optionalLink -> {
+        this.discordLinkService.findLinkByDiscordId(discordIdLong).thenAccept(optionalLink -> {
             if (optionalLink.isEmpty()) {
                 this.noticeService.viewer(sender, messages -> messages.discord.discordNotLinked);
                 return;
             }
 
-            this.discordLinkService.unlinkDiscordId(discordIdString).thenAccept(success -> {
+            this.discordLinkService.unlinkDiscordId(discordIdLong).thenAccept(success -> {
                 if (success) {
                     this.noticeService.viewer(sender, messages -> messages.discord.adminUnlinkByDiscordSuccess);
-                } else {
-                    this.noticeService.viewer(sender, messages -> messages.discord.unlinkFailed);
+                    return;
                 }
+                this.noticeService.viewer(sender, messages -> messages.discord.unlinkFailed);
             });
         });
     }

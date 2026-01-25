@@ -9,10 +9,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.bukkit.entity.Player;
 
-/**
- * Command for linking Discord accounts when DiscordSRV is installed.
- * Redirects users to use DiscordSRV's linking system.
- */
+
 @Command(name = "parcel linkdiscord")
 public class DiscordSrvLinkCommand {
 

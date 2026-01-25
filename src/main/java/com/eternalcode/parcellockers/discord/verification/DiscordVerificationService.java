@@ -87,7 +87,7 @@ public class DiscordVerificationService {
      * @param discordUser the Discord user
      * @return a Mono that completes when the verification message is sent
      */
-    public Mono<Void> startVerification(Player player, String discordId, User discordUser) {
+    public Mono<Void> startVerification(Player player, long discordId, User discordUser) {
         UUID playerUuid = player.getUniqueId();
         String code = this.codeGenerator.generate();
 
@@ -138,9 +138,9 @@ public class DiscordVerificationService {
                     .thenAccept(success -> {
                         if (success) {
                             this.noticeService.player(playerUuid, messages -> messages.discord.linkSuccess);
-                        } else {
-                            this.noticeService.player(playerUuid, messages -> messages.discord.linkFailed);
+                            return;
                         }
+                        this.noticeService.player(playerUuid, messages -> messages.discord.linkFailed);
                     });
             },
             () -> this.noticeService.player(playerUuid, messages -> messages.discord.verificationExpired)

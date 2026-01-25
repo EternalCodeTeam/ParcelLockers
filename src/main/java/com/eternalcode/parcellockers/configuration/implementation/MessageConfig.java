@@ -248,6 +248,7 @@ public class MessageConfig extends OkaeriConfig {
         public Notice adminUnlinkSuccess = Notice.chat("&2✔ &aSuccessfully unlinked the Discord account from the player.");
         public Notice discordNotLinked = Notice.chat("&4✘ &cNo Minecraft account is linked to this Discord ID!");
         public Notice adminUnlinkByDiscordSuccess = Notice.chat("&2✔ &aSuccessfully unlinked the Minecraft account from the Discord ID.");
+        public Notice invalidDiscordId = Notice.chat("&4✘ &cInvalid Discord ID format! Please provide a valid Discord ID.");
 
         @Comment({"", "# Dialog configuration for verification" })
         public String verificationDialogTitle = "&6Enter your Discord verification code:";

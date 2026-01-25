@@ -19,12 +19,12 @@ public class DiscordFallbackLinkService implements DiscordLinkService {
     }
 
     @Override
-    public CompletableFuture<Optional<DiscordLink>> findLinkByDiscordId(String discordId) {
+    public CompletableFuture<Optional<DiscordLink>> findLinkByDiscordId(long discordId) {
         return this.repository.findByDiscordId(discordId);
     }
 
     @Override
-    public CompletableFuture<Boolean> createLink(UUID playerUuid, String discordId) {
+    public CompletableFuture<Boolean> createLink(UUID playerUuid, long discordId) {
         DiscordLink link = new DiscordLink(playerUuid, discordId);
         return this.repository.save(link);
     }
@@ -35,7 +35,7 @@ public class DiscordFallbackLinkService implements DiscordLinkService {
     }
 
     @Override
-    public CompletableFuture<Boolean> unlinkDiscordId(String discordId) {
+    public CompletableFuture<Boolean> unlinkDiscordId(long discordId) {
         return this.repository.deleteByDiscordId(discordId);
     }
 }

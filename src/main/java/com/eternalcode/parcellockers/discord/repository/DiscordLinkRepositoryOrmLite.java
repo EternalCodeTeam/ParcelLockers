@@ -14,8 +14,6 @@ import java.util.concurrent.CompletableFuture;
 
 public class DiscordLinkRepositoryOrmLite extends AbstractRepositoryOrmLite implements DiscordLinkRepository {
 
-    public static final String ID_COLUMN_NAME = "discord_id";
-
     public DiscordLinkRepositoryOrmLite(DatabaseManager databaseManager, Scheduler scheduler) {
         super(databaseManager, scheduler);
 
@@ -39,13 +37,12 @@ public class DiscordLinkRepositoryOrmLite extends AbstractRepositoryOrmLite impl
     }
 
     @Override
-    public CompletableFuture<Optional<DiscordLink>> findByDiscordId(String discordId) {
-        return this.action(DiscordLinkEntity.class, dao -> {
-            var queryBuilder = dao.queryBuilder()
-                .where()
-                .eq(ID_COLUMN_NAME, discordId);
-            return dao.queryForFirst(queryBuilder.prepare());
-        }).thenApply(entity -> Optional.ofNullable(entity).map(DiscordLinkEntity::toDomain));
+    public CompletableFuture<Optional<DiscordLink>> findByDiscordId(long discordId) {
+        return this.action(DiscordLinkEntity.class, dao -> dao.queryBuilder()
+            .where()
+            .eq(DiscordLinkEntity.ID_COLUMN_NAME, discordId)
+            .queryForFirst())
+            .thenApply(entity -> Optional.ofNullable(entity).map(DiscordLinkEntity::toDomain));
     }
 
     @Override
@@ -55,10 +52,10 @@ public class DiscordLinkRepositoryOrmLite extends AbstractRepositoryOrmLite impl
     }
 
     @Override
-    public CompletableFuture<Boolean> deleteByDiscordId(String discordId) {
+    public CompletableFuture<Boolean> deleteByDiscordId(long discordId) {
         return this.action(DiscordLinkEntity.class, dao -> {
             DeleteBuilder<DiscordLinkEntity, Object> deleteBuilder = dao.deleteBuilder();
-            deleteBuilder.where().eq(ID_COLUMN_NAME, discordId);
+            deleteBuilder.where().eq(DiscordLinkEntity.ID_COLUMN_NAME, discordId);
             return deleteBuilder.delete();
         }).thenApply(deletedRows -> deletedRows > 0);
     }

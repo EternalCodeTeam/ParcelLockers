@@ -10,8 +10,8 @@ public interface DiscordLinkRepository {
     CompletableFuture<Boolean> save(DiscordLink link);
 
     CompletableFuture<Optional<DiscordLink>> findByPlayerUuid(UUID playerUuid);
-    CompletableFuture<Optional<DiscordLink>> findByDiscordId(String discordId);
+    CompletableFuture<Optional<DiscordLink>> findByDiscordId(long discordId);
 
     CompletableFuture<Boolean> deleteByPlayerUuid(UUID playerUuid);
-    CompletableFuture<Boolean> deleteByDiscordId(String discordId);
+    CompletableFuture<Boolean> deleteByDiscordId(long discordId);
 }

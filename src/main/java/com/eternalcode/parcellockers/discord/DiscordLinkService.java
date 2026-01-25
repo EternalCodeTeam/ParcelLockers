@@ -6,13 +6,13 @@ import java.util.concurrent.CompletableFuture;
 
 public interface DiscordLinkService {
 
-    CompletableFuture<Boolean> unlinkDiscordId(String discordId);
+    CompletableFuture<Boolean> unlinkDiscordId(long discordId);
 
     CompletableFuture<Boolean> unlinkPlayer(UUID playerUuid);
 
-    CompletableFuture<Boolean> createLink(UUID playerUuid, String discordId);
+    CompletableFuture<Boolean> createLink(UUID playerUuid, long discordId);
 
-    CompletableFuture<Optional<DiscordLink>> findLinkByDiscordId(String discordId);
+    CompletableFuture<Optional<DiscordLink>> findLinkByDiscordId(long discordId);
 
     CompletableFuture<Optional<DiscordLink>> findLinkByPlayer(UUID playerUuid);
 }

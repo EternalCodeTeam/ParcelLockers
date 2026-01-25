@@ -17,9 +17,6 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-/**
- * Command responsible for linking a Minecraft account with a Discord account.
- */
 @Command(name = "parcel linkdiscord")
 public class DiscordLinkCommand {
 
@@ -43,23 +40,23 @@ public class DiscordLinkCommand {
     @Execute
     void linkSelf(@Context Player player, @Arg Snowflake discordId) {
         UUID playerUuid = player.getUniqueId();
-        String discordIdString = discordId.asString();
+        long discordIdLong = discordId.asLong();
 
         if (this.verificationService.hasPendingVerification(playerUuid)) {
             this.noticeService.player(playerUuid, messages -> messages.discord.verificationAlreadyPending);
             return;
         }
 
-        this.validationService.validate(playerUuid, discordIdString)
+        this.validationService.validate(playerUuid, discordIdLong)
             .thenCompose(validationResult -> {
                 if (!validationResult.isValid()) {
                     this.sendValidationError(playerUuid, validationResult);
                     return CompletableFuture.completedFuture(null);
                 }
 
-                return this.validationService.getDiscordUser(discordIdString)
+                return this.validationService.getDiscordUser(discordIdLong)
                     .thenCompose(discordUser ->
-                        this.verificationService.startVerification(player, discordIdString, discordUser).toFuture()
+                        this.verificationService.startVerification(player, discordIdLong, discordUser).toFuture()
                     );
             })
             .exceptionally(error -> {
@@ -71,24 +68,24 @@ public class DiscordLinkCommand {
     @Execute
     @Permission("parcellockers.admin")
     void linkOther(@Context CommandSender sender, @Arg OfflinePlayer player, @Arg Snowflake discordId) {
-        String discordIdString = discordId.asString();
+        long discordIdLong = discordId.asLong();
         UUID playerUuid = player.getUniqueId();
 
-        this.validationService.validate(playerUuid, discordIdString)
+        this.validationService.validate(playerUuid, discordIdLong)
             .thenCompose(validationResult -> {
                 if (!validationResult.isValid()) {
                     this.sendValidationErrorToViewer(sender, validationResult);
                     return CompletableFuture.completedFuture(null);
                 }
 
-                return this.discordLinkService.createLink(playerUuid, discordIdString)
+                return this.discordLinkService.createLink(playerUuid, discordIdLong)
                     .thenAccept(success -> {
                         if (success) {
                             this.noticeService.viewer(sender, messages -> messages.discord.adminLinkSuccess);
                             this.noticeService.player(playerUuid, messages -> messages.discord.linkSuccess);
-                        } else {
-                            this.noticeService.viewer(sender, messages -> messages.discord.linkFailed);
+                            return;
                         }
+                        this.noticeService.viewer(sender, messages -> messages.discord.linkFailed);
                     });
             })
             .exceptionally(error -> {

@@ -42,12 +42,11 @@ public class DiscordDeliverNotificationController implements Listener {
 
         this.discordLinkService.findLinkByPlayer(receiverUuid)
             .thenAccept(optionalLink -> optionalLink.ifPresent(link -> {
-                String discordId = link.discordId();
-                this.sendDeliveryNotification(parcel, discordId);
+                this.sendDeliveryNotification(parcel, link.discordId());
             }));
     }
 
-    private void sendDeliveryNotification(Parcel parcel, String discordId) {
+    private void sendDeliveryNotification(Parcel parcel, long discordId) {
         CompletableFuture<String> senderNameFuture = this.userManager.get(parcel.sender())
             .thenApply(optionalUser -> optionalUser.map(User::name).orElse("Unknown"));
 
@@ -64,7 +63,6 @@ public class DiscordDeliverNotificationController implements Listener {
                 .replace("{PRIORITY}", parcel.priority() ? "🔴 High Priority" : "⚪ Normal Priority");
 
             this.notificationService.sendPrivateMessage(discordId, message);
-
             return null;
         });
     }
