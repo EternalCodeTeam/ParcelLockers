@@ -9,6 +9,7 @@ import dev.rollczi.litecommands.annotations.execute.Execute;
 import dev.rollczi.litecommands.annotations.permission.Permission;
 import discord4j.common.util.Snowflake;
 import java.util.UUID;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -48,7 +49,7 @@ public class DiscordUnlinkCommand {
 
     @Execute
     @Permission("parcellockers.admin")
-    void unlinkPlayer(@Context CommandSender sender, @Arg Player targetPlayer) {
+    void unlinkPlayer(@Context CommandSender sender, @Arg OfflinePlayer targetPlayer) {
         UUID targetUuid = targetPlayer.getUniqueId();
 
         this.discordLinkService.findLinkByPlayer(targetUuid).thenAccept(optionalLink -> {
