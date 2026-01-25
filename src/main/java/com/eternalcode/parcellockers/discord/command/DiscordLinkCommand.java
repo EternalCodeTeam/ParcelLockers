@@ -71,9 +71,9 @@ public class DiscordLinkCommand {
     }
 
     @Execute
-    void linkSelf(@Context Player player, @Arg long discordId) {
+    void linkSelf(@Context Player player, @Arg Snowflake discordId) {
         UUID playerUuid = player.getUniqueId();
-        String discordIdString = String.valueOf(discordId);
+        String discordIdString = discordId.asString();
 
         if (this.authCodesCache.getIfPresent(playerUuid) != null) {
             this.noticeService.player(playerUuid, messages -> messages.discord.verificationAlreadyPending);
@@ -98,8 +98,8 @@ public class DiscordLinkCommand {
 
     @Execute
     @Permission("parcellockers.admin")
-    void linkOther(@Context CommandSender sender, @Arg String playerName, @Arg long discordId) {
-        String discordIdString = String.valueOf(discordId);
+    void linkOther(@Context CommandSender sender, @Arg String playerName, @Arg Snowflake discordId) {
+        String discordIdString = discordId.asString();
 
         this.resolvePlayerUuid(playerName)
             .thenCompose(playerUuid -> {
@@ -231,31 +231,22 @@ public class DiscordLinkCommand {
 
     private CompletableFuture<ValidationResult> validateAndLink(UUID playerUuid, String discordIdString) {
         return this.discordLinkService.findLinkByPlayer(playerUuid)
-            .thenCompose(existingPlayerLink -> {
-                if (existingPlayerLink.isPresent()) {
+            .thenCompose(optionalLink -> {
+                if (optionalLink.isPresent()) {
                     return CompletableFuture.completedFuture(
                         ValidationResult.error(messages -> messages.discord.alreadyLinked)
                     );
                 }
 
                 return this.discordLinkService.findLinkByDiscordId(discordIdString)
-                    .thenCompose(existingDiscordLink -> {
-                        if (existingDiscordLink.isPresent()) {
+                    .thenCompose(optionalDiscordLink -> {
+                        if (optionalDiscordLink.isPresent()) {
                             return CompletableFuture.completedFuture(
                                 ValidationResult.error(messages -> messages.discord.discordAlreadyLinked)
                             );
                         }
 
-                        final long discordIdLong;
-                        try {
-                            discordIdLong = Long.parseLong(discordIdString);
-                        } catch (NumberFormatException e) {
-                            return CompletableFuture.completedFuture(
-                                ValidationResult.error(messages -> messages.discord.userNotFound)
-                            );
-                        }
-
-                        return this.client.getUserById(Snowflake.of(discordIdLong))
+                        return this.client.getUserById(Snowflake.of(discordIdString))
                             .map(ValidationResult::success)
                             .onErrorResume(error -> Mono.just(
                                 ValidationResult.error(messages -> messages.discord.userNotFound)

@@ -9,28 +9,28 @@ import java.util.UUID;
 class DiscordLinkEntity {
 
     @DatabaseField(id = true, columnName = "minecraft_uuid")
-    private String minecraftUuid;
+    private UUID minecraftUuid;
 
     @DatabaseField(index = true, columnName = "discord_id")
     private String discordId;
 
     DiscordLinkEntity() {}
 
-    DiscordLinkEntity(String minecraftUuid, String discordId) {
+    DiscordLinkEntity(UUID minecraftUuid, String discordId) {
         this.minecraftUuid = minecraftUuid;
         this.discordId = discordId;
     }
 
     public static DiscordLinkEntity fromDomain(DiscordLink link) {
         return new DiscordLinkEntity(
-            link.minecraftUuid().toString(),
+            link.minecraftUuid(),
             link.discordId()
         );
     }
 
     public DiscordLink toDomain() {
         return new DiscordLink(
-            UUID.fromString(this.minecraftUuid),
+            this.minecraftUuid,
             this.discordId
         );
     }

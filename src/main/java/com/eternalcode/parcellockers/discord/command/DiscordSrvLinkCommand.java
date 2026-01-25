@@ -31,8 +31,8 @@ public class DiscordSrvLinkCommand {
     void linkSelf(@Context Player player) {
         UUID playerUuid = player.getUniqueId();
 
-        this.discordSrvLinkService.findLinkByPlayer(playerUuid).thenAccept(existingLink -> {
-            if (existingLink.isPresent()) {
+        this.discordSrvLinkService.findLinkByPlayer(playerUuid).thenAccept(optionalLink -> {
+            if (optionalLink.isPresent()) {
                 this.noticeService.player(playerUuid, messages -> messages.discord.discordSrvAlreadyLinked);
                 return;
             }

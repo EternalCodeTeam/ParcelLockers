@@ -21,11 +21,12 @@ import com.eternalcode.parcellockers.discord.DiscordClientManager;
 import com.eternalcode.parcellockers.discord.DiscordFallbackLinkService;
 import com.eternalcode.parcellockers.discord.DiscordLinkService;
 import com.eternalcode.parcellockers.discord.DiscordSrvLinkService;
+import com.eternalcode.parcellockers.discord.argument.SnowflakeArgument;
 import com.eternalcode.parcellockers.discord.command.DiscordLinkCommand;
 import com.eternalcode.parcellockers.discord.command.DiscordSrvLinkCommand;
 import com.eternalcode.parcellockers.discord.command.DiscordSrvUnlinkCommand;
 import com.eternalcode.parcellockers.discord.command.DiscordUnlinkCommand;
-import com.eternalcode.parcellockers.discord.controller.ParcelDeliverNotificationController;
+import com.eternalcode.parcellockers.discord.controller.DiscordDeliverNotificationController;
 import com.eternalcode.parcellockers.discord.notification.Discord4JNotificationService;
 import com.eternalcode.parcellockers.discord.notification.DiscordNotificationService;
 import com.eternalcode.parcellockers.discord.notification.DiscordSrvNotificationService;
@@ -69,6 +70,7 @@ import dev.rollczi.litecommands.bukkit.LiteBukkitMessages;
 import dev.rollczi.liteskullapi.LiteSkullFactory;
 import dev.rollczi.liteskullapi.SkullAPI;
 import dev.triumphteam.gui.TriumphGui;
+import discord4j.common.util.Snowflake;
 import java.io.File;
 import java.sql.SQLException;
 import java.time.Duration;
@@ -194,6 +196,7 @@ public final class ParcelLockers extends JavaPlugin {
 
         var liteCommandsBuilder = LiteBukkitFactory.builder(this.getName(), this)
             .extension(new LiteAdventureExtension<>())
+            .argument(Snowflake.class, new SnowflakeArgument())
             .message(LiteBukkitMessages.PLAYER_ONLY, messageConfig.playerOnlyCommand)
             .message(LiteBukkitMessages.PLAYER_NOT_FOUND, messageConfig.playerNotFound)
             .commands(LiteCommandsAnnotations.of(
@@ -254,7 +257,7 @@ public final class ParcelLockers extends JavaPlugin {
             }
 
             server.getPluginManager().registerEvents(
-                new ParcelDeliverNotificationController(
+                new DiscordDeliverNotificationController(
                     notificationService,
                     activeLinkService,
                     userManager,

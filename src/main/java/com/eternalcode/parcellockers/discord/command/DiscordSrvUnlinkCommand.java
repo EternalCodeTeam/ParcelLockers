@@ -7,6 +7,7 @@ import dev.rollczi.litecommands.annotations.command.Command;
 import dev.rollczi.litecommands.annotations.context.Context;
 import dev.rollczi.litecommands.annotations.execute.Execute;
 import dev.rollczi.litecommands.annotations.permission.Permission;
+import discord4j.common.util.Snowflake;
 import java.util.UUID;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -34,8 +35,8 @@ public class DiscordSrvUnlinkCommand {
     void unlinkSelf(@Context Player player) {
         UUID playerUuid = player.getUniqueId();
 
-        this.discordSrvLinkService.findLinkByPlayer(playerUuid).thenAccept(existingLink -> {
-            if (existingLink.isEmpty()) {
+        this.discordSrvLinkService.findLinkByPlayer(playerUuid).thenAccept(optionalLink -> {
+            if (optionalLink.isEmpty()) {
                 this.noticeService.player(playerUuid, messages -> messages.discord.notLinked);
                 return;
             }
@@ -50,8 +51,8 @@ public class DiscordSrvUnlinkCommand {
     void unlinkPlayer(@Context CommandSender sender, @Arg Player targetPlayer) {
         UUID targetUuid = targetPlayer.getUniqueId();
 
-        this.discordSrvLinkService.findLinkByPlayer(targetUuid).thenAccept(existingLink -> {
-            if (existingLink.isEmpty()) {
+        this.discordSrvLinkService.findLinkByPlayer(targetUuid).thenAccept(optionalLink -> {
+            if (optionalLink.isEmpty()) {
                 this.noticeService.viewer(sender, messages -> messages.discord.playerNotLinked);
                 return;
             }
@@ -69,11 +70,11 @@ public class DiscordSrvUnlinkCommand {
 
     @Execute
     @Permission("parcellockers.admin")
-    void unlinkByDiscordId(@Context CommandSender sender, @Arg long discordId) {
-        String discordIdString = String.valueOf(discordId);
+    void unlinkByDiscordId(@Context CommandSender sender, @Arg Snowflake discordId) {
+        String discordIdString = discordId.asString();
 
-        this.discordSrvLinkService.findLinkByDiscordId(discordIdString).thenAccept(existingLink -> {
-            if (existingLink.isEmpty()) {
+        this.discordSrvLinkService.findLinkByDiscordId(discordIdString).thenAccept(optionalLink -> {
+            if (optionalLink.isEmpty()) {
                 this.noticeService.viewer(sender, messages -> messages.discord.discordNotLinked);
                 return;
             }

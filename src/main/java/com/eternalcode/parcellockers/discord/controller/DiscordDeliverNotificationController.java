@@ -12,14 +12,14 @@ import java.util.concurrent.CompletableFuture;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
-public class ParcelDeliverNotificationController implements Listener {
+public class DiscordDeliverNotificationController implements Listener {
 
     private final DiscordNotificationService notificationService;
     private final DiscordLinkService discordLinkService;
     private final UserManager userManager;
     private final MessageConfig messageConfig;
 
-    public ParcelDeliverNotificationController(
+    public DiscordDeliverNotificationController(
         DiscordNotificationService notificationService,
         DiscordLinkService discordLinkService,
         UserManager userManager,
