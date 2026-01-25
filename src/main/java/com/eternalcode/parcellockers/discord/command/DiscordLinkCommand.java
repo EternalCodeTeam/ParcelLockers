@@ -1,5 +1,6 @@
 package com.eternalcode.parcellockers.discord.command;
 
+import com.eternalcode.commons.concurrent.FutureHandler;
 import com.eternalcode.parcellockers.discord.DiscordLinkService;
 import com.eternalcode.parcellockers.discord.verification.DiscordLinkValidationService;
 import com.eternalcode.parcellockers.discord.verification.DiscordVerificationService;
@@ -90,7 +91,7 @@ public class DiscordLinkCommand {
             })
             .exceptionally(error -> {
                 this.noticeService.viewer(sender, messages -> messages.discord.linkFailed);
-                return null;
+                return FutureHandler.handleException(error);
             });
     }
 

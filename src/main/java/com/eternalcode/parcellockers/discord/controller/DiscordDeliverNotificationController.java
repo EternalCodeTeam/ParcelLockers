@@ -1,5 +1,6 @@
 package com.eternalcode.parcellockers.discord.controller;
 
+import com.eternalcode.multification.shared.Formatter;
 import com.eternalcode.parcellockers.configuration.implementation.MessageConfig;
 import com.eternalcode.parcellockers.discord.DiscordLinkService;
 import com.eternalcode.parcellockers.discord.notification.DiscordNotificationService;
@@ -54,15 +55,20 @@ public class DiscordDeliverNotificationController implements Listener {
             .thenApply(optionalUser -> optionalUser.map(User::name).orElse("Unknown"));
 
         senderNameFuture.thenCombine(receiverNameFuture, (senderName, receiverName) -> {
-            String message = this.messageConfig.discord.parcelDeliveryNotification
-                .replace("{PARCEL_NAME}", parcel.name())
-                .replace("{SENDER}", senderName)
-                .replace("{RECEIVER}", receiverName)
-                .replace("{DESCRIPTION}", parcel.description() != null ? parcel.description() : "No description")
-                .replace("{SIZE}", parcel.size().name())
-                .replace("{PRIORITY}", parcel.priority() ? "🔴 High Priority" : "⚪ Normal Priority");
+            String message = this.messageConfig.discord.parcelDeliveryNotification;
+            Formatter formatter = new Formatter()
+                .register("{PARCEL_NAME}", parcel.name())
+                .register("{SENDER}", senderName)
+                .register("{RECEIVER}", receiverName)
+                .register("{DESCRIPTION}", parcel.description() != null ? parcel.description() : "No description")
+                .register("{SIZE}", parcel.size().name())
+                .register("{PRIORITY}", parcel.priority()
+                    ? this.messageConfig.discord.highPriorityPlaceholder
+                    : this.messageConfig.discord.normalPriorityPlaceholder
+                );
 
-            this.notificationService.sendPrivateMessage(discordId, message);
+
+            this.notificationService.sendPrivateMessage(discordId, formatter.format(message));
             return null;
         });
     }

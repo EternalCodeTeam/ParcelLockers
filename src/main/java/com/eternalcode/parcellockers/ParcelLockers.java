@@ -12,7 +12,6 @@ import com.eternalcode.parcellockers.command.handler.NoticeHandler;
 import com.eternalcode.parcellockers.configuration.ConfigService;
 import com.eternalcode.parcellockers.configuration.implementation.MessageConfig;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
-import com.eternalcode.parcellockers.configuration.implementation.PluginConfig.DiscordSettings;
 import com.eternalcode.parcellockers.content.ParcelContentManager;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepositoryOrmLite;
@@ -20,22 +19,8 @@ import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.eternalcode.parcellockers.delivery.DeliveryManager;
 import com.eternalcode.parcellockers.delivery.repository.DeliveryRepositoryOrmLite;
 import com.eternalcode.parcellockers.discord.DiscordClientManager;
-import com.eternalcode.parcellockers.discord.DiscordFallbackLinkService;
-import com.eternalcode.parcellockers.discord.DiscordLinkService;
-import com.eternalcode.parcellockers.discord.DiscordSrvLinkService;
+import com.eternalcode.parcellockers.discord.DiscordProviderPicker;
 import com.eternalcode.parcellockers.discord.argument.SnowflakeArgument;
-import com.eternalcode.parcellockers.discord.command.DiscordLinkCommand;
-import com.eternalcode.parcellockers.discord.command.DiscordSrvLinkCommand;
-import com.eternalcode.parcellockers.discord.command.DiscordSrvUnlinkCommand;
-import com.eternalcode.parcellockers.discord.command.DiscordUnlinkCommand;
-import com.eternalcode.parcellockers.discord.controller.DiscordDeliverNotificationController;
-import com.eternalcode.parcellockers.discord.notification.Discord4JNotificationService;
-import com.eternalcode.parcellockers.discord.notification.DiscordNotificationService;
-import com.eternalcode.parcellockers.discord.notification.DiscordSrvNotificationService;
-import com.eternalcode.parcellockers.discord.repository.DiscordLinkRepository;
-import com.eternalcode.parcellockers.discord.repository.DiscordLinkRepositoryOrmLite;
-import com.eternalcode.parcellockers.discord.verification.DiscordLinkValidationService;
-import com.eternalcode.parcellockers.discord.verification.DiscordVerificationService;
 import com.eternalcode.parcellockers.gui.GuiManager;
 import com.eternalcode.parcellockers.gui.implementation.locker.LockerGui;
 import com.eternalcode.parcellockers.gui.implementation.remote.MainGui;
@@ -213,78 +198,12 @@ public final class ParcelLockers extends JavaPlugin {
             .missingPermission(new MissingPermissionsHandlerImpl(noticeService))
             .result(Notice.class, new NoticeHandler(noticeService));
 
-        DiscordSettings discordSettings = config.discord;
-        if (discordSettings.enabled) {
-            DiscordNotificationService notificationService;
-            DiscordLinkService activeLinkService;
+        DiscordProviderPicker discordProviderPicker = new DiscordProviderPicker(
+            config, messageConfig, server, noticeService, scheduler, databaseManager,
+            this.getLogger(), userManager, this, miniMessage
+        );
 
-            if (server.getPluginManager().isPluginEnabled("DiscordSRV")) {
-                this.getLogger().info("DiscordSRV detected! Using DiscordSRV for account linking.");
-                DiscordSrvLinkService discordSrvLinkService = new DiscordSrvLinkService(this.getLogger());
-                activeLinkService = discordSrvLinkService;
-                notificationService = new DiscordSrvNotificationService(this.getLogger());
-
-                liteCommandsBuilder.commands(
-                    new DiscordSrvLinkCommand(discordSrvLinkService, noticeService),
-                    new DiscordSrvUnlinkCommand(discordSrvLinkService, noticeService)
-                );
-            } else {
-                if (config.discord.botToken == null || config.discord.botToken.isBlank()) {
-                    this.getLogger().severe("Discord integration is enabled but some of the properties are not set! Disabling...");
-                    server.getPluginManager().disablePlugin(this);
-                    return;
-                }
-
-                this.discordClientManager = new DiscordClientManager(
-                    discordSettings.botToken,
-                    this.getLogger()
-                );
-
-                if (!this.discordClientManager.initialize()) {
-                    this.getLogger().severe("Failed to initialize Discord client! Disabling...");
-                    server.getPluginManager().disablePlugin(this);
-                    return;
-                }
-
-                DiscordLinkRepository discordLinkRepository = new DiscordLinkRepositoryOrmLite(databaseManager, scheduler);
-                activeLinkService = new DiscordFallbackLinkService(discordLinkRepository);
-                notificationService = new Discord4JNotificationService(
-                    this.discordClientManager.getClient(),
-                    this.getLogger()
-                );
-
-                DiscordLinkValidationService validationService = new DiscordLinkValidationService(
-                    activeLinkService,
-                    this.discordClientManager.getClient()
-                );
-
-                DiscordVerificationService verificationService = DiscordVerificationService.create(
-                    activeLinkService,
-                    noticeService,
-                    messageConfig,
-                    miniMessage
-                );
-
-                liteCommandsBuilder.commands(
-                    new DiscordLinkCommand(
-                        activeLinkService,
-                        validationService,
-                        verificationService,
-                        noticeService),
-                    new DiscordUnlinkCommand(activeLinkService, noticeService)
-                );
-            }
-
-            server.getPluginManager().registerEvents(
-                new DiscordDeliverNotificationController(
-                    notificationService,
-                    activeLinkService,
-                    userManager,
-                    messageConfig
-                ),
-                this
-            );
-        }
+        this.discordClientManager = discordProviderPicker.pick(liteCommandsBuilder);
 
         this.liteCommands = liteCommandsBuilder.build();
 

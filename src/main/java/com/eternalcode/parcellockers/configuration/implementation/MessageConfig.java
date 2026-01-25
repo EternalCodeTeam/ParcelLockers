@@ -268,6 +268,9 @@ public class MessageConfig extends OkaeriConfig {
         @Comment("# Placeholders: {PARCEL_NAME}, {SENDER}, {RECEIVER}, {DESCRIPTION}, {SIZE}, {PRIORITY}")
         public String parcelDeliveryNotification = "**📦 Parcel Delivered!**\n\nYour parcel **{PARCEL_NAME}** has been delivered!\n\n**From:** {SENDER}\n**Size:** {SIZE}\n**Priority:** {PRIORITY}\n**Description:** {DESCRIPTION}";
 
+        public String highPriorityPlaceholder = "🔴 High Priority";
+        public String normalPriorityPlaceholder = "⚪ Normal Priority";
+
         @Comment({"", "# DiscordSRV integration messages" })
         @Comment("# These messages are shown when DiscordSRV is installed and handles account linking")
         public Notice discordSrvLinkRedirect = Notice.builder()

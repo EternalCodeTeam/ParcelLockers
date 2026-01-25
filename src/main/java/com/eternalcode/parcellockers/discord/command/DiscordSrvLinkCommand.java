@@ -36,7 +36,6 @@ public class DiscordSrvLinkCommand {
 
             Optional<String> linkingCode = this.discordSrvLinkService.getLinkingCode(playerUuid);
             if (linkingCode.isEmpty()) {
-                // This shouldn't happen if the player is not linked, but handle it gracefully
                 this.noticeService.player(playerUuid, messages -> messages.discord.discordSrvAlreadyLinked);
                 return;
             }
