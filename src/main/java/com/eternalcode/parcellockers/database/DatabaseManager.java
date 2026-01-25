@@ -91,7 +91,7 @@ public class DatabaseManager {
             this.dataSource.close();
             this.connectionSource.close();
         } catch (Exception exception) {
-            exception.printStackTrace();
+            this.logger.severe("Failed to disconnect from the database: " + exception.getMessage());
         }
     }
 
