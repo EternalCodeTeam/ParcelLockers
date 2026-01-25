@@ -5,10 +5,6 @@ import github.scarsz.discordsrv.util.DiscordUtil;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 
-/**
- * DiscordSRV-based implementation of DiscordNotificationService.
- * Uses DiscordSRV's JDA instance to send notifications.
- */
 public class DiscordSrvNotificationService implements DiscordNotificationService {
 
     private final Logger logger;

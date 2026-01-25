@@ -6,10 +6,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 import reactor.core.scheduler.Schedulers;
 
-/**
- * Discord4J-based implementation of DiscordNotificationService.
- * Uses the Discord4J library to send notifications.
- */
 public class Discord4JNotificationService implements DiscordNotificationService {
 
     private final GatewayDiscordClient client;

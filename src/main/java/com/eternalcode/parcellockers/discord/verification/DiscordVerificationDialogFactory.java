@@ -16,6 +16,8 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 
 class DiscordVerificationDialogFactory {
 
+    private static final String DIALOG_KEY = "code";
+
     private final MiniMessage miniMessage;
     private final MessageConfig messageConfig;
 
@@ -29,7 +31,7 @@ class DiscordVerificationDialogFactory {
             .base(DialogBase.builder(this.miniMessage.deserialize(this.messageConfig.discord.verificationDialogTitle))
                 .canCloseWithEscape(false)
                 .inputs(List.of(DialogInput.text(
-                        "code",
+                        DIALOG_KEY,
                         this.miniMessage.deserialize(this.messageConfig.discord.verificationDialogPlaceholder))
                     .build()))
                 .build())
@@ -43,7 +45,7 @@ class DiscordVerificationDialogFactory {
             200,
             DialogAction.customClick(
                 (DialogResponseView view, Audience audience) -> {
-                    String enteredCode = view.getText("code");
+                    String enteredCode = view.getText(DIALOG_KEY);
                     onVerify.accept(view, enteredCode);
                 }, ClickCallback.Options.builder().uses(1).lifetime(ClickCallback.DEFAULT_LIFETIME).build()));
     }

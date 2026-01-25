@@ -10,10 +10,6 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 import reactor.core.publisher.Mono;
 
-/**
- * Service responsible for handling the Discord verification process.
- * Coordinates between cache, dialog, and Discord messaging.
- */
 public class DiscordVerificationService {
 
     private final VerificationCache verificationCache;
@@ -39,15 +35,6 @@ public class DiscordVerificationService {
         this.messageConfig = messageConfig;
     }
 
-    /**
-     * Creates a new DiscordVerificationService with all required dependencies.
-     *
-     * @param discordLinkService the Discord link service
-     * @param noticeService      the notice service
-     * @param messageConfig      the message configuration
-     * @param miniMessage        the MiniMessage instance for text formatting
-     * @return a new DiscordVerificationService instance
-     */
     public static DiscordVerificationService create(
         DiscordLinkService discordLinkService,
         NoticeService noticeService,
@@ -69,24 +56,10 @@ public class DiscordVerificationService {
         );
     }
 
-    /**
-     * Checks if a player has a pending verification.
-     *
-     * @param playerUuid the player's UUID
-     * @return true if a pending verification exists
-     */
     public boolean hasPendingVerification(UUID playerUuid) {
         return this.verificationCache.hasPendingVerification(playerUuid);
     }
 
-    /**
-     * Initiates the verification process by sending a code to Discord and showing the dialog.
-     *
-     * @param player      the Minecraft player
-     * @param discordId   the Discord user ID
-     * @param discordUser the Discord user
-     * @return a Mono that completes when the verification message is sent
-     */
     public Mono<Void> startVerification(Player player, long discordId, User discordUser) {
         UUID playerUuid = player.getUniqueId();
         String code = this.codeGenerator.generate();
