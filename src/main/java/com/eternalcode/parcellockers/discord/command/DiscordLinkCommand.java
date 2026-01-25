@@ -29,7 +29,6 @@ import java.util.concurrent.TimeUnit;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.event.ClickCallback;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -98,38 +97,28 @@ public class DiscordLinkCommand {
 
     @Execute
     @Permission("parcellockers.admin")
-    void linkOther(@Context CommandSender sender, @Arg String playerName, @Arg Snowflake discordId) {
+    void linkOther(@Context CommandSender sender, @Arg OfflinePlayer player, @Arg Snowflake discordId) {
         String discordIdString = discordId.asString();
+        UUID playerUuid = player.getUniqueId();
 
-        this.resolvePlayerUuid(playerName)
-            .thenCompose(playerUuid -> {
-                if (playerUuid == null) {
-                    this.noticeService.viewer(sender, messages -> messages.discord.userNotFound);
-                    return CompletableFuture.completedFuture(null);
+        this.validateAndLink(playerUuid, discordIdString).thenCompose(validationResult -> {
+            if (!validationResult.isValid()) {
+                this.noticeService.viewer(sender, validationResult.errorMessage());
+                return CompletableFuture.completedFuture(null);
+            }
+
+            return this.discordLinkService.createLink(playerUuid, discordIdString).thenAccept(success -> {
+                if (success) {
+                    this.noticeService.viewer(sender, messages -> messages.discord.adminLinkSuccess);
+                    this.noticeService.player(playerUuid, messages -> messages.discord.linkSuccess);
+                } else {
+                    this.noticeService.viewer(sender, messages -> messages.discord.linkFailed);
                 }
-
-                return this.validateAndLink(playerUuid, discordIdString)
-                    .thenCompose(validationResult -> {
-                        if (!validationResult.isValid()) {
-                            this.noticeService.viewer(sender, validationResult.errorMessage());
-                            return CompletableFuture.completedFuture(null);
-                        }
-
-                        return this.discordLinkService.createLink(playerUuid, discordIdString)
-                            .thenAccept(success -> {
-                                if (success) {
-                                    this.noticeService.viewer(sender, messages -> messages.discord.adminLinkSuccess);
-                                    this.noticeService.player(playerUuid, messages -> messages.discord.linkSuccess);
-                                } else {
-                                    this.noticeService.viewer(sender, messages -> messages.discord.linkFailed);
-                                }
-                            });
-                    });
-            })
-            .exceptionally(error -> {
-                this.noticeService.viewer(sender, messages -> messages.discord.linkFailed);
-                return null;
             });
+        }).exceptionally(error -> {
+            this.noticeService.viewer(sender, messages -> messages.discord.linkFailed);
+            return null;
+        });
     }
 
     private Mono<Void> sendVerification(UUID playerUuid, String discordId, Player player, User discordUser) {
@@ -261,17 +250,6 @@ public class DiscordLinkCommand {
         return String.valueOf(code);
     }
 
-    private CompletableFuture<UUID> resolvePlayerUuid(String playerName) {
-        return CompletableFuture.supplyAsync(() -> {
-            Player online = Bukkit.getPlayerExact(playerName);
-            if (online != null) {
-                return online.getUniqueId();
-            }
-
-            OfflinePlayer offline = Bukkit.getOfflinePlayer(playerName);
-            return offline.hasPlayedBefore() ? offline.getUniqueId() : null;
-        });
-    }
 
     private record VerificationData(String discordId, String code) {}
 
