@@ -52,10 +52,12 @@ import com.eternalcode.parcellockers.user.repository.UserRepositoryOrmLite;
 import com.eternalcode.parcellockers.user.validation.UserValidationService;
 import com.eternalcode.parcellockers.user.validation.UserValidator;
 import dev.rollczi.litecommands.LiteCommands;
+import dev.rollczi.litecommands.LiteCommandsBuilder;
 import dev.rollczi.litecommands.adventure.LiteAdventureExtension;
 import dev.rollczi.litecommands.annotations.LiteCommandsAnnotations;
 import dev.rollczi.litecommands.bukkit.LiteBukkitFactory;
 import dev.rollczi.litecommands.bukkit.LiteBukkitMessages;
+import dev.rollczi.litecommands.bukkit.LiteBukkitSettings;
 import dev.rollczi.liteskullapi.LiteSkullFactory;
 import dev.rollczi.liteskullapi.SkullAPI;
 import dev.triumphteam.gui.TriumphGui;
@@ -182,7 +184,7 @@ public final class ParcelLockers extends JavaPlugin {
             this.skullAPI
         );
 
-        var liteCommandsBuilder = LiteBukkitFactory.builder(this.getName(), this)
+        LiteCommandsBuilder<CommandSender, LiteBukkitSettings, ?> liteCommandsBuilder = LiteBukkitFactory.builder(this.getName(), this)
             .extension(new LiteAdventureExtension<>())
             .argument(Snowflake.class, new SnowflakeArgument(messageConfig))
             .message(LiteBukkitMessages.PLAYER_ONLY, messageConfig.playerOnlyCommand)

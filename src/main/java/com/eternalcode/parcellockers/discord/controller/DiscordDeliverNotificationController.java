@@ -54,7 +54,7 @@ public class DiscordDeliverNotificationController implements Listener {
         CompletableFuture<String> receiverNameFuture = this.userManager.get(parcel.receiver())
             .thenApply(optionalUser -> optionalUser.map(User::name).orElse("Unknown"));
 
-        senderNameFuture.thenCombine(receiverNameFuture, (senderName, receiverName) -> {
+        senderNameFuture.thenAcceptBoth(receiverNameFuture, (senderName, receiverName) -> {
             String message = this.messageConfig.discord.parcelDeliveryNotification;
             Formatter formatter = new Formatter()
                 .register("{PARCEL_NAME}", parcel.name())
@@ -67,9 +67,7 @@ public class DiscordDeliverNotificationController implements Listener {
                     : this.messageConfig.discord.normalPriorityPlaceholder
                 );
 
-
             this.notificationService.sendPrivateMessage(discordId, formatter.format(message));
-            return null;
         });
     }
 }
