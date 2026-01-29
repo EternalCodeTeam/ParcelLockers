@@ -2,10 +2,10 @@ package com.eternalcode.parcellockers.discord.command;
 
 import com.eternalcode.commons.concurrent.FutureHandler;
 import com.eternalcode.parcellockers.discord.DiscordLinkService;
+import com.eternalcode.parcellockers.discord.LinkResult;
 import com.eternalcode.parcellockers.discord.verification.DiscordLinkValidationService;
 import com.eternalcode.parcellockers.discord.verification.DiscordVerificationService;
 import com.eternalcode.parcellockers.notification.NoticeService;
-import com.eternalcode.parcellockers.shared.validation.ValidationResult;
 import dev.rollczi.litecommands.annotations.argument.Arg;
 import dev.rollczi.litecommands.annotations.command.Command;
 import dev.rollczi.litecommands.annotations.context.Context;
@@ -49,9 +49,9 @@ public class DiscordLinkCommand {
         }
 
         this.validationService.validate(playerUuid, discordIdLong)
-            .thenCompose(validationResult -> {
-                if (!validationResult.isValid()) {
-                    this.sendValidationError(playerUuid, validationResult);
+            .thenCompose(linkResult -> {
+                if (linkResult != LinkResult.SUCCESS) {
+                    this.sendValidationError(playerUuid, linkResult);
                     return CompletableFuture.completedFuture(null);
                 }
 
@@ -73,20 +73,21 @@ public class DiscordLinkCommand {
         UUID playerUuid = player.getUniqueId();
 
         this.validationService.validate(playerUuid, discordIdLong)
-            .thenCompose(validationResult -> {
-                if (!validationResult.isValid()) {
-                    this.sendValidationErrorToViewer(sender, validationResult);
+            .thenCompose(linkResult -> {
+                if (linkResult != LinkResult.SUCCESS) {
+                    this.sendValidationErrorToViewer(sender, linkResult);
                     return CompletableFuture.completedFuture(null);
                 }
 
                 return this.discordLinkService.createLink(playerUuid, discordIdLong)
-                    .thenAccept(success -> {
-                        if (success) {
-                            this.noticeService.viewer(sender, messages -> messages.discord.adminLinkSuccess);
-                            this.noticeService.player(playerUuid, messages -> messages.discord.linkSuccess);
-                            return;
+                    .thenAccept(createResult -> {
+                        switch (createResult) {
+                            case SUCCESS -> {
+                                this.noticeService.viewer(sender, messages -> messages.discord.adminLinkSuccess);
+                                this.noticeService.player(playerUuid, messages -> messages.discord.linkSuccess);
+                            }
+                            default -> this.noticeService.viewer(sender, messages -> messages.discord.linkFailed);
                         }
-                        this.noticeService.viewer(sender, messages -> messages.discord.linkFailed);
                     });
             })
             .exceptionally(error -> {
@@ -95,20 +96,20 @@ public class DiscordLinkCommand {
             });
     }
 
-    private void sendValidationError(UUID playerUuid, ValidationResult result) {
-        switch (result.errorMessage()) {
-            case "alreadyLinked" -> this.noticeService.player(playerUuid, messages -> messages.discord.alreadyLinked);
-            case "discordAlreadyLinked" -> this.noticeService.player(playerUuid, messages -> messages.discord.discordAlreadyLinked);
-            case "userNotFound" -> this.noticeService.player(playerUuid, messages -> messages.discord.userNotFound);
+    private void sendValidationError(UUID playerUuid, LinkResult result) {
+        switch (result) {
+            case PLAYER_ALREADY_LINKED -> this.noticeService.player(playerUuid, messages -> messages.discord.alreadyLinked);
+            case DISCORD_ALREADY_LINKED -> this.noticeService.player(playerUuid, messages -> messages.discord.discordAlreadyLinked);
+            case DISCORD_USER_NOT_FOUND -> this.noticeService.player(playerUuid, messages -> messages.discord.userNotFound);
             default -> this.noticeService.player(playerUuid, messages -> messages.discord.linkFailed);
         }
     }
 
-    private void sendValidationErrorToViewer(CommandSender sender, ValidationResult result) {
-        switch (result.errorMessage()) {
-            case "alreadyLinked" -> this.noticeService.viewer(sender, messages -> messages.discord.playerAlreadyLinked);
-            case "discordAlreadyLinked" -> this.noticeService.viewer(sender, messages -> messages.discord.discordAlreadyLinked);
-            case "userNotFound" -> this.noticeService.viewer(sender, messages -> messages.discord.userNotFound);
+    private void sendValidationErrorToViewer(CommandSender sender, LinkResult result) {
+        switch (result) {
+            case PLAYER_ALREADY_LINKED -> this.noticeService.viewer(sender, messages -> messages.discord.playerAlreadyLinked);
+            case DISCORD_ALREADY_LINKED -> this.noticeService.viewer(sender, messages -> messages.discord.discordAlreadyLinked);
+            case DISCORD_USER_NOT_FOUND -> this.noticeService.viewer(sender, messages -> messages.discord.userNotFound);
             default -> this.noticeService.viewer(sender, messages -> messages.discord.linkFailed);
         }
     }

@@ -1,5 +1,9 @@
-package com.eternalcode.parcellockers.discord;
+package com.eternalcode.parcellockers.discord.discordsrv;
 
+import com.eternalcode.parcellockers.discord.DiscordLink;
+import com.eternalcode.parcellockers.discord.DiscordLinkService;
+import com.eternalcode.parcellockers.discord.LinkResult;
+import com.eternalcode.parcellockers.discord.UnlinkResult;
 import github.scarsz.discordsrv.DiscordSRV;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.User;
 import github.scarsz.discordsrv.util.DiscordUtil;
@@ -40,44 +44,48 @@ public class DiscordSrvLinkService implements DiscordLinkService {
     }
 
     @Override
-    public CompletableFuture<Boolean> createLink(UUID playerUuid, long discordId) {
+    public CompletableFuture<LinkResult> createLink(UUID playerUuid, long discordId) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 DiscordSRV.getPlugin().getAccountLinkManager().link(Long.toString(discordId), playerUuid);
-                return true;
+                return LinkResult.SUCCESS;
             } catch (Exception e) {
                 this.logger.log(Level.WARNING, "Failed to create DiscordSRV link", e);
-                return false;
+                return LinkResult.GENERIC_FAILURE;
             }
         });
     }
 
     @Override
-    public CompletableFuture<Boolean> unlinkPlayer(UUID playerUuid) {
+    public CompletableFuture<UnlinkResult> unlinkPlayer(UUID playerUuid) {
         return CompletableFuture.supplyAsync(() -> {
             try {
+                String existingDiscordId = DiscordSRV.getPlugin().getAccountLinkManager().getDiscordId(playerUuid);
+                if (existingDiscordId == null) {
+                    return UnlinkResult.NOT_LINKED;
+                }
                 DiscordSRV.getPlugin().getAccountLinkManager().unlink(playerUuid);
-                return true;
+                return UnlinkResult.SUCCESS;
             } catch (Exception exception) {
                 this.logger.log(Level.WARNING, "Failed to unlink DiscordSRV player", exception);
-                return false;
+                return UnlinkResult.GENERIC_FAILURE;
             }
         });
     }
 
     @Override
-    public CompletableFuture<Boolean> unlinkDiscordId(long discordId) {
+    public CompletableFuture<UnlinkResult> unlinkDiscordId(long discordId) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 UUID playerUuid = DiscordSRV.getPlugin().getAccountLinkManager().getUuid(Long.toString(discordId));
                 if (playerUuid == null) {
-                    return false;
+                    return UnlinkResult.NOT_LINKED;
                 }
                 DiscordSRV.getPlugin().getAccountLinkManager().unlink(playerUuid);
-                return true;
+                return UnlinkResult.SUCCESS;
             } catch (Exception exception) {
                 this.logger.log(Level.WARNING, "Failed to unlink DiscordSRV user by Discord ID", exception);
-                return false;
+                return UnlinkResult.GENERIC_FAILURE;
             }
         });
     }

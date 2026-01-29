@@ -108,12 +108,11 @@ public class DiscordVerificationService {
 
                 this.verificationCache.invalidate(playerUuid);
                 this.discordLinkService.createLink(playerUuid, verificationData.discordId())
-                    .thenAccept(success -> {
-                        if (success) {
-                            this.noticeService.player(playerUuid, messages -> messages.discord.linkSuccess);
-                            return;
+                    .thenAccept(result -> {
+                        switch (result) {
+                            case SUCCESS -> this.noticeService.player(playerUuid, messages -> messages.discord.linkSuccess);
+                            default -> this.noticeService.player(playerUuid, messages -> messages.discord.linkFailed);
                         }
-                        this.noticeService.player(playerUuid, messages -> messages.discord.linkFailed);
                     });
             },
             () -> this.noticeService.player(playerUuid, messages -> messages.discord.verificationExpired)

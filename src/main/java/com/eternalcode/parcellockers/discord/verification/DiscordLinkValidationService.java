@@ -1,7 +1,7 @@
 package com.eternalcode.parcellockers.discord.verification;
 
 import com.eternalcode.parcellockers.discord.DiscordLinkService;
-import com.eternalcode.parcellockers.shared.validation.ValidationResult;
+import com.eternalcode.parcellockers.discord.LinkResult;
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.object.entity.User;
@@ -22,20 +22,20 @@ public class DiscordLinkValidationService {
         this.discordClient = discordClient;
     }
 
-    public CompletableFuture<ValidationResult> validate(UUID playerUuid, long discordId) {
+    public CompletableFuture<LinkResult> validate(UUID playerUuid, long discordId) {
         return this.discordLinkService.findLinkByPlayer(playerUuid).thenCompose(optionalLink -> {
             if (optionalLink.isPresent()) {
-                return CompletableFuture.completedFuture(ValidationResult.invalid("alreadyLinked"));
+                return CompletableFuture.completedFuture(LinkResult.PLAYER_ALREADY_LINKED);
             }
 
             return this.discordLinkService.findLinkByDiscordId(discordId).thenCompose(optionalDiscordLink -> {
                 if (optionalDiscordLink.isPresent()) {
-                    return CompletableFuture.completedFuture(ValidationResult.invalid("discordAlreadyLinked"));
+                    return CompletableFuture.completedFuture(LinkResult.DISCORD_ALREADY_LINKED);
                 }
 
                 return this.discordClient.getUserById(Snowflake.of(discordId))
-                    .map(user -> ValidationResult.valid())
-                    .onErrorResume(error -> Mono.just(ValidationResult.invalid("userNotFound")))
+                    .map(user -> LinkResult.SUCCESS)
+                    .onErrorResume(error -> Mono.just(LinkResult.DISCORD_USER_NOT_FOUND))
                     .toFuture();
             });
         });

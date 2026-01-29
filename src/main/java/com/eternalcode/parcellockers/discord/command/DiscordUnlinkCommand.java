@@ -37,12 +37,12 @@ public class DiscordUnlinkCommand {
                 return;
             }
 
-            this.discordLinkService.unlinkPlayer(playerUuid).thenAccept(success -> {
-                if (success) {
-                    this.noticeService.player(playerUuid, messages -> messages.discord.unlinkSuccess);
-                    return;
+            this.discordLinkService.unlinkPlayer(playerUuid).thenAccept(result -> {
+                switch (result) {
+                    case SUCCESS -> this.noticeService.player(playerUuid, messages -> messages.discord.unlinkSuccess);
+                    case NOT_LINKED -> this.noticeService.player(playerUuid, messages -> messages.discord.notLinked);
+                    case GENERIC_FAILURE -> this.noticeService.player(playerUuid, messages -> messages.discord.unlinkFailed);
                 }
-                this.noticeService.player(playerUuid, messages -> messages.discord.unlinkFailed);
             });
         });
     }
@@ -58,13 +58,15 @@ public class DiscordUnlinkCommand {
                 return;
             }
 
-            this.discordLinkService.unlinkPlayer(targetUuid).thenAccept(success -> {
-                if (success) {
-                    this.noticeService.viewer(sender, messages -> messages.discord.adminUnlinkSuccess);
-                    this.noticeService.player(targetUuid, messages -> messages.discord.unlinkSuccess);
-                    return;
+            this.discordLinkService.unlinkPlayer(targetUuid).thenAccept(result -> {
+                switch (result) {
+                    case SUCCESS -> {
+                        this.noticeService.viewer(sender, messages -> messages.discord.adminUnlinkSuccess);
+                        this.noticeService.player(targetUuid, messages -> messages.discord.unlinkSuccess);
+                    }
+                    case NOT_LINKED -> this.noticeService.viewer(sender, messages -> messages.discord.playerNotLinked);
+                    case GENERIC_FAILURE -> this.noticeService.viewer(sender, messages -> messages.discord.unlinkFailed);
                 }
-                this.noticeService.viewer(sender, messages -> messages.discord.unlinkFailed);
             });
         });
     }
@@ -80,12 +82,12 @@ public class DiscordUnlinkCommand {
                 return;
             }
 
-            this.discordLinkService.unlinkDiscordId(discordIdLong).thenAccept(success -> {
-                if (success) {
-                    this.noticeService.viewer(sender, messages -> messages.discord.adminUnlinkByDiscordSuccess);
-                    return;
+            this.discordLinkService.unlinkDiscordId(discordIdLong).thenAccept(result -> {
+                switch (result) {
+                    case SUCCESS -> this.noticeService.viewer(sender, messages -> messages.discord.adminUnlinkByDiscordSuccess);
+                    case NOT_LINKED -> this.noticeService.viewer(sender, messages -> messages.discord.discordNotLinked);
+                    case GENERIC_FAILURE -> this.noticeService.viewer(sender, messages -> messages.discord.unlinkFailed);
                 }
-                this.noticeService.viewer(sender, messages -> messages.discord.unlinkFailed);
             });
         });
     }

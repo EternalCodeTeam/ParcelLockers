@@ -1,6 +1,6 @@
-package com.eternalcode.parcellockers.discord.command;
+package com.eternalcode.parcellockers.discord.discordsrv.command;
 
-import com.eternalcode.parcellockers.discord.DiscordSrvLinkService;
+import com.eternalcode.parcellockers.discord.discordsrv.DiscordSrvLinkService;
 import com.eternalcode.parcellockers.notification.NoticeService;
 import dev.rollczi.litecommands.annotations.command.Command;
 import dev.rollczi.litecommands.annotations.context.Context;

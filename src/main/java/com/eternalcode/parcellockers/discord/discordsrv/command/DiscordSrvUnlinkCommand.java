@@ -1,6 +1,6 @@
-package com.eternalcode.parcellockers.discord.command;
+package com.eternalcode.parcellockers.discord.discordsrv.command;
 
-import com.eternalcode.parcellockers.discord.DiscordSrvLinkService;
+import com.eternalcode.parcellockers.discord.discordsrv.DiscordSrvLinkService;
 import com.eternalcode.parcellockers.notification.NoticeService;
 import dev.rollczi.litecommands.annotations.argument.Arg;
 import dev.rollczi.litecommands.annotations.command.Command;
@@ -52,13 +52,15 @@ public class DiscordSrvUnlinkCommand {
                 return;
             }
 
-            this.discordSrvLinkService.unlinkPlayer(targetUuid).thenAccept(success -> {
-                if (success) {
-                    this.noticeService.viewer(sender, messages -> messages.discord.adminUnlinkSuccess);
-                    this.noticeService.player(targetUuid, messages -> messages.discord.unlinkSuccess);
-                    return;
+            this.discordSrvLinkService.unlinkPlayer(targetUuid).thenAccept(result -> {
+                switch (result) {
+                    case SUCCESS -> {
+                        this.noticeService.viewer(sender, messages -> messages.discord.adminUnlinkSuccess);
+                        this.noticeService.player(targetUuid, messages -> messages.discord.unlinkSuccess);
+                    }
+                    case NOT_LINKED -> this.noticeService.viewer(sender, messages -> messages.discord.playerNotLinked);
+                    case GENERIC_FAILURE -> this.noticeService.viewer(sender, messages -> messages.discord.unlinkFailed);
                 }
-                this.noticeService.viewer(sender, messages -> messages.discord.unlinkFailed);
             });
         });
     }
@@ -74,12 +76,12 @@ public class DiscordSrvUnlinkCommand {
                 return;
             }
 
-            this.discordSrvLinkService.unlinkDiscordId(discordIdLong).thenAccept(success -> {
-                if (success) {
-                    this.noticeService.viewer(sender, messages -> messages.discord.adminUnlinkByDiscordSuccess);
-                    return;
+            this.discordSrvLinkService.unlinkDiscordId(discordIdLong).thenAccept(result -> {
+                switch (result) {
+                    case SUCCESS -> this.noticeService.viewer(sender, messages -> messages.discord.adminUnlinkByDiscordSuccess);
+                    case NOT_LINKED -> this.noticeService.viewer(sender, messages -> messages.discord.discordNotLinked);
+                    case GENERIC_FAILURE -> this.noticeService.viewer(sender, messages -> messages.discord.unlinkFailed);
                 }
-                this.noticeService.viewer(sender, messages -> messages.discord.unlinkFailed);
             });
         });
     }

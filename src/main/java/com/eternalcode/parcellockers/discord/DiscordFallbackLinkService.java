@@ -24,18 +24,24 @@ public class DiscordFallbackLinkService implements DiscordLinkService {
     }
 
     @Override
-    public CompletableFuture<Boolean> createLink(UUID playerUuid, long discordId) {
+    public CompletableFuture<LinkResult> createLink(UUID playerUuid, long discordId) {
         DiscordLink link = new DiscordLink(playerUuid, discordId);
-        return this.repository.save(link);
+        return this.repository.save(link).thenApply(success ->
+            success ? LinkResult.SUCCESS : LinkResult.GENERIC_FAILURE
+        );
     }
 
     @Override
-    public CompletableFuture<Boolean> unlinkPlayer(UUID playerUuid) {
-        return this.repository.deleteByPlayerUuid(playerUuid);
+    public CompletableFuture<UnlinkResult> unlinkPlayer(UUID playerUuid) {
+        return this.repository.deleteByPlayerUuid(playerUuid).thenApply(success ->
+            success ? UnlinkResult.SUCCESS : UnlinkResult.NOT_LINKED
+        );
     }
 
     @Override
-    public CompletableFuture<Boolean> unlinkDiscordId(long discordId) {
-        return this.repository.deleteByDiscordId(discordId);
+    public CompletableFuture<UnlinkResult> unlinkDiscordId(long discordId) {
+        return this.repository.deleteByDiscordId(discordId).thenApply(success ->
+            success ? UnlinkResult.SUCCESS : UnlinkResult.NOT_LINKED
+        );
     }
 }

@@ -1,5 +1,6 @@
-package com.eternalcode.parcellockers.discord.notification;
+package com.eternalcode.parcellockers.discord.discordsrv.notification;
 
+import com.eternalcode.parcellockers.discord.notification.DiscordNotificationService;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.User;
 import github.scarsz.discordsrv.util.DiscordUtil;
 import java.util.concurrent.CompletableFuture;
