@@ -62,7 +62,7 @@ public class DiscordLinkCommand {
             })
             .exceptionally(error -> {
                 this.noticeService.player(playerUuid, messages -> messages.discord.linkFailed);
-                return null;
+                return FutureHandler.handleException(error);
             });
     }
 
