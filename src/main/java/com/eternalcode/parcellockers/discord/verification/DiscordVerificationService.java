@@ -1,6 +1,7 @@
 package com.eternalcode.parcellockers.discord.verification;
 
 import com.eternalcode.parcellockers.configuration.implementation.MessageConfig;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig.DiscordSettings;
 import com.eternalcode.parcellockers.discord.DiscordLinkService;
 import com.eternalcode.parcellockers.notification.NoticeService;
 import discord4j.core.object.entity.User;
@@ -39,9 +40,10 @@ public class DiscordVerificationService {
         DiscordLinkService discordLinkService,
         NoticeService noticeService,
         MessageConfig messageConfig,
-        MiniMessage miniMessage
+        MiniMessage miniMessage,
+        DiscordSettings discordSettings
     ) {
-        VerificationCache verificationCache = new VerificationCache();
+        VerificationCache verificationCache = new VerificationCache(discordSettings);
         VerificationCodeGenerator codeGenerator = new VerificationCodeGenerator();
         DiscordVerificationDialogFactory dialogFactory =
             new DiscordVerificationDialogFactory(miniMessage, messageConfig);

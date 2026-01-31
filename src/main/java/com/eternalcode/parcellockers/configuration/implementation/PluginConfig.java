@@ -372,5 +372,8 @@ public class PluginConfig extends OkaeriConfig {
             "# If left empty, make sure the DISCORD_BOT_TOKEN environment variable is set before starting the server."
         })
         public String botToken = "";
+
+        @Comment("# The expiration duration of the Discord account linking codes.")
+        public Duration linkCodeExpiration = Duration.ofMinutes(2);
     }
 }

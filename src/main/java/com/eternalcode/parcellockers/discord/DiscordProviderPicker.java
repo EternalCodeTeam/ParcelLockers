@@ -100,8 +100,7 @@ public class DiscordProviderPicker {
                 return null;
             }
 
-            DiscordLinkRepository discordLinkRepository =
-                new DiscordLinkRepositoryOrmLite(this.databaseManager, this.scheduler);
+            DiscordLinkRepository discordLinkRepository = new DiscordLinkRepositoryOrmLite(this.databaseManager, this.scheduler);
             activeLinkService = new DiscordFallbackLinkService(discordLinkRepository);
             notificationService = new Discord4JNotificationService(
                 discordClientManager.getClient(),
@@ -117,7 +116,8 @@ public class DiscordProviderPicker {
                 activeLinkService,
                 this.noticeService,
                 this.messageConfig,
-                this.miniMessage
+                this.miniMessage,
+                this.config.discord
             );
 
             liteCommandsBuilder.commands(
