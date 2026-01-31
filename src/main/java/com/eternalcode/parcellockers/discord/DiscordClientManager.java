@@ -41,7 +41,7 @@ public class DiscordClientManager {
     public void shutdown() {
         this.logger.info("Shutting down Discord client...");
         if (this.client != null) {
-            this.client.logout().block();
+            this.client.logout().subscribe();
         }
     }
 
