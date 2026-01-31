@@ -366,11 +366,7 @@ public class PluginConfig extends OkaeriConfig {
         @Comment("# Whether Discord integration is enabled.")
         public boolean enabled = true;
 
-        @Comment({
-            "# The Discord bot token used by the bot to connect.",
-            "# It is recommended to set this value here, or via the DISCORD_BOT_TOKEN environment variable.",
-            "# If left empty, make sure the DISCORD_BOT_TOKEN environment variable is set before starting the server."
-        })
+        @Comment("# The Discord bot token used by the bot to connect.")
         public String botToken = "";
 
         @Comment("# The expiration duration of the Discord account linking codes.")
