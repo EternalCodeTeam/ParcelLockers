@@ -64,7 +64,9 @@ import dev.triumphteam.gui.TriumphGui;
 import discord4j.common.util.Snowflake;
 import java.io.File;
 import java.sql.SQLException;
+import java.time.Clock;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.stream.Stream;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.milkbowl.vault.economy.Economy;
@@ -217,15 +219,18 @@ public final class ParcelLockers extends JavaPlugin {
             new LoadUserController(userManager, server)
         ).forEach(controller -> server.getPluginManager().registerEvents(controller, this));
 
-        Metrics metrics = new Metrics(this, 17677);
-        UpdaterService updaterService = new UpdaterService(this.getPluginMeta().getVersion());
+        new Metrics(this, 17677);
+        new UpdaterService(this.getPluginMeta().getVersion());
 
         parcelRepository.findAll().thenAccept(optionalParcels -> optionalParcels
             .stream()
             .filter(parcel -> parcel.status() != ParcelStatus.DELIVERED)
             .forEach(parcel -> deliveryRepository.find(parcel.uuid()).thenAccept(optionalDelivery ->
                 optionalDelivery.ifPresent(delivery -> {
-                    long delay = Math.max(0, delivery.deliveryTimestamp().toEpochMilli() - System.currentTimeMillis());
+                    long delay = Math.max(
+                        0,
+                        Duration.between(Instant.now(Clock.systemDefaultZone()), delivery.deliveryTimestamp()).toMillis()
+                    );
                     scheduler.runLaterAsync(
                         new ParcelSendTask(parcel, parcelService, deliveryManager),
                         Duration.ofMillis(delay));
