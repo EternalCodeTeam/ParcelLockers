@@ -7,6 +7,8 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
+// Called when a locker is deleted
+// Warning: this event is not called when all lockers are deleted through "/parcel debug delete lockers" command
 public class LockerDeleteEvent extends Event implements Cancellable {
 
     private static final HandlerList HANDLER_LIST = new HandlerList();
