@@ -17,7 +17,13 @@ especially on long distances.
 
 ## ❗Warning
 
-ParcelLockers is at an very early stage of development, and you use it at your own risk.
+ParcelLockers is at an early stage of development, and you use it at your own risk.
+
+## ✨ Features
+- Place different parcel lockers in different Minecraft worlds and send items to other players.
+- Link your Minecraft account with your Discord account and receive notifications about incoming parcels.
+- **Nexo support** - Use custom items from the Nexo plugin as parcel locker blocks.
+- And much more to come in the future!
 
 ## ℹ️ Information
 

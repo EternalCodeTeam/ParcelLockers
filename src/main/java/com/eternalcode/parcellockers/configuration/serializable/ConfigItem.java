@@ -4,13 +4,16 @@ import static com.eternalcode.commons.adventure.AdventureUtil.resetItalic;
 
 import com.eternalcode.commons.adventure.AdventureLegacyColorPostProcessor;
 import com.eternalcode.commons.adventure.AdventureLegacyColorPreProcessor;
+import com.eternalcode.parcellockers.nexo.NexoIntegration;
 import dev.triumphteam.gui.builder.item.PaperItemBuilder;
 import dev.triumphteam.gui.components.GuiAction;
 import dev.triumphteam.gui.guis.GuiItem;
+import eu.okaeri.configs.annotation.Comment;
 import eu.okaeri.configs.annotation.Exclude;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -37,8 +40,13 @@ public class ConfigItem implements Serializable, Cloneable {
     private List<String> lore = List.of();
     private boolean glow = false;
 
+    @Comment("# Optional: Nexo item ID. If set, this will override the 'type' field with a Nexo custom item.")
+    private String nexoId = "";
+
     public PaperItemBuilder toBuilder() {
-        return PaperItemBuilder.from(this.type)
+        ItemStack baseItem = this.getBaseItemStack();
+
+        return PaperItemBuilder.from(baseItem)
             .name(resetItalic(MINI_MESSAGE.deserialize(this.name)))
             .lore(this.lore.stream().map(element -> resetItalic(MINI_MESSAGE.deserialize(element))).toList())
             .flags(ItemFlag.HIDE_ENCHANTS)
@@ -57,15 +65,10 @@ public class ConfigItem implements Serializable, Cloneable {
         return this.toBuilder().build();
     }
 
-    /**
-     * By default, ConfigItem#toItemStack adds a "parcellockers-mfgui" value to the item's PersistentDataContainer
-     * to identify it as a GUI item.
-     * This method, on the other hand creates a raw ItemStack without that extra data.
-     */
-
     @ApiStatus.Internal
     public ItemStack toRawItemStack() {
-        ItemStack itemStack = new ItemStack(this.type);
+        ItemStack itemStack = this.getBaseItemStack();
+
         itemStack.editMeta(meta -> {
             meta.displayName(resetItalic(MINI_MESSAGE.deserialize(this.name)));
             meta.lore(this.lore.stream()
@@ -77,6 +80,37 @@ public class ConfigItem implements Serializable, Cloneable {
             }
         });
         return itemStack;
+    }
+
+    private ItemStack getBaseItemStack() {
+        if (this.nexoId != null && !this.nexoId.isEmpty()) {
+            Optional<ItemStack> nexoItem = NexoIntegration.getItemStack(this.nexoId);
+            if (nexoItem.isPresent()) {
+                return nexoItem.get();
+            }
+        }
+        return new ItemStack(this.type);
+    }
+
+    public boolean isNexoItem() {
+        return this.nexoId != null && !this.nexoId.isEmpty();
+    }
+
+    public boolean matches(ItemStack itemStack) {
+        if (itemStack == null) {
+            return false;
+        }
+
+        if (this.isNexoItem()) {
+            return NexoIntegration.matches(itemStack, this.nexoId);
+        }
+
+        return this.toRawItemStack().isSimilar(itemStack);
+    }
+
+    public ConfigItem nexoId(String nexoId) {
+        this.nexoId = nexoId;
+        return this;
     }
 
     @Override

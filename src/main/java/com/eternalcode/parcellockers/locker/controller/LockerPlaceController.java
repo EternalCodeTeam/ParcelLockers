@@ -67,9 +67,8 @@ public class LockerPlaceController implements Listener {
         ItemStack itemInMainHand = playerInventory.getItemInMainHand();
         ItemStack itemInOffHand = playerInventory.getItemInOffHand();
 
-        ItemStack parcelLockerItem = this.config.settings.parcelLockerItem.toRawItemStack();
-
-        if (!parcelLockerItem.isSimilar(itemInMainHand) && !parcelLockerItem.isSimilar(itemInOffHand)) {
+        if (!this.config.settings.parcelLockerItem.matches(itemInMainHand)
+            && !this.config.settings.parcelLockerItem.matches(itemInOffHand)) {
             return;
         }
 

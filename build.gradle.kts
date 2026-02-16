@@ -21,6 +21,7 @@ repositories {
     maven("https://repo.eternalcode.pl/releases")
     maven("https://storehouse.okaeri.eu/repository/maven-public/")
     maven("https://nexus.scarsz.me/content/groups/public/") // DiscordSRV
+    maven("https://repo.nexomc.com/releases/") // Nexo
 }
 
 dependencies {
@@ -86,6 +87,9 @@ dependencies {
     // discordsrv (optional integration)
     compileOnly("com.discordsrv:discordsrv:1.30.4")
 
+    // nexo
+    compileOnly("com.nexomc:nexo:1.2.0")
+
     testImplementation("org.junit.jupiter:junit-jupiter-api:6.0.3")
     testImplementation("org.junit.jupiter:junit-jupiter-params:6.0.3")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:6.0.3")
@@ -117,6 +121,10 @@ paper {
             load = PaperPluginDescription.RelativeLoadOrder.BEFORE
         }
         register("DiscordSRV") {
+            required = false
+            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
+        }
+        register("Nexo") {
             required = false
             load = PaperPluginDescription.RelativeLoadOrder.BEFORE
         }

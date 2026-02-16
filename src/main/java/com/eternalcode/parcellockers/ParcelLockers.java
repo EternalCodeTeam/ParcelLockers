@@ -222,6 +222,10 @@ public final class ParcelLockers extends JavaPlugin {
         new Metrics(this, 17677);
         new UpdaterService(this.getPluginMeta().getVersion());
 
+        if (server.getPluginManager().isPluginEnabled("Nexo")) {
+            this.getLogger().info("Nexo detected! Custom items support enabled.");
+        }
+
         parcelRepository.findAll().thenAccept(optionalParcels -> optionalParcels
             .stream()
             .filter(parcel -> parcel.status() != ParcelStatus.DELIVERED)
