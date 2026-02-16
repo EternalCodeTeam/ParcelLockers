@@ -57,10 +57,10 @@ more.
 Found a bug? Report it [here](https://github.com/EternalCodeTeam/ParcelLockers/issues). If you are not sure if that's an
 intended behavior or not, feel free to ask on our [Discord](https://discord.com/invite/FQ7jmGBd6c) 😅
 
-## :heart: Special Thanks
+## ❤️ Special Thanks
 
 [<img src="https://user-images.githubusercontent.com/65517973/210912946-447a6b9a-2685-4796-9482-a44bffc727ce.png" alt="JetBrains" width="150">](https://www.jetbrains.com)
-[<img src=".github/assets/sentry.svg" alt="Sentry logo" width="150" height="150">](https://www.sentry.io)
+[<img src="https://github.com/EternalCodeTeam/ParcelLockers/blob/master/.github/assets/sentry.svg?raw=true" alt="Sentry logo" width="150" height="150">](https://www.sentry.io)
 
 We express our gratitude to JetBrains for providing [Open Source Licenses](https://www.jetbrains.com/opensource/) for
 their outstanding tools. We recommend using [IntelliJ IDEA](https://www.jetbrains.com/idea/) to work with our projects

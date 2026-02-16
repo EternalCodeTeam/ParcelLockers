@@ -131,7 +131,7 @@ tasks.withType<JavaCompile> {
 }
 
 modrinth {
-    token.set(System.getenv("MODRINTH_TOKEN"))
+    token.set(providers.environmentVariable("MODRINTH_TOKEN"))
     projectId.set("parcellockers")
     versionNumber.set(project.version.toString())
     versionType.set(getVersionType(project.version.toString()))
