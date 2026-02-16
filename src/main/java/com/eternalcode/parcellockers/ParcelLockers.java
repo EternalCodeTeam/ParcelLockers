@@ -4,9 +4,11 @@ import com.eternalcode.commons.adventure.AdventureLegacyColorPostProcessor;
 import com.eternalcode.commons.adventure.AdventureLegacyColorPreProcessor;
 import com.eternalcode.commons.bukkit.scheduler.BukkitSchedulerImpl;
 import com.eternalcode.commons.scheduler.Scheduler;
+import com.eternalcode.multification.notice.Notice;
 import com.eternalcode.parcellockers.command.debug.DebugCommand;
 import com.eternalcode.parcellockers.command.handler.InvalidUsageHandlerImpl;
 import com.eternalcode.parcellockers.command.handler.MissingPermissionsHandlerImpl;
+import com.eternalcode.parcellockers.command.handler.NoticeHandler;
 import com.eternalcode.parcellockers.configuration.ConfigService;
 import com.eternalcode.parcellockers.configuration.implementation.MessageConfig;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
@@ -16,6 +18,9 @@ import com.eternalcode.parcellockers.content.repository.ParcelContentRepositoryO
 import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.eternalcode.parcellockers.delivery.DeliveryManager;
 import com.eternalcode.parcellockers.delivery.repository.DeliveryRepositoryOrmLite;
+import com.eternalcode.parcellockers.discord.DiscordClientManager;
+import com.eternalcode.parcellockers.discord.DiscordProviderPicker;
+import com.eternalcode.parcellockers.discord.argument.SnowflakeArgument;
 import com.eternalcode.parcellockers.gui.GuiManager;
 import com.eternalcode.parcellockers.gui.implementation.locker.LockerGui;
 import com.eternalcode.parcellockers.gui.implementation.remote.MainGui;
@@ -47,16 +52,21 @@ import com.eternalcode.parcellockers.user.repository.UserRepositoryOrmLite;
 import com.eternalcode.parcellockers.user.validation.UserValidationService;
 import com.eternalcode.parcellockers.user.validation.UserValidator;
 import dev.rollczi.litecommands.LiteCommands;
+import dev.rollczi.litecommands.LiteCommandsBuilder;
 import dev.rollczi.litecommands.adventure.LiteAdventureExtension;
 import dev.rollczi.litecommands.annotations.LiteCommandsAnnotations;
 import dev.rollczi.litecommands.bukkit.LiteBukkitFactory;
 import dev.rollczi.litecommands.bukkit.LiteBukkitMessages;
+import dev.rollczi.litecommands.bukkit.LiteBukkitSettings;
 import dev.rollczi.liteskullapi.LiteSkullFactory;
 import dev.rollczi.liteskullapi.SkullAPI;
 import dev.triumphteam.gui.TriumphGui;
+import discord4j.common.util.Snowflake;
 import java.io.File;
 import java.sql.SQLException;
+import java.time.Clock;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.stream.Stream;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.milkbowl.vault.economy.Economy;
@@ -72,6 +82,7 @@ public final class ParcelLockers extends JavaPlugin {
     private SkullAPI skullAPI;
     private DatabaseManager databaseManager;
     private Economy economy;
+    private DiscordClientManager discordClientManager;
 
     @Override
     public void onEnable() {
@@ -175,19 +186,30 @@ public final class ParcelLockers extends JavaPlugin {
             this.skullAPI
         );
 
-        this.liteCommands = LiteBukkitFactory.builder(this.getName(), this)
+        LiteCommandsBuilder<CommandSender, LiteBukkitSettings, ?> liteCommandsBuilder = LiteBukkitFactory.builder(this.getName(), this)
             .extension(new LiteAdventureExtension<>())
+            .argument(Snowflake.class, new SnowflakeArgument(messageConfig))
             .message(LiteBukkitMessages.PLAYER_ONLY, messageConfig.playerOnlyCommand)
             .message(LiteBukkitMessages.PLAYER_NOT_FOUND, messageConfig.playerNotFound)
             .commands(LiteCommandsAnnotations.of(
                 new ParcelCommand(mainGUI),
                 new ParcelLockersCommand(configService, config, noticeService),
-                new DebugCommand(parcelService, lockerManager, itemStorageManager, parcelContentManager,
+                new DebugCommand(
+                    parcelService, lockerManager, itemStorageManager, parcelContentManager,
                     noticeService, deliveryManager)
             ))
             .invalidUsage(new InvalidUsageHandlerImpl(noticeService))
             .missingPermission(new MissingPermissionsHandlerImpl(noticeService))
-            .build();
+            .result(Notice.class, new NoticeHandler(noticeService));
+
+        DiscordProviderPicker discordProviderPicker = new DiscordProviderPicker(
+            config, messageConfig, server, noticeService, scheduler, databaseManager,
+            this.getLogger(), userManager, this, miniMessage
+        );
+
+        this.discordClientManager = discordProviderPicker.pick(liteCommandsBuilder);
+
+        this.liteCommands = liteCommandsBuilder.build();
 
         Stream.of(
             new LockerInteractionController(lockerManager, lockerGUI, scheduler),
@@ -205,8 +227,13 @@ public final class ParcelLockers extends JavaPlugin {
             .filter(parcel -> parcel.status() != ParcelStatus.DELIVERED)
             .forEach(parcel -> deliveryRepository.find(parcel.uuid()).thenAccept(optionalDelivery ->
                 optionalDelivery.ifPresent(delivery -> {
-                    long delay = Math.max(0, delivery.deliveryTimestamp().toEpochMilli() - System.currentTimeMillis());
-                    scheduler.runLaterAsync(new ParcelSendTask(parcel, parcelService, deliveryManager), Duration.ofMillis(delay));
+                    long delay = Math.max(
+                        0,
+                        Duration.between(Instant.now(Clock.systemDefaultZone()), delivery.deliveryTimestamp()).toMillis()
+                    );
+                    scheduler.runLaterAsync(
+                        new ParcelSendTask(parcel, parcelService, deliveryManager),
+                        Duration.ofMillis(delay));
                 })
             )));
     }
@@ -223,6 +250,10 @@ public final class ParcelLockers extends JavaPlugin {
 
         if (this.skullAPI != null) {
             this.skullAPI.shutdown();
+        }
+
+        if (this.discordClientManager != null) {
+            this.discordClientManager.shutdown();
         }
     }
 

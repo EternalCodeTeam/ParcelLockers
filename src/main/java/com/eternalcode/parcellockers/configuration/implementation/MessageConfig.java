@@ -37,6 +37,10 @@ public class MessageConfig extends OkaeriConfig {
     @Comment("# These messages are used for administrative actions such as deleting all lockers or parcels.")
     public AdminMessages admin = new AdminMessages();
 
+    @Comment({"", "# Messages related to Discord integration can be configured here." })
+    @Comment("# These messages are used for linking Discord accounts with Minecraft accounts.")
+    public DiscordMessages discord = new DiscordMessages();
+
     public static class ParcelMessages extends OkaeriConfig {
         public Notice sent = Notice.builder()
             .chat("&2✔ &aParcel sent successfully.")
@@ -177,5 +181,111 @@ public class MessageConfig extends OkaeriConfig {
         public Notice deletedItemStorages = Notice.chat("&4⚠ &cAll ({COUNT}) item storages have been deleted!");
         public Notice deletedContents = Notice.chat("&4⚠ &cAll ({COUNT}) parcel contents have been deleted!");
         public Notice deletedDeliveries = Notice.chat("&4⚠ &cAll ({COUNT}) deliveries have been deleted!");
+    }
+
+    public static class DiscordMessages extends OkaeriConfig {
+        public Notice verificationAlreadyPending = Notice.builder()
+            .chat("&4✘ &cYou already have a pending verification. Please complete it or wait for it to expire.")
+            .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
+            .build();
+        public Notice alreadyLinked = Notice.builder()
+            .chat("&4✘ &cYour Minecraft account is already linked to a Discord account!")
+            .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
+            .build();
+        public Notice discordAlreadyLinked = Notice.builder()
+            .chat("&4✘ &cThis Discord account is already linked to another Minecraft account!")
+            .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
+            .build();
+        public Notice userNotFound = Notice.builder()
+            .chat("&4✘ &cCould not find a Discord user with that ID!")
+            .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
+            .build();
+        public Notice verificationCodeSent = Notice.builder()
+            .chat("&2✔ &aA verification code has been sent to your Discord DM. Please check your messages.")
+            .sound(SoundEventKeys.ENTITY_EXPERIENCE_ORB_PICKUP)
+            .build();
+        public Notice cannotSendDm = Notice.builder()
+            .chat("&4✘ &cCould not send a DM to your Discord account. Please make sure your DMs are open.")
+            .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
+            .build();
+        public Notice verificationExpired = Notice.builder()
+            .chat("&4✘ &cYour verification code has expired. Please run the command again.")
+            .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
+            .build();
+        public Notice invalidCode = Notice.builder()
+            .chat("&4✘ &cInvalid verification code. Please run the command again to restart the verification process.")
+            .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
+            .build();
+        public Notice linkSuccess = Notice.builder()
+            .chat("&2✔ &aYour Discord account has been successfully linked!")
+            .sound(SoundEventKeys.ENTITY_PLAYER_LEVELUP)
+            .build();
+        public Notice linkFailed = Notice.builder()
+            .chat("&4✘ &cFailed to link your Discord account. Please try again later.")
+            .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
+            .build();
+        public Notice verificationCancelled = Notice.builder()
+            .chat("&6⚠ &eVerification cancelled.")
+            .sound(SoundEventKeys.BLOCK_NOTE_BLOCK_BASS)
+            .build();
+        public Notice playerAlreadyLinked = Notice.chat("&4✘ &cThis player already has a linked Discord account!");
+        public Notice adminLinkSuccess = Notice.chat("&2✔ &aSuccessfully linked the Discord account to the player.");
+
+        @Comment({"", "# Unlink messages" })
+        public Notice notLinked = Notice.builder()
+            .chat("&4✘ &cYour Minecraft account is not linked to any Discord account!")
+            .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
+            .build();
+        public Notice unlinkSuccess = Notice.builder()
+            .chat("&2✔ &aYour Discord account has been successfully unlinked!")
+            .sound(SoundEventKeys.ENTITY_EXPERIENCE_ORB_PICKUP)
+            .build();
+        public Notice unlinkFailed = Notice.builder()
+            .chat("&4✘ &cFailed to unlink the Discord account. Please try again later.")
+            .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
+            .build();
+        public Notice playerNotLinked = Notice.chat("&4✘ &cThis player does not have a linked Discord account!");
+        public Notice adminUnlinkSuccess = Notice.chat("&2✔ &aSuccessfully unlinked the Discord account from the player.");
+        public Notice discordNotLinked = Notice.chat("&4✘ &cNo Minecraft account is linked to this Discord ID!");
+        public Notice adminUnlinkByDiscordSuccess = Notice.chat("&2✔ &aSuccessfully unlinked the Minecraft account from the Discord ID.");
+        public Notice invalidDiscordId = Notice.chat("&4✘ &cInvalid Discord ID format! Please provide a valid Discord ID.");
+
+        @Comment({"", "# Dialog configuration for verification" })
+        public String verificationDialogTitle = "&6Enter your Discord verification code:";
+        public String verificationDialogPlaceholder = "&7Enter 4-digit code";
+
+        @Comment({"", "# Dialog button configuration" })
+        public String verificationButtonVerifyText = "<dark_green>Verify";
+        public String verificationButtonVerifyDescription = "<green>Click to verify your Discord account";
+        public String verificationButtonCancelText = "<dark_red>Cancel";
+        public String verificationButtonCancelDescription = "<red>Click to cancel verification";
+
+        @Comment({"", "# The message sent to the Discord user via DM" })
+        @Comment("# Placeholders: {CODE} - the verification code, {PLAYER} - the Minecraft player name")
+        public String discordDmVerificationMessage = "**📦 ParcelLockers Verification**\n\nPlayer **{PLAYER}** is trying to link their Minecraft account to your Discord account.\n\nYour verification code is: **{CODE}**\n\nThis code will expire in 2 minutes.";
+
+        @Comment({"", "# The message sent to the Discord user when a parcel is delivered" })
+        @Comment("# Placeholders: {PARCEL_NAME}, {SENDER}, {RECEIVER}, {DESCRIPTION}, {SIZE}, {PRIORITY}")
+        public String parcelDeliveryNotification = "**📦 Parcel Delivered!**\n\nYour parcel **{PARCEL_NAME}** has been delivered!\n\n**From:** {SENDER}\n**Size:** {SIZE}\n**Priority:** {PRIORITY}\n**Description:** {DESCRIPTION}";
+
+        public String highPriorityPlaceholder = "🔴 High Priority";
+        public String normalPriorityPlaceholder = "⚪ Normal Priority";
+
+        @Comment({"", "# DiscordSRV integration messages" })
+        @Comment("# These messages are shown when DiscordSRV is installed and handles account linking")
+        public Notice discordSrvLinkRedirect = Notice.builder()
+            .chat("&6⚠ &eTo link your Discord account, use the DiscordSRV linking system.")
+            .chat("&6⚠ &eYour linking code is: &a{CODE}")
+            .chat("&6⚠ &eSend this code to the Discord bot in a private message.")
+            .sound(SoundEventKeys.BLOCK_NOTE_BLOCK_CHIME)
+            .build();
+        public Notice discordSrvAlreadyLinked = Notice.builder()
+            .chat("&2✔ &aYour account is already linked via DiscordSRV!")
+            .sound(SoundEventKeys.ENTITY_VILLAGER_YES)
+            .build();
+        public Notice discordSrvUnlinkRedirect = Notice.builder()
+            .chat("&6⚠ &eTo unlink your Discord account, please use the DiscordSRV unlinking system.")
+            .sound(SoundEventKeys.BLOCK_NOTE_BLOCK_CHIME)
+            .build();
     }
 }
