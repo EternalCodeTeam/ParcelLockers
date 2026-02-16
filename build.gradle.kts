@@ -1,14 +1,15 @@
 import net.minecrell.pluginyml.paper.PaperPluginDescription
 
 plugins {
-    `java-library`
+    id("java")
     id("de.eldoria.plugin-yml.paper") version "0.8.0"
     id("xyz.jpenilla.run-paper") version "3.0.2"
     id("com.gradleup.shadow") version "9.3.1"
+    id("com.modrinth.minotaur") version "2.+"
 }
 
 group = "com.eternalcode"
-version = "0.2.0-SNAPSHOT"
+version = "0.3.0-SNAPSHOT"
 
 repositories {
     gradlePluginPortal()
@@ -129,13 +130,26 @@ tasks.withType<JavaCompile> {
     options.release = 21
 }
 
+modrinth {
+    token.set(System.getenv("MODRINTH_TOKEN"))
+    projectId.set("parcellockers")
+    versionNumber.set(project.version.toString())
+    versionType.set(getVersionType(project.version.toString()))
+    uploadFile.set(tasks.shadowJar)
+    gameVersions.addAll("1.21.11")
+    loaders.addAll("paper", "purpur")
+    syncBodyFrom = rootProject.file("README.md").readText()
+}
+
 tasks {
     runServer {
         minecraftVersion("1.21.11")
-        downloadPlugins.modrinth("luckperms", "v5.5.17-bukkit")
-        downloadPlugins.modrinth("vaultunlocked", "2.17.0")
-        downloadPlugins.modrinth("essentialsx", "2.21.2")
-        downloadPlugins.modrinth("discordsrv", "1.30.4")
+        downloadPlugins {
+            modrinth("luckperms", "v5.5.17-bukkit")
+            modrinth("vaultunlocked", "2.17.0")
+            modrinth("essentialsx", "2.21.2")
+            modrinth("discordsrv", "1.30.4")
+        }
     }
 
     test {
@@ -158,5 +172,14 @@ tasks {
         listOf(
             "org.bstats"
         ).forEach { relocate(it, "$relocationPrefix.$it") }
+    }
+}
+
+fun getVersionType(version: String): String {
+    return when {
+        version.contains("SNAPSHOT") -> "beta"
+        version.contains("alpha", true) -> "alpha"
+        version.contains("beta", true) -> "beta"
+        else -> "release"
     }
 }
