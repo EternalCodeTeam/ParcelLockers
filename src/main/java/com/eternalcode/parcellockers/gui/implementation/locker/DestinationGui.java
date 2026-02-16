@@ -1,5 +1,6 @@
 package com.eternalcode.parcellockers.gui.implementation.locker;
 
+import com.eternalcode.commons.concurrent.FutureHandler;
 import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig.GuiSettings;
 import com.eternalcode.parcellockers.configuration.serializable.ConfigItem;
@@ -71,11 +72,7 @@ public class DestinationGui implements GuiView {
 
                 this.loadLockers(player, result, refresher).forEach(refresher::addItem);
                 this.scheduler.run(() -> gui.open(player));
-            }).orTimeout(5, TimeUnit.SECONDS)
-            .exceptionally(throwable -> {
-                throwable.printStackTrace();
-                return null;
-            });
+            }).orTimeout(5, TimeUnit.SECONDS).exceptionally(FutureHandler::handleException);
 
     }
 

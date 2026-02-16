@@ -32,7 +32,7 @@ public class DiscordLinkRepositoryOrmLite extends AbstractRepositoryOrmLite impl
 
     @Override
     public CompletableFuture<Optional<DiscordLink>> findByPlayerUuid(UUID playerUuid) {
-        return this.selectSafe(DiscordLinkEntity.class, playerUuid.toString())
+        return this.selectSafe(DiscordLinkEntity.class, playerUuid)
             .thenApply(optionalEntity -> optionalEntity.map(DiscordLinkEntity::toDomain));
     }
 
@@ -47,7 +47,7 @@ public class DiscordLinkRepositoryOrmLite extends AbstractRepositoryOrmLite impl
 
     @Override
     public CompletableFuture<Boolean> deleteByPlayerUuid(UUID playerUuid) {
-        return this.deleteById(DiscordLinkEntity.class, playerUuid.toString())
+        return this.deleteById(DiscordLinkEntity.class, playerUuid)
             .thenApply(deletedRows -> deletedRows > 0);
     }
 

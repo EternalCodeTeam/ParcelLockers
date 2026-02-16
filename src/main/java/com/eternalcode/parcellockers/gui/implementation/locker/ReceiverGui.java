@@ -2,6 +2,7 @@ package com.eternalcode.parcellockers.gui.implementation.locker;
 
 import static com.eternalcode.commons.adventure.AdventureUtil.resetItalic;
 
+import com.eternalcode.commons.concurrent.FutureHandler;
 import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig.GuiSettings;
 import com.eternalcode.parcellockers.gui.GuiManager;
@@ -92,10 +93,7 @@ public class ReceiverGui implements GuiView {
             //            .filter(user -> !user.uuid().equals(player.getUniqueId()))
             .map(user -> this.skullAPI.getSkullData(user.uuid())
                 .thenApply(skullData -> this.toItem(player, user, skullData, refresh))
-                .exceptionally(throwable -> {
-                    throwable.printStackTrace();
-                    return null;
-                }))
+                .exceptionally(FutureHandler::handleException))
             .collect(CompletableFutures.joinList())
             .orTimeout(10, TimeUnit.SECONDS);
     }

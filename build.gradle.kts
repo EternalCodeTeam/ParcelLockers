@@ -1,4 +1,5 @@
 import net.minecrell.pluginyml.paper.PaperPluginDescription
+import xyz.jpenilla.runtask.task.AbstractRun
 
 plugins {
     id("java")
@@ -12,7 +13,6 @@ group = "com.eternalcode"
 version = "0.3.0-SNAPSHOT"
 
 repositories {
-    gradlePluginPortal()
     maven("https://maven-central.storage-download.googleapis.com/maven2/") // maven central mirror
 
     maven("https://repo.triumphteam.dev/snapshots/")
@@ -130,6 +130,13 @@ tasks.withType<JavaCompile> {
     options.release = 21
 }
 
+tasks.withType<AbstractRun> {
+    javaLauncher = javaToolchains.launcherFor {
+        vendor = JvmVendorSpec.JETBRAINS
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
 modrinth {
     token.set(providers.environmentVariable("MODRINTH_TOKEN"))
     projectId.set("parcellockers")
@@ -148,8 +155,9 @@ tasks {
             modrinth("luckperms", "v5.5.17-bukkit")
             modrinth("vaultunlocked", "2.17.0")
             modrinth("essentialsx", "2.21.2")
-            modrinth("discordsrv", "1.30.4")
+//            modrinth("discordsrv", "1.30.4") // uncomment to test with DiscordSRV integration
         }
+        jvmArgs("-Dcom.mojang.eula.agree=true", "-XX:+AllowEnhancedClassRedefinition")
     }
 
     test {

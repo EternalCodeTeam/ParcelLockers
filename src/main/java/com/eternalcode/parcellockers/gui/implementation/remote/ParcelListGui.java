@@ -2,6 +2,7 @@ package com.eternalcode.parcellockers.gui.implementation.remote;
 
 import static com.eternalcode.commons.adventure.AdventureUtil.resetItalic;
 
+import com.eternalcode.commons.concurrent.FutureHandler;
 import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig.GuiSettings;
 import com.eternalcode.parcellockers.configuration.serializable.ConfigItem;
@@ -101,7 +102,7 @@ public class ParcelListGui implements GuiView {
                     this.scheduler.run(() -> gui.open(player));
                     return null;
                 });
-        });
+        }).exceptionally(FutureHandler::handleException);
     }
 
     private void setupStaticItems(Player player, PaginatedGui gui) {
@@ -161,7 +162,7 @@ public class ParcelListGui implements GuiView {
             parcelItem.name(resetItalic(this.miniMessage.deserialize(item.name().replace("{NAME}", parcel.name()))));
 
             return parcelItem.asGuiItem();
-        });
+        }).exceptionally(FutureHandler::handleException);
     }
 
 }

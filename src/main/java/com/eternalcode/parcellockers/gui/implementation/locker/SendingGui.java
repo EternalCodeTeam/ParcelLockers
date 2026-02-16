@@ -2,6 +2,7 @@ package com.eternalcode.parcellockers.gui.implementation.locker;
 
 import static com.eternalcode.commons.adventure.AdventureUtil.resetItalic;
 
+import com.eternalcode.commons.concurrent.FutureHandler;
 import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig.GuiSettings;
 import com.eternalcode.parcellockers.configuration.serializable.ConfigItem;
@@ -207,7 +208,7 @@ public class SendingGui implements GuiView {
                         this.scheduler.run(() -> storageGUI.show(player, ParcelSize.LARGE));
                     }
                 }
-            ).orTimeout(2, TimeUnit.SECONDS);
+            ).orTimeout(2, TimeUnit.SECONDS).exceptionally(FutureHandler::handleException);
         });
         GuiItem submitItem = this.guiSettings.submitParcelItem.toGuiItem(event ->
             this.guiManager.getItemStorage(player.getUniqueId()).thenAccept(result -> {
@@ -246,7 +247,7 @@ public class SendingGui implements GuiView {
 
                 this.guiManager.sendParcel(player, parcel, result.items());
                 this.gui.close(player);
-            }).orTimeout(5, TimeUnit.SECONDS));
+            }).orTimeout(5, TimeUnit.SECONDS).exceptionally(FutureHandler::handleException));
 
         GuiItem closeItem = this.guiSettings.closeItem.toGuiItem(event ->
             new LockerGui(
@@ -308,12 +309,14 @@ public class SendingGui implements GuiView {
         this.updateStorageItem(player);
         if (this.state.receiver() != null) {
             this.guiManager.getUser(this.state.receiver()).thenAccept(userOptional ->
-                userOptional.ifPresent(user -> this.updateReceiverItem(player, user.name(), false)));
+                userOptional.ifPresent(user -> this.updateReceiverItem(player, user.name(), false)))
+                .exceptionally(FutureHandler::handleException);
         }
 
         if (this.state.destinationLocker() != null) {
             this.guiManager.getLocker(this.state.destinationLocker()).thenAccept(lockerOptional ->
-                lockerOptional.ifPresent(locker -> this.updateDestinationItem(player, locker.name(), false)));
+                lockerOptional.ifPresent(locker -> this.updateDestinationItem(player, locker.name(), false)))
+                .exceptionally(FutureHandler::handleException);
         }
 
         this.scheduler.run(() -> this.gui.open(player));

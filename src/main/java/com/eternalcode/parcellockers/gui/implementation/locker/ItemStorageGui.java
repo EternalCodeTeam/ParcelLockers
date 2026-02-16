@@ -1,6 +1,7 @@
 package com.eternalcode.parcellockers.gui.implementation.locker;
 
 import com.eternalcode.commons.bukkit.ItemUtil;
+import com.eternalcode.commons.concurrent.FutureHandler;
 import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig.GuiSettings;
 import com.eternalcode.parcellockers.gui.GuiManager;
@@ -118,7 +119,7 @@ public class ItemStorageGui {
                         this.skullAPI,
                         this.state
                     ).show(player);
-                });
+                }).exceptionally(FutureHandler::handleException);
         });
 
         this.guiManager.getItemStorage(player.getUniqueId()).thenAccept(itemStorage -> {

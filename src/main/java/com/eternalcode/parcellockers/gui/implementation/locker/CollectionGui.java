@@ -1,5 +1,6 @@
 package com.eternalcode.parcellockers.gui.implementation.locker;
 
+import com.eternalcode.commons.concurrent.FutureHandler;
 import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig.GuiSettings;
 import com.eternalcode.parcellockers.configuration.serializable.ConfigItem;
@@ -90,8 +91,8 @@ public class CollectionGui implements GuiView {
                         refresher.addItem(supplier);
                     }
                     this.scheduler.run(() -> gui.open(player));
-                });
-        });
+                }).exceptionally(FutureHandler::handleException);
+        }).exceptionally(FutureHandler::handleException);
     }
 
     private void setupStaticItems(Player player, PaginatedGui gui) {

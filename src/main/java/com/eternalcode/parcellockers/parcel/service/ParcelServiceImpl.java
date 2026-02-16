@@ -79,7 +79,6 @@ public class ParcelServiceImpl implements ParcelService {
         Objects.requireNonNull(items, "Items list cannot be null");
         Preconditions.checkArgument(!items.isEmpty(), "Items list cannot be empty");
 
-        // Fire ParcelSendEvent
         ParcelSendEvent event = new ParcelSendEvent(parcel);
         this.server.getPluginManager().callEvent(event);
         

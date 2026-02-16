@@ -1,5 +1,6 @@
 package com.eternalcode.parcellockers.discord.controller;
 
+import com.eternalcode.commons.concurrent.FutureHandler;
 import com.eternalcode.multification.shared.Formatter;
 import com.eternalcode.parcellockers.configuration.implementation.MessageConfig;
 import com.eternalcode.parcellockers.discord.DiscordLinkService;
@@ -44,7 +45,7 @@ public class DiscordDeliverNotificationController implements Listener {
         this.discordLinkService.findLinkByPlayer(receiverUuid)
             .thenAccept(optionalLink -> optionalLink.ifPresent(link -> {
                 this.sendDeliveryNotification(parcel, link.discordId());
-            }));
+            })).exceptionally(FutureHandler::handleException);
     }
 
     private void sendDeliveryNotification(Parcel parcel, long discordId) {
