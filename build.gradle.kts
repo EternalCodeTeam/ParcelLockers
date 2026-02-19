@@ -81,7 +81,7 @@ dependencies {
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
 
     // discord integration library
-    paperLibrary("com.discord4j:discord4j-core:3.3.0")
+    paperLibrary("com.discord4j:discord4j-core:3.3.1")
 
     // discordsrv (optional integration)
     compileOnly("com.discordsrv:discordsrv:1.30.4")
