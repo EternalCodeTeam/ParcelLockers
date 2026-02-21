@@ -1,8 +1,12 @@
 package com.eternalcode.parcellockers.nexo;
 
+import com.nexomc.nexo.api.NexoBlocks;
 import com.nexomc.nexo.api.NexoItems;
 import com.nexomc.nexo.items.ItemBuilder;
+import com.nexomc.nexo.mechanics.custom_block.CustomBlockMechanic;
 import java.util.Optional;
+import org.bukkit.Location;
+import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 
 public class NexoIntegration {
@@ -49,6 +53,22 @@ public class NexoIntegration {
         }
     }
 
+    public static String getNexoId(Block block) {
+        if (!isEnabled() || block == null) {
+            return null;
+        }
+
+        try {
+            CustomBlockMechanic mechanic = NexoBlocks.customBlockMechanic(block.getLocation());
+            if (mechanic == null) {
+                return null;
+            }
+            return mechanic.getItemID();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public static boolean matches(ItemStack itemStack, String nexoId) {
         if (itemStack == null || nexoId == null || nexoId.isEmpty()) {
             return false;
@@ -57,6 +77,31 @@ public class NexoIntegration {
         return getNexoId(itemStack)
             .map(id -> id.equals(nexoId))
             .orElse(false);
+    }
+
+    public static boolean isNexoBlock(Block block) {
+        if (!isEnabled() || block == null) {
+            return false;
+        }
+
+        try {
+            return NexoBlocks.isCustomBlock(block);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public static boolean placeBlock(Location location, String nexoId) {
+        if (!isEnabled() || location == null || nexoId == null || nexoId.isEmpty()) {
+            return false;
+        }
+
+        try {
+            NexoBlocks.place(nexoId, location);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     private static synchronized boolean isNexoPresent() {

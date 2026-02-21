@@ -3,6 +3,7 @@ package com.eternalcode.parcellockers.locker.controller;
 import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.gui.implementation.locker.LockerGui;
 import com.eternalcode.parcellockers.locker.LockerManager;
+import com.eternalcode.parcellockers.nexo.NexoIntegration;
 import com.eternalcode.parcellockers.shared.PositionAdapter;
 import java.util.UUID;
 import org.bukkit.Material;
@@ -34,7 +35,7 @@ public class LockerInteractionController implements Listener {
             return;
         }
 
-        if (block.getType() != Material.CHEST) {
+        if (block.getType() != Material.CHEST && !NexoIntegration.isNexoBlock(block)) {
             return;
         }
 

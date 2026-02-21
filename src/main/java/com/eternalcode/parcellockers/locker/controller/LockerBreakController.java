@@ -1,23 +1,20 @@
 package com.eternalcode.parcellockers.locker.controller;
 
+import com.destroystokyo.paper.event.block.BlockDestroyEvent;
 import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.multification.shared.Formatter;
 import com.eternalcode.parcellockers.locker.LockerManager;
+import com.eternalcode.parcellockers.nexo.NexoIntegration;
 import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.shared.Position;
 import com.eternalcode.parcellockers.shared.PositionAdapter;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockBurnEvent;
-import org.bukkit.event.block.BlockDamageEvent;
-import org.bukkit.event.block.BlockIgniteEvent;
-import org.bukkit.event.entity.EntityExplodeEvent;
 
 public class LockerBreakController implements Listener {
 
@@ -78,40 +75,26 @@ public class LockerBreakController implements Listener {
     }
 
     @EventHandler
-    public void onEntityExplode(EntityExplodeEvent event) {
-        for (Block block : event.blockList()) {
-            if (block.getType() != Material.CHEST) {
-                continue;
-            }
-            this.handleDamagedLocker(block);
-        }
-    }
-
-    @EventHandler
-    public void onBlockIgnite(BlockIgniteEvent event) {
-        this.handleDamagedLocker(event.getBlock());
-    }
-
-    @EventHandler
-    public void onBlockBurn(BlockBurnEvent event) {
-        this.handleDamagedLocker(event.getBlock());
-    }
-
-    @EventHandler
-    public void onBlockDamage(BlockDamageEvent event) {
+    public void onBlockDestroy(BlockDestroyEvent event) {
         this.handleDamagedLocker(event.getBlock());
     }
 
     private void handleDamagedLocker(Block block) {
-        BlockData blockData = block.getBlockData();
+        BlockData originalData = block.getBlockData();
         Location location = block.getLocation();
         Position position = PositionAdapter.convert(location);
+        boolean isNexoBlock = NexoIntegration.isNexoBlock(block);
+        String nexoId = isNexoBlock ? NexoIntegration.getNexoId(block) : null;
 
         this.lockerManager.get(position).thenAccept(locker -> {
             if (locker.isPresent()) {
                 this.scheduler.run(() -> {
-                    location.getBlock().setType(block.getType());
-                    location.getBlock().setBlockData(blockData);
+                    if (isNexoBlock && nexoId != null) {
+                        NexoIntegration.placeBlock(location, nexoId);
+                    } else {
+                        location.getBlock().setType(block.getType());
+                        location.getBlock().setBlockData(originalData);
+                    }
                 });
             }
         });

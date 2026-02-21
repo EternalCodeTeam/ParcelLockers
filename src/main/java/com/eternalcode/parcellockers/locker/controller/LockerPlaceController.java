@@ -4,6 +4,7 @@ import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.configuration.implementation.MessageConfig;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.locker.LockerManager;
+import com.eternalcode.parcellockers.nexo.NexoIntegration;
 import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.shared.PositionAdapter;
 import com.github.benmanes.caffeine.cache.Cache;
@@ -76,6 +77,8 @@ public class LockerPlaceController implements Listener {
         Material type = block.getType();
         BlockData data = block.getBlockData();
         Location location = block.getLocation();
+        boolean isNexoItem = this.config.settings.parcelLockerItem.isNexoItem();
+        String nexoId = isNexoItem ? this.config.settings.parcelLockerItem.nexoId() : null;
         event.setCancelled(true);
 
         if (this.lockerCreators.getIfPresent(player.getUniqueId()) != null) {
@@ -123,8 +126,12 @@ public class LockerPlaceController implements Listener {
                             }
 
                             this.scheduler.run(() -> {
-                                location.getWorld().getBlockAt(location).setType(type);
-                                location.getWorld().getBlockAt(location).setBlockData(data);
+                                if (isNexoItem) {
+                                    NexoIntegration.placeBlock(location, nexoId);
+                                } else {
+                                    location.getWorld().getBlockAt(location).setType(type);
+                                    location.getWorld().getBlockAt(location).setBlockData(data);
+                                }
                             });
 
                             this.lockerManager.create(UUID.randomUUID(), description, PositionAdapter.convert(location), player.getUniqueId())
