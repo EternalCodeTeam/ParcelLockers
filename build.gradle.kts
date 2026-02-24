@@ -66,7 +66,7 @@ dependencies {
     paperLibrary("com.spotify:completable-futures:0.3.6")
 
     // eternalcode commons
-    paperLibrary("com.eternalcode:eternalcode-commons-adventure:1.3.2")
+    paperLibrary("com.eternalcode:eternalcode-commons-adventure:1.3.4")
     paperLibrary("com.eternalcode:eternalcode-commons-bukkit:1.3.2")
     paperLibrary("com.eternalcode:eternalcode-commons-shared:1.3.2")
 
