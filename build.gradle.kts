@@ -44,7 +44,7 @@ dependencies {
     paperLibrary("com.eternalcode:gitcheck:1.0.0")
 
     // metrics
-    implementation("org.bstats:bstats-bukkit:3.1.0")
+    implementation("org.bstats:bstats-bukkit:3.2.1")
 
     // database
     paperLibrary("com.zaxxer:HikariCP:7.0.2")
