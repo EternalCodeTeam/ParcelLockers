@@ -60,7 +60,7 @@ jobs:
         run: ./gradlew clean shadowJar
         
       - name: Upload built JAR
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: steps.check-dependency.outputs.is-dependency == 'false'
         with:
           name: ParcelLockers Dev Build
