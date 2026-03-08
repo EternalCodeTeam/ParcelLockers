@@ -44,7 +44,7 @@ dependencies {
     paperLibrary("com.eternalcode:gitcheck:1.0.0")
 
     // metrics
-    implementation("org.bstats:bstats-bukkit:3.1.0")
+    implementation("org.bstats:bstats-bukkit:3.2.1")
 
     // database
     paperLibrary("com.zaxxer:HikariCP:7.0.2")
@@ -67,8 +67,8 @@ dependencies {
 
     // eternalcode commons
     paperLibrary("com.eternalcode:eternalcode-commons-adventure:1.3.2")
-    paperLibrary("com.eternalcode:eternalcode-commons-bukkit:1.3.2")
-    paperLibrary("com.eternalcode:eternalcode-commons-shared:1.3.2")
+    paperLibrary("com.eternalcode:eternalcode-commons-bukkit:1.3.4")
+    paperLibrary("com.eternalcode:eternalcode-commons-shared:1.3.4")
 
     // multification
     paperLibrary("com.eternalcode:multification-bukkit:1.2.4")
@@ -94,7 +94,7 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter:1.21.4")
     testImplementation("org.testcontainers:mysql:1.21.4")
     testImplementation("mysql:mysql-connector-java:8.0.33")
-    testImplementation("com.eternalcode:eternalcode-commons-shared:1.3.2")
+    testImplementation("com.eternalcode:eternalcode-commons-shared:1.3.4")
 }
 
 java {
