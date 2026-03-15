@@ -53,8 +53,8 @@ dependencies {
     paperLibrary("org.postgresql:postgresql:42.7.10")
 
     // lombok
-    compileOnly("org.projectlombok:lombok:1.18.42")
-    annotationProcessor("org.projectlombok:lombok:1.18.42")
+    compileOnly("org.projectlombok:lombok:1.18.44")
+    annotationProcessor("org.projectlombok:lombok:1.18.44")
 
     // jetbrains annotations
     compileOnly("org.jetbrains:annotations:26.1.0")
