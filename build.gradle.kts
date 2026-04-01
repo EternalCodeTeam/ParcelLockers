@@ -3,9 +3,9 @@ import xyz.jpenilla.runtask.task.AbstractRun
 
 plugins {
     id("java")
-    id("de.eldoria.plugin-yml.paper") version "0.8.0"
+    id("de.eldoria.plugin-yml.paper") version "0.9.0"
     id("xyz.jpenilla.run-paper") version "3.0.2"
-    id("com.gradleup.shadow") version "9.3.1"
+    id("com.gradleup.shadow") version "9.4.1"
     id("com.modrinth.minotaur") version "2.+"
 }
 
@@ -45,7 +45,7 @@ dependencies {
     paperLibrary("com.eternalcode:gitcheck:1.0.0")
 
     // metrics
-    implementation("org.bstats:bstats-bukkit:3.1.0")
+    implementation("org.bstats:bstats-bukkit:3.2.1")
 
     // database
     paperLibrary("com.zaxxer:HikariCP:7.0.2")
@@ -54,11 +54,11 @@ dependencies {
     paperLibrary("org.postgresql:postgresql:42.7.10")
 
     // lombok
-    compileOnly("org.projectlombok:lombok:1.18.42")
-    annotationProcessor("org.projectlombok:lombok:1.18.42")
+    compileOnly("org.projectlombok:lombok:1.18.44")
+    annotationProcessor("org.projectlombok:lombok:1.18.44")
 
     // jetbrains annotations
-    compileOnly("org.jetbrains:annotations:26.0.2-1")
+    compileOnly("org.jetbrains:annotations:26.1.0")
 
     // jackson-bukkit
     paperLibrary("de.eldoria.jacksonbukkit:paper:2.0.0")
@@ -67,9 +67,9 @@ dependencies {
     paperLibrary("com.spotify:completable-futures:0.3.6")
 
     // eternalcode commons
-    paperLibrary("com.eternalcode:eternalcode-commons-adventure:1.3.2")
-    paperLibrary("com.eternalcode:eternalcode-commons-bukkit:1.3.2")
-    paperLibrary("com.eternalcode:eternalcode-commons-shared:1.3.2")
+    paperLibrary("com.eternalcode:eternalcode-commons-adventure:1.3.4")
+    paperLibrary("com.eternalcode:eternalcode-commons-bukkit:1.3.4")
+    paperLibrary("com.eternalcode:eternalcode-commons-shared:1.3.4")
 
     // multification
     paperLibrary("com.eternalcode:multification-bukkit:1.2.4")
@@ -82,7 +82,7 @@ dependencies {
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
 
     // discord integration library
-    paperLibrary("com.discord4j:discord4j-core:3.3.0")
+    paperLibrary("com.discord4j:discord4j-core:3.3.1")
 
     // discordsrv (optional integration)
     compileOnly("com.discordsrv:discordsrv:1.30.4")
@@ -98,7 +98,7 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter:1.21.4")
     testImplementation("org.testcontainers:mysql:1.21.4")
     testImplementation("mysql:mysql-connector-java:8.0.33")
-    testImplementation("com.eternalcode:eternalcode-commons-shared:1.3.2")
+    testImplementation("com.eternalcode:eternalcode-commons-shared:1.3.4")
 }
 
 java {
