@@ -128,17 +128,7 @@ public class ReceiverGui implements GuiView {
     }
 
     private void setupStaticItems(Player player, PaginatedGui gui) {
-        GuiItem backgroundItem = this.guiSettings.mainGuiBackgroundItem.toGuiItem();
-        GuiItem cornerItem = this.guiSettings.cornerItem.toGuiItem();
-        GuiItem closeItem = this.guiSettings.closeItem.toGuiItem(event -> this.sendingGUI.show(player));
-
-        for (int slot : CORNER_SLOTS) {
-            gui.setItem(slot, cornerItem);
-        }
-        for (int slot : BORDER_SLOTS) {
-            gui.setItem(slot, backgroundItem);
-        }
-        gui.setItem(49, closeItem);
+        this.setupStaticItems(player, gui, this.guiSettings, () -> this.sendingGUI.show(player));
     }
 
     private void setupNavigation(PaginatedGui gui, Page page, PageResult<User> result, Player player) {

@@ -20,6 +20,20 @@ public interface GuiView {
         throw new UnsupportedOperationException("This GUI requires additional context");
     }
 
+    default void setupStaticItems(Player player, PaginatedGui gui, PluginConfig.GuiSettings guiSettings, Runnable closeAction) {
+        GuiItem backgroundItem = guiSettings.mainGuiBackgroundItem.toGuiItem();
+        GuiItem cornerItem = guiSettings.cornerItem.toGuiItem();
+        GuiItem closeItem = guiSettings.closeItem.toGuiItem(event -> closeAction.run());
+
+        for (int slot : CORNER_SLOTS) {
+            gui.setItem(slot, cornerItem);
+        }
+        for (int slot : BORDER_SLOTS) {
+            gui.setItem(slot, backgroundItem);
+        }
+        gui.setItem(49, closeItem);
+    }
+
     default <T> void setupNavigation(PaginatedGui gui, Page page, PageResult<T> result, Player player, PluginConfig.GuiSettings guiSettings) {
         if (result.hasNextPage()) {
             GuiItem nextPageItem = guiSettings.nextPageItem.toGuiItem(event -> this.show(player, page.next()));
