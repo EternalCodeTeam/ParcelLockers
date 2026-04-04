@@ -1,0 +1,11 @@
+# Build output
+build/
+
+# Local server runtime (downloaded Paper, plugins, world data)
+run/
+
+# Gradle wrapper cache
+.gradle/
+
+# IDE
+.idea/
