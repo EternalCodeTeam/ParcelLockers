@@ -12,6 +12,7 @@ public class UserCreateEvent extends Event {
     private final User user;
 
     public UserCreateEvent(User user) {
+        super(true);
         this.user = user;
     }
 

@@ -75,7 +75,7 @@ public class UserManagerImpl implements UserManager {
             return CompletableFuture.completedFuture(userByName);
         }
 
-        return this.create(uuid, name);
+         return this.create(uuid, name);
     }
 
     @Override

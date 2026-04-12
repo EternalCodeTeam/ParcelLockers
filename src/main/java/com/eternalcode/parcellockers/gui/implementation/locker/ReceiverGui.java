@@ -11,20 +11,19 @@ import com.eternalcode.parcellockers.gui.PaginatedGuiRefresher;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.PageResult;
 import com.eternalcode.parcellockers.user.User;
-import com.spotify.futures.CompletableFutures;
-import dev.rollczi.liteskullapi.SkullAPI;
-import dev.rollczi.liteskullapi.SkullData;
 import dev.triumphteam.gui.builder.item.PaperItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
-import java.util.List;
+import io.papermc.paper.datacomponent.DataComponentTypes;
+import io.papermc.paper.datacomponent.item.ResolvableProfile;
+import io.papermc.paper.datacomponent.item.TooltipDisplay;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 public class ReceiverGui implements GuiView {
 
@@ -37,7 +36,6 @@ public class ReceiverGui implements GuiView {
     private final MiniMessage miniMessage;
     private final GuiManager guiManager;
     private final SendingGui sendingGUI;
-    private final SkullAPI skullAPI;
     private final SendingGuiState state;
 
     public ReceiverGui(
@@ -46,7 +44,6 @@ public class ReceiverGui implements GuiView {
             MiniMessage miniMessage,
             GuiManager guiManager,
             SendingGui sendingGUI,
-            SkullAPI skullAPI,
             SendingGuiState state
     ) {
         this.scheduler = scheduler;
@@ -54,7 +51,6 @@ public class ReceiverGui implements GuiView {
         this.miniMessage = miniMessage;
         this.guiManager = guiManager;
         this.sendingGUI = sendingGUI;
-        this.skullAPI = skullAPI;
         this.state = state;
     }
 
@@ -78,27 +74,16 @@ public class ReceiverGui implements GuiView {
 
             PaginatedGuiRefresher refresh = new PaginatedGuiRefresher(gui);
 
-            this.loadSkulls(player, result, refresh).thenAccept(items -> {
-                for (Supplier<GuiItem> item : items) {
-                    refresh.addItem(item);
-                }
+            for (User user : result.items()) {
+                refresh.addItem(this.toItem(player, user, refresh));
+            }
 
-                this.scheduler.run(() -> gui.open(player));
-            });
-        });
+            this.scheduler.run(() -> gui.open(player));
+        }).exceptionally(FutureHandler::handleException);
     }
 
-    private CompletableFuture<List<Supplier<GuiItem>>> loadSkulls(Player player, PageResult<User> result, PaginatedGuiRefresher refresh) {
-        return result.items().stream()
-            //            .filter(user -> !user.uuid().equals(player.getUniqueId()))
-            .map(user -> this.skullAPI.getSkullData(user.uuid())
-                .thenApply(skullData -> this.toItem(player, user, skullData, refresh))
-                .exceptionally(FutureHandler::handleException))
-            .collect(CompletableFutures.joinList())
-            .orTimeout(10, TimeUnit.SECONDS);
-    }
-
-    private Supplier<GuiItem> toItem(Player player, User user, SkullData skullData, PaginatedGuiRefresher refresher) {
+    @SuppressWarnings("UnstableApiUsage")// Because of the use of DataComponents, which are marked as unstable in Paper API
+    private Supplier<GuiItem> toItem(Player player, User user, PaginatedGuiRefresher refresher) {
         UUID uuid = user.uuid();
 
         return () -> {
@@ -107,8 +92,16 @@ public class ReceiverGui implements GuiView {
                 ? this.guiSettings.parcelReceiverSetLine
                 : this.guiSettings.parcelReceiverNotSetLine;
 
-            return PaperItemBuilder.skull()
-                .texture(skullData.getTexture())
+            ItemStack head = ItemStack.of(Material.PLAYER_HEAD);
+            ResolvableProfile profile = ResolvableProfile.resolvableProfile()
+                .uuid(uuid)
+                .build();
+            head.setData(DataComponentTypes.PROFILE, profile);
+            head.setData(DataComponentTypes.TOOLTIP_DISPLAY, TooltipDisplay.tooltipDisplay()
+                .addHiddenComponents(DataComponentTypes.PROFILE)
+                .build());
+
+            return PaperItemBuilder.from(head)
                 .name(resetItalic(this.miniMessage.deserialize(user.name())))
                 .lore(resetItalic(this.miniMessage.deserialize(lore)))
                 .glow(isReceiverSelected)
