@@ -12,7 +12,6 @@ import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.util.MaterialUtil;
-import dev.rollczi.liteskullapi.SkullAPI;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import io.papermc.paper.dialog.Dialog;
@@ -52,7 +51,6 @@ public class SendingGui implements GuiView {
     private final MiniMessage miniMessage;
     private final NoticeService noticeService;
     private final GuiManager guiManager;
-    private final SkullAPI skullAPI;
 
     private final SendingGuiState state;
 
@@ -64,7 +62,6 @@ public class SendingGui implements GuiView {
         MiniMessage miniMessage,
         NoticeService noticeService,
         GuiManager guiManager,
-        SkullAPI skullAPI,
         SendingGuiState state
     ) {
         this.scheduler = scheduler;
@@ -72,7 +69,6 @@ public class SendingGui implements GuiView {
         this.miniMessage = miniMessage;
         this.noticeService = noticeService;
         this.guiManager = guiManager;
-        this.skullAPI = skullAPI;
         this.state = state;
     }
 
@@ -195,7 +191,6 @@ public class SendingGui implements GuiView {
                 this.miniMessage,
                 this.guiManager,
                 this.noticeService,
-                this.skullAPI,
                 this.state
             );
             this.guiManager.getItemStorage(player.getUniqueId()).thenAccept(result -> {
@@ -255,8 +250,7 @@ public class SendingGui implements GuiView {
                 this.scheduler,
                 this.guiSettings,
                 this.guiManager,
-                this.noticeService,
-                this.skullAPI
+                this.noticeService
             ).show(player, this.state.entryLocker()));
 
         ConfigItem smallButton = this.guiSettings.smallParcelSizeItem;
@@ -284,7 +278,6 @@ public class SendingGui implements GuiView {
             this.miniMessage,
             this.guiManager,
             this,
-            this.skullAPI,
             this.state
         ).show(player)));
 

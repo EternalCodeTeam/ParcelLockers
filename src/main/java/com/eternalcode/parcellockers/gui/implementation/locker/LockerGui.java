@@ -7,7 +7,6 @@ import com.eternalcode.parcellockers.configuration.implementation.PluginConfig.G
 import com.eternalcode.parcellockers.gui.GuiManager;
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.notification.NoticeService;
-import dev.rollczi.liteskullapi.SkullAPI;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import java.util.UUID;
@@ -22,20 +21,17 @@ public class LockerGui implements GuiView {
     private final GuiSettings guiSettings;
     private final GuiManager guiManager;
     private final NoticeService noticeService;
-    private final SkullAPI skullAPI;
 
     public LockerGui(
         MiniMessage miniMessage, Scheduler scheduler,
         GuiSettings guiSettings, GuiManager guiManager,
-        NoticeService noticeService,
-        SkullAPI skullAPI
+        NoticeService noticeService
     ) {
         this.miniMessage = miniMessage;
         this.scheduler = scheduler;
         this.guiSettings = guiSettings;
         this.guiManager = guiManager;
         this.noticeService = noticeService;
-        this.skullAPI = skullAPI;
     }
 
     public void show(Player player, UUID entryLocker) {
@@ -63,7 +59,6 @@ public class LockerGui implements GuiView {
             this.miniMessage,
             this.noticeService,
             this.guiManager,
-            this.skullAPI,
             new SendingGuiState().entryLocker(entryLocker)
         ).show(player, entryLocker)));
 
