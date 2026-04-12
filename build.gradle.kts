@@ -25,12 +25,9 @@ repositories {
 
 dependencies {
     // minecraft development api
-    compileOnly("io.papermc.paper:paper-api:1.21.10-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
     paperLibrary("dev.rollczi:litecommands-bukkit:3.10.9")
     paperLibrary("dev.rollczi:litecommands-adventure:3.10.9")
-
-    // skull api
-    paperLibrary("dev.rollczi:liteskullapi:2.0.0")
 
     // gui
     paperLibrary("dev.triumphteam:triumph-gui-paper:3.1.13")
@@ -81,7 +78,12 @@ dependencies {
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
 
     // discord integration library
-    paperLibrary("com.discord4j:discord4j-core:3.3.0")
+    paperLibrary("com.discord4j:discord4j-core:3.3.2") {
+        exclude("io.projectreactor.netty", "reactor-netty-http")
+    }
+    paperLibrary("io.projectreactor.netty:reactor-netty-http:1.2.16")
+    paperLibrary("com.fasterxml.jackson.core:jackson-databind:2.21.2")
+    paperLibrary("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.21.2")
 
     // discordsrv (optional integration)
     compileOnly("com.discordsrv:discordsrv:1.30.4")

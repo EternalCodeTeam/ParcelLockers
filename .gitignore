@@ -12,3 +12,4 @@ build/
 [Dd]esktop.ini
 
 !gradle/wrapper/gradle-wrapper.jar
+.claude

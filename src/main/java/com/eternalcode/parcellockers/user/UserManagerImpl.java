@@ -75,7 +75,7 @@ public class UserManagerImpl implements UserManager {
             return CompletableFuture.completedFuture(userByName);
         }
 
-        return this.create(uuid, name);
+         return this.create(uuid, name);
     }
 
     @Override
@@ -106,7 +106,11 @@ public class UserManagerImpl implements UserManager {
             
             // Fire UserCreateEvent
             UserCreateEvent event = new UserCreateEvent(user);
-            this.server.getPluginManager().callEvent(event);
+            try {
+                this.server.getPluginManager().callEvent(event);
+            } catch (Exception exception) {
+                exception.printStackTrace();
+            }
 
             this.usersByUUID.put(uuid, user);
             this.usersByName.put(name, user);

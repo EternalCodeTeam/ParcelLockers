@@ -8,7 +8,6 @@ import com.eternalcode.parcellockers.gui.GuiManager;
 import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.util.MaterialUtil;
-import dev.rollczi.liteskullapi.SkullAPI;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.StorageGui;
@@ -26,7 +25,6 @@ public class ItemStorageGui {
     private final MiniMessage miniMessage;
     private final GuiManager guiManager;
     private final NoticeService noticeService;
-    private final SkullAPI skullAPI;
     private final SendingGuiState state;
 
     public ItemStorageGui(
@@ -35,7 +33,6 @@ public class ItemStorageGui {
         MiniMessage miniMessage,
         GuiManager guiManager,
         NoticeService noticeService,
-        SkullAPI skullAPI,
         SendingGuiState state
     ) {
         this.scheduler = scheduler;
@@ -43,7 +40,6 @@ public class ItemStorageGui {
         this.miniMessage = miniMessage;
         this.guiManager = guiManager;
         this.noticeService = noticeService;
-        this.skullAPI = skullAPI;
         this.state = state;
     }
 
@@ -116,7 +112,6 @@ public class ItemStorageGui {
                         this.miniMessage,
                         this.noticeService,
                         this.guiManager,
-                        this.skullAPI,
                         this.state
                     ).show(player);
                 }).exceptionally(FutureHandler::handleException);

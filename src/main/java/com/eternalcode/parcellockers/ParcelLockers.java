@@ -58,8 +58,6 @@ import dev.rollczi.litecommands.annotations.LiteCommandsAnnotations;
 import dev.rollczi.litecommands.bukkit.LiteBukkitFactory;
 import dev.rollczi.litecommands.bukkit.LiteBukkitMessages;
 import dev.rollczi.litecommands.bukkit.LiteBukkitSettings;
-import dev.rollczi.liteskullapi.LiteSkullFactory;
-import dev.rollczi.liteskullapi.SkullAPI;
 import dev.triumphteam.gui.TriumphGui;
 import discord4j.common.util.Snowflake;
 import java.io.File;
@@ -79,7 +77,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 public final class ParcelLockers extends JavaPlugin {
 
     private LiteCommands<CommandSender> liteCommands;
-    private SkullAPI skullAPI;
     private DatabaseManager databaseManager;
     private Economy economy;
     private DiscordClientManager discordClientManager;
@@ -114,12 +111,6 @@ public final class ParcelLockers extends JavaPlugin {
             this.getServer().getPluginManager().disablePlugin(this);
             return;
         }
-
-        this.skullAPI = LiteSkullFactory.builder()
-            .cacheExpireAfterWrite(Duration.ofMinutes(45L))
-            .bukkitScheduler(this)
-            .threadPool(20)
-            .build();
 
         // database repositories
         ParcelRepositoryOrmLite parcelRepository = new ParcelRepositoryOrmLite(databaseManager, scheduler);
@@ -182,8 +173,7 @@ public final class ParcelLockers extends JavaPlugin {
             scheduler,
             config.guiSettings,
             guiManager,
-            noticeService,
-            this.skullAPI
+            noticeService
         );
 
         LiteCommandsBuilder<CommandSender, LiteBukkitSettings, ?> liteCommandsBuilder = LiteBukkitFactory.builder(this.getName(), this)
@@ -246,10 +236,6 @@ public final class ParcelLockers extends JavaPlugin {
 
         if (this.liteCommands != null) {
             this.liteCommands.unregister();
-        }
-
-        if (this.skullAPI != null) {
-            this.skullAPI.shutdown();
         }
 
         if (this.discordClientManager != null) {
