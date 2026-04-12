@@ -106,11 +106,7 @@ public class UserManagerImpl implements UserManager {
             
             // Fire UserCreateEvent
             UserCreateEvent event = new UserCreateEvent(user);
-            try {
-                this.server.getPluginManager().callEvent(event);
-            } catch (Exception exception) {
-                exception.printStackTrace();
-            }
+            this.server.getPluginManager().callEvent(event);
 
             this.usersByUUID.put(uuid, user);
             this.usersByName.put(name, user);
