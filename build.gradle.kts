@@ -72,7 +72,7 @@ dependencies {
     paperLibrary("com.eternalcode:multification-okaeri:1.2.4")
 
     // caffeine
-    paperLibrary("com.github.ben-manes.caffeine:caffeine:3.2.3")
+    paperLibrary("com.github.ben-manes.caffeine:caffeine:3.2.4")
 
     // vault
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
