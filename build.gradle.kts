@@ -82,8 +82,8 @@ dependencies {
         exclude("io.projectreactor.netty", "reactor-netty-http")
     }
     paperLibrary("io.projectreactor.netty:reactor-netty-http:1.2.16")
-    paperLibrary("com.fasterxml.jackson.core:jackson-databind:2.21.2")
-    paperLibrary("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.21.2")
+    paperLibrary("com.fasterxml.jackson.core:jackson-databind:2.21.3")
+    paperLibrary("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.21.3")
 
     // discordsrv (optional integration)
     compileOnly("com.discordsrv:discordsrv:1.30.4")
