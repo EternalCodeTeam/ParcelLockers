@@ -86,7 +86,7 @@ dependencies {
     paperLibrary("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.21.3")
 
     // discordsrv (optional integration)
-    compileOnly("com.discordsrv:discordsrv:1.30.4")
+    compileOnly("com.discordsrv:discordsrv:1.30.5")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:6.0.3")
     testImplementation("org.junit.jupiter:junit-jupiter-params:6.0.3")
