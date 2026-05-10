@@ -85,7 +85,7 @@ dependencies {
     compileOnly("com.discordsrv:discordsrv:1.30.5")
 
     // nexo
-    compileOnly("com.nexomc:nexo:1.19.1")
+    compileOnly("com.nexomc:nexo:1.23")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:6.0.3")
     testImplementation("org.junit.jupiter:junit-jupiter-params:6.0.3")
