@@ -364,7 +364,7 @@ public class PluginConfig extends OkaeriConfig {
     public static class DiscordSettings extends OkaeriConfig {
 
         @Comment("# Whether Discord integration is enabled.")
-        public boolean enabled = true;
+        public boolean enabled = false;
 
         @Comment("# The Discord bot token used by the bot to connect.")
         public String botToken = "";
