@@ -47,7 +47,7 @@ dependencies {
     paperLibrary("com.zaxxer:HikariCP:7.0.2")
     paperLibrary("com.j256.ormlite:ormlite-jdbc:6.1")
     paperLibrary("com.h2database:h2:2.4.240")
-    paperLibrary("org.postgresql:postgresql:42.7.10")
+    paperLibrary("org.postgresql:postgresql:42.7.11")
 
     // jetbrains annotations
     compileOnly("org.jetbrains:annotations:26.1.0")
@@ -68,7 +68,7 @@ dependencies {
     paperLibrary("com.eternalcode:multification-okaeri:1.2.4")
 
     // caffeine
-    paperLibrary("com.github.ben-manes.caffeine:caffeine:3.2.3")
+    paperLibrary("com.github.ben-manes.caffeine:caffeine:3.2.4")
 
     // vault
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
@@ -78,8 +78,8 @@ dependencies {
         exclude("io.projectreactor.netty", "reactor-netty-http")
     }
     paperLibrary("io.projectreactor.netty:reactor-netty-http:1.2.16")
-    paperLibrary("com.fasterxml.jackson.core:jackson-databind:2.21.2")
-    paperLibrary("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.21.2")
+    paperLibrary("com.fasterxml.jackson.core:jackson-databind:2.21.3")
+    paperLibrary("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.21.3")
 
     // discordsrv (optional integration)
     compileOnly("com.discordsrv:discordsrv:1.30.4")
