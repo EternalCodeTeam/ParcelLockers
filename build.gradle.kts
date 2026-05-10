@@ -78,12 +78,7 @@ dependencies {
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
 
     // discord integration library
-    paperLibrary("com.discord4j:discord4j-core:3.3.2") {
-        exclude("io.projectreactor.netty", "reactor-netty-http")
-    }
-    paperLibrary("io.projectreactor.netty:reactor-netty-http:1.2.16")
-    paperLibrary("com.fasterxml.jackson.core:jackson-databind:2.21.3")
-    paperLibrary("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.21.3")
+    paperLibrary("com.discord4j:discord4j-core:3.3.2")
 
     // discordsrv (optional integration)
     compileOnly("com.discordsrv:discordsrv:1.30.5")
