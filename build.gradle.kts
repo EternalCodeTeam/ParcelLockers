@@ -47,7 +47,7 @@ dependencies {
     paperLibrary("com.zaxxer:HikariCP:7.0.2")
     paperLibrary("com.j256.ormlite:ormlite-jdbc:6.1")
     paperLibrary("com.h2database:h2:2.4.240")
-    paperLibrary("org.postgresql:postgresql:42.7.10")
+    paperLibrary("org.postgresql:postgresql:42.7.11")
 
     // lombok
     compileOnly("org.projectlombok:lombok:1.18.44")
