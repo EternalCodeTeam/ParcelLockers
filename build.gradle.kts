@@ -92,6 +92,9 @@ dependencies {
     testImplementation("org.testcontainers:mysql:1.21.4")
     testImplementation("mysql:mysql-connector-java:8.0.33")
     testImplementation("com.eternalcode:eternalcode-commons-shared:1.4.1")
+
+    testImplementation("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
+    testImplementation("eu.okaeri:okaeri-configs-yaml-bukkit:5.0.13")
 }
 
 java {

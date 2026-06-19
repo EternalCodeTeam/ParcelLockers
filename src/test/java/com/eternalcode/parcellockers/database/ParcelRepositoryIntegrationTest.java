@@ -4,15 +4,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.eternalcode.parcellockers.TestScheduler;
-import com.eternalcode.parcellockers.configuration.ConfigService;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
+import com.eternalcode.parcellockers.database.DatabaseType;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryOrmLite;
-import java.io.File;
 import java.nio.file.Path;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -25,7 +25,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 class ParcelRepositoryIntegrationTest extends IntegrationTestSpec {
 
     @Container
@@ -37,10 +37,17 @@ class ParcelRepositoryIntegrationTest extends IntegrationTestSpec {
     private DatabaseManager databaseManager;
 
     @Test
-    void test() {
-        File dataFolder = this.tempDir.resolve("ParcelLockers").toFile();
-        PluginConfig config = new ConfigService().create(PluginConfig.class, new File(dataFolder, "config.yml"));
-        DatabaseManager databaseManager = new DatabaseManager(config, Logger.getLogger("ParcelLockers"), dataFolder);
+    void test() throws SQLException {
+        PluginConfig config = new PluginConfig();
+        config.settings.databaseType = DatabaseType.MYSQL;
+        config.settings.host = mySQLContainer.getHost();
+        config.settings.port = String.valueOf(mySQLContainer.getFirstMappedPort());
+        config.settings.databaseName = mySQLContainer.getDatabaseName();
+        config.settings.user = mySQLContainer.getUsername();
+        config.settings.password = mySQLContainer.getPassword();
+
+        DatabaseManager databaseManager = new DatabaseManager(config, Logger.getLogger("ParcelLockers"), this.tempDir.toFile());
+        databaseManager.connect();
         this.databaseManager = databaseManager;
 
         ParcelRepository parcelRepository = new ParcelRepositoryOrmLite(databaseManager, new TestScheduler());
