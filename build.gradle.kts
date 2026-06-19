@@ -27,7 +27,7 @@ dependencies {
     // minecraft development api
     compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
     paperLibrary("dev.rollczi:litecommands-bukkit:3.11.0")
-    paperLibrary("dev.rollczi:litecommands-adventure:3.10.9")
+    paperLibrary("dev.rollczi:litecommands-adventure:3.11.0")
 
     // gui
     paperLibrary("dev.triumphteam:triumph-gui-paper:3.1.13")
