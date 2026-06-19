@@ -64,7 +64,7 @@ dependencies {
 
     // eternalcode commons
     paperLibrary("com.eternalcode:eternalcode-commons-adventure:1.4.1")
-    paperLibrary("com.eternalcode:eternalcode-commons-bukkit:1.3.4")
+    paperLibrary("com.eternalcode:eternalcode-commons-bukkit:1.4.1")
     paperLibrary("com.eternalcode:eternalcode-commons-shared:1.4.1")
 
     // multification
