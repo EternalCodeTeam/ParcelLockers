@@ -91,6 +91,7 @@ public class ParcelServiceImpl implements ParcelService {
             .map(ItemStack::clone)
             .toList();
 
+        double chargedFee = 0;
         if (!sender.hasPermission(PARCEL_FEE_BYPASS_PERMISSION)) {
             double fee = switch (parcel.size()) {
                 case SMALL -> this.config.settings.smallParcelFee;
@@ -111,6 +112,7 @@ public class ParcelServiceImpl implements ParcelService {
                     return CompletableFuture.completedFuture(false);
                 }
 
+                chargedFee = fee;
                 this.noticeService.create()
                     .notice(messages -> messages.parcel.feeWithdrawn)
                     .player(sender.getUniqueId())
@@ -119,6 +121,7 @@ public class ParcelServiceImpl implements ParcelService {
             }
         }
 
+        double refundableFee = chargedFee;
         return this.parcelRepository.save(parcel)
             .thenCompose(unused -> this.parcelContentRepository.save(new ParcelContent(parcel.uuid(), itemsCopy))
                 .thenApply(contentSaved -> {
@@ -126,16 +129,21 @@ public class ParcelServiceImpl implements ParcelService {
                     this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.sent);
                     return true;
                 })
-                .exceptionallyCompose(contentError -> {
-                    this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.cannotSend);
-                    return this.parcelRepository.delete(parcel.uuid())
-                        .thenCompose(deleted -> CompletableFuture.failedFuture(new ParcelOperationException("Failed to save parcel content, rolled back parcel", contentError)));
-                })
+                .exceptionallyCompose(contentError -> this.parcelRepository.delete(parcel.uuid())
+                    .thenCompose(deleted -> CompletableFuture.failedFuture(new ParcelOperationException("Failed to save parcel content, rolled back parcel", contentError))))
             )
             .exceptionally(throwable -> {
+                // Persistence failed after the fee was withdrawn - refund it so the player is not charged for a parcel that was never created.
+                this.refundFee(sender, refundableFee);
                 this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.cannotSend);
                 throw new ParcelOperationException("Failed to save parcel", throwable);
             });
+    }
+
+    private void refundFee(Player sender, double fee) {
+        if (fee > 0) {
+            this.economy.depositPlayer(sender, fee);
+        }
     }
 
     @Override
