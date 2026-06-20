@@ -183,8 +183,8 @@ public class LockerManager {
     }
 
     public CompletableFuture<Boolean> isLockerFull(UUID uniqueId) {
-        return this.parcelRepository.countDeliveredParcelsByDestinationLocker(uniqueId)
-            .thenApply(count -> count > 0 && count >= this.config.settings.maxParcelsPerLocker);
+        return this.parcelRepository.countParcelsByDestinationLocker(uniqueId)
+            .thenApply(count -> count >= this.config.settings.maxParcelsPerLocker);
     }
 
     private CompletableFuture<Void> deleteLocker(UUID uniqueId) {

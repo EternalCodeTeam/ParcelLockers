@@ -4,7 +4,6 @@ import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.eternalcode.parcellockers.database.wrapper.AbstractRepositoryOrmLite;
 import com.eternalcode.parcellockers.parcel.Parcel;
-import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.PageResult;
 import com.eternalcode.parcellockers.shared.exception.DatabaseException;
@@ -24,7 +23,6 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     private static final String RECEIVER_COLUMN = "receiver";
     private static final String SENDER_COLUMN = "sender";
     private static final String DESTINATION_LOCKER_COLUMN = "destination_locker";
-    private static final String STATUS_COLUMN = "status";
 
     public ParcelRepositoryOrmLite(DatabaseManager databaseManager, Scheduler scheduler) {
         super(databaseManager, scheduler);
@@ -92,14 +90,12 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     }
 
     @Override
-    public CompletableFuture<Integer> countDeliveredParcelsByDestinationLocker(UUID destinationLocker) {
+    public CompletableFuture<Integer> countParcelsByDestinationLocker(UUID destinationLocker) {
         Objects.requireNonNull(destinationLocker, "Destination locker UUID cannot be null");
         return this.action(ParcelTable.class, dao -> {
             long count = dao.queryBuilder()
                 .where()
                 .eq(DESTINATION_LOCKER_COLUMN, destinationLocker)
-                .and()
-                .eq(STATUS_COLUMN, ParcelStatus.DELIVERED)
                 .countOf();
             return (int) count;
         });
