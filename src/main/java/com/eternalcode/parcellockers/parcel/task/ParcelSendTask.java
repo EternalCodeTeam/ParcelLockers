@@ -51,15 +51,13 @@ public class ParcelSendTask extends BukkitRunnable {
             return;
         }
 
+        // Delete the delivery only after the status update succeeds. If the update fails, the
+        // delivery row is left intact so the task is rescheduled on the next startup; deleting it
+        // unconditionally could strand the parcel in SENT with no delivery, never to be delivered.
         this.parcelService.update(updated)
+            .thenCompose(ignored -> this.deliveryManager.delete(updated.uuid()))
             .exceptionally(throwable -> {
-                LOGGER.severe("Failed to update parcel " + updated.uuid() + " to DELIVERED status: " + throwable.getMessage());
-                return null;
-            });
-
-        this.deliveryManager.delete(updated.uuid())
-            .exceptionally(throwable -> {
-                LOGGER.warning("Failed to delete delivery for parcel " + updated.uuid() + ": " + throwable.getMessage());
+                LOGGER.severe("Failed to deliver parcel " + updated.uuid() + " (delivery left for retry): " + throwable.getMessage());
                 return null;
             });
     }
