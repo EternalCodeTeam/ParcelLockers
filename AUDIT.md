@@ -12,6 +12,25 @@ inconsistency) · **🔵 Low** (style, minor optimization).
 
 ---
 
+## Resolution status (`audit-fixes` branch)
+
+All findings below are fixed on the `audit-fixes` branch, one commit each, except where noted:
+
+- **Critical:** C1, C2, C3, C4 — fixed.
+- **High:** H1, H2, H3, H4, H5, H6 — fixed.
+- **Medium:** M1–M8 — fixed.
+- **Low:** L1, L3, L4, L5 — fixed. **L2** was folded into the H2 fix (the redundant
+  `count > 0` clause was removed there).
+- **Duplication:** D1, D2, D4, D5 — fixed (D1 also fixed the same swallowed table-creation
+  bug in the Delivery and User repos; D2 also fixed a latent always-false "has next page" in
+  `UserRepository.fetchPage`). **D3** (generic cache-or-fetch helper) was intentionally left:
+  the five managers use their caches differently enough that one abstraction would risk
+  masking per-cache nuance, and the concrete inconsistency it could hide was already fixed by H6.
+
+`./gradlew compileJava` and `./gradlew test` pass on the branch.
+
+---
+
 ## 🔴 Critical
 
 ### C1 — Economy fee is charged before persistence and never refunded on failure
