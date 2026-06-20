@@ -50,6 +50,19 @@ public class PluginConfig extends OkaeriConfig {
         @Comment({ "", "# The database password." })
         public String password = "";
 
+        @Comment({ "", "# Maximum number of connections held in the database pool." })
+        public int connectionPoolSize = 10;
+
+        @Comment({ "", "# How long (in milliseconds) to wait for a free connection before failing." })
+        public long connectionTimeoutMillis = 5000;
+
+        @Comment({
+            "",
+            "# Connection leak detection threshold in milliseconds (0 disables it).",
+            "# Set this comfortably above your slowest expected query to avoid false warnings."
+        })
+        public long leakDetectionThresholdMillis = 30000;
+
         @Comment({ "", "# The parcel locker item." })
         public ConfigItem parcelLockerItem = new ConfigItem()
             .name("&3Parcel locker")

@@ -44,9 +44,9 @@ public class DatabaseManager {
         this.dataSource.addDataSourceProperty("prepStmtCacheSqlLimit", 2048);
         this.dataSource.addDataSourceProperty("useServerPrepStmts", true);
 
-        this.dataSource.setMaximumPoolSize(5);
-        this.dataSource.setConnectionTimeout(5000);
-        this.dataSource.setLeakDetectionThreshold(5000);
+        this.dataSource.setMaximumPoolSize(this.config.settings.connectionPoolSize);
+        this.dataSource.setConnectionTimeout(this.config.settings.connectionTimeoutMillis);
+        this.dataSource.setLeakDetectionThreshold(this.config.settings.leakDetectionThresholdMillis);
         this.dataSource.setUsername(this.config.settings.user);
         this.dataSource.setPassword(this.config.settings.password);
 
