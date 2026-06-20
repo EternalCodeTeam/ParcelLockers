@@ -216,29 +216,43 @@ public class ParcelServiceImpl implements ParcelService {
             }
 
             List<ItemStack> items = optional.get().items();
-            if (items.size() > freeSlotsInInventory(player)) {
-                this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.noInventorySpace);
-                return CompletableFuture.completedFuture(null);
-            }
+            CompletableFuture<Void> result = new CompletableFuture<>();
 
-            return this.parcelRepository.delete(parcel)
-                .thenCompose(deleted -> this.parcelContentRepository.delete(parcel.uuid())
-                    .thenAccept(contentDeleted -> {
-                        if (!deleted || !contentDeleted) {
+            // Re-check inventory space on the main thread (the previous async check was a TOCTOU),
+            // then delete the parcel BEFORE handing the items back so it cannot be collected twice.
+            // Items are only given once the delete is confirmed, so a failed delete never destroys them.
+            this.scheduler.run(() -> {
+                if (items.size() > freeSlotsInInventory(player)) {
+                    this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.noInventorySpace);
+                    result.complete(null);
+                    return;
+                }
+
+                this.parcelRepository.delete(parcel)
+                    .thenCompose(deleted -> this.parcelContentRepository.delete(parcel.uuid())
+                        .thenApply(contentDeleted -> deleted && contentDeleted))
+                    .thenAccept(removed -> {
+                        if (!removed) {
                             this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.databaseError);
+                            result.complete(null);
                             return;
                         }
 
-                        items.forEach(item -> this.scheduler.run(() -> ItemUtil.giveItem(player, item)));
-
                         this.parcelsByUuid.invalidate(parcel.uuid());
-                        this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.collected);
+                        this.scheduler.run(() -> {
+                            items.forEach(item -> ItemUtil.giveItem(player, item));
+                            this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.collected);
+                        });
+                        result.complete(null);
                     })
-                )
-                .exceptionally(throwable -> {
-                    this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.cannotCollect);
-                    return null;
-                });
+                    .exceptionally(throwable -> {
+                        this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.cannotCollect);
+                        result.complete(null);
+                        return null;
+                    });
+            });
+
+            return result;
         });
     }
 
