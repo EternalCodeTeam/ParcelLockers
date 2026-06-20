@@ -1,5 +1,6 @@
 package com.eternalcode.parcellockers.locker;
 
+import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.locker.event.LockerCreateEvent;
 import com.eternalcode.parcellockers.locker.event.LockerDeleteEvent;
@@ -29,6 +30,7 @@ public class LockerManager {
     private final LockerValidationService validationService;
     private final ParcelRepository parcelRepository;
     private final Server server;
+    private final Scheduler scheduler;
 
     private final Cache<UUID, Locker> lockersByUUID;
     private final Cache<Position, Locker> lockersByPosition;
@@ -38,13 +40,15 @@ public class LockerManager {
         LockerRepository lockerRepository,
         LockerValidationService validationService,
         ParcelRepository parcelRepository,
-        Server server
+        Server server,
+        Scheduler scheduler
     ) {
         this.config = config;
         this.lockerRepository = lockerRepository;
         this.validationService = validationService;
         this.parcelRepository = parcelRepository;
         this.server = server;
+        this.scheduler = scheduler;
 
         this.lockersByUUID = Caffeine.newBuilder()
             .expireAfterAccess(Duration.ofHours(2))
@@ -161,15 +165,25 @@ public class LockerManager {
                 return CompletableFuture.completedFuture(null);
             }
 
+            // The locker may be resolved on either the main thread (cache hit) or an async DB thread
+            // (cache miss), so fire the synchronous event on the main thread deterministically.
+            return this.fireDeleteEvent(locker, playerUUID).thenCompose(cancelled -> {
+                if (cancelled) {
+                    return CompletableFuture.completedFuture(null);
+                }
+                return this.deleteLocker(uniqueId);
+            });
+        });
+    }
+
+    private CompletableFuture<Boolean> fireDeleteEvent(Locker locker, UUID playerUUID) {
+        CompletableFuture<Boolean> cancelled = new CompletableFuture<>();
+        this.scheduler.run(() -> {
             LockerDeleteEvent event = new LockerDeleteEvent(locker, playerUUID);
             this.server.getPluginManager().callEvent(event);
-
-            if (event.isCancelled()) {
-                return CompletableFuture.completedFuture(null);
-            }
-
-            return this.deleteLocker(uniqueId);
+            cancelled.complete(event.isCancelled());
         });
+        return cancelled;
     }
 
     public CompletableFuture<Void> deleteAll(CommandSender sender, NoticeService noticeService) {

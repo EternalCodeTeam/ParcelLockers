@@ -134,7 +134,7 @@ public final class ParcelLockers extends JavaPlugin {
         UserValidationService userValidationService = new UserValidator();
         UserManager userManager = new UserManagerImpl(userRepository, userValidationService, server);
         LockerValidationService lockerValidationService = new LockerValidator();
-        LockerManager lockerManager = new LockerManager(config, lockerRepository, lockerValidationService, parcelRepository, server);
+        LockerManager lockerManager = new LockerManager(config, lockerRepository, lockerValidationService, parcelRepository, server, scheduler);
         ParcelContentManager parcelContentManager = new ParcelContentManager(parcelContentRepository);
         ItemStorageManager itemStorageManager = new ItemStorageManager(itemStorageRepository, server);
         DeliveryManager deliveryManager = new DeliveryManager(deliveryRepository);
