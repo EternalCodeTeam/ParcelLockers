@@ -1,19 +1,16 @@
 package com.eternalcode.parcellockers.itemstorage.event;
 
 import com.eternalcode.parcellockers.itemstorage.ItemStorage;
-import org.bukkit.event.Cancellable;
-import org.bukkit.event.Event;
+import com.eternalcode.parcellockers.shared.event.CancellableEvent;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
-public class ItemStorageUpdateEvent extends Event implements Cancellable {
+public class ItemStorageUpdateEvent extends CancellableEvent {
 
     private static final HandlerList HANDLER_LIST = new HandlerList();
 
     private final ItemStorage oldItemStorage;
     private final ItemStorage updatedItemStorage;
-
-    private boolean cancelled;
 
     public ItemStorageUpdateEvent(ItemStorage oldItemStorage, ItemStorage updatedItemStorage) {
         super(true);
@@ -31,16 +28,6 @@ public class ItemStorageUpdateEvent extends Event implements Cancellable {
 
     public ItemStorage getUpdatedItemStorage() {
         return this.updatedItemStorage;
-    }
-
-    @Override
-    public boolean isCancelled() {
-        return this.cancelled;
-    }
-
-    @Override
-    public void setCancelled(boolean cancel) {
-        this.cancelled = cancel;
     }
 
     @Override
