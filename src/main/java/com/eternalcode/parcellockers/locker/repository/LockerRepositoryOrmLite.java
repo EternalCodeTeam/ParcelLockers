@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implements LockerRepository {
 
@@ -51,22 +50,7 @@ public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     @Override
     public CompletableFuture<PageResult<Locker>> findPage(Page page) {
-        return this.action(
-            LockerTable.class, dao -> {
-                List<Locker> lockers = dao.queryBuilder()
-                    .offset((long) page.getOffset())
-                    .limit((long) page.getLimit() + 1)
-                    .query()
-                    .stream().map(LockerTable::toLocker)
-                    .collect(Collectors.toList());
-
-            boolean hasNext = lockers.size() > page.getLimit();
-            if (hasNext) {
-                lockers.removeLast();
-            }
-
-            return new PageResult<>(lockers, hasNext);
-        });
+        return this.queryPage(LockerTable.class, page, builder -> builder, LockerTable::toLocker);
     }
 
     @Override

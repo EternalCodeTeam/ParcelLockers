@@ -6,14 +6,11 @@ import com.eternalcode.parcellockers.database.wrapper.AbstractRepositoryOrmLite;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.PageResult;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implements ParcelRepository {
 
@@ -94,25 +91,10 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     }
 
     private CompletableFuture<PageResult<Parcel>> findByPaged(UUID key, Page page, String column) {
-        return this.action(
-            ParcelTable.class, dao -> {
-                List<Parcel> parcels = dao.queryBuilder()
-                    .limit((long) page.getLimit() + 1)
-                    .offset((long) page.getOffset())
-                    .where()
-                    .eq(column, key)
-                    .query()
-                    .stream()
-                    .map(ParcelTable::toParcel)
-                    .collect(Collectors.toCollection(ArrayList::new));
-
-                boolean hasNext = parcels.size() > page.getLimit();
-                if (hasNext) {
-                    parcels.removeLast();
-                }
-
-                return new PageResult<>(Collections.unmodifiableList(parcels), hasNext);
-            });
+        return this.queryPage(ParcelTable.class, page, builder -> {
+            builder.where().eq(column, key);
+            return builder;
+        }, ParcelTable::toParcel);
     }
 
     @Override
