@@ -5,6 +5,7 @@ import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.eternalcode.parcellockers.shared.exception.DatabaseException;
 import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.table.TableUtils;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +23,15 @@ public abstract class AbstractRepositoryOrmLite {
     protected AbstractRepositoryOrmLite(DatabaseManager databaseManager, Scheduler scheduler) {
         this.databaseManager = databaseManager;
         this.scheduler = scheduler;
+    }
+
+    /** Creates the backing table if it does not exist, failing fast with a {@link DatabaseException}. */
+    protected void createTable(Class<?> tableType) {
+        try {
+            TableUtils.createTableIfNotExists(this.databaseManager.connectionSource(), tableType);
+        } catch (SQLException exception) {
+            throw new DatabaseException("Failed to initialize table " + tableType.getSimpleName(), exception);
+        }
     }
 
     /** Inserts the entity, or updates it if a row with the same id already exists. */

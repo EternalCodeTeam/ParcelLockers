@@ -6,8 +6,6 @@ import com.eternalcode.parcellockers.database.wrapper.AbstractRepositoryOrmLite;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.PageResult;
 import com.eternalcode.parcellockers.user.User;
-import com.j256.ormlite.table.TableUtils;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -18,12 +16,7 @@ public class UserRepositoryOrmLite extends AbstractRepositoryOrmLite implements 
 
     public UserRepositoryOrmLite(DatabaseManager databaseManager, Scheduler scheduler) {
         super(databaseManager, scheduler);
-
-        try {
-            TableUtils.createTableIfNotExists(databaseManager.connectionSource(), UserTable.class);
-        } catch (SQLException exception) {
-            exception.printStackTrace();
-        }
+        this.createTable(UserTable.class);
     }
 
     @Override

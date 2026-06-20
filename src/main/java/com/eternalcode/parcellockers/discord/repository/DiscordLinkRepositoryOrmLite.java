@@ -4,10 +4,7 @@ import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.eternalcode.parcellockers.database.wrapper.AbstractRepositoryOrmLite;
 import com.eternalcode.parcellockers.discord.DiscordLink;
-import com.eternalcode.parcellockers.shared.exception.DatabaseException;
 import com.j256.ormlite.stmt.DeleteBuilder;
-import com.j256.ormlite.table.TableUtils;
-import java.sql.SQLException;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -16,12 +13,7 @@ public class DiscordLinkRepositoryOrmLite extends AbstractRepositoryOrmLite impl
 
     public DiscordLinkRepositoryOrmLite(DatabaseManager databaseManager, Scheduler scheduler) {
         super(databaseManager, scheduler);
-
-        try {
-            TableUtils.createTableIfNotExists(databaseManager.connectionSource(), DiscordLinkEntity.class);
-        } catch (SQLException ex) {
-            throw new DatabaseException("Failed to initialize DiscordLink table", ex);
-        }
+        this.createTable(DiscordLinkEntity.class);
     }
 
     @Override

@@ -6,9 +6,6 @@ import com.eternalcode.parcellockers.database.wrapper.AbstractRepositoryOrmLite;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.PageResult;
-import com.eternalcode.parcellockers.shared.exception.DatabaseException;
-import com.j256.ormlite.table.TableUtils;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -26,12 +23,7 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     public ParcelRepositoryOrmLite(DatabaseManager databaseManager, Scheduler scheduler) {
         super(databaseManager, scheduler);
-
-        try {
-            TableUtils.createTableIfNotExists(databaseManager.connectionSource(), ParcelTable.class);
-        } catch (SQLException ex) {
-            throw new DatabaseException("Failed to initialize parcel table", ex);
-        }
+        this.createTable(ParcelTable.class);
     }
 
     @Override

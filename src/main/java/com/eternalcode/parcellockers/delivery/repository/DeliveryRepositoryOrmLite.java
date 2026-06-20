@@ -4,8 +4,6 @@ import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.eternalcode.parcellockers.database.wrapper.AbstractRepositoryOrmLite;
 import com.eternalcode.parcellockers.delivery.Delivery;
-import com.j256.ormlite.table.TableUtils;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -15,12 +13,7 @@ public class DeliveryRepositoryOrmLite extends AbstractRepositoryOrmLite impleme
 
     public DeliveryRepositoryOrmLite(DatabaseManager databaseManager, Scheduler scheduler) {
         super(databaseManager, scheduler);
-
-        try {
-            TableUtils.createTableIfNotExists(databaseManager.connectionSource(), DeliveryTable.class);
-        } catch (SQLException exception) {
-            exception.printStackTrace();
-        }
+        this.createTable(DeliveryTable.class);
     }
 
     @Override
