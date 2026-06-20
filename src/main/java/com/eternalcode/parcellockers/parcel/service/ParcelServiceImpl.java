@@ -9,6 +9,7 @@ import com.eternalcode.parcellockers.content.ParcelContent;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.parcel.Parcel;
+import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.event.ParcelCollectEvent;
 import com.eternalcode.parcellockers.parcel.event.ParcelSendEvent;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
@@ -93,11 +94,7 @@ public class ParcelServiceImpl implements ParcelService {
 
         double chargedFee = 0;
         if (!sender.hasPermission(PARCEL_FEE_BYPASS_PERMISSION)) {
-            double fee = switch (parcel.size()) {
-                case SMALL -> this.config.settings.smallParcelFee;
-                case MEDIUM -> this.config.settings.mediumParcelFee;
-                case LARGE -> this.config.settings.largeParcelFee;
-            };
+            double fee = this.feeFor(parcel.size());
 
             if (fee > 0) {
                 boolean success = this.economy.withdrawPlayer(sender, fee).transactionSuccess();
@@ -138,6 +135,29 @@ public class ParcelServiceImpl implements ParcelService {
                 this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.cannotSend);
                 throw new ParcelOperationException("Failed to save parcel", throwable);
             });
+    }
+
+    @Override
+    public CompletableFuture<Void> rollbackSend(Player sender, Parcel parcel) {
+        Objects.requireNonNull(sender, "Sender cannot be null");
+        Objects.requireNonNull(parcel, "Parcel cannot be null");
+
+        if (!sender.hasPermission(PARCEL_FEE_BYPASS_PERMISSION)) {
+            this.refundFee(sender, this.feeFor(parcel.size()));
+        }
+        this.parcelsByUuid.invalidate(parcel.uuid());
+
+        return this.parcelRepository.delete(parcel.uuid())
+            .thenCompose(deleted -> this.parcelContentRepository.delete(parcel.uuid()))
+            .thenApply(contentDeleted -> null);
+    }
+
+    private double feeFor(ParcelSize size) {
+        return switch (size) {
+            case SMALL -> this.config.settings.smallParcelFee;
+            case MEDIUM -> this.config.settings.mediumParcelFee;
+            case LARGE -> this.config.settings.largeParcelFee;
+        };
     }
 
     private void refundFee(Player sender, double fee) {

@@ -66,11 +66,13 @@ public class ParcelDispatchService {
                         }
 
                         return this.itemStorageManager.delete(sender.getUniqueId())
-                            .thenAccept(deleted -> {
+                            .thenCompose(deleted -> {
                                 if (!Boolean.TRUE.equals(deleted)) {
-                                    this.parcelService.delete(parcel.uuid());
+                                    // The parcel and its content were already persisted and the fee charged,
+                                    // but the sender's staged storage could not be cleared. Fully roll back
+                                    // (parcel + content + fee) instead of leaving orphaned content behind.
                                     this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.cannotSend);
-                                    return;
+                                    return this.parcelService.rollbackSend(sender, parcel);
                                 }
 
                                 this.deliveryManager.create(parcel.uuid(), Instant.now().plus(delay));
@@ -82,6 +84,7 @@ public class ParcelDispatchService {
                                 );
 
                                 this.scheduler.runLaterAsync(task, delay);
+                                return CompletableFuture.completedFuture(null);
                             });
                     });
             })
