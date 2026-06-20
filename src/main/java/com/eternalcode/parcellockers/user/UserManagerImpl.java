@@ -156,7 +156,6 @@ public class UserManagerImpl implements UserManager {
                 () -> new ValidationException("User not found with UUID: " + uuid));
             String oldName = oldUser.name();
 
-            // Fire UserChangeNameEvent
             UserChangeNameEvent event = new UserChangeNameEvent(oldUser, oldName);
             this.server.getPluginManager().callEvent(event);
 
