@@ -89,7 +89,7 @@ public class LockerPlaceController implements Listener {
 
         this.lockerCreators.put(player.getUniqueId(), true);
 
-        Component promptMessage = this.miniMessage.deserialize(this.messages.locker.descriptionPrompt); // Replace with actual config message
+        Component promptMessage = this.miniMessage.deserialize(this.messages.locker.descriptionPrompt);
 
         Dialog dialog = Dialog.create(builder -> builder.empty()
             .base(DialogBase.builder(promptMessage)
