@@ -77,6 +77,15 @@ public class LockerManager {
         });
     }
 
+    /**
+     * Synchronous, cache-only lookup. Lets event handlers that must run on the main thread
+     * (e.g. block protection) decide whether to cancel an event within the same tick instead
+     * of cancelling asynchronously after the event has already been processed.
+     */
+    public Optional<Locker> getCached(Position position) {
+        return Optional.ofNullable(this.lockersByPosition.getIfPresent(position));
+    }
+
     public CompletableFuture<Optional<Locker>> get(Position position) {
         Locker locker = this.lockersByPosition.getIfPresent(position);
 
