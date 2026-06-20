@@ -125,7 +125,6 @@ public class UserManagerImpl implements UserManager {
 
                 return new User(uuid, name);
             }).thenCompose(user -> {
-                // Fire UserCreateEvent
                 UserCreateEvent event = new UserCreateEvent(user);
                 this.server.getPluginManager().callEvent(event);
 
