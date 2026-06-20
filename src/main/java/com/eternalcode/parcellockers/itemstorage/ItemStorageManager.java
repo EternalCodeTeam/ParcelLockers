@@ -45,7 +45,13 @@ public class ItemStorageManager {
     }
 
     public ItemStorage getOrCreate(UUID owner, List<ItemStack> items) {
-        return this.cache.get(owner, key -> this.create(key, items));
+        ItemStorage existing = this.cache.getIfPresent(owner);
+        if (existing != null) {
+            return existing;
+        }
+        // Do not call create() from inside cache.get(owner, loader): create() writes the same key
+        // back into the cache, and Caffeine forbids mutating the key being computed.
+        return this.create(owner, items);
     }
 
     public ItemStorage create(UUID owner, List<ItemStack> items) {
