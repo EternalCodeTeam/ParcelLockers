@@ -15,7 +15,6 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import eu.okaeri.configs.exception.ValidationException;
 import java.time.Duration;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -103,12 +102,16 @@ public class LockerManager {
     }
 
     public CompletableFuture<PageResult<Locker>> get(Page page) {
-        List<Locker> cached = List.copyOf(this.lockersByUUID.asMap().values());
-        boolean hasNextPage = cached.size() > page.getLimit();
-        if (!cached.isEmpty() && page.getOffset() == 0 && !hasNextPage) {
-            return CompletableFuture.completedFuture(new PageResult<>(cached, false));
-        }
-        return this.lockerRepository.findPage(page);
+        // The cache holds an arbitrary, partially-evicted subset of lockers - it is not the full
+        // dataset, so it cannot answer pagination. Always query the repository (warming the cache
+        // with the results for subsequent single-locker lookups).
+        return this.lockerRepository.findPage(page).thenApply(result -> {
+            result.items().forEach(locker -> {
+                this.lockersByUUID.put(locker.uuid(), locker);
+                this.lockersByPosition.put(locker.position(), locker);
+            });
+            return result;
+        });
     }
 
     public CompletableFuture<Locker> create(UUID uniqueId, String name, Position position, UUID playerUUID) {
