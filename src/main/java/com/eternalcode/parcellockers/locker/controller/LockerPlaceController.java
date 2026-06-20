@@ -130,6 +130,11 @@ public class LockerPlaceController implements Listener {
 
                             this.lockerManager.create(UUID.randomUUID(), description, PositionAdapter.convert(location), player.getUniqueId())
                                 .thenAccept(locker -> {
+                                    // The original BlockPlaceEvent was cancelled (so the item was never
+                                    // consumed) and the block was placed manually. Consume one locker item
+                                    // now so a single item cannot create unlimited lockers.
+                                    this.scheduler.run(() -> this.consumeLockerItem(player, parcelLockerItem));
+
                                     this.noticeService.create()
                                         .player(player.getUniqueId())
                                         .notice(messages -> messages.locker.created)
@@ -166,5 +171,20 @@ public class LockerPlaceController implements Listener {
         );
 
         player.showDialog(dialog);
+    }
+
+    private void consumeLockerItem(Player player, ItemStack lockerItem) {
+        PlayerInventory inventory = player.getInventory();
+
+        ItemStack mainHand = inventory.getItemInMainHand();
+        if (lockerItem.isSimilar(mainHand)) {
+            mainHand.setAmount(mainHand.getAmount() - 1);
+            return;
+        }
+
+        ItemStack offHand = inventory.getItemInOffHand();
+        if (lockerItem.isSimilar(offHand)) {
+            offHand.setAmount(offHand.getAmount() - 1);
+        }
     }
 }
