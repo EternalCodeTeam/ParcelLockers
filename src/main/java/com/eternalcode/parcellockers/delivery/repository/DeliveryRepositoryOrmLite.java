@@ -25,7 +25,7 @@ public class DeliveryRepositoryOrmLite extends AbstractRepositoryOrmLite impleme
 
     @Override
     public CompletableFuture<Void> save(Delivery delivery) {
-        return this.saveIfNotExist(DeliveryTable.class, DeliveryTable.from(delivery)).thenApply(dao -> null);
+        return this.insertIfAbsent(DeliveryTable.class, DeliveryTable.from(delivery)).thenApply(dao -> null);
     }
 
     @Override

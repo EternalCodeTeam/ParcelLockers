@@ -24,11 +24,13 @@ public abstract class AbstractRepositoryOrmLite {
         this.scheduler = scheduler;
     }
 
-    protected <T> CompletableFuture<Dao.CreateOrUpdateStatus> save(Class<T> type, T entity) {
+    /** Inserts the entity, or updates it if a row with the same id already exists. */
+    protected <T> CompletableFuture<Dao.CreateOrUpdateStatus> upsert(Class<T> type, T entity) {
         return this.action(type, dao -> dao.createOrUpdate(entity));
     }
 
-    protected <T> CompletableFuture<T> saveIfNotExist(Class<T> type, T entity) {
+    /** Inserts the entity only if no row with the same id exists; an existing row is left untouched. */
+    protected <T> CompletableFuture<T> insertIfAbsent(Class<T> type, T entity) {
         return this.action(type, dao -> dao.createIfNotExists(entity));
     }
 

@@ -25,7 +25,7 @@ public class ParcelContentRepositoryOrmLite extends AbstractRepositoryOrmLite im
 
     @Override
     public CompletableFuture<Void> save(ParcelContent parcelContent) {
-        return this.saveIfNotExist(ParcelContentTable.class, ParcelContentTable.from(parcelContent)).thenApply(dao -> null);
+        return this.insertIfAbsent(ParcelContentTable.class, ParcelContentTable.from(parcelContent)).thenApply(dao -> null);
     }
 
     @Override

@@ -37,13 +37,13 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     @Override
     public CompletableFuture<Void> save(Parcel parcel) {
         Objects.requireNonNull(parcel, "Parcel cannot be null");
-        return this.saveIfNotExist(ParcelTable.class, ParcelTable.from(parcel)).thenApply(dao -> null);
+        return this.insertIfAbsent(ParcelTable.class, ParcelTable.from(parcel)).thenApply(dao -> null);
     }
 
     @Override
     public CompletableFuture<Void> update(Parcel parcel) {
         Objects.requireNonNull(parcel, "Parcel cannot be null");
-        return this.save(ParcelTable.class, ParcelTable.from(parcel)).thenApply(dao -> null);
+        return this.upsert(ParcelTable.class, ParcelTable.from(parcel)).thenApply(dao -> null);
     }
 
     @Override
