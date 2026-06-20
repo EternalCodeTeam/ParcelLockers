@@ -1,6 +1,6 @@
 package com.eternalcode.parcellockers.parcel.service;
 
-import static com.eternalcode.parcellockers.util.InventoryUtil.freeSlotsInInventory;
+import static com.eternalcode.parcellockers.util.InventoryUtil.canHold;
 
 import com.eternalcode.commons.bukkit.ItemUtil;
 import com.eternalcode.commons.scheduler.Scheduler;
@@ -222,7 +222,7 @@ public class ParcelServiceImpl implements ParcelService {
             // then delete the parcel BEFORE handing the items back so it cannot be collected twice.
             // Items are only given once the delete is confirmed, so a failed delete never destroys them.
             this.scheduler.run(() -> {
-                if (items.size() > freeSlotsInInventory(player)) {
+                if (!canHold(player, items)) {
                     this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.noInventorySpace);
                     result.complete(null);
                     return;
