@@ -87,8 +87,8 @@ public class GuiManager {
             .thenApply(optional -> optional.orElse(new ItemStorage(owner, List.of())));
     }
 
-    public void saveItemStorage(UUID player, List<ItemStack> items) {
-        this.itemStorageManager.create(player, items);
+    public CompletableFuture<ItemStorage> saveItemStorage(UUID player, List<ItemStack> items) {
+        return this.itemStorageManager.create(player, items);
     }
 
     public CompletableFuture<Boolean> deleteItemStorage(UUID owner) {

@@ -44,17 +44,17 @@ public class ItemStorageManager {
         });
     }
 
-    public ItemStorage getOrCreate(UUID owner, List<ItemStack> items) {
+    public CompletableFuture<ItemStorage> getOrCreate(UUID owner, List<ItemStack> items) {
         ItemStorage existing = this.cache.getIfPresent(owner);
         if (existing != null) {
-            return existing;
+            return CompletableFuture.completedFuture(existing);
         }
         // Do not call create() from inside cache.get(owner, loader): create() writes the same key
         // back into the cache, and Caffeine forbids mutating the key being computed.
         return this.create(owner, items);
     }
 
-    public ItemStorage create(UUID owner, List<ItemStack> items) {
+    public CompletableFuture<ItemStorage> create(UUID owner, List<ItemStack> items) {
         ItemStorage oldItemStorage = this.cache.getIfPresent(owner);
         ItemStorage newItemStorage = new ItemStorage(owner, items);
 
@@ -63,12 +63,12 @@ public class ItemStorageManager {
         this.server.getPluginManager().callEvent(event);
 
         if (event.isCancelled()) {
-            throw new IllegalStateException("ItemStorage update was cancelled by event");
+            return CompletableFuture.failedFuture(new IllegalStateException("ItemStorage update was cancelled by event"));
         }
 
         this.cache.put(owner, newItemStorage);
-        this.itemStorageRepository.save(newItemStorage);
-        return newItemStorage;
+        // Return the save future so callers can react to a persistence failure instead of losing items.
+        return this.itemStorageRepository.save(newItemStorage).thenApply(ignored -> newItemStorage);
     }
 
     private void cacheAll() {

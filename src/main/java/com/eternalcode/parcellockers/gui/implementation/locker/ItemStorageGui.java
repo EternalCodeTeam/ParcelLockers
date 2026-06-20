@@ -104,17 +104,20 @@ public class ItemStorageGui {
             }
 
             this.guiManager.deleteItemStorage(player.getUniqueId())
-                .thenAccept(action -> {
-                    this.guiManager.saveItemStorage(player.getUniqueId(), items);
-                    new SendingGui(
-                        this.scheduler,
-                        this.guiSettings,
-                        this.miniMessage,
-                        this.noticeService,
-                        this.guiManager,
-                        this.state
-                    ).show(player);
-                }).exceptionally(FutureHandler::handleException);
+                .thenCompose(action -> this.guiManager.saveItemStorage(player.getUniqueId(), items))
+                .thenAccept(saved -> new SendingGui(
+                    this.scheduler,
+                    this.guiSettings,
+                    this.miniMessage,
+                    this.noticeService,
+                    this.guiManager,
+                    this.state
+                ).show(player))
+                .exceptionally(throwable -> {
+                    // Persisting the staged items failed; hand them back so they are not lost.
+                    this.scheduler.run(() -> items.forEach(item -> ItemUtil.giveItem(player, item)));
+                    return FutureHandler.handleException(throwable);
+                });
         });
 
         this.guiManager.getItemStorage(player.getUniqueId()).thenAccept(itemStorage -> {
