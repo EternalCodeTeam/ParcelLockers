@@ -123,16 +123,23 @@ public class UserManagerImpl implements UserManager {
                     throw new ValidationException(conflictCheck.errorMessage());
                 }
 
-                User user = new User(uuid, name);
-
+                return new User(uuid, name);
+            }).thenCompose(user -> {
                 // Fire UserCreateEvent
                 UserCreateEvent event = new UserCreateEvent(user);
                 this.server.getPluginManager().callEvent(event);
 
                 this.cache(user);
-                this.userRepository.save(user);
-
-                return user;
+                // Chain the save so a persistence failure is surfaced to the caller; if it fails, undo
+                // the optimistic cache entry so the cache never holds an unpersisted user.
+                return this.userRepository.save(user)
+                    .whenComplete((ignored, throwable) -> {
+                        if (throwable != null) {
+                            this.usersByUUID.invalidate(uuid);
+                            this.usersByName.invalidate(name);
+                        }
+                    })
+                    .thenApply(ignored -> user);
             });
     }
 

@@ -68,7 +68,19 @@ public class ItemStorageManager {
 
         this.cache.put(owner, newItemStorage);
         // Return the save future so callers can react to a persistence failure instead of losing items.
-        return this.itemStorageRepository.save(newItemStorage).thenApply(ignored -> newItemStorage);
+        // If the save fails, undo the optimistic cache update so the cache never holds an unpersisted
+        // storage (which, combined with re-giving the items to the player, would duplicate them).
+        return this.itemStorageRepository.save(newItemStorage)
+            .whenComplete((ignored, throwable) -> {
+                if (throwable != null) {
+                    if (oldItemStorage != null) {
+                        this.cache.put(owner, oldItemStorage);
+                    } else {
+                        this.cache.invalidate(owner);
+                    }
+                }
+            })
+            .thenApply(ignored -> newItemStorage);
     }
 
     private void cacheAll() {

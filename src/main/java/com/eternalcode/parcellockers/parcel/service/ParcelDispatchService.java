@@ -86,6 +86,9 @@ public class ParcelDispatchService {
                         }
 
                         return this.itemStorageManager.delete(sender.getUniqueId())
+                            // A failed delete must trigger the rollback, not skip straight to the outer
+                            // exceptionally handler (which would leave the parcel sent and the fee charged).
+                            .exceptionally(throwable -> false)
                             .thenCompose(deleted -> {
                                 if (!Boolean.TRUE.equals(deleted)) {
                                     // The parcel and its content were already persisted and the fee charged,

@@ -229,8 +229,22 @@ public class ParcelServiceImpl implements ParcelService {
                 }
 
                 this.parcelRepository.delete(parcel)
-                    .thenCompose(deleted -> this.parcelContentRepository.delete(parcel.uuid())
-                        .thenApply(contentDeleted -> deleted && contentDeleted))
+                    .thenCompose(deleted -> {
+                        if (!deleted) {
+                            return CompletableFuture.completedFuture(false);
+                        }
+                        // The parcel is gone, so it can never be collected again; deleting its content
+                        // is best-effort cleanup and must not block handing the items back. Otherwise a
+                        // failed content delete would lose the items permanently.
+                        return this.parcelContentRepository.delete(parcel.uuid())
+                            .handle((contentDeleted, throwable) -> {
+                                if (throwable != null) {
+                                    this.server.getLogger().warning("Failed to delete content for collected parcel "
+                                        + parcel.uuid() + ": " + throwable.getMessage());
+                                }
+                                return true;
+                            });
+                    })
                     .thenAccept(removed -> {
                         if (!removed) {
                             this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.databaseError);

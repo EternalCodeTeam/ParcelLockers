@@ -1,5 +1,6 @@
 package com.eternalcode.parcellockers.locker.controller;
 
+import com.eternalcode.commons.bukkit.ItemUtil;
 import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.configuration.implementation.MessageConfig;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
@@ -124,32 +125,47 @@ public class LockerPlaceController implements Listener {
                             }
 
                             this.scheduler.run(() -> {
-                                location.getWorld().getBlockAt(location).setType(type);
-                                location.getWorld().getBlockAt(location).setBlockData(data);
-                            });
-
-                            this.lockerManager.create(UUID.randomUUID(), description, PositionAdapter.convert(location), player.getUniqueId())
-                                .thenAccept(locker -> {
-                                    // The original BlockPlaceEvent was cancelled (so the item was never
-                                    // consumed) and the block was placed manually. Consume one locker item
-                                    // now so a single item cannot create unlimited lockers.
-                                    this.scheduler.run(() -> this.consumeLockerItem(player, parcelLockerItem));
-
-                                    this.noticeService.create()
-                                        .player(player.getUniqueId())
-                                        .notice(messages -> messages.locker.created)
-                                        .send();
-
-                                    this.lockerCreators.invalidate(player.getUniqueId());
-                                })
-                                .exceptionally(ex -> {
+                                // The original BlockPlaceEvent was cancelled, so the item was never consumed.
+                                // Consume it up front; if the player no longer holds it, abort instead of
+                                // creating a free locker.
+                                if (!this.consumeLockerItem(player, parcelLockerItem)) {
                                     this.noticeService.create()
                                         .player(player.getUniqueId())
                                         .notice(messages -> messages.locker.cannotCreate)
                                         .send();
                                     this.lockerCreators.invalidate(player.getUniqueId());
-                                    return null;
-                                });
+                                    return;
+                                }
+
+                                location.getWorld().getBlockAt(location).setType(type);
+                                location.getWorld().getBlockAt(location).setBlockData(data);
+
+                                this.lockerManager.create(UUID.randomUUID(), description, PositionAdapter.convert(location), player.getUniqueId())
+                                    .thenAccept(locker -> {
+                                        this.noticeService.create()
+                                            .player(player.getUniqueId())
+                                            .notice(messages -> messages.locker.created)
+                                            .send();
+
+                                        this.lockerCreators.invalidate(player.getUniqueId());
+                                    })
+                                    .exceptionally(ex -> {
+                                        // Creation failed after the item was consumed and the block placed:
+                                        // refund the item and clear the block so nothing is lost.
+                                        this.scheduler.run(() -> {
+                                            ItemStack refund = parcelLockerItem.clone();
+                                            refund.setAmount(1);
+                                            ItemUtil.giveItem(player, refund);
+                                            location.getWorld().getBlockAt(location).setType(Material.AIR);
+                                        });
+                                        this.noticeService.create()
+                                            .player(player.getUniqueId())
+                                            .notice(messages -> messages.locker.cannotCreate)
+                                            .send();
+                                        this.lockerCreators.invalidate(player.getUniqueId());
+                                        return null;
+                                    });
+                            });
                         });
                     }, ClickCallback.Options.builder()
                         .uses(1)
@@ -173,18 +189,21 @@ public class LockerPlaceController implements Listener {
         player.showDialog(dialog);
     }
 
-    private void consumeLockerItem(Player player, ItemStack lockerItem) {
+    private boolean consumeLockerItem(Player player, ItemStack lockerItem) {
         PlayerInventory inventory = player.getInventory();
 
         ItemStack mainHand = inventory.getItemInMainHand();
-        if (lockerItem.isSimilar(mainHand)) {
+        if (lockerItem.isSimilar(mainHand) && mainHand.getAmount() > 0) {
             mainHand.setAmount(mainHand.getAmount() - 1);
-            return;
+            return true;
         }
 
         ItemStack offHand = inventory.getItemInOffHand();
-        if (lockerItem.isSimilar(offHand)) {
+        if (lockerItem.isSimilar(offHand) && offHand.getAmount() > 0) {
             offHand.setAmount(offHand.getAmount() - 1);
+            return true;
         }
+
+        return false;
     }
 }
