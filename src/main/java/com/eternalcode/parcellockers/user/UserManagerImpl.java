@@ -86,7 +86,16 @@ public class UserManagerImpl implements UserManager {
             return CompletableFuture.completedFuture(userByName);
         }
 
-         return this.create(uuid, name);
+        // Not cached - consult the repository before creating, otherwise a user that exists in the
+        // database but not the cache would be created a second time.
+        return this.userRepository.fetch(uuid).thenCompose(optional -> {
+            if (optional.isPresent()) {
+                User user = optional.get();
+                this.cache(user);
+                return CompletableFuture.completedFuture(user);
+            }
+            return this.create(uuid, name);
+        });
     }
 
     @Override
@@ -96,35 +105,35 @@ public class UserManagerImpl implements UserManager {
 
     @Override
     public CompletableFuture<User> create(UUID uuid, String name) {
-        return CompletableFuture.supplyAsync(() -> {
-            ValidationResult validation = this.validationService.validateCreateParameters(uuid, name);
+        ValidationResult validation = this.validationService.validateCreateParameters(uuid, name);
 
-            if (!validation.isValid()) {
-                throw new ValidationException("Invalid user parameters: " + validation.errorMessage());
-            }
+        if (!validation.isValid()) {
+            return CompletableFuture.failedFuture(
+                new ValidationException("Invalid user parameters: " + validation.errorMessage()));
+        }
 
-            Optional<User> existingByUUID = Optional.ofNullable(this.usersByUUID.get(uuid, uniqueId -> null));
-            Optional<User> existingByName = Optional.ofNullable(this.usersByName.get(name, username -> null));
+        // Check for conflicts against the database, not only the cache, so a name/UUID already
+        // persisted but not currently cached is still detected.
+        return this.userRepository.fetch(uuid).thenCombine(this.userRepository.fetch(name),
+            (existingByUUID, existingByName) -> {
+                ValidationResult conflictCheck = this.validationService.validateNoConflicts(
+                    uuid, name, existingByUUID, existingByName);
 
-            ValidationResult conflictCheck = this.validationService.validateNoConflicts(
-                uuid, name, existingByUUID, existingByName);
+                if (!conflictCheck.isValid()) {
+                    throw new ValidationException(conflictCheck.errorMessage());
+                }
 
-            if (!conflictCheck.isValid()) {
-                throw new ValidationException(conflictCheck.errorMessage());
-            }
+                User user = new User(uuid, name);
 
-            User user = new User(uuid, name);
-            
-            // Fire UserCreateEvent
-            UserCreateEvent event = new UserCreateEvent(user);
-            this.server.getPluginManager().callEvent(event);
+                // Fire UserCreateEvent
+                UserCreateEvent event = new UserCreateEvent(user);
+                this.server.getPluginManager().callEvent(event);
 
-            this.usersByUUID.put(uuid, user);
-            this.usersByName.put(name, user);
-            this.userRepository.save(user);
+                this.cache(user);
+                this.userRepository.save(user);
 
-            return user;
-        });
+                return user;
+            });
     }
 
     @Override
