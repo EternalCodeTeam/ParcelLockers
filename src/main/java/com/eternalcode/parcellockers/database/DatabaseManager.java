@@ -97,18 +97,15 @@ public class DatabaseManager {
 
     @SuppressWarnings("unchecked")
     public <T, ID> Dao<T, ID> getDao(Class<T> type) {
-        try {
-            Dao<?, ?> dao = this.cachedDao.get(type);
-
-            if (dao == null) {
-                dao = DaoManager.createDao(this.connectionSource, type);
-                this.cachedDao.put(type, dao);
+        Dao<?, ?> dao = this.cachedDao.computeIfAbsent(type, key -> {
+            try {
+                return DaoManager.createDao(this.connectionSource, key);
+            } catch (SQLException exception) {
+                throw new DatabaseException("Failed to get DAO for type: " + key.getSimpleName(), exception);
             }
+        });
 
-            return (Dao<T, ID>) dao;
-        } catch (SQLException exception) {
-            throw new DatabaseException("Failed to get DAO for type: " + type.getSimpleName(), exception);
-        }
+        return (Dao<T, ID>) dao;
     }
 
     public ConnectionSource connectionSource() {
