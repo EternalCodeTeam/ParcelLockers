@@ -50,7 +50,7 @@ public class DatabaseManager {
         this.dataSource.setUsername(this.config.settings.user);
         this.dataSource.setPassword(this.config.settings.password);
 
-        switch (DatabaseType.valueOf(databaseType.toString().toUpperCase())) {
+        switch (databaseType) {
 
             case MYSQL -> {
                 this.dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
