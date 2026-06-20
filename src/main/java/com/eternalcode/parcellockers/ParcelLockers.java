@@ -71,6 +71,7 @@ import net.milkbowl.vault.economy.Economy;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
+import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -230,9 +231,10 @@ public final class ParcelLockers extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        if (this.databaseManager != null) {
-            this.databaseManager.disconnect();
-        }
+        // Stop accepting new work before closing the datasource, so fewer in-flight async DB tasks
+        // run into an already-closed connection pool.
+        HandlerList.unregisterAll(this);
+        this.getServer().getScheduler().cancelTasks(this);
 
         if (this.liteCommands != null) {
             this.liteCommands.unregister();
@@ -240,6 +242,10 @@ public final class ParcelLockers extends JavaPlugin {
 
         if (this.discordClientManager != null) {
             this.discordClientManager.shutdown();
+        }
+
+        if (this.databaseManager != null) {
+            this.databaseManager.disconnect();
         }
     }
 
