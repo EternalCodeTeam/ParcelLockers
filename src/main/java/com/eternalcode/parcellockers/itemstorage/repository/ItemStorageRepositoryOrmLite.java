@@ -4,6 +4,7 @@ import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.eternalcode.parcellockers.database.wrapper.AbstractRepositoryOrmLite;
 import com.eternalcode.parcellockers.itemstorage.ItemStorage;
+import com.eternalcode.parcellockers.shared.exception.DatabaseException;
 import com.j256.ormlite.table.TableUtils;
 import java.sql.SQLException;
 import java.util.List;
@@ -19,7 +20,7 @@ public class ItemStorageRepositoryOrmLite extends AbstractRepositoryOrmLite impl
         try {
             TableUtils.createTableIfNotExists(databaseManager.connectionSource(), ItemStorageTable.class);
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            throw new DatabaseException("Failed to initialize item storage table", ex);
         }
     }
 
