@@ -47,7 +47,10 @@ public class UserManagerImpl implements UserManager {
             return CompletableFuture.completedFuture(Optional.of(user));
         }
 
-        return this.userRepository.fetch(uniqueId);
+        return this.userRepository.fetch(uniqueId).thenApply(optional -> {
+            optional.ifPresent(this::cache);
+            return optional;
+        });
     }
 
     @Override
@@ -58,7 +61,15 @@ public class UserManagerImpl implements UserManager {
             return CompletableFuture.completedFuture(Optional.of(user));
         }
 
-        return this.userRepository.fetch(username);
+        return this.userRepository.fetch(username).thenApply(optional -> {
+            optional.ifPresent(this::cache);
+            return optional;
+        });
+    }
+
+    private void cache(User user) {
+        this.usersByUUID.put(user.uuid(), user);
+        this.usersByName.put(user.name(), user);
     }
 
     @Override
