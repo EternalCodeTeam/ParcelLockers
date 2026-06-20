@@ -107,6 +107,9 @@ public class ParcelDispatchService {
                                 );
 
                                 this.scheduler.runLaterAsync(task, delay);
+                                // Only confirm success here, once every step has succeeded, to avoid a
+                                // "sent" notice immediately followed by "cannot send" on a rollback.
+                                this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.sent);
                                 return CompletableFuture.completedFuture(null);
                             });
                     });

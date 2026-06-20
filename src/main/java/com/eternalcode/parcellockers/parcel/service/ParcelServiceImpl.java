@@ -123,7 +123,8 @@ public class ParcelServiceImpl implements ParcelService {
             .thenCompose(unused -> this.parcelContentRepository.save(new ParcelContent(parcel.uuid(), itemsCopy))
                 .thenApply(contentSaved -> {
                     this.parcelsByUuid.put(parcel.uuid(), parcel);
-                    this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.sent);
+                    // The "sent" notice is issued by the dispatcher once the whole send succeeds, so it
+                    // is not shown when a later step (e.g. clearing storage) fails and rolls back.
                     return true;
                 })
                 .exceptionallyCompose(contentError -> this.parcelRepository.delete(parcel.uuid())

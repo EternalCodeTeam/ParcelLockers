@@ -149,7 +149,16 @@ public class LockerManager {
             this.lockersByUUID.put(uniqueId, locker);
             this.lockersByPosition.put(position, locker);
 
-            return this.lockerRepository.save(locker);
+            // Undo the optimistic cache entries if the persist fails, so the cache never holds a
+            // locker that is not in the database (which would break the break/interaction fast paths
+            // and reject re-placement at the same position until the cache expires).
+            return this.lockerRepository.save(locker)
+                .whenComplete((saved, throwable) -> {
+                    if (throwable != null) {
+                        this.lockersByUUID.invalidate(uniqueId);
+                        this.lockersByPosition.invalidate(position);
+                    }
+                });
         }).thenCompose(Function.identity());
     }
 

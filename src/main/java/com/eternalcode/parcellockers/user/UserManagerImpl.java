@@ -145,27 +145,36 @@ public class UserManagerImpl implements UserManager {
 
     @Override
     public CompletableFuture<Void> changeName(UUID uuid, String newName) {
-        return CompletableFuture.supplyAsync(() -> {
-            User oldUser = this.usersByUUID.getIfPresent(uuid);
-            
-            if (oldUser == null) {
-                throw new ValidationException("User not found with UUID: " + uuid);
-            }
-            
+        User cached = this.usersByUUID.getIfPresent(uuid);
+        CompletableFuture<Optional<User>> lookup = cached != null
+            ? CompletableFuture.completedFuture(Optional.of(cached))
+            : this.userRepository.fetch(uuid);
+
+        // thenComposeAsync keeps the body (including the async UserChangeNameEvent) off the main thread
+        // even on a cache hit, where the lookup completes synchronously.
+        return lookup.thenComposeAsync(optional -> {
+            User oldUser = optional.orElseThrow(
+                () -> new ValidationException("User not found with UUID: " + uuid));
             String oldName = oldUser.name();
-            
+
             // Fire UserChangeNameEvent
             UserChangeNameEvent event = new UserChangeNameEvent(oldUser, oldName);
             this.server.getPluginManager().callEvent(event);
-            
-            // Update cache
+
+            // Optimistically update the cache, reverting if the persist fails.
             User updatedUser = new User(uuid, newName);
             this.usersByUUID.put(uuid, updatedUser);
             this.usersByName.invalidate(oldName);
             this.usersByName.put(newName, updatedUser);
-            
-            // Update in repository
-            return this.userRepository.changeName(uuid, newName);
-        }).thenCompose(future -> future);
+
+            return this.userRepository.changeName(uuid, newName)
+                .whenComplete((ignored, throwable) -> {
+                    if (throwable != null) {
+                        this.usersByUUID.put(uuid, oldUser);
+                        this.usersByName.invalidate(newName);
+                        this.usersByName.put(oldName, oldUser);
+                    }
+                });
+        });
     }
 }
