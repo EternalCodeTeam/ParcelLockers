@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "com.eternalcode"
-version = "0.3.0-SNAPSHOT"
+version = "0.4.0-ALPHA"
 
 repositories {
     maven("https://maven-central.storage-download.googleapis.com/maven2/") // maven central mirror
