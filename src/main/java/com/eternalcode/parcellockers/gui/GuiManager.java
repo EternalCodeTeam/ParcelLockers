@@ -103,6 +103,10 @@ public class GuiManager {
         return this.parcelContentManager.get(parcelId);
     }
 
+    public CompletableFuture<com.eternalcode.parcellockers.content.ParcelContent> updateParcelContent(UUID parcelId, List<ItemStack> items) {
+        return this.parcelContentManager.update(parcelId, items);
+    }
+
     public CompletableFuture<Optional<Delivery>> getDelivery(UUID parcelId) {
         return this.deliveryManager.get(parcelId);
     }
