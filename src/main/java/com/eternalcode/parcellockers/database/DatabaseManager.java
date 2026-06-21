@@ -44,13 +44,13 @@ public class DatabaseManager {
         this.dataSource.addDataSourceProperty("prepStmtCacheSqlLimit", 2048);
         this.dataSource.addDataSourceProperty("useServerPrepStmts", true);
 
-        this.dataSource.setMaximumPoolSize(5);
-        this.dataSource.setConnectionTimeout(5000);
-        this.dataSource.setLeakDetectionThreshold(5000);
+        this.dataSource.setMaximumPoolSize(this.config.settings.connectionPoolSize);
+        this.dataSource.setConnectionTimeout(this.config.settings.connectionTimeoutMillis);
+        this.dataSource.setLeakDetectionThreshold(this.config.settings.leakDetectionThresholdMillis);
         this.dataSource.setUsername(this.config.settings.user);
         this.dataSource.setPassword(this.config.settings.password);
 
-        switch (DatabaseType.valueOf(databaseType.toString().toUpperCase())) {
+        switch (databaseType) {
 
             case MYSQL -> {
                 this.dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
@@ -97,18 +97,15 @@ public class DatabaseManager {
 
     @SuppressWarnings("unchecked")
     public <T, ID> Dao<T, ID> getDao(Class<T> type) {
-        try {
-            Dao<?, ?> dao = this.cachedDao.get(type);
-
-            if (dao == null) {
-                dao = DaoManager.createDao(this.connectionSource, type);
-                this.cachedDao.put(type, dao);
+        Dao<?, ?> dao = this.cachedDao.computeIfAbsent(type, key -> {
+            try {
+                return DaoManager.createDao(this.connectionSource, key);
+            } catch (SQLException exception) {
+                throw new DatabaseException("Failed to get DAO for type: " + key.getSimpleName(), exception);
             }
+        });
 
-            return (Dao<T, ID>) dao;
-        } catch (SQLException exception) {
-            throw new DatabaseException("Failed to get DAO for type: " + type.getSimpleName(), exception);
-        }
+        return (Dao<T, ID>) dao;
     }
 
     public ConnectionSource connectionSource() {

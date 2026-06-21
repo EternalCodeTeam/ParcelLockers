@@ -2,8 +2,11 @@ package com.eternalcode.parcellockers.locker.controller;
 
 import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.gui.implementation.locker.LockerGui;
+import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.locker.LockerManager;
+import com.eternalcode.parcellockers.shared.Position;
 import com.eternalcode.parcellockers.shared.PositionAdapter;
+import java.util.Optional;
 import java.util.UUID;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -38,16 +41,23 @@ public class LockerInteractionController implements Listener {
             return;
         }
 
-        this.lockerManager.get(PositionAdapter.convert(block.getLocation())).thenAccept(optionalLocker -> {
-            if (optionalLocker.isEmpty()) {
-                return;
-            }
-            UUID uuid = optionalLocker.get().uuid();
+        Position position = PositionAdapter.convert(block.getLocation());
 
+        // Fast path: cancel the interaction synchronously so the vanilla chest never opens.
+        Optional<Locker> cached = this.lockerManager.getCached(position);
+        if (cached.isPresent()) {
+            event.setCancelled(true);
+            UUID uuid = cached.get().uuid();
+            this.scheduler.run(() -> this.lockerGUI.show(player, uuid));
+            return;
+        }
+
+        // Slow path: the locker is not cached, so the vanilla chest has already opened by the time
+        // the async lookup completes. Close it and open the locker GUI instead (warming the cache).
+        this.lockerManager.get(position).thenAccept(optionalLocker -> optionalLocker.ifPresent(locker ->
             this.scheduler.run(() -> {
-                event.setCancelled(true);
-                this.lockerGUI.show(player, uuid);
-            });
-        });
+                player.closeInventory();
+                this.lockerGUI.show(player, locker.uuid());
+            })));
     }
 }

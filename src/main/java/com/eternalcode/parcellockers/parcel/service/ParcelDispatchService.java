@@ -11,7 +11,9 @@ import com.eternalcode.parcellockers.parcel.task.ParcelSendTask;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -27,6 +29,10 @@ public class ParcelDispatchService {
     private final Scheduler scheduler;
     private final PluginConfig config;
     private final NoticeService noticeService;
+
+    // Serializes dispatches per destination locker so that two concurrent sends cannot both pass
+    // the fullness check before either parcel is persisted (a TOCTOU that could exceed the cap).
+    private final ConcurrentHashMap<UUID, CompletableFuture<Void>> lockerChains = new ConcurrentHashMap<>();
 
     public ParcelDispatchService(
         LockerManager lockerManager,
@@ -47,7 +53,21 @@ public class ParcelDispatchService {
     }
 
     public void dispatch(Player sender, Parcel parcel, List<ItemStack> items) {
-        this.lockerManager.isLockerFull(parcel.destinationLocker())
+        UUID lockerId = parcel.destinationLocker();
+
+        CompletableFuture<Void> chained = this.lockerChains.compute(lockerId, (id, previous) -> {
+            CompletableFuture<Void> predecessor = previous == null
+                ? CompletableFuture.completedFuture(null)
+                : previous.exceptionally(throwable -> null);
+            return predecessor.thenCompose(ignored -> this.dispatchInternal(sender, parcel, items));
+        });
+
+        // Drop the chain entry once it drains so the map does not grow unbounded.
+        chained.whenComplete((result, throwable) -> this.lockerChains.remove(lockerId, chained));
+    }
+
+    private CompletableFuture<Void> dispatchInternal(Player sender, Parcel parcel, List<ItemStack> items) {
+        return this.lockerManager.isLockerFull(parcel.destinationLocker())
             .thenCompose(isFull -> {
                 if (isFull) {
                     this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.lockerFull);
@@ -66,11 +86,16 @@ public class ParcelDispatchService {
                         }
 
                         return this.itemStorageManager.delete(sender.getUniqueId())
-                            .thenAccept(deleted -> {
+                            // A failed delete must trigger the rollback, not skip straight to the outer
+                            // exceptionally handler (which would leave the parcel sent and the fee charged).
+                            .exceptionally(throwable -> false)
+                            .thenCompose(deleted -> {
                                 if (!Boolean.TRUE.equals(deleted)) {
-                                    this.parcelService.delete(parcel.uuid());
+                                    // The parcel and its content were already persisted and the fee charged,
+                                    // but the sender's staged storage could not be cleared. Fully roll back
+                                    // (parcel + content + fee) instead of leaving orphaned content behind.
                                     this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.cannotSend);
-                                    return;
+                                    return this.parcelService.rollbackSend(sender, parcel);
                                 }
 
                                 this.deliveryManager.create(parcel.uuid(), Instant.now().plus(delay));
@@ -82,6 +107,10 @@ public class ParcelDispatchService {
                                 );
 
                                 this.scheduler.runLaterAsync(task, delay);
+                                // Only confirm success here, once every step has succeeded, to avoid a
+                                // "sent" notice immediately followed by "cannot send" on a rollback.
+                                this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.sent);
+                                return CompletableFuture.completedFuture(null);
                             });
                     });
             })

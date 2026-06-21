@@ -47,7 +47,10 @@ public class UserManagerImpl implements UserManager {
             return CompletableFuture.completedFuture(Optional.of(user));
         }
 
-        return this.userRepository.fetch(uniqueId);
+        return this.userRepository.fetch(uniqueId).thenApply(optional -> {
+            optional.ifPresent(this::cache);
+            return optional;
+        });
     }
 
     @Override
@@ -58,7 +61,15 @@ public class UserManagerImpl implements UserManager {
             return CompletableFuture.completedFuture(Optional.of(user));
         }
 
-        return this.userRepository.fetch(username);
+        return this.userRepository.fetch(username).thenApply(optional -> {
+            optional.ifPresent(this::cache);
+            return optional;
+        });
+    }
+
+    private void cache(User user) {
+        this.usersByUUID.put(user.uuid(), user);
+        this.usersByName.put(user.name(), user);
     }
 
     @Override
@@ -75,7 +86,16 @@ public class UserManagerImpl implements UserManager {
             return CompletableFuture.completedFuture(userByName);
         }
 
-         return this.create(uuid, name);
+        // Not cached - consult the repository before creating, otherwise a user that exists in the
+        // database but not the cache would be created a second time.
+        return this.userRepository.fetch(uuid).thenCompose(optional -> {
+            if (optional.isPresent()) {
+                User user = optional.get();
+                this.cache(user);
+                return CompletableFuture.completedFuture(user);
+            }
+            return this.create(uuid, name);
+        });
     }
 
     @Override
@@ -85,60 +105,74 @@ public class UserManagerImpl implements UserManager {
 
     @Override
     public CompletableFuture<User> create(UUID uuid, String name) {
-        return CompletableFuture.supplyAsync(() -> {
-            ValidationResult validation = this.validationService.validateCreateParameters(uuid, name);
+        ValidationResult validation = this.validationService.validateCreateParameters(uuid, name);
 
-            if (!validation.isValid()) {
-                throw new ValidationException("Invalid user parameters: " + validation.errorMessage());
-            }
+        if (!validation.isValid()) {
+            return CompletableFuture.failedFuture(
+                new ValidationException("Invalid user parameters: " + validation.errorMessage()));
+        }
 
-            Optional<User> existingByUUID = Optional.ofNullable(this.usersByUUID.get(uuid, uniqueId -> null));
-            Optional<User> existingByName = Optional.ofNullable(this.usersByName.get(name, username -> null));
+        // Check for conflicts against the database, not only the cache, so a name/UUID already
+        // persisted but not currently cached is still detected.
+        return this.userRepository.fetch(uuid).thenCombine(this.userRepository.fetch(name),
+            (existingByUUID, existingByName) -> {
+                ValidationResult conflictCheck = this.validationService.validateNoConflicts(
+                    uuid, name, existingByUUID, existingByName);
 
-            ValidationResult conflictCheck = this.validationService.validateNoConflicts(
-                uuid, name, existingByUUID, existingByName);
+                if (!conflictCheck.isValid()) {
+                    throw new ValidationException(conflictCheck.errorMessage());
+                }
 
-            if (!conflictCheck.isValid()) {
-                throw new ValidationException(conflictCheck.errorMessage());
-            }
+                return new User(uuid, name);
+            }).thenCompose(user -> {
+                UserCreateEvent event = new UserCreateEvent(user);
+                this.server.getPluginManager().callEvent(event);
 
-            User user = new User(uuid, name);
-            
-            // Fire UserCreateEvent
-            UserCreateEvent event = new UserCreateEvent(user);
-            this.server.getPluginManager().callEvent(event);
-
-            this.usersByUUID.put(uuid, user);
-            this.usersByName.put(name, user);
-            this.userRepository.save(user);
-
-            return user;
-        });
+                this.cache(user);
+                // Chain the save so a persistence failure is surfaced to the caller; if it fails, undo
+                // the optimistic cache entry so the cache never holds an unpersisted user.
+                return this.userRepository.save(user)
+                    .whenComplete((ignored, throwable) -> {
+                        if (throwable != null) {
+                            this.usersByUUID.invalidate(uuid);
+                            this.usersByName.invalidate(name);
+                        }
+                    })
+                    .thenApply(ignored -> user);
+            });
     }
 
     @Override
     public CompletableFuture<Void> changeName(UUID uuid, String newName) {
-        return CompletableFuture.supplyAsync(() -> {
-            User oldUser = this.usersByUUID.getIfPresent(uuid);
-            
-            if (oldUser == null) {
-                throw new ValidationException("User not found with UUID: " + uuid);
-            }
-            
+        User cached = this.usersByUUID.getIfPresent(uuid);
+        CompletableFuture<Optional<User>> lookup = cached != null
+            ? CompletableFuture.completedFuture(Optional.of(cached))
+            : this.userRepository.fetch(uuid);
+
+        // thenComposeAsync keeps the body (including the async UserChangeNameEvent) off the main thread
+        // even on a cache hit, where the lookup completes synchronously.
+        return lookup.thenComposeAsync(optional -> {
+            User oldUser = optional.orElseThrow(
+                () -> new ValidationException("User not found with UUID: " + uuid));
             String oldName = oldUser.name();
-            
-            // Fire UserChangeNameEvent
+
             UserChangeNameEvent event = new UserChangeNameEvent(oldUser, oldName);
             this.server.getPluginManager().callEvent(event);
-            
-            // Update cache
+
+            // Optimistically update the cache, reverting if the persist fails.
             User updatedUser = new User(uuid, newName);
             this.usersByUUID.put(uuid, updatedUser);
             this.usersByName.invalidate(oldName);
             this.usersByName.put(newName, updatedUser);
-            
-            // Update in repository
-            return this.userRepository.changeName(uuid, newName);
-        }).thenCompose(future -> future);
+
+            return this.userRepository.changeName(uuid, newName)
+                .whenComplete((ignored, throwable) -> {
+                    if (throwable != null) {
+                        this.usersByUUID.put(uuid, oldUser);
+                        this.usersByName.invalidate(newName);
+                        this.usersByName.put(oldName, oldUser);
+                    }
+                });
+        });
     }
 }

@@ -4,8 +4,6 @@ import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.eternalcode.parcellockers.database.wrapper.AbstractRepositoryOrmLite;
 import com.eternalcode.parcellockers.itemstorage.ItemStorage;
-import com.j256.ormlite.table.TableUtils;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -15,17 +13,12 @@ public class ItemStorageRepositoryOrmLite extends AbstractRepositoryOrmLite impl
 
     public ItemStorageRepositoryOrmLite(DatabaseManager databaseManager, Scheduler scheduler) {
         super(databaseManager, scheduler);
-
-        try {
-            TableUtils.createTableIfNotExists(databaseManager.connectionSource(), ItemStorageTable.class);
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
+        this.createTable(ItemStorageTable.class);
     }
 
     @Override
     public CompletableFuture<Void> save(ItemStorage itemStorage) {
-        return this.saveIfNotExist(ItemStorageTable.class, ItemStorageTable.from(itemStorage.owner(), itemStorage.items())).thenApply(dao -> null);
+        return this.insertIfAbsent(ItemStorageTable.class, ItemStorageTable.from(itemStorage.owner(), itemStorage.items())).thenApply(dao -> null);
     }
 
     @Override

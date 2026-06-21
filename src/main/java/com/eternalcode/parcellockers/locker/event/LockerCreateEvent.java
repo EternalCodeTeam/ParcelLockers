@@ -1,19 +1,17 @@
 package com.eternalcode.parcellockers.locker.event;
 
 import com.eternalcode.parcellockers.locker.Locker;
+import com.eternalcode.parcellockers.shared.event.CancellableEvent;
 import java.util.UUID;
-import org.bukkit.event.Cancellable;
-import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
-public class LockerCreateEvent extends Event implements Cancellable {
+public class LockerCreateEvent extends CancellableEvent {
 
     private static final HandlerList HANDLER_LIST = new HandlerList();
 
     private final Locker locker;
     private final UUID player;
-    private boolean cancelled;
 
     public LockerCreateEvent(Locker locker, UUID player) {
         super(true);
@@ -34,18 +32,7 @@ public class LockerCreateEvent extends Event implements Cancellable {
     }
 
     @Override
-    public boolean isCancelled() {
-        return this.cancelled;
-    }
-
-    @Override
-    public void setCancelled(boolean cancel) {
-        this.cancelled = cancel;
-    }
-
-    @Override
     public @NotNull HandlerList getHandlers() {
         return HANDLER_LIST;
     }
-
 }

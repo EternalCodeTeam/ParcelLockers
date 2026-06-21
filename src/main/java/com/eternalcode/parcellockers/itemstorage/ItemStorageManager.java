@@ -44,11 +44,17 @@ public class ItemStorageManager {
         });
     }
 
-    public ItemStorage getOrCreate(UUID owner, List<ItemStack> items) {
-        return this.cache.get(owner, key -> this.create(key, items));
+    public CompletableFuture<ItemStorage> getOrCreate(UUID owner, List<ItemStack> items) {
+        ItemStorage existing = this.cache.getIfPresent(owner);
+        if (existing != null) {
+            return CompletableFuture.completedFuture(existing);
+        }
+        // Do not call create() from inside cache.get(owner, loader): create() writes the same key
+        // back into the cache, and Caffeine forbids mutating the key being computed.
+        return this.create(owner, items);
     }
 
-    public ItemStorage create(UUID owner, List<ItemStack> items) {
+    public CompletableFuture<ItemStorage> create(UUID owner, List<ItemStack> items) {
         ItemStorage oldItemStorage = this.cache.getIfPresent(owner);
         ItemStorage newItemStorage = new ItemStorage(owner, items);
 
@@ -57,12 +63,24 @@ public class ItemStorageManager {
         this.server.getPluginManager().callEvent(event);
 
         if (event.isCancelled()) {
-            throw new IllegalStateException("ItemStorage update was cancelled by event");
+            return CompletableFuture.failedFuture(new IllegalStateException("ItemStorage update was cancelled by event"));
         }
 
         this.cache.put(owner, newItemStorage);
-        this.itemStorageRepository.save(newItemStorage);
-        return newItemStorage;
+        // Return the save future so callers can react to a persistence failure instead of losing items.
+        // If the save fails, undo the optimistic cache update so the cache never holds an unpersisted
+        // storage (which, combined with re-giving the items to the player, would duplicate them).
+        return this.itemStorageRepository.save(newItemStorage)
+            .whenComplete((ignored, throwable) -> {
+                if (throwable != null) {
+                    if (oldItemStorage != null) {
+                        this.cache.put(owner, oldItemStorage);
+                    } else {
+                        this.cache.invalidate(owner);
+                    }
+                }
+            })
+            .thenApply(ignored -> newItemStorage);
     }
 
     private void cacheAll() {

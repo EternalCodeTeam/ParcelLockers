@@ -29,7 +29,12 @@ public interface ParcelRepository {
 
     CompletableFuture<PageResult<Parcel>> findByReceiver(UUID receiver, Page page);
 
-    CompletableFuture<Integer> countDeliveredParcelsByDestinationLocker(UUID destinationLocker);
+    /**
+     * Counts the parcels currently occupying a destination locker. Collected parcels are removed
+     * from storage, so every parcel addressed to the locker (in-transit or delivered) occupies a
+     * slot. Counting in-transit parcels reserves a slot at send time and closes the fullness race.
+     */
+    CompletableFuture<Integer> countParcelsByDestinationLocker(UUID destinationLocker);
 
     CompletableFuture<Boolean> delete(Parcel parcel);
 

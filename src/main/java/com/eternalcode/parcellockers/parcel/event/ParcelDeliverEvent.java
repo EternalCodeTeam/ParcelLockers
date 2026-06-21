@@ -1,17 +1,15 @@
 package com.eternalcode.parcellockers.parcel.event;
 
 import com.eternalcode.parcellockers.parcel.Parcel;
-import org.bukkit.event.Cancellable;
-import org.bukkit.event.Event;
+import com.eternalcode.parcellockers.shared.event.CancellableEvent;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
-public class ParcelDeliverEvent extends Event implements Cancellable {
+public class ParcelDeliverEvent extends CancellableEvent {
 
     private static final HandlerList HANDLER_LIST = new HandlerList();
 
     private final Parcel parcel;
-    private boolean cancelled;
 
     public ParcelDeliverEvent(Parcel parcel) {
         super(true);
@@ -29,15 +27,5 @@ public class ParcelDeliverEvent extends Event implements Cancellable {
     @Override
     public @NotNull HandlerList getHandlers() {
         return HANDLER_LIST;
-    }
-
-    @Override
-    public boolean isCancelled() {
-        return this.cancelled;
-    }
-
-    @Override
-    public void setCancelled(boolean cancel) {
-        this.cancelled = cancel;
     }
 }

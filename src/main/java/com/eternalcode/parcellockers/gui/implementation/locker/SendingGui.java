@@ -417,13 +417,7 @@ public class SendingGui implements GuiView {
     }
 
     private ItemStack createActiveItem(ConfigItem item, String appendLore) {
-        List<String> itemLore = new ArrayList<>(item.lore());
-        itemLore.add(appendLore);
-
-        return item.toBuilder()
-            .lore(itemLore.stream().map(element -> resetItalic(this.miniMessage.deserialize(element))).toList())
-            .glow(true)
-            .build();
+        return this.createActiveItem(item, List.of(appendLore));
     }
 
     private ItemStack createActiveItem(ConfigItem item, List<String> appendLore) {

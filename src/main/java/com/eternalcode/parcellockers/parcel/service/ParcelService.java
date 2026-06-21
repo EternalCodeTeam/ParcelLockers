@@ -16,6 +16,12 @@ public interface ParcelService {
 
     CompletableFuture<Boolean> send(Player sender, Parcel parcel, List<ItemStack> items);
 
+    /**
+     * Rolls back a parcel that was successfully persisted by {@link #send} but could not be
+     * fully dispatched. Deletes both the parcel and its content and refunds the send fee.
+     */
+    CompletableFuture<Void> rollbackSend(Player sender, Parcel parcel);
+
     CompletableFuture<Void> update(Parcel parcel);
 
     CompletableFuture<Void> collect(Player player, Parcel parcel);

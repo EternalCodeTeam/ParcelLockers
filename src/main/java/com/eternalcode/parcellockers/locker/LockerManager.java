@@ -1,5 +1,6 @@
 package com.eternalcode.parcellockers.locker;
 
+import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.locker.event.LockerCreateEvent;
 import com.eternalcode.parcellockers.locker.event.LockerDeleteEvent;
@@ -15,7 +16,6 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import eu.okaeri.configs.exception.ValidationException;
 import java.time.Duration;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -30,6 +30,7 @@ public class LockerManager {
     private final LockerValidationService validationService;
     private final ParcelRepository parcelRepository;
     private final Server server;
+    private final Scheduler scheduler;
 
     private final Cache<UUID, Locker> lockersByUUID;
     private final Cache<Position, Locker> lockersByPosition;
@@ -39,13 +40,15 @@ public class LockerManager {
         LockerRepository lockerRepository,
         LockerValidationService validationService,
         ParcelRepository parcelRepository,
-        Server server
+        Server server,
+        Scheduler scheduler
     ) {
         this.config = config;
         this.lockerRepository = lockerRepository;
         this.validationService = validationService;
         this.parcelRepository = parcelRepository;
         this.server = server;
+        this.scheduler = scheduler;
 
         this.lockersByUUID = Caffeine.newBuilder()
             .expireAfterAccess(Duration.ofHours(2))
@@ -77,6 +80,15 @@ public class LockerManager {
         });
     }
 
+    /**
+     * Synchronous, cache-only lookup. Lets event handlers that must run on the main thread
+     * (e.g. block protection) decide whether to cancel an event within the same tick instead
+     * of cancelling asynchronously after the event has already been processed.
+     */
+    public Optional<Locker> getCached(Position position) {
+        return Optional.ofNullable(this.lockersByPosition.getIfPresent(position));
+    }
+
     public CompletableFuture<Optional<Locker>> get(Position position) {
         Locker locker = this.lockersByPosition.getIfPresent(position);
 
@@ -94,12 +106,16 @@ public class LockerManager {
     }
 
     public CompletableFuture<PageResult<Locker>> get(Page page) {
-        List<Locker> cached = List.copyOf(this.lockersByUUID.asMap().values());
-        boolean hasNextPage = cached.size() > page.getLimit();
-        if (!cached.isEmpty() && page.getOffset() == 0 && !hasNextPage) {
-            return CompletableFuture.completedFuture(new PageResult<>(cached, false));
-        }
-        return this.lockerRepository.findPage(page);
+        // The cache holds an arbitrary, partially-evicted subset of lockers - it is not the full
+        // dataset, so it cannot answer pagination. Always query the repository (warming the cache
+        // with the results for subsequent single-locker lookups).
+        return this.lockerRepository.findPage(page).thenApply(result -> {
+            result.items().forEach(locker -> {
+                this.lockersByUUID.put(locker.uuid(), locker);
+                this.lockersByPosition.put(locker.position(), locker);
+            });
+            return result;
+        });
     }
 
     public CompletableFuture<Locker> create(UUID uniqueId, String name, Position position, UUID playerUUID) {
@@ -133,7 +149,16 @@ public class LockerManager {
             this.lockersByUUID.put(uniqueId, locker);
             this.lockersByPosition.put(position, locker);
 
-            return this.lockerRepository.save(locker);
+            // Undo the optimistic cache entries if the persist fails, so the cache never holds a
+            // locker that is not in the database (which would break the break/interaction fast paths
+            // and reject re-placement at the same position until the cache expires).
+            return this.lockerRepository.save(locker)
+                .whenComplete((saved, throwable) -> {
+                    if (throwable != null) {
+                        this.lockersByUUID.invalidate(uniqueId);
+                        this.lockersByPosition.invalidate(position);
+                    }
+                });
         }).thenCompose(Function.identity());
     }
 
@@ -149,15 +174,25 @@ public class LockerManager {
                 return CompletableFuture.completedFuture(null);
             }
 
+            // The locker may be resolved on either the main thread (cache hit) or an async DB thread
+            // (cache miss), so fire the synchronous event on the main thread deterministically.
+            return this.fireDeleteEvent(locker, playerUUID).thenCompose(cancelled -> {
+                if (cancelled) {
+                    return CompletableFuture.completedFuture(null);
+                }
+                return this.deleteLocker(uniqueId);
+            });
+        });
+    }
+
+    private CompletableFuture<Boolean> fireDeleteEvent(Locker locker, UUID playerUUID) {
+        CompletableFuture<Boolean> cancelled = new CompletableFuture<>();
+        this.scheduler.run(() -> {
             LockerDeleteEvent event = new LockerDeleteEvent(locker, playerUUID);
             this.server.getPluginManager().callEvent(event);
-
-            if (event.isCancelled()) {
-                return CompletableFuture.completedFuture(null);
-            }
-
-            return this.deleteLocker(uniqueId);
+            cancelled.complete(event.isCancelled());
         });
+        return cancelled;
     }
 
     public CompletableFuture<Void> deleteAll(CommandSender sender, NoticeService noticeService) {
@@ -174,8 +209,8 @@ public class LockerManager {
     }
 
     public CompletableFuture<Boolean> isLockerFull(UUID uniqueId) {
-        return this.parcelRepository.countDeliveredParcelsByDestinationLocker(uniqueId)
-            .thenApply(count -> count > 0 && count >= this.config.settings.maxParcelsPerLocker);
+        return this.parcelRepository.countParcelsByDestinationLocker(uniqueId)
+            .thenApply(count -> count >= this.config.settings.maxParcelsPerLocker);
     }
 
     private CompletableFuture<Void> deleteLocker(UUID uniqueId) {

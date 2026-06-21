@@ -1,6 +1,6 @@
 package com.eternalcode.parcellockers.parcel.service;
 
-import static com.eternalcode.parcellockers.util.InventoryUtil.freeSlotsInInventory;
+import static com.eternalcode.parcellockers.util.InventoryUtil.canHold;
 
 import com.eternalcode.commons.bukkit.ItemUtil;
 import com.eternalcode.commons.scheduler.Scheduler;
@@ -9,6 +9,7 @@ import com.eternalcode.parcellockers.content.ParcelContent;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.parcel.Parcel;
+import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.event.ParcelCollectEvent;
 import com.eternalcode.parcellockers.parcel.event.ParcelSendEvent;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
@@ -91,12 +92,9 @@ public class ParcelServiceImpl implements ParcelService {
             .map(ItemStack::clone)
             .toList();
 
+        double chargedFee = 0;
         if (!sender.hasPermission(PARCEL_FEE_BYPASS_PERMISSION)) {
-            double fee = switch (parcel.size()) {
-                case SMALL -> this.config.settings.smallParcelFee;
-                case MEDIUM -> this.config.settings.mediumParcelFee;
-                case LARGE -> this.config.settings.largeParcelFee;
-            };
+            double fee = this.feeFor(parcel.size());
 
             if (fee > 0) {
                 boolean success = this.economy.withdrawPlayer(sender, fee).transactionSuccess();
@@ -111,6 +109,7 @@ public class ParcelServiceImpl implements ParcelService {
                     return CompletableFuture.completedFuture(false);
                 }
 
+                chargedFee = fee;
                 this.noticeService.create()
                     .notice(messages -> messages.parcel.feeWithdrawn)
                     .player(sender.getUniqueId())
@@ -119,23 +118,53 @@ public class ParcelServiceImpl implements ParcelService {
             }
         }
 
+        double refundableFee = chargedFee;
         return this.parcelRepository.save(parcel)
             .thenCompose(unused -> this.parcelContentRepository.save(new ParcelContent(parcel.uuid(), itemsCopy))
                 .thenApply(contentSaved -> {
                     this.parcelsByUuid.put(parcel.uuid(), parcel);
-                    this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.sent);
+                    // The "sent" notice is issued by the dispatcher once the whole send succeeds, so it
+                    // is not shown when a later step (e.g. clearing storage) fails and rolls back.
                     return true;
                 })
-                .exceptionallyCompose(contentError -> {
-                    this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.cannotSend);
-                    return this.parcelRepository.delete(parcel.uuid())
-                        .thenCompose(deleted -> CompletableFuture.failedFuture(new ParcelOperationException("Failed to save parcel content, rolled back parcel", contentError)));
-                })
+                .exceptionallyCompose(contentError -> this.parcelRepository.delete(parcel.uuid())
+                    .thenCompose(deleted -> CompletableFuture.failedFuture(new ParcelOperationException("Failed to save parcel content, rolled back parcel", contentError))))
             )
             .exceptionally(throwable -> {
+                // Persistence failed after the fee was withdrawn - refund it so the player is not charged for a parcel that was never created.
+                this.refundFee(sender, refundableFee);
                 this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.cannotSend);
                 throw new ParcelOperationException("Failed to save parcel", throwable);
             });
+    }
+
+    @Override
+    public CompletableFuture<Void> rollbackSend(Player sender, Parcel parcel) {
+        Objects.requireNonNull(sender, "Sender cannot be null");
+        Objects.requireNonNull(parcel, "Parcel cannot be null");
+
+        if (!sender.hasPermission(PARCEL_FEE_BYPASS_PERMISSION)) {
+            this.refundFee(sender, this.feeFor(parcel.size()));
+        }
+        this.parcelsByUuid.invalidate(parcel.uuid());
+
+        return this.parcelRepository.delete(parcel.uuid())
+            .thenCompose(deleted -> this.parcelContentRepository.delete(parcel.uuid()))
+            .thenApply(contentDeleted -> null);
+    }
+
+    private double feeFor(ParcelSize size) {
+        return switch (size) {
+            case SMALL -> this.config.settings.smallParcelFee;
+            case MEDIUM -> this.config.settings.mediumParcelFee;
+            case LARGE -> this.config.settings.largeParcelFee;
+        };
+    }
+
+    private void refundFee(Player sender, double fee) {
+        if (fee > 0) {
+            this.economy.depositPlayer(sender, fee);
+        }
     }
 
     @Override
@@ -188,29 +217,57 @@ public class ParcelServiceImpl implements ParcelService {
             }
 
             List<ItemStack> items = optional.get().items();
-            if (items.size() > freeSlotsInInventory(player)) {
-                this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.noInventorySpace);
-                return CompletableFuture.completedFuture(null);
-            }
+            CompletableFuture<Void> result = new CompletableFuture<>();
 
-            return this.parcelRepository.delete(parcel)
-                .thenCompose(deleted -> this.parcelContentRepository.delete(parcel.uuid())
-                    .thenAccept(contentDeleted -> {
-                        if (!deleted || !contentDeleted) {
+            // Re-check inventory space on the main thread (the previous async check was a TOCTOU),
+            // then delete the parcel BEFORE handing the items back so it cannot be collected twice.
+            // Items are only given once the delete is confirmed, so a failed delete never destroys them.
+            this.scheduler.run(() -> {
+                if (!canHold(player, items)) {
+                    this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.noInventorySpace);
+                    result.complete(null);
+                    return;
+                }
+
+                this.parcelRepository.delete(parcel)
+                    .thenCompose(deleted -> {
+                        if (!deleted) {
+                            return CompletableFuture.completedFuture(false);
+                        }
+                        // The parcel is gone, so it can never be collected again; deleting its content
+                        // is best-effort cleanup and must not block handing the items back. Otherwise a
+                        // failed content delete would lose the items permanently.
+                        return this.parcelContentRepository.delete(parcel.uuid())
+                            .handle((contentDeleted, throwable) -> {
+                                if (throwable != null) {
+                                    this.server.getLogger().warning("Failed to delete content for collected parcel "
+                                        + parcel.uuid() + ": " + throwable.getMessage());
+                                }
+                                return true;
+                            });
+                    })
+                    .thenAccept(removed -> {
+                        if (!removed) {
                             this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.databaseError);
+                            result.complete(null);
                             return;
                         }
 
-                        items.forEach(item -> this.scheduler.run(() -> ItemUtil.giveItem(player, item)));
-
                         this.parcelsByUuid.invalidate(parcel.uuid());
-                        this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.collected);
+                        this.scheduler.run(() -> {
+                            items.forEach(item -> ItemUtil.giveItem(player, item));
+                            this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.collected);
+                        });
+                        result.complete(null);
                     })
-                )
-                .exceptionally(throwable -> {
-                    this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.cannotCollect);
-                    return null;
-                });
+                    .exceptionally(throwable -> {
+                        this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.cannotCollect);
+                        result.complete(null);
+                        return null;
+                    });
+            });
+
+            return result;
         });
     }
 
