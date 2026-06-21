@@ -106,4 +106,12 @@ public class GuiManager {
     public CompletableFuture<Optional<Delivery>> getDelivery(UUID parcelId) {
         return this.deliveryManager.get(parcelId);
     }
+
+    public CompletableFuture<com.eternalcode.parcellockers.locker.Locker> renameLocker(UUID lockerUuid, String newName) {
+        return this.lockerManager.rename(lockerUuid, newName);
+    }
+
+    public CompletableFuture<Void> deleteLocker(UUID lockerUuid, UUID actor) {
+        return this.lockerManager.delete(lockerUuid, actor);
+    }
 }
