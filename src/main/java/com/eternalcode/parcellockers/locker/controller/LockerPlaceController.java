@@ -23,6 +23,7 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickCallback;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -190,6 +191,10 @@ public class LockerPlaceController implements Listener {
     }
 
     private boolean consumeLockerItem(Player player, ItemStack lockerItem) {
+        if (player.getGameMode() == GameMode.CREATIVE) {
+            return true;
+        }
+
         PlayerInventory inventory = player.getInventory();
 
         ItemStack mainHand = inventory.getItemInMainHand();

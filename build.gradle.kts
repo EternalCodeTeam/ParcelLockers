@@ -133,7 +133,7 @@ tasks.withType<JavaCompile> {
 tasks.withType<AbstractRun> {
     javaLauncher = javaToolchains.launcherFor {
         vendor = JvmVendorSpec.JETBRAINS
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
     }
 }
 
@@ -150,11 +150,11 @@ modrinth {
 
 tasks {
     runServer {
-        minecraftVersion("1.21.11")
+        minecraftVersion("26.1.2")
         downloadPlugins {
             modrinth("luckperms", "v5.5.17-bukkit")
             modrinth("vaultunlocked", "2.17.0")
-            modrinth("essentialsx", "2.21.2")
+            modrinth("essentialsx", "2.22.0")
 //            modrinth("discordsrv", "1.30.4") // uncomment to test with DiscordSRV integration
         }
         jvmArgs("-Dcom.mojang.eula.agree=true", "-XX:+AllowEnhancedClassRedefinition")
