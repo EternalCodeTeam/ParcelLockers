@@ -16,7 +16,7 @@ destination locker not full) and gracefully updates delivery timing.
 ## Goals
 
 - Single entry point: `/parcellockers admin` (reuses the existing `parcellockers.admin` permission).
-- Full parcel modification: name, description, priority, size, status, receiver, destination, delete.
+- Full parcel modification: name, description, priority, size, status, receiver, destination, item contents, delete.
 - Locker management: browse, rename, teleport, delete.
 - User inspection: browse users and view their received/sent parcels (read-only).
 - Bulk actions: delete-all parcels / delete-all lockers, each behind a confirmation dialog.
@@ -24,7 +24,6 @@ destination locker not full) and gracefully updates delivery timing.
 
 ## Non-Goals
 
-- Editing parcel **item contents** (only metadata is editable in this version).
 - A new top-level command or a separate permission node.
 - Web/REST admin surface — in-game GUI only.
 - Free-text editing via chat or anvil — input uses the Paper Dialog API only.
@@ -43,6 +42,13 @@ destination locker not full) and gracefully updates delivery timing.
 - `LockerManager` exposes `get`, `get(page)`, `create`, `delete`, `deleteAll`, but
   **no rename/update** — `Locker(uuid, name, position)` is an immutable record.
 - `UserManager#getPage` and `GuiManager#getUsers` already exist.
+- **Parcel content is write-once.** `ParcelContentRepositoryOrmLite#save` uses
+  `insertIfAbsent` (no in-place update), and `ParcelContentManager` exposes only
+  `create` (throws if content already exists) and `delete` — content is written once at
+  send and removed at collect. Editing content therefore needs a new update/upsert path.
+- `ItemStorageGui` already implements the full content-editing flow against a triumph-gui
+  `StorageGui` (rows by size, illegal-item filtering on close, persist) — the reference
+  pattern for the admin content editor.
 
 ### Size → capacity
 
@@ -85,7 +91,8 @@ source every item/title from config.
 |---|---|
 | `AdminGui` | Root menu: Parcels, Lockers, Users, Bulk-delete parcels, Bulk-delete lockers, Close. |
 | `AdminParcelListGui` | Paginated list of **all** parcels; click → `AdminParcelEditGui`. |
-| `AdminParcelEditGui` | Per-field buttons (see below) + Delete + Back. |
+| `AdminParcelEditGui` | Per-field buttons (see below) + Edit-contents + Delete + Back. |
+| `AdminParcelContentGui` | Prefilled `StorageGui` sized to the parcel; edit/persist item contents. |
 | `AdminLockerListGui` | Paginated list of all lockers; click → `AdminLockerEditGui`. |
 | `AdminLockerEditGui` | Rename (Dialog), Teleport, Delete, Back. |
 | `AdminUserListGui` | Paginated users; click → `AdminUserInspectGui`. |
@@ -99,7 +106,15 @@ source every item/title from config.
 - **Status** — click-to-cycle `ParcelStatus` (`SENT`/`DELIVERED`).
 - **Receiver** — opens a user-picker sub-GUI.
 - **Destination** — opens a locker-picker sub-GUI.
+- **Edit contents** — opens `AdminParcelContentGui`.
 - **Delete** — confirmation Dialog, then delete.
+
+`AdminParcelContentGui` mirrors `ItemStorageGui`: a `StorageGui` whose rows match the
+parcel's size (SMALL=2/MEDIUM=3/LARGE=4, usable 9/18/27), **pre-filled** with the
+current `ParcelContent.items()`. On close it filters configured illegal items (returned
+to the editing admin) and persists the remaining stacks via the new content update path.
+Emptying all slots is allowed and results in empty `ParcelContent` (the parcel is not
+auto-deleted). Capacity cannot be exceeded — the inventory has exactly the size's slots.
 
 Bulk actions on `AdminGui` open a confirmation Dialog before calling the existing
 `deleteAll` paths.
@@ -128,6 +143,20 @@ Centralizes risky edits and their side effects so GUIs stay thin. All methods re
 
 `durationFor(priority)` reads `priorityParcelSendDuration` / `parcelSendDuration` from
 `PluginConfig`.
+
+### Parcel content update path
+
+The write-once content layer gains an update capability:
+
+- `ParcelContentManager#update(UUID parcelId, List<ItemStack> items): CompletableFuture<ParcelContent>`
+  — replaces the cache entry and persists, overwriting any existing row.
+- Backed by `ParcelContentRepository#update` (a true upsert, e.g. ORMLite
+  `createOrUpdate`) rather than the insert-if-absent `save`, so an existing parcel's
+  content is actually overwritten.
+
+`AdminParcelContentGui` calls `update` on close. The collect flow is unaffected (it still
+reads-then-deletes); an edit racing a collect is a rare admin-action/player-action overlap
+and resolves to last-writer-wins with no corruption (content is keyed by parcel uuid).
 
 ### Locker rename
 
@@ -177,6 +206,8 @@ an in-transit parcel safe — no stale-snapshot overwrite — and is what implem
   parcel missing/already delivered; delivers current (edited) fields.
 - **Integration — `LockerManager#rename`:** Testcontainers DB, following
   `LockerRepositoryIntegrationTest`.
+- **Integration — `ParcelContentRepository#update`:** overwrites an existing row (insert
+  then update then re-read returns the new items), against the Testcontainers DB.
 
 ## Implementation Phasing (single spec)
 
@@ -184,11 +215,13 @@ an in-transit parcel safe — no stale-snapshot overwrite — and is what implem
    browse/rename/teleport/delete (`LockerManager#rename`); user inspect; bulk actions;
    config/message scaffolding.
 2. **Parcel editing & safety:** `AdminParcelService` with all invariants;
-   `AdminParcelListGui` + all-parcels query; `AdminParcelEditGui`; `ParcelSendTask`
-   refactor; tests.
+   `AdminParcelListGui` + all-parcels query; `AdminParcelEditGui`; parcel-content update
+   path (`ParcelContentManager#update` + repository upsert) and `AdminParcelContentGui`;
+   `ParcelSendTask` refactor; tests.
 
 ## Open Questions
 
 None outstanding. Decisions locked: reuse `parcellockers.admin`; Dialog API for input;
-all parcel fields editable; size-fit + priority-graceful constraints; priority timing via
-clamped delta-shift; Option A task refactor; one phased spec.
+all parcel fields editable including item contents; size-fit + priority-graceful
+constraints; priority timing via clamped delta-shift; Option A task refactor; one phased
+spec.
