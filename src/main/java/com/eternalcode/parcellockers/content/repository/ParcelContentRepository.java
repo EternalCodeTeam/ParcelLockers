@@ -9,6 +9,8 @@ public interface ParcelContentRepository {
 
     CompletableFuture<Void> save(ParcelContent parcelContent);
 
+    CompletableFuture<Void> update(ParcelContent parcelContent);
+
     CompletableFuture<Optional<ParcelContent>> find(UUID uniqueId);
 
     CompletableFuture<Boolean> delete(UUID uniqueId);

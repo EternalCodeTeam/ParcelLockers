@@ -51,6 +51,14 @@ public class ParcelContentManager {
         return content;
     }
 
+    public CompletableFuture<ParcelContent> update(UUID parcel, List<ItemStack> items) {
+        ParcelContent content = new ParcelContent(parcel, items);
+        return this.contentRepository.update(content).thenApply(ignored -> {
+            this.cache.put(parcel, content);
+            return content;
+        });
+    }
+
     public CompletableFuture<Boolean> delete(UUID parcel) {
         return this.contentRepository.delete(parcel).thenApply(success -> {
             this.cache.invalidate(parcel);
