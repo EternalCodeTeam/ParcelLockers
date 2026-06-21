@@ -1,5 +1,6 @@
 package com.eternalcode.parcellockers.database;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -13,6 +14,7 @@ import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryOrmLite;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.PageResult;
 import java.nio.file.Path;
+import java.sql.SQLException;
 import java.util.UUID;
 import java.util.logging.Logger;
 import org.junit.jupiter.api.AfterEach;
@@ -35,7 +37,7 @@ class ParcelFindPageIntegrationTest extends IntegrationTestSpec {
     private DatabaseManager databaseManager;
 
     @Test
-    void findPageReturnsAllParcelsAcrossSenders() throws Exception {
+    void findPageReturnsAllParcelsAcrossSenders() throws SQLException {
         PluginConfig config = new PluginConfig();
         config.settings.databaseType = DatabaseType.MYSQL;
         config.settings.host = mySQLContainer.getHost();
@@ -61,6 +63,7 @@ class ParcelFindPageIntegrationTest extends IntegrationTestSpec {
 
         PageResult<Parcel> secondPage = this.await(repository.findPage(new Page(1, 2)));
         assertEquals(1, secondPage.items().size());
+        assertFalse(secondPage.hasNextPage());
     }
 
     @AfterEach
