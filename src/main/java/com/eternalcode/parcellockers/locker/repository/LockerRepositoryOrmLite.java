@@ -25,6 +25,11 @@ public class LockerRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     }
 
     @Override
+    public CompletableFuture<Locker> update(Locker locker) {
+        return this.upsert(LockerTable.class, LockerTable.from(locker)).thenApply(status -> locker);
+    }
+
+    @Override
     public CompletableFuture<Optional<Locker>> find(UUID uuid) {
         return this.selectSafe(LockerTable.class, uuid).thenApply(optional -> optional.map(LockerTable::toLocker));
     }

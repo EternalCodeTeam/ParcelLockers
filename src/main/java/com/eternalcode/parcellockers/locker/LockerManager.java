@@ -208,6 +208,24 @@ public class LockerManager {
         });
     }
 
+    public CompletableFuture<Locker> rename(UUID uniqueId, String newName) {
+        return this.get(uniqueId).thenCompose(optional -> {
+            if (optional.isEmpty()) {
+                return CompletableFuture.failedFuture(
+                    new IllegalArgumentException("Locker not found: " + uniqueId));
+            }
+
+            Locker existing = optional.get();
+            Locker renamed = new Locker(existing.uuid(), newName, existing.position());
+
+            return this.lockerRepository.update(renamed).thenApply(saved -> {
+                this.lockersByUUID.put(saved.uuid(), saved);
+                this.lockersByPosition.put(saved.position(), saved);
+                return saved;
+            });
+        });
+    }
+
     public CompletableFuture<Boolean> isLockerFull(UUID uniqueId) {
         return this.parcelRepository.countParcelsByDestinationLocker(uniqueId)
             .thenApply(count -> count >= this.config.settings.maxParcelsPerLocker);
