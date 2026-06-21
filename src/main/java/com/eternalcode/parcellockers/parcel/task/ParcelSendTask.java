@@ -52,7 +52,11 @@ public class ParcelSendTask extends BukkitRunnable {
                 switch (decide(optionalParcel, optionalDelivery, now)) {
                     case ABORT ->
                         // Parcel gone or already delivered: clean up any stray delivery row.
-                        optionalDelivery.ifPresent(delivery -> this.deliveryManager.delete(this.parcelId));
+                        optionalDelivery.ifPresent(delivery ->
+                            this.deliveryManager.delete(this.parcelId).exceptionally(throwable -> {
+                                LOGGER.severe("Failed to delete stray delivery for " + this.parcelId + ": " + throwable.getMessage());
+                                return false;
+                            }));
                     case RESCHEDULE -> {
                         Duration remaining = Duration.between(now, optionalDelivery.get().deliveryTimestamp());
                         // Reschedule a fresh task; this instance ends after this run.
