@@ -66,6 +66,10 @@ public class GuiManager {
         return this.parcelService.getBySender(sender, page);
     }
 
+    public CompletableFuture<PageResult<Parcel>> getAllParcels(Page page) {
+        return this.parcelService.getAll(page);
+    }
+
     public CompletableFuture<Optional<User>> getUser(UUID userUuid) {
         return this.userManager.get(userUuid);
     }
