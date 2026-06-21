@@ -25,76 +25,76 @@ repositories {
 
 dependencies {
     // minecraft development api
-    compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
-    paperLibrary("dev.rollczi:litecommands-bukkit:3.11.0")
-    paperLibrary("dev.rollczi:litecommands-adventure:3.11.0")
+    compileOnly("io.papermc.paper:paper-api:${Versions.PAPER_API}")
+    paperLibrary("dev.rollczi:litecommands-bukkit:${Versions.LITECOMMANDS}")
+    paperLibrary("dev.rollczi:litecommands-adventure:${Versions.LITECOMMANDS}")
 
     // gui
-    paperLibrary("dev.triumphteam:triumph-gui-paper:3.1.13")
+    paperLibrary("dev.triumphteam:triumph-gui-paper:${Versions.TRIUMPH_GUI}")
 
     // configs
-    paperLibrary("eu.okaeri:okaeri-configs-serdes-commons:5.0.13")
-    paperLibrary("eu.okaeri:okaeri-configs-serdes-bukkit:5.0.13")
-    paperLibrary("eu.okaeri:okaeri-configs-yaml-bukkit:5.0.13")
+    paperLibrary("eu.okaeri:okaeri-configs-serdes-commons:${Versions.OKAERI_CONFIGS}")
+    paperLibrary("eu.okaeri:okaeri-configs-serdes-bukkit:${Versions.OKAERI_CONFIGS}")
+    paperLibrary("eu.okaeri:okaeri-configs-yaml-bukkit:${Versions.OKAERI_CONFIGS}")
 
     // gitcheck
-    paperLibrary("com.eternalcode:gitcheck:1.0.0")
+    paperLibrary("com.eternalcode:gitcheck:${Versions.GITCHECK}")
 
     // metrics
-    implementation("org.bstats:bstats-bukkit:3.2.1")
+    implementation("org.bstats:bstats-bukkit:${Versions.BSTATS}")
 
     // database
-    paperLibrary("com.zaxxer:HikariCP:7.1.0")
-    paperLibrary("com.j256.ormlite:ormlite-jdbc:6.1")
-    paperLibrary("com.h2database:h2:2.4.240")
-    paperLibrary("org.postgresql:postgresql:42.7.11")
+    paperLibrary("com.zaxxer:HikariCP:${Versions.HIKARICP}")
+    paperLibrary("com.j256.ormlite:ormlite-jdbc:${Versions.ORMLITE}")
+    paperLibrary("com.h2database:h2:${Versions.H2}")
+    paperLibrary("org.postgresql:postgresql:${Versions.POSTGRESQL}")
 
     // lombok
-    compileOnly("org.projectlombok:lombok:1.18.46")
-    annotationProcessor("org.projectlombok:lombok:1.18.46")
+    compileOnly("org.projectlombok:lombok:${Versions.LOMBOK}")
+    annotationProcessor("org.projectlombok:lombok:${Versions.LOMBOK}")
 
     // jetbrains annotations
-    compileOnly("org.jetbrains:annotations:26.1.0")
+    compileOnly("org.jetbrains:annotations:${Versions.JETBRAINS_ANNOTATIONS}")
 
     // jackson-bukkit
-    paperLibrary("de.eldoria.jacksonbukkit:paper:2.0.0")
+    paperLibrary("de.eldoria.jacksonbukkit:paper:${Versions.JACKSON_BUKKIT}")
 
     // completable-futures
-    paperLibrary("com.spotify:completable-futures:0.3.6")
+    paperLibrary("com.spotify:completable-futures:${Versions.COMPLETABLE_FUTURES}")
 
     // eternalcode commons
-    paperLibrary("com.eternalcode:eternalcode-commons-adventure:1.4.1")
-    paperLibrary("com.eternalcode:eternalcode-commons-bukkit:1.4.1")
-    paperLibrary("com.eternalcode:eternalcode-commons-shared:1.4.1")
+    paperLibrary("com.eternalcode:eternalcode-commons-adventure:${Versions.ETERNALCODE_COMMONS}")
+    paperLibrary("com.eternalcode:eternalcode-commons-bukkit:${Versions.ETERNALCODE_COMMONS}")
+    paperLibrary("com.eternalcode:eternalcode-commons-shared:${Versions.ETERNALCODE_COMMONS}")
 
     // multification
-    paperLibrary("com.eternalcode:multification-bukkit:1.2.4")
-    paperLibrary("com.eternalcode:multification-okaeri:1.2.4")
+    paperLibrary("com.eternalcode:multification-bukkit:${Versions.MULTIFICATION}")
+    paperLibrary("com.eternalcode:multification-okaeri:${Versions.MULTIFICATION}")
 
     // caffeine
-    paperLibrary("com.github.ben-manes.caffeine:caffeine:3.2.4")
+    paperLibrary("com.github.ben-manes.caffeine:caffeine:${Versions.CAFFEINE}")
 
     // vault
-    compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
+    compileOnly("com.github.MilkBowl:VaultAPI:${Versions.VAULT_API}")
 
     // discord integration library
-    paperLibrary("com.discord4j:discord4j-core:3.3.2")
+    paperLibrary("com.discord4j:discord4j-core:${Versions.DISCORD4J}")
 
     // discordsrv (optional integration)
-    compileOnly("com.discordsrv:discordsrv:1.30.5")
+    compileOnly("com.discordsrv:discordsrv:${Versions.DISCORDSRV}")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:6.1.0")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:6.1.0")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:6.1.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:${Versions.JUNIT}")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:${Versions.JUNIT}")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Versions.JUNIT}")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
-    testImplementation("org.testcontainers:junit-jupiter:1.21.4")
-    testImplementation("org.testcontainers:mysql:1.21.4")
-    testImplementation("mysql:mysql-connector-java:8.0.33")
-    testImplementation("com.eternalcode:eternalcode-commons-shared:1.4.1")
+    testImplementation("org.testcontainers:junit-jupiter:${Versions.TESTCONTAINERS}")
+    testImplementation("org.testcontainers:mysql:${Versions.TESTCONTAINERS}")
+    testImplementation("mysql:mysql-connector-java:${Versions.MYSQL_CONNECTOR}")
+    testImplementation("com.eternalcode:eternalcode-commons-shared:${Versions.ETERNALCODE_COMMONS}")
 
-    testImplementation("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
-    testImplementation("eu.okaeri:okaeri-configs-yaml-bukkit:5.0.13")
+    testImplementation("io.papermc.paper:paper-api:${Versions.PAPER_API}")
+    testImplementation("eu.okaeri:okaeri-configs-yaml-bukkit:${Versions.OKAERI_CONFIGS}")
 }
 
 java {
