@@ -10,6 +10,8 @@ public interface DeliveryRepository {
 
     CompletableFuture<Void> save(Delivery delivery);
 
+    CompletableFuture<Void> update(Delivery delivery);
+
     CompletableFuture<Optional<Delivery>> find(UUID parcel);
 
     CompletableFuture<Boolean> delete(UUID parcel);
