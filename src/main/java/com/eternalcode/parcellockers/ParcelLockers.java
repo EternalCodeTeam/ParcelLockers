@@ -223,7 +223,7 @@ public final class ParcelLockers extends JavaPlugin {
                         Duration.between(Instant.now(Clock.systemDefaultZone()), delivery.deliveryTimestamp()).toMillis()
                     );
                     scheduler.runLaterAsync(
-                        new ParcelSendTask(parcel, parcelService, deliveryManager),
+                        new ParcelSendTask(parcel, parcelService, deliveryManager, scheduler),
                         Duration.ofMillis(delay));
                 })
             )));
