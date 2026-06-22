@@ -11,6 +11,7 @@ import com.eternalcode.parcellockers.locker.LockerManager;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.service.ParcelDispatchService;
 import com.eternalcode.parcellockers.parcel.service.ParcelService;
+import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.PageResult;
 import com.eternalcode.parcellockers.user.User;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -125,5 +127,13 @@ public class GuiManager {
 
     public CompletableFuture<Boolean> deleteParcel(Parcel parcel) {
         return this.parcelService.delete(parcel);
+    }
+
+    public CompletableFuture<Void> deleteAllParcels(CommandSender sender, NoticeService noticeService) {
+        return this.parcelService.deleteAll(sender, noticeService);
+    }
+
+    public CompletableFuture<Void> deleteAllLockers(CommandSender sender, NoticeService noticeService) {
+        return this.lockerManager.deleteAll(sender, noticeService);
     }
 }
