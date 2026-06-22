@@ -1,5 +1,6 @@
 package com.eternalcode.parcellockers.parcel.service;
 
+import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.content.ParcelContentManager;
 import com.eternalcode.parcellockers.delivery.DeliveryManager;
@@ -7,6 +8,7 @@ import com.eternalcode.parcellockers.locker.LockerManager;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.ParcelStatus;
+import com.eternalcode.parcellockers.parcel.task.ParcelSendTask;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
@@ -19,14 +21,16 @@ public class AdminParcelService {
     private final DeliveryManager deliveryManager;
     private final LockerManager lockerManager;
     private final PluginConfig config;
+    private final Scheduler scheduler;
 
     public AdminParcelService(ParcelService parcelService, ParcelContentManager parcelContentManager,
-            DeliveryManager deliveryManager, LockerManager lockerManager, PluginConfig config) {
+            DeliveryManager deliveryManager, LockerManager lockerManager, PluginConfig config, Scheduler scheduler) {
         this.parcelService = parcelService;
         this.parcelContentManager = parcelContentManager;
         this.deliveryManager = deliveryManager;
         this.lockerManager = lockerManager;
         this.config = config;
+        this.scheduler = scheduler;
     }
 
     public static int capacity(ParcelSize size) {
@@ -59,7 +63,51 @@ public class AdminParcelService {
     }
 
     public CompletableFuture<EditResult> changeStatus(Parcel parcel, ParcelStatus status) {
-        return this.persist(withStatus(parcel, status));
+        Parcel updated = withStatus(parcel, status);
+        return this.parcelService.update(updated).thenCompose(ignored -> {
+            if (status == parcel.status()) {
+                return CompletableFuture.completedFuture(EditResult.ok());
+            }
+            return status == ParcelStatus.SENT ? this.armDelivery(updated) : this.disarmDelivery(updated);
+        });
+    }
+
+    /**
+     * A SENT parcel must own a delivery row and a scheduled task, otherwise it would sit in SENT
+     * forever (e.g. after an admin flips a DELIVERED parcel back to SENT). Re-arm both.
+     */
+    private CompletableFuture<EditResult> armDelivery(Parcel parcel) {
+        return this.deliveryManager.get(parcel.uuid()).thenCompose(existing -> {
+            if (existing.isPresent()) {
+                // A delivery row already exists; just make sure a task is armed for it.
+                this.scheduleSend(parcel, Duration.between(Instant.now(), existing.get().deliveryTimestamp()));
+                return CompletableFuture.completedFuture(EditResult.ok());
+            }
+            Duration delay = parcel.priority()
+                ? this.config.settings.priorityParcelSendDuration
+                : this.config.settings.parcelSendDuration;
+            return this.deliveryManager.update(parcel.uuid(), Instant.now().plus(delay))
+                .thenApply(delivery -> {
+                    this.scheduleSend(parcel, delay);
+                    return EditResult.ok();
+                });
+        });
+    }
+
+    /** A DELIVERED parcel keeps no pending delivery; drop any stray row so no task fires later. */
+    private CompletableFuture<EditResult> disarmDelivery(Parcel parcel) {
+        return this.deliveryManager.get(parcel.uuid()).thenCompose(existing -> {
+            if (existing.isEmpty()) {
+                return CompletableFuture.completedFuture(EditResult.ok());
+            }
+            return this.deliveryManager.delete(parcel.uuid()).thenApply(deleted -> EditResult.ok());
+        });
+    }
+
+    private void scheduleSend(Parcel parcel, Duration delay) {
+        this.scheduler.runLaterAsync(
+            new ParcelSendTask(parcel, this.parcelService, this.deliveryManager, this.scheduler),
+            delay.isNegative() ? Duration.ZERO : delay);
     }
 
     public CompletableFuture<EditResult> changeReceiver(Parcel parcel, UUID receiver) {
@@ -95,14 +143,22 @@ public class AdminParcelService {
                 if (optionalDelivery.isEmpty()) {
                     return CompletableFuture.completedFuture(EditResult.ok());
                 }
+                Instant now = Instant.now();
                 Instant shifted = shiftedDeliveryTimestamp(
                     optionalDelivery.get().deliveryTimestamp(),
                     parcel.priority(), newPriority,
                     this.config.settings.parcelSendDuration,
                     this.config.settings.priorityParcelSendDuration,
-                    Instant.now());
+                    now);
                 return this.deliveryManager.update(parcel.uuid(), shifted)
-                    .thenApply(ignoredDelivery -> EditResult.ok());
+                    .thenApply(ignoredDelivery -> {
+                        // The task scheduled at send/startup still points at the old time; arm a fresh
+                        // task at the new time so an earlier delivery actually fires earlier. The stale
+                        // task self-heals at fire time: it aborts if the parcel is already delivered,
+                        // or reschedules itself if it sees the later timestamp first.
+                        this.scheduleSend(updated, Duration.between(now, shifted));
+                        return EditResult.ok();
+                    });
             });
         });
     }

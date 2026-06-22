@@ -180,7 +180,7 @@ public final class ParcelLockers extends JavaPlugin {
         );
 
         AdminParcelService adminParcelService = new AdminParcelService(
-            parcelService, parcelContentManager, deliveryManager, lockerManager, config);
+            parcelService, parcelContentManager, deliveryManager, lockerManager, config, scheduler);
 
         AdminGui adminGUI = new AdminGui(
             scheduler, miniMessage, config.guiSettings, messageConfig,
