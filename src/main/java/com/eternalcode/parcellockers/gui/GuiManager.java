@@ -33,6 +33,7 @@ public class GuiManager {
     private final ParcelDispatchService parcelDispatchService;
     private final ParcelContentManager parcelContentManager;
     private final DeliveryManager deliveryManager;
+    private final boolean allowCollectingFromAnyLocker;
 
     public GuiManager(
         ParcelService parcelService,
@@ -41,7 +42,8 @@ public class GuiManager {
         ItemStorageManager itemStorageManager,
         ParcelDispatchService parcelDispatchService,
         ParcelContentManager parcelContentManager,
-        DeliveryManager deliveryManager
+        DeliveryManager deliveryManager,
+        boolean allowCollectingFromAnyLocker
     ) {
         this.parcelService = parcelService;
         this.lockerManager = lockerManager;
@@ -50,6 +52,11 @@ public class GuiManager {
         this.parcelDispatchService = parcelDispatchService;
         this.parcelContentManager = parcelContentManager;
         this.deliveryManager = deliveryManager;
+        this.allowCollectingFromAnyLocker = allowCollectingFromAnyLocker;
+    }
+
+    public boolean isCollectingFromAnyLockerAllowed() {
+        return this.allowCollectingFromAnyLocker;
     }
 
     public void sendParcel(Player sender, Parcel parcel, List<ItemStack> items) {

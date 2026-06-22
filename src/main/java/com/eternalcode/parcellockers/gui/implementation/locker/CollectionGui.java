@@ -18,6 +18,7 @@ import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 import net.kyori.adventure.text.Component;
@@ -35,17 +36,20 @@ public class CollectionGui implements GuiView {
     private final Scheduler scheduler;
     private final GuiManager guiManager;
     private final MiniMessage miniMessage;
+    private final UUID currentLocker;
 
     public CollectionGui(
         GuiSettings guiSettings,
         Scheduler scheduler,
         GuiManager guiManager,
-        MiniMessage miniMessage
+        MiniMessage miniMessage,
+        UUID currentLocker
     ) {
         this.guiSettings = guiSettings;
         this.scheduler = scheduler;
         this.guiManager = guiManager;
         this.miniMessage = miniMessage;
+        this.currentLocker = currentLocker;
     }
 
     @Override
@@ -79,6 +83,8 @@ public class CollectionGui implements GuiView {
 
             result.items().stream()
                 .filter(parcel -> parcel.status() == ParcelStatus.DELIVERED)
+                .filter(parcel -> this.guiManager.isCollectingFromAnyLockerAllowed()
+                    || parcel.isDestinedFor(this.currentLocker))
                 .map(parcel -> this.createParcelItemAsync(parcel, parcelItem, player, refresher))
                 .collect(CompletableFutures.joinList())
                 .thenAccept(suppliers -> {
