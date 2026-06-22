@@ -64,6 +64,13 @@ public class AdminUserInspectGui implements GuiView {
         }
         gui.setItem(49, this.guiSettings.closeItem.toGuiItem(event -> this.parent.show(player)));
 
+        String mode = this.showSent ? "Sent" : "Received";
+        ConfigItem toggle = this.guiSettings.adminToggleSentReceivedButton.clone();
+        gui.setItem(48, toggle.name(toggle.name().replace("{MODE}", mode))
+            .lore(toggle.lore().stream().map(line -> line.replace("{MODE}", mode)).toList())
+            .toGuiItem(event -> new AdminUserInspectGui(this.scheduler, this.miniMessage, this.guiSettings,
+                this.guiManager, this.parent, this.user, !this.showSent).show(player)));
+
         var future = this.showSent
             ? this.guiManager.getParcelsBySender(this.user.uuid(), page)
             : this.guiManager.getParcelsByReceiver(this.user.uuid(), page);

@@ -249,6 +249,9 @@ public class PluginConfig extends OkaeriConfig {
         public ConfigItem adminUserRowItem = new ConfigItem()
             .type(Material.PLAYER_HEAD).name("&e{NAME}")
             .lore(List.of("&8{UUID}", "&7» &fClick to inspect."));
+        public ConfigItem adminToggleSentReceivedButton = new ConfigItem()
+            .type(Material.COMPASS).name("&eShowing: &f{MODE}")
+            .lore(List.of("&7» &fClick to switch between sent and received."));
         public ConfigItem adminEmptyListItem = new ConfigItem()
             .type(Material.BARRIER).name("&cNothing to show");
 
