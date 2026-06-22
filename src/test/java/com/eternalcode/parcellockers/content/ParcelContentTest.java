@@ -35,4 +35,11 @@ class ParcelContentTest {
 
         assertEquals(List.of(stone), content.items());
     }
+
+    @Test
+    void handlesNullItemsList() {
+        ParcelContent content = new ParcelContent(UUID.randomUUID(), null);
+
+        assertEquals(List.of(), content.items());
+    }
 }
