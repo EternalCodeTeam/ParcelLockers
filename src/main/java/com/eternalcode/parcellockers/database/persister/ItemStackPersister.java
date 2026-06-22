@@ -17,11 +17,12 @@ import tools.jackson.databind.json.JsonMapper;
 public class ItemStackPersister extends BaseDataType {
 
     private static final ItemStackPersister instance = new ItemStackPersister();
+    // Paper plugins must NOT use legacy (Spigot map) ItemStack serialization: it drops empty/air
+    // stacks to null, which caused the NPE in issue #221. The default Paper serializer uses an NBT
+    // byte array (ItemStack#serializeAsBytes) that round-trips empties safely. The deserializer
+    // auto-detects and still reads any data previously written in the legacy format.
     private static final ObjectMapper JSON = JsonMapper.builder()
-        .addModule(JacksonPaper.builder()
-            .useLegacyItemStackSerialization()
-            .build()
-        )
+        .addModule(JacksonPaper.builder().build())
         .build();
 
     private ItemStackPersister() {
