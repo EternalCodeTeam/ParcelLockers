@@ -8,10 +8,10 @@ import com.eternalcode.parcellockers.itemstorage.ItemStorage;
 import com.eternalcode.parcellockers.itemstorage.ItemStorageManager;
 import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.locker.LockerManager;
+import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.service.ParcelDispatchService;
 import com.eternalcode.parcellockers.parcel.service.ParcelService;
-import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.PageResult;
 import com.eternalcode.parcellockers.user.User;
@@ -105,7 +105,7 @@ public class GuiManager {
         return this.parcelContentManager.get(parcelId);
     }
 
-    public CompletableFuture<com.eternalcode.parcellockers.content.ParcelContent> updateParcelContent(UUID parcelId, List<ItemStack> items) {
+    public CompletableFuture<ParcelContent> updateParcelContent(UUID parcelId, List<ItemStack> items) {
         return this.parcelContentManager.update(parcelId, items);
     }
 
@@ -113,7 +113,7 @@ public class GuiManager {
         return this.deliveryManager.get(parcelId);
     }
 
-    public CompletableFuture<com.eternalcode.parcellockers.locker.Locker> renameLocker(UUID lockerUuid, String newName) {
+    public CompletableFuture<Locker> renameLocker(UUID lockerUuid, String newName) {
         return this.lockerManager.rename(lockerUuid, newName);
     }
 

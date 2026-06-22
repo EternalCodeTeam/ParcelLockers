@@ -194,18 +194,22 @@ public class PluginConfig extends OkaeriConfig {
             .type(Material.CHEST)
             .name("&6📦 &eParcels")
             .lore(List.of("&7» &fBrowse and edit every parcel."));
+
         public ConfigItem adminLockersButton = new ConfigItem()
             .type(Material.ENDER_CHEST)
             .name("&6🔒 &eLockers")
             .lore(List.of("&7» &fManage parcel lockers."));
+
         public ConfigItem adminUsersButton = new ConfigItem()
             .type(Material.PLAYER_HEAD)
             .name("&6👤 &eUsers")
             .lore(List.of("&7» &fInspect users and their parcels."));
+
         public ConfigItem adminDeleteAllParcelsButton = new ConfigItem()
             .type(Material.TNT)
             .name("&4⚠ &cDelete ALL parcels")
             .lore(List.of("&c» &7Irreversible. Asks for confirmation."));
+
         public ConfigItem adminDeleteAllLockersButton = new ConfigItem()
             .type(Material.TNT)
             .name("&4⚠ &cDelete ALL lockers")
@@ -213,47 +217,76 @@ public class PluginConfig extends OkaeriConfig {
 
         @Comment({ "", "# Admin parcel edit buttons" })
         public ConfigItem adminEditNameButton = new ConfigItem()
-            .type(Material.NAME_TAG).name("&eName: &f{NAME}").lore(List.of("&7» &fClick to edit."));
+            .type(Material.NAME_TAG)
+            .name("&eName: &f{NAME}")
+            .lore(List.of("&7» &fClick to edit."));
         public ConfigItem adminEditDescriptionButton = new ConfigItem()
-            .type(Material.WRITABLE_BOOK).name("&eDescription").lore(List.of("&f{DESCRIPTION}", "&7» &fClick to edit."));
+            .type(Material.WRITABLE_BOOK)
+            .name("&eDescription")
+            .lore(List.of("&f{DESCRIPTION}", "&7» &fClick to edit."));
         public ConfigItem adminEditPriorityButton = new ConfigItem()
-            .type(Material.BLAZE_POWDER).name("&ePriority: &f{PRIORITY}").lore(List.of("&7» &fClick to toggle."));
+            .type(Material.BLAZE_POWDER)
+            .name("&ePriority: &f{PRIORITY}")
+            .lore(List.of("&7» &fClick to toggle."));
         public ConfigItem adminEditSizeButton = new ConfigItem()
-            .type(Material.SHULKER_BOX).name("&eSize: &f{SIZE}").lore(List.of("&7» &fClick to cycle."));
+            .type(Material.SHULKER_BOX)
+            .name("&eSize: &f{SIZE}")
+            .lore(List.of("&7» &fClick to cycle."));
         public ConfigItem adminEditStatusButton = new ConfigItem()
-            .type(Material.COMPARATOR).name("&eStatus: &f{STATUS}").lore(List.of("&7» &fClick to cycle."));
+            .type(Material.COMPARATOR)
+            .name("&eStatus: &f{STATUS}")
+            .lore(List.of("&7» &fClick to cycle."));
         public ConfigItem adminEditReceiverButton = new ConfigItem()
-            .type(Material.PLAYER_HEAD).name("&eReceiver: &f{RECEIVER}").lore(List.of("&7» &fClick to choose."));
+            .type(Material.PLAYER_HEAD)
+            .name("&eReceiver: &f{RECEIVER}")
+            .lore(List.of("&7» &fClick to choose."));
         public ConfigItem adminEditDestinationButton = new ConfigItem()
-            .type(Material.ENDER_CHEST).name("&eDestination: &f{DESTINATION}").lore(List.of("&7» &fClick to choose."));
+            .type(Material.ENDER_CHEST)
+            .name("&eDestination: &f{DESTINATION}")
+            .lore(List.of("&7» &fClick to choose."));
         public ConfigItem adminEditContentsButton = new ConfigItem()
-            .type(Material.CHEST_MINECART).name("&eEdit contents").lore(List.of("&7» &fOpen the item editor."));
+            .type(Material.CHEST_MINECART)
+            .name("&eEdit contents")
+            .lore(List.of("&7» &fOpen the item editor."));
         public ConfigItem adminDeleteParcelButton = new ConfigItem()
-            .type(Material.LAVA_BUCKET).name("&cDelete parcel").lore(List.of("&c» &7Asks for confirmation."));
+            .type(Material.LAVA_BUCKET)
+            .name("&cDelete parcel")
+            .lore(List.of("&c» &7Asks for confirmation."));
 
         @Comment({ "", "# Admin locker edit buttons" })
         public ConfigItem adminRenameLockerButton = new ConfigItem()
-            .type(Material.NAME_TAG).name("&eName: &f{NAME}").lore(List.of("&7» &fClick to rename."));
+            .type(Material.NAME_TAG)
+            .name("&eName: &f{NAME}")
+            .lore(List.of("&7» &fClick to rename."));
         public ConfigItem adminTeleportLockerButton = new ConfigItem()
-            .type(Material.ENDER_PEARL).name("&eTeleport").lore(List.of("&7» &fGo to this locker."));
+            .type(Material.ENDER_PEARL)
+            .name("&eTeleport")
+            .lore(List.of("&7» &fGo to this locker."));
         public ConfigItem adminDeleteLockerButton = new ConfigItem()
-            .type(Material.LAVA_BUCKET).name("&cDelete locker").lore(List.of("&c» &7Asks for confirmation."));
+            .type(Material.LAVA_BUCKET)
+            .name("&cDelete locker")
+            .lore(List.of("&c» &7Asks for confirmation."));
 
         @Comment({ "", "# Admin list row items" })
         public ConfigItem adminParcelRowItem = new ConfigItem()
-            .type(Material.PAPER).name("&e{NAME}")
+            .type(Material.PAPER)
+            .name("&e{NAME}")
             .lore(List.of("&7Status: &f{STATUS}", "&7Size: &f{SIZE}", "&7Priority: &f{PRIORITY}", "&8{UUID}", "&7» &fClick to edit."));
         public ConfigItem adminLockerRowItem = new ConfigItem()
-            .type(Material.CHEST).name("&e{NAME}")
+            .type(Material.CHEST)
+            .name("&e{NAME}")
             .lore(List.of("&7{POSITION}", "&8{UUID}", "&7» &fClick to manage."));
         public ConfigItem adminUserRowItem = new ConfigItem()
-            .type(Material.PLAYER_HEAD).name("&e{NAME}")
+            .type(Material.PLAYER_HEAD)
+            .name("&e{NAME}")
             .lore(List.of("&8{UUID}", "&7» &fClick to inspect."));
         public ConfigItem adminToggleSentReceivedButton = new ConfigItem()
-            .type(Material.COMPASS).name("&eShowing: &f{MODE}")
+            .type(Material.COMPASS)
+            .name("&eShowing: &f{MODE}")
             .lore(List.of("&7» &fClick to switch between sent and received."));
         public ConfigItem adminEmptyListItem = new ConfigItem()
-            .type(Material.BARRIER).name("&cNothing to show");
+            .type(Material.BARRIER)
+            .name("&cNothing to show");
 
         @Comment({ "", "# The item of the parcel submit button" })
         public ConfigItem submitParcelItem = new ConfigItem()
