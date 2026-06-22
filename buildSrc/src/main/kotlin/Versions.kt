@@ -32,4 +32,5 @@ object Versions {
     const val JUNIT = "6.1.0"
     const val TESTCONTAINERS = "1.21.4"
     const val MYSQL_CONNECTOR = "8.0.33"
+    const val MOCKITO = "5.14.2"
 }
