@@ -118,4 +118,12 @@ public class GuiManager {
     public CompletableFuture<Void> deleteLocker(UUID lockerUuid, UUID actor) {
         return this.lockerManager.delete(lockerUuid, actor);
     }
+
+    public CompletableFuture<Optional<Parcel>> getParcel(UUID uuid) {
+        return this.parcelService.get(uuid);
+    }
+
+    public CompletableFuture<Boolean> deleteParcel(Parcel parcel) {
+        return this.parcelService.delete(parcel);
+    }
 }
