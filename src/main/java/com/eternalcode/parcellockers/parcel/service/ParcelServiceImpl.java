@@ -322,16 +322,21 @@ public class ParcelServiceImpl implements ParcelService {
     @Override
     public CompletableFuture<Boolean> delete(UUID uuid) {
         Objects.requireNonNull(uuid, "UUID cannot be null");
-        return this.parcelRepository.delete(uuid).thenApply(deleted -> {
-            if (deleted) {
-                Parcel cached = this.parcelsByUuid.getIfPresent(uuid);
-                if (cached != null) {
-                    this.parcelsByUuid.invalidate(cached.uuid());
-                } else {
-                    this.parcelsByUuid.invalidate(uuid);
-                }
+        return this.parcelRepository.delete(uuid).thenCompose(deleted -> {
+            if (!deleted) {
+                return CompletableFuture.completedFuture(false);
             }
-            return deleted;
+            this.parcelsByUuid.invalidate(uuid);
+            // The parcel row is gone, so reclaim its content row to avoid an orphaned leak.
+            // A failed content delete only leaves an orphaned row (logged); it never affects
+            // the already-deleted parcel, so the operation still reports success.
+            return this.parcelContentRepository.delete(uuid)
+                .exceptionally(throwable -> {
+                    this.server.getLogger().warning("Failed to delete content for deleted parcel "
+                        + uuid + ": " + throwable.getMessage());
+                    return false;
+                })
+                .thenApply(contentDeleted -> true);
         });
     }
 
@@ -346,7 +351,7 @@ public class ParcelServiceImpl implements ParcelService {
         Objects.requireNonNull(sender, "Sender cannot be null");
         Objects.requireNonNull(noticeService, "NoticeService cannot be null");
 
-        return this.parcelRepository.deleteAll().thenAccept(deleted -> {
+        return this.parcelRepository.deleteAll().thenCompose(deleted -> {
             noticeService.create()
                 .notice(messages -> messages.admin.deletedParcels)
                 .viewer(sender)
@@ -354,6 +359,15 @@ public class ParcelServiceImpl implements ParcelService {
                 .send();
 
             this.parcelsByUuid.invalidateAll();
+
+            // Reclaim every content row alongside the parcels so a bulk delete leaves nothing orphaned.
+            return this.parcelContentRepository.deleteAll()
+                .exceptionally(throwable -> {
+                    this.server.getLogger().warning("Failed to delete parcel contents during bulk delete: "
+                        + throwable.getMessage());
+                    return 0;
+                })
+                .thenAccept(contentDeleted -> {});
         });
     }
 }

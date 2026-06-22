@@ -83,7 +83,7 @@ public class AdminLockerEditGui implements GuiView {
 
         gui.setItem(DELETE_SLOT, this.guiSettings.adminDeleteLockerButton.toGuiItem(event ->
             player.showDialog(this.confirmationDialogFactory.create(
-                "<red>Delete locker '" + this.locker.name() + "'?",
+                "<red>Delete locker '" + this.miniMessage.escapeTags(this.locker.name()) + "'?",
                 "<dark_red>Delete", "<gray>Cancel",
                 () -> this.guiManager.deleteLocker(this.locker.uuid(), player.getUniqueId()).thenRun(() -> {
                     this.noticeService.create().notice(m -> m.admin.lockerDeleted).player(player.getUniqueId()).send();

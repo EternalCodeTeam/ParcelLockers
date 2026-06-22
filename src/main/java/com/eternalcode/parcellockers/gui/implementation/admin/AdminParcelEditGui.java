@@ -122,7 +122,7 @@ public class AdminParcelEditGui implements GuiView {
 
         gui.setItem(DELETE_SLOT, this.guiSettings.adminDeleteParcelButton.toGuiItem(event ->
             player.showDialog(this.confirmationDialogFactory.create(
-                "<red>Delete parcel '" + this.parcel.name() + "'?",
+                "<red>Delete parcel '" + this.miniMessage.escapeTags(this.parcel.name()) + "'?",
                 "<dark_red>Delete", "<gray>Cancel",
                 () -> this.guiManager.deleteParcel(this.parcel).thenRun(() -> {
                     this.noticeService.create().notice(m -> m.admin.parcelDeleted).player(player.getUniqueId()).send();
