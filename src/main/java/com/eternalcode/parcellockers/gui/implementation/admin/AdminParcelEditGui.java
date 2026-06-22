@@ -137,9 +137,15 @@ public class AdminParcelEditGui implements GuiView {
 
     private GuiItem button(ConfigItem template, String placeholder, String value, dev.triumphteam.gui.components.GuiAction<org.bukkit.event.inventory.InventoryClickEvent> action) {
         ConfigItem item = template.clone();
-        return item.name(item.name().replace(placeholder, value))
-            .lore(item.lore().stream().map(line -> line.replace(placeholder, value)).toList())
+        String replacement = nullToEmpty(value);
+        return item.name(item.name().replace(placeholder, replacement))
+            .lore(item.lore().stream().map(line -> line.replace(placeholder, replacement)).toList())
             .toGuiItem(action);
+    }
+
+    /** Coerces a nullable placeholder value to empty so {@link String#replace} never sees a null replacement. */
+    static String nullToEmpty(String value) {
+        return value == null ? "" : value;
     }
 
     private void apply(Player player, CompletableFuture<EditResult> future) {
