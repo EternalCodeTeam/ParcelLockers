@@ -22,6 +22,11 @@ public class DeliveryRepositoryOrmLite extends AbstractRepositoryOrmLite impleme
     }
 
     @Override
+    public CompletableFuture<Void> update(Delivery delivery) {
+        return this.upsert(DeliveryTable.class, DeliveryTable.from(delivery)).thenApply(status -> null);
+    }
+
+    @Override
     public CompletableFuture<Optional<Delivery>> find(UUID parcel) {
         return this.selectSafe(DeliveryTable.class, parcel)
             .thenApply(optional -> optional.map(DeliveryTable::toDelivery));

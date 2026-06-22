@@ -39,6 +39,14 @@ public class DeliveryManager {
         });
     }
 
+    public CompletableFuture<Delivery> update(UUID parcel, Instant deliveryTimestamp) {
+        Delivery delivery = new Delivery(parcel, deliveryTimestamp);
+        return this.deliveryRepository.update(delivery).thenApply(ignored -> {
+            this.deliveryCache.put(parcel, delivery);
+            return delivery;
+        });
+    }
+
     public Delivery create(UUID parcel, Instant deliveryTimestamp) {
         Delivery delivery = new Delivery(parcel, deliveryTimestamp);
         if (this.deliveryCache.getIfPresent(parcel) != null) {

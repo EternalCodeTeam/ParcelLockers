@@ -22,6 +22,7 @@ import com.eternalcode.parcellockers.discord.DiscordClientManager;
 import com.eternalcode.parcellockers.discord.DiscordProviderPicker;
 import com.eternalcode.parcellockers.discord.argument.SnowflakeArgument;
 import com.eternalcode.parcellockers.gui.GuiManager;
+import com.eternalcode.parcellockers.gui.implementation.admin.AdminGui;
 import com.eternalcode.parcellockers.gui.implementation.locker.LockerGui;
 import com.eternalcode.parcellockers.gui.implementation.remote.MainGui;
 import com.eternalcode.parcellockers.itemstorage.ItemStorageManager;
@@ -38,6 +39,7 @@ import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import com.eternalcode.parcellockers.parcel.command.ParcelCommand;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryOrmLite;
+import com.eternalcode.parcellockers.parcel.service.AdminParcelService;
 import com.eternalcode.parcellockers.parcel.service.ParcelDispatchService;
 import com.eternalcode.parcellockers.parcel.service.ParcelService;
 import com.eternalcode.parcellockers.parcel.service.ParcelServiceImpl;
@@ -177,6 +179,13 @@ public final class ParcelLockers extends JavaPlugin {
             noticeService
         );
 
+        AdminParcelService adminParcelService = new AdminParcelService(
+            parcelService, parcelContentManager, deliveryManager, lockerManager, config, scheduler);
+
+        AdminGui adminGUI = new AdminGui(
+            scheduler, miniMessage, config.guiSettings, messageConfig,
+            noticeService, guiManager, adminParcelService);
+
         LiteCommandsBuilder<CommandSender, LiteBukkitSettings, ?> liteCommandsBuilder = LiteBukkitFactory.builder(this.getName(), this)
             .extension(new LiteAdventureExtension<>())
             .argument(Snowflake.class, new SnowflakeArgument(messageConfig))
@@ -184,7 +193,7 @@ public final class ParcelLockers extends JavaPlugin {
             .message(LiteBukkitMessages.PLAYER_NOT_FOUND, messageConfig.playerNotFound)
             .commands(LiteCommandsAnnotations.of(
                 new ParcelCommand(mainGUI),
-                new ParcelLockersCommand(configService, config, noticeService),
+                new ParcelLockersCommand(configService, config, noticeService, adminGUI),
                 new DebugCommand(
                     parcelService, lockerManager, itemStorageManager, parcelContentManager,
                     noticeService, deliveryManager)
@@ -223,7 +232,7 @@ public final class ParcelLockers extends JavaPlugin {
                         Duration.between(Instant.now(Clock.systemDefaultZone()), delivery.deliveryTimestamp()).toMillis()
                     );
                     scheduler.runLaterAsync(
-                        new ParcelSendTask(parcel, parcelService, deliveryManager),
+                        new ParcelSendTask(parcel, parcelService, deliveryManager, scheduler),
                         Duration.ofMillis(delay));
                 })
             )));

@@ -181,6 +181,17 @@ public class MessageConfig extends OkaeriConfig {
         public Notice deletedItemStorages = Notice.chat("&4⚠ &cAll ({COUNT}) item storages have been deleted!");
         public Notice deletedContents = Notice.chat("&4⚠ &cAll ({COUNT}) parcel contents have been deleted!");
         public Notice deletedDeliveries = Notice.chat("&4⚠ &cAll ({COUNT}) deliveries have been deleted!");
+        public Notice parcelUpdated = Notice.chat("&2✔ &aParcel updated.");
+        public Notice parcelDeleted = Notice.chat("&2✔ &aParcel deleted.");
+        public Notice lockerRenamed = Notice.chat("&2✔ &aLocker renamed.");
+        public Notice lockerDeleted = Notice.chat("&2✔ &aLocker deleted.");
+        public Notice teleported = Notice.chat("&2✔ &aTeleported to the locker.");
+        public Notice teleportWorldMissing = Notice.chat("&4✘ &cThat locker's world is not loaded.");
+        public Notice sizeTooSmall = Notice.chat("&4✘ &cThe parcel's contents do not fit in that size.");
+        public Notice destinationFull = Notice.chat("&4✘ &cThat destination locker is full.");
+        public Notice contentsUpdated = Notice.chat("&2✔ &aParcel contents updated.");
+        public Notice priorityUpdated = Notice.chat("&2✔ &aPriority updated and delivery time adjusted.");
+        public Notice noPermission = Notice.chat("&4✘ &cYou do not have permission to do that.");
     }
 
     public static class DiscordMessages extends OkaeriConfig {

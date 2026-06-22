@@ -21,6 +21,11 @@ public class ParcelContentRepositoryOrmLite extends AbstractRepositoryOrmLite im
     }
 
     @Override
+    public CompletableFuture<Void> update(ParcelContent parcelContent) {
+        return this.upsert(ParcelContentTable.class, ParcelContentTable.from(parcelContent)).thenApply(status -> null);
+    }
+
+    @Override
     public CompletableFuture<Boolean> delete(UUID uniqueId) {
         return this.deleteById(ParcelContentTable.class, uniqueId).thenApply(i -> i > 0);
     }

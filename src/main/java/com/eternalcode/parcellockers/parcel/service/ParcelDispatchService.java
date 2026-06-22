@@ -103,7 +103,8 @@ public class ParcelDispatchService {
                                 ParcelSendTask task = new ParcelSendTask(
                                     parcel,
                                     this.parcelService,
-                                    this.deliveryManager
+                                    this.deliveryManager,
+                                    this.scheduler
                                 );
 
                                 this.scheduler.runLaterAsync(task, delay);

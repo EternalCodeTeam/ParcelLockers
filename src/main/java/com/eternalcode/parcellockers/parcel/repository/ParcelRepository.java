@@ -17,6 +17,8 @@ public interface ParcelRepository {
 
     CompletableFuture<List<Parcel>> findAll();
 
+    CompletableFuture<PageResult<Parcel>> findPage(Page page);
+
     CompletableFuture<Optional<Parcel>> findById(UUID uuid);
 
     @TestOnly

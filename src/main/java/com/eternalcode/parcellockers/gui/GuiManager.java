@@ -8,6 +8,7 @@ import com.eternalcode.parcellockers.itemstorage.ItemStorage;
 import com.eternalcode.parcellockers.itemstorage.ItemStorageManager;
 import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.locker.LockerManager;
+import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.service.ParcelDispatchService;
 import com.eternalcode.parcellockers.parcel.service.ParcelService;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -66,6 +68,10 @@ public class GuiManager {
         return this.parcelService.getBySender(sender, page);
     }
 
+    public CompletableFuture<PageResult<Parcel>> getAllParcels(Page page) {
+        return this.parcelService.getAll(page);
+    }
+
     public CompletableFuture<Optional<User>> getUser(UUID userUuid) {
         return this.userManager.get(userUuid);
     }
@@ -99,7 +105,35 @@ public class GuiManager {
         return this.parcelContentManager.get(parcelId);
     }
 
+    public CompletableFuture<ParcelContent> updateParcelContent(UUID parcelId, List<ItemStack> items) {
+        return this.parcelContentManager.update(parcelId, items);
+    }
+
     public CompletableFuture<Optional<Delivery>> getDelivery(UUID parcelId) {
         return this.deliveryManager.get(parcelId);
+    }
+
+    public CompletableFuture<Locker> renameLocker(UUID lockerUuid, String newName) {
+        return this.lockerManager.rename(lockerUuid, newName);
+    }
+
+    public CompletableFuture<Void> deleteLocker(UUID lockerUuid, UUID actor) {
+        return this.lockerManager.delete(lockerUuid, actor);
+    }
+
+    public CompletableFuture<Optional<Parcel>> getParcel(UUID uuid) {
+        return this.parcelService.get(uuid);
+    }
+
+    public CompletableFuture<Boolean> deleteParcel(Parcel parcel) {
+        return this.parcelService.delete(parcel);
+    }
+
+    public CompletableFuture<Void> deleteAllParcels(CommandSender sender, NoticeService noticeService) {
+        return this.parcelService.deleteAll(sender, noticeService);
+    }
+
+    public CompletableFuture<Void> deleteAllLockers(CommandSender sender, NoticeService noticeService) {
+        return this.lockerManager.deleteAll(sender, noticeService);
     }
 }

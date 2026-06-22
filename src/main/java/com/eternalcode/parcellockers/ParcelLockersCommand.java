@@ -2,6 +2,7 @@ package com.eternalcode.parcellockers;
 
 import com.eternalcode.parcellockers.configuration.ConfigService;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
+import com.eternalcode.parcellockers.gui.implementation.admin.AdminGui;
 import com.eternalcode.parcellockers.notification.NoticeService;
 import dev.rollczi.litecommands.annotations.command.Command;
 import dev.rollczi.litecommands.annotations.context.Sender;
@@ -18,11 +19,13 @@ public class ParcelLockersCommand {
     private final ConfigService configManager;
     private final PluginConfig config;
     private final NoticeService noticeService;
+    private final AdminGui adminGui;
 
-    public ParcelLockersCommand(ConfigService configManager, PluginConfig config, NoticeService noticeService) {
+    public ParcelLockersCommand(ConfigService configManager, PluginConfig config, NoticeService noticeService, AdminGui adminGui) {
         this.configManager = configManager;
         this.config = config;
         this.noticeService = noticeService;
+        this.adminGui = adminGui;
     }
 
     @Execute(name = "reload")
@@ -39,5 +42,10 @@ public class ParcelLockersCommand {
         ItemStack lockerItem = this.config.settings.parcelLockerItem.toRawItemStack();
         player.getInventory().addItem(lockerItem);
         this.noticeService.player(player.getUniqueId(), messages -> messages.locker.addedToInventory);
+    }
+
+    @Execute(name = "admin")
+    void admin(@Sender Player player) {
+        this.adminGui.show(player);
     }
 }

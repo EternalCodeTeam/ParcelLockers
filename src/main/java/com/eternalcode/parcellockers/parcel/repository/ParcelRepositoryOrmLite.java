@@ -118,6 +118,12 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     }
 
     @Override
+    public CompletableFuture<PageResult<Parcel>> findPage(Page page) {
+        Objects.requireNonNull(page, "Page cannot be null");
+        return this.queryPage(ParcelTable.class, page, builder -> builder, ParcelTable::toParcel);
+    }
+
+    @Override
     public CompletableFuture<Integer> deleteAll() {
         return this.deleteAll(ParcelTable.class);
     }

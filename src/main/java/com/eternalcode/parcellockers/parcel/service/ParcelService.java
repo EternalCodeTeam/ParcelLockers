@@ -36,6 +36,7 @@ public interface ParcelService {
 
     CompletableFuture<PageResult<Parcel>> getByReceiver(UUID receiver, Page page);
 
+    CompletableFuture<PageResult<Parcel>> getAll(Page page);
 
     CompletableFuture<Boolean> delete(UUID uuid);
 
