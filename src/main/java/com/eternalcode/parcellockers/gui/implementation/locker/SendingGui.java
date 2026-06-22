@@ -111,7 +111,7 @@ public class SendingGui implements GuiView {
                                 return;
                             }
 
-                            this.state.parcelName(name);
+                            this.state.parcelName(name.trim());
                             this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.nameSet);
 
                             this.updateNameItem();
@@ -155,8 +155,9 @@ public class SendingGui implements GuiView {
                         200,
                         DialogAction.customClick((DialogResponseView view, Audience audience) -> {
                             String description = view.getText("description");
+                            String trimmedDescription = (description == null || description.isBlank()) ? null : description.trim();
 
-                            this.state.parcelDescription(description);
+                            this.state.parcelDescription(trimmedDescription);
                             this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.descriptionSet);
 
                             this.updateDescriptionItem();
