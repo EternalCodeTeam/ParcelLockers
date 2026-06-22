@@ -55,8 +55,13 @@ public class GuiManager {
         this.allowCollectingFromAnyLocker = allowCollectingFromAnyLocker;
     }
 
-    public boolean isCollectingFromAnyLockerAllowed() {
-        return this.allowCollectingFromAnyLocker;
+    /**
+     * Returns the delivered parcels the receiver may collect at the locker they are interacting with.
+     * When {@code allowCollectingFromAnyLocker} is enabled the locker restriction is dropped.
+     */
+    public CompletableFuture<PageResult<Parcel>> getCollectibleParcels(UUID receiver, UUID currentLocker, Page page) {
+        UUID destinationLocker = this.allowCollectingFromAnyLocker ? null : currentLocker;
+        return this.parcelService.getCollectible(receiver, destinationLocker, page);
     }
 
     public void sendParcel(Player sender, Parcel parcel, List<ItemStack> items) {

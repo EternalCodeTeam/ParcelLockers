@@ -4,6 +4,7 @@ import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.eternalcode.parcellockers.database.wrapper.AbstractRepositoryOrmLite;
 import com.eternalcode.parcellockers.parcel.Parcel;
+import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.PageResult;
 import java.util.List;
@@ -17,6 +18,7 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     private static final String RECEIVER_COLUMN = "receiver";
     private static final String SENDER_COLUMN = "sender";
     private static final String DESTINATION_LOCKER_COLUMN = "destination_locker";
+    private static final String STATUS_COLUMN = "status";
 
     public ParcelRepositoryOrmLite(DatabaseManager databaseManager, Scheduler scheduler) {
         super(databaseManager, scheduler);
@@ -76,6 +78,22 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
         Objects.requireNonNull(receiver, "Receiver UUID cannot be null");
         Objects.requireNonNull(page, "Page cannot be null");
         return this.findByPaged(receiver, page, RECEIVER_COLUMN);
+    }
+
+    @Override
+    public CompletableFuture<PageResult<Parcel>> findCollectible(UUID receiver, UUID destinationLocker, Page page) {
+        Objects.requireNonNull(receiver, "Receiver UUID cannot be null");
+        Objects.requireNonNull(page, "Page cannot be null");
+        return this.queryPage(ParcelTable.class, page, builder -> {
+            var where = builder.where()
+                .eq(RECEIVER_COLUMN, receiver)
+                .and()
+                .eq(STATUS_COLUMN, ParcelStatus.DELIVERED);
+            if (destinationLocker != null) {
+                where.and().eq(DESTINATION_LOCKER_COLUMN, destinationLocker);
+            }
+            return builder;
+        }, ParcelTable::toParcel);
     }
 
     @Override

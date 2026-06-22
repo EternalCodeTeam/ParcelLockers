@@ -36,6 +36,14 @@ public interface ParcelService {
 
     CompletableFuture<PageResult<Parcel>> getByReceiver(UUID receiver, Page page);
 
+    /**
+     * Returns the delivered parcels a receiver may collect, optionally restricted to a single
+     * destination locker. Filtering is applied in the query so pagination stays consistent.
+     *
+     * @param destinationLocker the locker to collect from, or null to allow any locker
+     */
+    CompletableFuture<PageResult<Parcel>> getCollectible(UUID receiver, UUID destinationLocker, Page page);
+
     CompletableFuture<PageResult<Parcel>> getAll(Page page);
 
     CompletableFuture<Boolean> delete(UUID uuid);
