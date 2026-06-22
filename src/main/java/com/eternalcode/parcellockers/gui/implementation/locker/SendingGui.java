@@ -155,9 +155,9 @@ public class SendingGui implements GuiView {
                         200,
                         DialogAction.customClick((DialogResponseView view, Audience audience) -> {
                             String description = view.getText("description");
-                            String trimmedDescription = description != null ? description.trim() : null;
+                            String trimmedDescription = (description == null || description.isBlank()) ? null : description.trim();
 
-                            this.state.parcelDescription(trimmedDescription == null || trimmedDescription.isEmpty() ? null : trimmedDescription);
+                            this.state.parcelDescription(trimmedDescription);
                             this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.descriptionSet);
 
                             this.updateDescriptionItem();
