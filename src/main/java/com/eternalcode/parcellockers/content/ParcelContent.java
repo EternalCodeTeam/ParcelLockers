@@ -11,7 +11,7 @@ public record ParcelContent(UUID uniqueId, List<ItemStack> items) {
         // Guard against null/empty stacks leaking into the content (issue #221): empty/air slots
         // can slip past the GUI write filters and round-trip through the persister as nulls, which
         // would later NPE when the collection GUI reads itemStack.getType().
-        items = items == null
+        items = items == null || items.isEmpty()
             ? List.of()
             : items.stream()
                 .filter(item -> item != null && !item.isEmpty())
