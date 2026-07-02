@@ -12,7 +12,7 @@ object Versions {
     const val HIKARICP = "7.1.0"
     const val ORMLITE = "6.1"
     const val H2 = "2.4.240"
-    const val POSTGRESQL = "42.7.11"
+    const val POSTGRESQL = "42.7.12"
 
     const val LOMBOK = "1.18.46"
     const val JETBRAINS_ANNOTATIONS = "26.1.0"
@@ -29,7 +29,7 @@ object Versions {
     const val DISCORD4J = "3.3.2"
     const val DISCORDSRV = "1.30.5"
 
-    const val JUNIT = "6.1.0"
+    const val JUNIT = "6.1.1"
     const val TESTCONTAINERS = "1.21.4"
     const val MYSQL_CONNECTOR = "8.0.33"
     const val MOCKITO = "5.14.2"
