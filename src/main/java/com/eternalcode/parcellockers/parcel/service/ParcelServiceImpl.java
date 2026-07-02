@@ -310,6 +310,18 @@ public class ParcelServiceImpl implements ParcelService {
     }
 
     @Override
+    public CompletableFuture<PageResult<Parcel>> getCollectible(UUID receiver, UUID destinationLocker, Page page) {
+        Objects.requireNonNull(receiver, "Receiver UUID cannot be null");
+        Objects.requireNonNull(page, "Page cannot be null");
+
+        return this.parcelRepository.findCollectible(receiver, destinationLocker, page)
+            .thenApply(result -> {
+                result.items().forEach(parcel -> this.parcelsByUuid.put(parcel.uuid(), parcel));
+                return result;
+            });
+    }
+
+    @Override
     public CompletableFuture<PageResult<Parcel>> getAll(Page page) {
         Objects.requireNonNull(page, "Page cannot be null");
         return this.parcelRepository.findPage(page)

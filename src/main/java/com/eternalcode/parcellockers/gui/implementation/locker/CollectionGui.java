@@ -8,7 +8,6 @@ import com.eternalcode.parcellockers.gui.GuiManager;
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.gui.PaginatedGuiRefresher;
 import com.eternalcode.parcellockers.parcel.Parcel;
-import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import com.eternalcode.parcellockers.parcel.util.PlaceholderUtil;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.util.MaterialUtil;
@@ -18,6 +17,7 @@ import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 import net.kyori.adventure.text.Component;
@@ -35,17 +35,20 @@ public class CollectionGui implements GuiView {
     private final Scheduler scheduler;
     private final GuiManager guiManager;
     private final MiniMessage miniMessage;
+    private final UUID currentLocker;
 
     public CollectionGui(
         GuiSettings guiSettings,
         Scheduler scheduler,
         GuiManager guiManager,
-        MiniMessage miniMessage
+        MiniMessage miniMessage,
+        UUID currentLocker
     ) {
         this.guiSettings = guiSettings;
         this.scheduler = scheduler;
         this.guiManager = guiManager;
         this.miniMessage = miniMessage;
+        this.currentLocker = currentLocker;
     }
 
     @Override
@@ -66,7 +69,7 @@ public class CollectionGui implements GuiView {
 
         this.setupStaticItems(player, gui);
 
-        this.guiManager.getParcelsByReceiver(player.getUniqueId(), page).thenAccept(result -> {
+        this.guiManager.getCollectibleParcels(player.getUniqueId(), this.currentLocker, page).thenAccept(result -> {
             if (result == null || result.items().isEmpty()) {
                 gui.setItem(22, this.guiSettings.noParcelsItem.toGuiItem());
                 this.scheduler.run(() -> gui.open(player));
@@ -78,7 +81,6 @@ public class CollectionGui implements GuiView {
             this.setupNavigation(gui, page, result, player, this.guiSettings);
 
             result.items().stream()
-                .filter(parcel -> parcel.status() == ParcelStatus.DELIVERED)
                 .map(parcel -> this.createParcelItemAsync(parcel, parcelItem, player, refresher))
                 .collect(CompletableFutures.joinList())
                 .thenAccept(suppliers -> {

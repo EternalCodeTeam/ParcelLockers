@@ -17,6 +17,7 @@ import com.eternalcode.parcellockers.shared.PageResult;
 import com.eternalcode.parcellockers.user.User;
 import com.eternalcode.parcellockers.user.UserManager;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -33,6 +34,7 @@ public class GuiManager {
     private final ParcelDispatchService parcelDispatchService;
     private final ParcelContentManager parcelContentManager;
     private final DeliveryManager deliveryManager;
+    private final boolean allowCollectingFromAnyLocker;
 
     public GuiManager(
         ParcelService parcelService,
@@ -41,7 +43,8 @@ public class GuiManager {
         ItemStorageManager itemStorageManager,
         ParcelDispatchService parcelDispatchService,
         ParcelContentManager parcelContentManager,
-        DeliveryManager deliveryManager
+        DeliveryManager deliveryManager,
+        boolean allowCollectingFromAnyLocker
     ) {
         this.parcelService = parcelService;
         this.lockerManager = lockerManager;
@@ -50,6 +53,24 @@ public class GuiManager {
         this.parcelDispatchService = parcelDispatchService;
         this.parcelContentManager = parcelContentManager;
         this.deliveryManager = deliveryManager;
+        this.allowCollectingFromAnyLocker = allowCollectingFromAnyLocker;
+    }
+
+    /**
+     * Returns the delivered parcels the receiver may collect at the locker they are interacting with.
+     * When {@code allowCollectingFromAnyLocker} is enabled the locker restriction is dropped.
+     *
+     * <p>{@code getCollectible} treats a {@code null} destination locker as "collect from any locker",
+     * so when the restriction is active a concrete {@code currentLocker} is required — passing
+     * {@code null} here would silently drop the restriction and let the receiver collect from any locker.
+     */
+    public CompletableFuture<PageResult<Parcel>> getCollectibleParcels(UUID receiver, UUID currentLocker, Page page) {
+        if (this.allowCollectingFromAnyLocker) {
+            return this.parcelService.getCollectible(receiver, null, page);
+        }
+        Objects.requireNonNull(currentLocker,
+            "currentLocker must not be null when collection is restricted to the destination locker");
+        return this.parcelService.getCollectible(receiver, currentLocker, page);
     }
 
     public void sendParcel(Player sender, Parcel parcel, List<ItemStack> items) {
