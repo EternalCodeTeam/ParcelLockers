@@ -40,6 +40,11 @@ the normal delivery pipeline.
 
 ORMLite persists enums by name, so the new value needs no schema change.
 
+The status flip uses a conditional update (`UPDATE ... WHERE status = 'DELIVERED'`) whose
+row count doubles as the double-collect guard (previously provided by `delete` returning
+false). Similarly, `ParcelSendTask` must abort for any non-SENT parcel — otherwise a stale
+delivery row would re-deliver a COLLECTED parcel after a restart and duplicate its items.
+
 ### `collected_parcels` table (new)
 
 Mirrors the existing `deliveries` table pattern:
@@ -81,9 +86,11 @@ orphaned content rows are tolerated (existing precedent in `ParcelServiceImpl`).
 1. **`LockerGui`** gets a third button, "Return parcel" (slot 22, between the
    collect and send buttons, which move if needed for symmetry).
 2. **`ReturnGui`** (new, modeled on `CollectionGui`): paginated list of the
-   player's returnable parcels with item lore showing parcel details and its
-   items. Clicking a parcel opens the deposit GUI. Shows a "no parcels" item
-   when empty.
+   player's COLLECTED parcels with item lore showing parcel details, its items,
+   and the remaining return window. A parcel whose window expired but is not yet
+   purged shows an "expired" lore line and its return is rejected by the service
+   re-check (this keeps pagination exact without a cross-table join). Clicking a
+   parcel opens the deposit GUI. Shows a "no parcels" item when empty.
 3. **Deposit GUI** (new, modeled on `ItemStorageGui`): a `StorageGui` sized by
    parcel size (2/3/4 rows) where the player places the items, with a confirm
    button in the bottom row. Confirming triggers validation and the return.
@@ -136,9 +143,12 @@ Failure after the fee is charged → refund the fee and hand the items back
 (mirrors `ParcelServiceImpl.send` rollback). Failures between steps 5–8 are
 rolled back best-effort with logging, consistent with existing patterns.
 
-Concurrency: returns to the same destination locker go through the same
-per-locker serialization used by `ParcelDispatchService` (reuse or replicate the
-`lockerChains` pattern) so fullness checks cannot race.
+Concurrency: the status flip in step 6 is a conditional update
+(`UPDATE ... WHERE status = 'COLLECTED'`) so only one of two racing returns (or a
+return racing the purge) can win; the loser refunds and hands the items back. The
+purge additionally applies a grace period past the window so it cannot race an
+in-flight return at the expiry boundary. The fullness check in step 3 stays
+best-effort, like the existing dispatch path.
 
 ## Config additions
 
@@ -165,8 +175,9 @@ per-locker serialization used by `ParcelDispatchService` (reuse or replicate the
 - `returnFeeWithdrawn` — fee charged (with `{AMOUNT}`)
 - `cannotReturn` — generic failure / event cancelled / expired
 
-Existing notices reused: `insufficientFunds`, `lockerFull`, `illegalItem`
-(illegal items cannot be deposited in the return GUI either).
+Existing notices reused: `insufficientFunds`, `lockerFull`. No separate
+illegal-item check is needed in the deposit GUI: deposited items must match the
+content snapshot, which already passed the illegal-items filter at send time.
 
 ## Events
 
