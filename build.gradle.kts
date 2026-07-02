@@ -88,6 +88,8 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Versions.JUNIT}")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
+    testImplementation("org.mockito:mockito-core:${Versions.MOCKITO}")
+
     testImplementation("org.testcontainers:junit-jupiter:${Versions.TESTCONTAINERS}")
     testImplementation("org.testcontainers:mysql:${Versions.TESTCONTAINERS}")
     testImplementation("mysql:mysql-connector-java:${Versions.MYSQL_CONNECTOR}")
