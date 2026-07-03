@@ -70,15 +70,24 @@ class CollectedParcelRepositoryIntegrationTest extends IntegrationTestSpec {
     void findExpiredReturnsOnlyRowsAtOrBeforeCutoff() throws SQLException {
         CollectedParcelRepository repository = this.repository();
         Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+        Instant cutoff = now.minusSeconds(60);
 
         UUID expired = UUID.randomUUID();
+        UUID atCutoff = UUID.randomUUID();
+        UUID justAfterCutoff = UUID.randomUUID();
         UUID fresh = UUID.randomUUID();
         this.await(repository.save(new CollectedParcel(expired, now.minusSeconds(3600))));
+        this.await(repository.save(new CollectedParcel(atCutoff, cutoff)));
+        // Sub-second offset: guards the temporal (not lexicographic) comparison of the
+        // string-persisted column.
+        this.await(repository.save(new CollectedParcel(justAfterCutoff, cutoff.plusMillis(500))));
         this.await(repository.save(new CollectedParcel(fresh, now)));
 
-        List<CollectedParcel> result = this.await(repository.findExpired(now.minusSeconds(60)));
-        assertEquals(1, result.size());
-        assertEquals(expired, result.get(0).parcel());
+        List<CollectedParcel> result = this.await(repository.findExpired(cutoff));
+        List<UUID> resultParcels = result.stream().map(CollectedParcel::parcel).toList();
+        assertEquals(2, result.size());
+        assertTrue(resultParcels.contains(expired));
+        assertTrue(resultParcels.contains(atCutoff));
     }
 
     @Test

@@ -35,13 +35,15 @@ public class CollectedParcelRepositoryOrmLite extends AbstractRepositoryOrmLite 
     @Override
     public CompletableFuture<List<CollectedParcel>> findExpired(Instant cutoff) {
         Objects.requireNonNull(cutoff, "Cutoff cannot be null");
-        return this.action(CollectedParcelTable.class, dao -> dao.queryBuilder()
-            .where()
-            .le(CollectedParcelTable.COLLECTED_AT_COLUMN, cutoff)
-            .query()
-            .stream()
-            .map(CollectedParcelTable::toCollectedParcel)
-            .toList());
+        // collected_at is persisted as an ISO-8601 string (InstantPersister); a SQL range operator
+        // would compare it lexicographically, which misorders same-second values with different
+        // fractional renderings. Compare temporally in Java instead — the table only holds parcels
+        // inside the return window, so a full scan per purge run is cheap.
+        return this.selectAll(CollectedParcelTable.class)
+            .thenApply(rows -> rows.stream()
+                .map(CollectedParcelTable::toCollectedParcel)
+                .filter(collected -> !collected.collectedAt().isAfter(cutoff))
+                .toList());
     }
 
     @Override
