@@ -10,15 +10,19 @@ import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
 import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
+import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import com.eternalcode.parcellockers.parcel.event.ParcelCollectEvent;
 import com.eternalcode.parcellockers.parcel.event.ParcelSendEvent;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
+import com.eternalcode.parcellockers.returns.CollectedParcel;
+import com.eternalcode.parcellockers.returns.repository.CollectedParcelRepository;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.PageResult;
 import com.eternalcode.parcellockers.shared.exception.ParcelOperationException;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.base.Preconditions;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -43,6 +47,7 @@ public class ParcelServiceImpl implements ParcelService {
     private final NoticeService noticeService;
     private final ParcelRepository parcelRepository;
     private final ParcelContentRepository parcelContentRepository;
+    private final CollectedParcelRepository collectedParcelRepository;
     private final Scheduler scheduler;
     private final PluginConfig config;
     private final Economy economy;
@@ -54,6 +59,7 @@ public class ParcelServiceImpl implements ParcelService {
         NoticeService noticeService,
         ParcelRepository parcelRepository,
         ParcelContentRepository parcelContentRepository,
+        CollectedParcelRepository collectedParcelRepository,
         Scheduler scheduler,
         PluginConfig config,
         Economy economy,
@@ -62,6 +68,7 @@ public class ParcelServiceImpl implements ParcelService {
         this.noticeService = noticeService;
         this.parcelRepository = parcelRepository;
         this.parcelContentRepository = parcelContentRepository;
+        this.collectedParcelRepository = collectedParcelRepository;
         this.scheduler = scheduler;
         this.config = config;
         this.economy = economy;
@@ -220,8 +227,11 @@ public class ParcelServiceImpl implements ParcelService {
             CompletableFuture<Void> result = new CompletableFuture<>();
 
             // Re-check inventory space on the main thread (the previous async check was a TOCTOU),
-            // then delete the parcel BEFORE handing the items back so it cannot be collected twice.
-            // Items are only given once the delete is confirmed, so a failed delete never destroys them.
+            // then flip the status BEFORE handing the items back so the parcel cannot be collected
+            // twice. The parcel and content rows are kept: they are the snapshot a later return is
+            // validated against. The collected_parcels row is written first so that a successful
+            // flip always has a collection timestamp; a stray row from a failed flip is ignored by
+            // the purge task (it only purges parcels that are actually COLLECTED).
             this.scheduler.run(() -> {
                 if (!canHold(player, items)) {
                     this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.noInventorySpace);
@@ -229,31 +239,17 @@ public class ParcelServiceImpl implements ParcelService {
                     return;
                 }
 
-                this.parcelRepository.delete(parcel)
-                    .thenCompose(deleted -> {
-                        if (!deleted) {
-                            return CompletableFuture.completedFuture(false);
-                        }
-                        // The parcel is gone, so it can never be collected again; deleting its content
-                        // is best-effort cleanup and must not block handing the items back. Otherwise a
-                        // failed content delete would lose the items permanently.
-                        return this.parcelContentRepository.delete(parcel.uuid())
-                            .handle((contentDeleted, throwable) -> {
-                                if (throwable != null) {
-                                    this.server.getLogger().warning("Failed to delete content for collected parcel "
-                                        + parcel.uuid() + ": " + throwable.getMessage());
-                                }
-                                return true;
-                            });
-                    })
-                    .thenAccept(removed -> {
-                        if (!removed) {
-                            this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.databaseError);
+                this.collectedParcelRepository.save(new CollectedParcel(parcel.uuid(), Instant.now()))
+                    .thenCompose(saved -> this.parcelRepository.markCollected(parcel.uuid()))
+                    .thenAccept(marked -> {
+                        if (!Boolean.TRUE.equals(marked)) {
+                            // Someone else collected it first (or the status changed under us).
+                            this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.cannotCollect);
                             result.complete(null);
                             return;
                         }
 
-                        this.parcelsByUuid.invalidate(parcel.uuid());
+                        this.parcelsByUuid.put(parcel.uuid(), withStatus(parcel, ParcelStatus.COLLECTED));
                         this.scheduler.run(() -> {
                             items.forEach(item -> ItemUtil.giveItem(player, item));
                             this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.collected);
@@ -269,6 +265,12 @@ public class ParcelServiceImpl implements ParcelService {
 
             return result;
         });
+    }
+
+    private static Parcel withStatus(Parcel parcel, ParcelStatus status) {
+        return new Parcel(parcel.uuid(), parcel.sender(), parcel.name(), parcel.description(),
+            parcel.priority(), parcel.receiver(), parcel.size(), parcel.entryLocker(),
+            parcel.destinationLocker(), status);
     }
 
     @Override
@@ -319,6 +321,30 @@ public class ParcelServiceImpl implements ParcelService {
                 result.items().forEach(parcel -> this.parcelsByUuid.put(parcel.uuid(), parcel));
                 return result;
             });
+    }
+
+    @Override
+    public CompletableFuture<PageResult<Parcel>> getReturnable(UUID receiver, Page page) {
+        Objects.requireNonNull(receiver, "Receiver UUID cannot be null");
+        Objects.requireNonNull(page, "Page cannot be null");
+
+        return this.parcelRepository.findReturnable(receiver, page)
+            .thenApply(result -> {
+                result.items().forEach(parcel -> this.parcelsByUuid.put(parcel.uuid(), parcel));
+                return result;
+            });
+    }
+
+    @Override
+    public CompletableFuture<Boolean> markReturned(Parcel returned) {
+        Objects.requireNonNull(returned, "Returned parcel cannot be null");
+
+        return this.parcelRepository.markReturned(returned).thenApply(updated -> {
+            if (updated) {
+                this.parcelsByUuid.put(returned.uuid(), returned);
+            }
+            return updated;
+        });
     }
 
     @Override

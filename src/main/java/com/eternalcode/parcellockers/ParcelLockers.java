@@ -44,6 +44,7 @@ import com.eternalcode.parcellockers.parcel.service.ParcelDispatchService;
 import com.eternalcode.parcellockers.parcel.service.ParcelService;
 import com.eternalcode.parcellockers.parcel.service.ParcelServiceImpl;
 import com.eternalcode.parcellockers.parcel.task.ParcelSendTask;
+import com.eternalcode.parcellockers.returns.repository.CollectedParcelRepositoryOrmLite;
 import com.eternalcode.parcellockers.updater.UpdaterService;
 import com.eternalcode.parcellockers.user.UserManager;
 import com.eternalcode.parcellockers.user.UserManagerImpl;
@@ -122,12 +123,14 @@ public final class ParcelLockers extends JavaPlugin {
         DeliveryRepositoryOrmLite deliveryRepository = new DeliveryRepositoryOrmLite(databaseManager, scheduler);
         ItemStorageRepository itemStorageRepository = new ItemStorageRepositoryOrmLite(databaseManager, scheduler);
         UserRepository userRepository = new UserRepositoryOrmLite(databaseManager, scheduler);
+        CollectedParcelRepositoryOrmLite collectedParcelRepository = new CollectedParcelRepositoryOrmLite(databaseManager, scheduler);
 
         // service and managers
         ParcelService parcelService = new ParcelServiceImpl(
             noticeService,
             parcelRepository,
             parcelContentRepository,
+            collectedParcelRepository,
             scheduler,
             config,
             this.economy,

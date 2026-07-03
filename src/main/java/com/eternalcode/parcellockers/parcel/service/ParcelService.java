@@ -44,6 +44,15 @@ public interface ParcelService {
      */
     CompletableFuture<PageResult<Parcel>> getCollectible(UUID receiver, UUID destinationLocker, Page page);
 
+    /** Returns the COLLECTED parcels of the given receiver (candidates for a return). */
+    CompletableFuture<PageResult<Parcel>> getReturnable(UUID receiver, Page page);
+
+    /**
+     * Atomically turns a COLLECTED parcel into its reverse SENT shipment. Returns false when
+     * the parcel was already returned or purged in the meantime.
+     */
+    CompletableFuture<Boolean> markReturned(Parcel returned);
+
     CompletableFuture<PageResult<Parcel>> getAll(Page page);
 
     CompletableFuture<Boolean> delete(UUID uuid);
