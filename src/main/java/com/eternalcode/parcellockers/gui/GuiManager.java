@@ -12,6 +12,8 @@ import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.service.ParcelDispatchService;
 import com.eternalcode.parcellockers.parcel.service.ParcelService;
+import com.eternalcode.parcellockers.returns.CollectedParcel;
+import com.eternalcode.parcellockers.returns.ParcelReturnService;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.PageResult;
 import com.eternalcode.parcellockers.user.User;
@@ -35,6 +37,7 @@ public class GuiManager {
     private final ParcelContentManager parcelContentManager;
     private final DeliveryManager deliveryManager;
     private final boolean allowCollectingFromAnyLocker;
+    private final ParcelReturnService parcelReturnService;
 
     public GuiManager(
         ParcelService parcelService,
@@ -44,7 +47,8 @@ public class GuiManager {
         ParcelDispatchService parcelDispatchService,
         ParcelContentManager parcelContentManager,
         DeliveryManager deliveryManager,
-        boolean allowCollectingFromAnyLocker
+        boolean allowCollectingFromAnyLocker,
+        ParcelReturnService parcelReturnService
     ) {
         this.parcelService = parcelService;
         this.lockerManager = lockerManager;
@@ -54,6 +58,7 @@ public class GuiManager {
         this.parcelContentManager = parcelContentManager;
         this.deliveryManager = deliveryManager;
         this.allowCollectingFromAnyLocker = allowCollectingFromAnyLocker;
+        this.parcelReturnService = parcelReturnService;
     }
 
     /**
@@ -156,5 +161,17 @@ public class GuiManager {
 
     public CompletableFuture<Void> deleteAllLockers(CommandSender sender, NoticeService noticeService) {
         return this.lockerManager.deleteAll(sender, noticeService);
+    }
+
+    public CompletableFuture<PageResult<Parcel>> getReturnableParcels(UUID receiver, Page page) {
+        return this.parcelService.getReturnable(receiver, page);
+    }
+
+    public CompletableFuture<Optional<CollectedParcel>> getCollectedInfo(UUID parcelId) {
+        return this.parcelReturnService.getCollectedInfo(parcelId);
+    }
+
+    public void returnParcel(Player player, Parcel parcel, List<ItemStack> deposited) {
+        this.parcelReturnService.returnParcel(player, parcel, deposited);
     }
 }

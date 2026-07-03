@@ -9,6 +9,7 @@ import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.notification.NoticeService;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
+import java.time.Duration;
 import java.util.UUID;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -21,17 +22,19 @@ public class LockerGui implements GuiView {
     private final GuiSettings guiSettings;
     private final GuiManager guiManager;
     private final NoticeService noticeService;
+    private final Duration returnWindow;
 
     public LockerGui(
         MiniMessage miniMessage, Scheduler scheduler,
         GuiSettings guiSettings, GuiManager guiManager,
-        NoticeService noticeService
+        NoticeService noticeService, Duration returnWindow
     ) {
         this.miniMessage = miniMessage;
         this.scheduler = scheduler;
         this.guiSettings = guiSettings;
         this.guiManager = guiManager;
         this.noticeService = noticeService;
+        this.returnWindow = returnWindow;
     }
 
     public void show(Player player, UUID entryLocker) {
@@ -53,14 +56,25 @@ public class LockerGui implements GuiView {
             entryLocker
         );
 
+        ReturnGui returnGui = new ReturnGui(
+            this.guiSettings,
+            this.scheduler,
+            this.guiManager,
+            this.miniMessage,
+            this.noticeService,
+            this.returnWindow
+        );
+
         gui.setItem(21, this.guiSettings.parcelLockerCollectItem.toGuiItem(event -> collectionGui.show(player)));
+        gui.setItem(22, this.guiSettings.parcelLockerReturnItem.toGuiItem(event -> returnGui.show(player)));
         gui.setItem(23, this.guiSettings.parcelLockerSendItem.toGuiItem(event -> new SendingGui(
             this.scheduler,
             this.guiSettings,
             this.miniMessage,
             this.noticeService,
             this.guiManager,
-            new SendingGuiState().entryLocker(entryLocker)
+            new SendingGuiState().entryLocker(entryLocker),
+            this.returnWindow
         ).show(player, entryLocker)));
 
         gui.open(player);

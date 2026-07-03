@@ -21,6 +21,7 @@ import io.papermc.paper.registry.data.dialog.DialogBase;
 import io.papermc.paper.registry.data.dialog.action.DialogAction;
 import io.papermc.paper.registry.data.dialog.input.DialogInput;
 import io.papermc.paper.registry.data.dialog.type.DialogType;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -53,6 +54,7 @@ public class SendingGui implements GuiView {
     private final GuiManager guiManager;
 
     private final SendingGuiState state;
+    private final Duration returnWindow;
 
     private Gui gui;
 
@@ -62,7 +64,8 @@ public class SendingGui implements GuiView {
         MiniMessage miniMessage,
         NoticeService noticeService,
         GuiManager guiManager,
-        SendingGuiState state
+        SendingGuiState state,
+        Duration returnWindow
     ) {
         this.scheduler = scheduler;
         this.guiSettings = guiSettings;
@@ -70,6 +73,7 @@ public class SendingGui implements GuiView {
         this.noticeService = noticeService;
         this.guiManager = guiManager;
         this.state = state;
+        this.returnWindow = returnWindow;
     }
 
     public void show(Player player, UUID entryLocker) {
@@ -192,7 +196,8 @@ public class SendingGui implements GuiView {
                 this.miniMessage,
                 this.guiManager,
                 this.noticeService,
-                this.state
+                this.state,
+                this.returnWindow
             );
             this.guiManager.getItemStorage(player.getUniqueId()).thenAccept(result -> {
                     int slotsSize = result.items().size();
@@ -251,7 +256,8 @@ public class SendingGui implements GuiView {
                 this.scheduler,
                 this.guiSettings,
                 this.guiManager,
-                this.noticeService
+                this.noticeService,
+                this.returnWindow
             ).show(player, this.state.entryLocker()));
 
         ConfigItem smallButton = this.guiSettings.smallParcelSizeItem;

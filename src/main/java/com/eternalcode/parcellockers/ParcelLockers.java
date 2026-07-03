@@ -190,7 +190,8 @@ public final class ParcelLockers extends JavaPlugin {
             parcelDispatchService,
             parcelContentManager,
             deliveryManager,
-            config.settings.allowCollectingFromAnyLocker
+            config.settings.allowCollectingFromAnyLocker,
+            parcelReturnService
         );
 
         MainGui mainGUI = new MainGui(
@@ -205,7 +206,8 @@ public final class ParcelLockers extends JavaPlugin {
             scheduler,
             config.guiSettings,
             guiManager,
-            noticeService
+            noticeService,
+            config.settings.parcelReturnWindow
         );
 
         AdminParcelService adminParcelService = new AdminParcelService(
