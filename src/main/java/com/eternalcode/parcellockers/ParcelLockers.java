@@ -48,6 +48,7 @@ import com.eternalcode.parcellockers.returns.ParcelReturnService;
 import com.eternalcode.parcellockers.returns.ParcelReturnValidator;
 import com.eternalcode.parcellockers.returns.ReturnItemEquivalence;
 import com.eternalcode.parcellockers.returns.repository.CollectedParcelRepositoryOrmLite;
+import com.eternalcode.parcellockers.returns.task.ReturnWindowPurgeTask;
 import com.eternalcode.parcellockers.updater.UpdaterService;
 import com.eternalcode.parcellockers.user.UserManager;
 import com.eternalcode.parcellockers.user.UserManagerImpl;
@@ -171,6 +172,12 @@ public final class ParcelLockers extends JavaPlugin {
             noticeService,
             this.economy,
             server
+        );
+
+        scheduler.timerAsync(
+            new ReturnWindowPurgeTask(parcelService, collectedParcelRepository, config),
+            Duration.ofSeconds(30),
+            Duration.ofMinutes(30)
         );
 
         // guis
