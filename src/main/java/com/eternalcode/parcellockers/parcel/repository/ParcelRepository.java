@@ -44,6 +44,22 @@ public interface ParcelRepository {
     CompletableFuture<PageResult<Parcel>> findCollectible(UUID receiver, UUID destinationLocker, Page page);
 
     /**
+     * Atomically flips a DELIVERED parcel to COLLECTED. Returns false when the parcel is missing
+     * or not DELIVERED — the caller must treat that as "someone else already collected it".
+     */
+    CompletableFuture<Boolean> markCollected(UUID uuid);
+
+    /**
+     * Atomically turns a COLLECTED parcel into its reverse SENT shipment (parties and lockers
+     * swapped as prepared by the caller). Returns false when the parcel is missing or not
+     * COLLECTED — the caller must treat that as "already returned or purged".
+     */
+    CompletableFuture<Boolean> markReturned(Parcel returned);
+
+    /** Returns the COLLECTED parcels of the given receiver (candidates for a return). */
+    CompletableFuture<PageResult<Parcel>> findReturnable(UUID receiver, Page page);
+
+    /**
      * Counts the parcels currently occupying a destination locker. Collected parcels are removed
      * from storage, so every parcel addressed to the locker (in-transit or delivered) occupies a
      * slot. Counting in-transit parcels reserves a slot at send time and closes the fullness race.
