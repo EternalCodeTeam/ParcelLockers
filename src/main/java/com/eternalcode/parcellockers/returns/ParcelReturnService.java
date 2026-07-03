@@ -180,6 +180,10 @@ public class ParcelReturnService {
                     return this.abort(player, deposited, messages -> messages.parcel.cannotReturn);
                 }
 
+                // Past the commit point: the parcel is now a live SENT shipment and its content IS the
+                // deposited items. Nothing below may route to the refund/give-back recovery — undoing
+                // here would duplicate the items.
+
                 // Best-effort cleanup: a leftover row is ignored by the purge task because the
                 // parcel is no longer COLLECTED.
                 this.collectedParcelRepository.delete(current.uuid()).exceptionally(throwable -> {
@@ -191,10 +195,25 @@ public class ParcelReturnService {
                 Duration delay = returned.priority()
                     ? this.config.settings.priorityParcelSendDuration
                     : this.config.settings.parcelSendDuration;
-                this.deliveryManager.create(returned.uuid(), Instant.now().plus(delay));
+
+                // Schedule the send task before persisting the delivery: ParcelSendTask.decide treats
+                // a missing delivery row as "deliver when due", so the task is safe even if the
+                // delivery upsert below fails.
                 this.scheduler.runLaterAsync(
                     new ParcelSendTask(returned, this.parcelService, this.deliveryManager, this.scheduler),
                     delay);
+
+                // Use update (upsert), not create: a stale delivery entry can still be cached for
+                // this UUID from the parcel's original trip (its cleanup delete is best-effort and
+                // re-cached on restart via cacheAll), and create() throws IllegalStateException on an
+                // existing cache entry. Throwing here must not happen post-commit.
+                this.deliveryManager.update(returned.uuid(), Instant.now().plus(delay))
+                    .exceptionally(throwable -> {
+                        LOGGER.severe("Failed to persist delivery for returned parcel " + returned.uuid()
+                            + " (send task scheduled in-memory; a restart before it fires may strand the parcel): "
+                            + throwable.getMessage());
+                        return null;
+                    });
 
                 this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.returned);
                 return CompletableFuture.<Void>completedFuture(null);
