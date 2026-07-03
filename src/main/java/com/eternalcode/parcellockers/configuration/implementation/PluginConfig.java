@@ -94,6 +94,25 @@ public class PluginConfig extends OkaeriConfig {
 
         @Comment({"", "# Large parcel fee in in-game currency"})
         public double largeParcelFee = 50.0;
+
+        @Comment({"", "# How long after collection a parcel can still be returned.", "# Expired collected parcels are purged periodically."})
+        public Duration parcelReturnWindow = Duration.ofDays(7);
+
+        @Comment({"", "# Small parcel return fee in in-game currency"})
+        public double smallParcelReturnFee = 5.0;
+
+        @Comment({"", "# Medium parcel return fee in in-game currency"})
+        public double mediumParcelReturnFee = 12.5;
+
+        @Comment({"", "# Large parcel return fee in in-game currency"})
+        public double largeParcelReturnFee = 25.0;
+
+        @Comment({
+            "",
+            "# Which item attributes must match the original parcel content when a player returns a parcel.",
+            "# Material types and total amounts must always match; each flag below relaxes one attribute when set to false."
+        })
+        public ReturnChecks returnChecks = new ReturnChecks();
     }
 
     public static class GuiSettings extends OkaeriConfig {
@@ -490,6 +509,66 @@ public class PluginConfig extends OkaeriConfig {
 
         @Comment({ "", "# The lore line showing when the parcel has arrived. Placeholders: {DATE} - arrival date" })
         public String parcelArrivedLine = "&aArrived on: &2{DATE}";
+
+        @Comment({ "", "# The title of the parcel return GUI" })
+        public String parcelReturnGuiTitle = "&5Return parcels";
+
+        @Comment({ "", "# The title of the return deposit GUI" })
+        public String parcelReturnDepositGuiTitle = "&5Deposit the parcel items";
+
+        @Comment({ "", "# The item of the parcel locker return button" })
+        public ConfigItem parcelLockerReturnItem = new ConfigItem()
+            .name("&5↩ Return parcels")
+            .lore(List.of("&5» &dClick to return a collected parcel."))
+            .type(Material.HOPPER)
+            .glow(true);
+
+        @Comment({ "", "# The item of the parcel in the return GUI" })
+        public ConfigItem parcelReturnRowItem = new ConfigItem()
+            .name("&d{NAME}")
+            .lore(List.of(
+                    "&6Sender: &e{SENDER}",
+                    "&6Size: &e{SIZE}",
+                    "&6Description: &e{DESCRIPTION}"
+                )
+            )
+            .type(Material.CHEST_MINECART);
+
+        @Comment({ "", "# The item displayed in the return GUI when there is nothing to return" })
+        public ConfigItem noReturnableParcelsItem = new ConfigItem()
+            .name("&4✘ &cNo returnable parcels")
+            .lore(List.of("&cYou don't have any parcels to return."))
+            .type(Material.STRUCTURE_VOID);
+
+        @Comment({ "", "# The item of the confirm return button" })
+        public ConfigItem confirmReturnItem = new ConfigItem()
+            .name("&2✔ &aConfirm return")
+            .lore(List.of("&2» &aDeposit the original items above, then click to return the parcel."))
+            .type(Material.GREEN_DYE);
+
+        @Comment({ "", "# The lore line showing how long the parcel can still be returned. Placeholder: {DURATION}" })
+        public String returnWindowRemainingLine = "&5Return window: &d{DURATION} left";
+
+        @Comment({ "", "# The lore line shown when the return window has expired." })
+        public String returnWindowExpiredLine = "&cReturn window expired";
+    }
+
+    public static class ReturnChecks extends OkaeriConfig {
+
+        @Comment("# Whether durability (damage) must match the original items.")
+        public boolean checkDurability = true;
+
+        @Comment("# Whether custom display names must match the original items.")
+        public boolean checkItemName = true;
+
+        @Comment("# Whether enchantments must match the original items.")
+        public boolean checkEnchantments = true;
+
+        @Comment("# Whether lore must match the original items.")
+        public boolean checkLore = true;
+
+        @Comment({"# Whether all remaining item data (NBT) must match the original items.", "# When false, only the attributes enabled above are compared."})
+        public boolean checkNbt = true;
     }
 
     public static class DiscordSettings extends OkaeriConfig {

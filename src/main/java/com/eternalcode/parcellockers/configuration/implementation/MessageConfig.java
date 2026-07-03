@@ -125,6 +125,26 @@ public class MessageConfig extends OkaeriConfig {
             .chat("&2✔ &a${AMOUNT} has been withdrawn from your account to cover the parcel sending fee.")
             .sound(SoundEventKeys.ENTITY_EXPERIENCE_ORB_PICKUP)
             .build();
+        public Notice returned = Notice.builder()
+            .chat("&2✔ &aParcel returned. It is on its way back to the sender.")
+            .sound(SoundEventKeys.ENTITY_PLAYER_LEVELUP)
+            .build();
+        public Notice cannotReturn = Notice.builder()
+            .chat("&4✘ &cThis parcel cannot be returned right now. Your items were given back.")
+            .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
+            .build();
+        public Notice returnItemsMismatch = Notice.builder()
+            .chat("&4✘ &cThe deposited items do not match the original parcel contents!")
+            .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
+            .build();
+        public Notice returnWindowExpired = Notice.builder()
+            .chat("&4✘ &cThe return window for this parcel has expired!")
+            .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
+            .build();
+        public Notice returnFeeWithdrawn = Notice.builder()
+            .chat("&2✔ &a${AMOUNT} has been withdrawn from your account to cover the parcel return fee.")
+            .sound(SoundEventKeys.ENTITY_EXPERIENCE_ORB_PICKUP)
+            .build();
 
         @Comment({"", "# The parcel info message." })
         public Notice parcelInfoMessages = Notice.builder()
