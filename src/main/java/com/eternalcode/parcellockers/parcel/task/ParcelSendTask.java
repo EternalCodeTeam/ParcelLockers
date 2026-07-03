@@ -35,7 +35,7 @@ public class ParcelSendTask extends BukkitRunnable {
 
     /** Pure decision: what to do given the latest parcel + delivery state at fire time. */
     public static Decision decide(Optional<Parcel> currentParcel, Optional<Delivery> currentDelivery, Instant now) {
-        if (currentParcel.isEmpty() || currentParcel.get().status() == ParcelStatus.DELIVERED) {
+        if (currentParcel.isEmpty() || currentParcel.get().status() != ParcelStatus.SENT) {
             return Decision.ABORT;
         }
         if (currentDelivery.isPresent() && currentDelivery.get().deliveryTimestamp().isAfter(now)) {
