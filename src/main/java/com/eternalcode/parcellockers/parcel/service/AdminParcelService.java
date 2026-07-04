@@ -62,7 +62,16 @@ public class AdminParcelService {
         return this.persist(withDescription(parcel, description));
     }
 
+    /**
+     * A COLLECTED parcel's content row is the collection snapshot, not a live shipment; flipping
+     * its status (e.g. back to SENT) would arm a delivery and hand the receiver the same items
+     * a second time. Refuse the change outright — a return is the only supported transition out
+     * of COLLECTED.
+     */
     public CompletableFuture<EditResult> changeStatus(Parcel parcel, ParcelStatus status) {
+        if (parcel.status() == ParcelStatus.COLLECTED) {
+            return CompletableFuture.completedFuture(EditResult.of(EditResult.Status.PARCEL_COLLECTED));
+        }
         Parcel updated = withStatus(parcel, status);
         return this.parcelService.update(updated).thenCompose(ignored -> {
             if (status == parcel.status()) {

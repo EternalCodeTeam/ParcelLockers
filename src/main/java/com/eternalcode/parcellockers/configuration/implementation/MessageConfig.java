@@ -209,6 +209,7 @@ public class MessageConfig extends OkaeriConfig {
         public Notice teleportWorldMissing = Notice.chat("&4✘ &cThat locker's world is not loaded.");
         public Notice sizeTooSmall = Notice.chat("&4✘ &cThe parcel's contents do not fit in that size.");
         public Notice destinationFull = Notice.chat("&4✘ &cThat destination locker is full.");
+        public Notice statusLocked = Notice.chat("&4✘ &cA collected parcel's status cannot be changed; it can only be returned.");
         public Notice contentsUpdated = Notice.chat("&2✔ &aParcel contents updated.");
         public Notice priorityUpdated = Notice.chat("&2✔ &aPriority updated and delivery time adjusted.");
         public Notice noPermission = Notice.chat("&4✘ &cYou do not have permission to do that.");
