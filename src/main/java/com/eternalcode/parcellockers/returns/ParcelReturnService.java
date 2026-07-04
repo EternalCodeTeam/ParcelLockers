@@ -139,29 +139,33 @@ public class ParcelReturnService {
     }
 
     private CompletableFuture<Void> execute(Player player, Parcel current, List<ItemStack> deposited) {
-        double chargedFee = 0;
-        if (!player.hasPermission(PARCEL_FEE_BYPASS_PERMISSION)) {
-            double fee = this.returnFeeFor(current.size());
-            if (fee > 0) {
-                boolean success = this.economy.withdrawPlayer(player, fee).transactionSuccess();
-                String formattedFee = String.format("%.2f", fee);
-                if (!success) {
+        double fee = player.hasPermission(PARCEL_FEE_BYPASS_PERMISSION) ? 0 : this.returnFeeFor(current.size());
+        if (fee <= 0) {
+            return this.proceedWithReturn(player, current, deposited, 0);
+        }
+
+        // Vault economy providers expect withdrawPlayer to run on the primary thread; by this
+        // point the call chain has already hopped onto a repository/DB executor thread, so the
+        // withdrawal must be scheduled back onto the main thread rather than called in place.
+        return this.scheduler.complete(() -> this.economy.withdrawPlayer(player, fee).transactionSuccess())
+            .thenCompose(success -> {
+                if (!Boolean.TRUE.equals(success)) {
                     this.noticeService.create()
                         .notice(messages -> messages.parcel.insufficientFunds)
                         .player(player.getUniqueId())
-                        .placeholder(PLACEHOLDER_AMOUNT, formattedFee)
+                        .placeholder(PLACEHOLDER_AMOUNT, String.format("%.2f", fee))
                         .send();
                     this.giveBack(player, deposited);
-                    return CompletableFuture.completedFuture(null);
+                    return CompletableFuture.<Void>completedFuture(null);
                 }
-                chargedFee = fee;
                 // The fee-withdrawn notice is sent only after the status flip commits (below): if
                 // markReturned loses the race and the fee is refunded, the player must not have
                 // already been told the fee was withdrawn.
-            }
-        }
-        double refundableFee = chargedFee;
+                return this.proceedWithReturn(player, current, deposited, fee);
+            });
+    }
 
+    private CompletableFuture<Void> proceedWithReturn(Player player, Parcel current, List<ItemStack> deposited, double refundableFee) {
         Parcel returned = new Parcel(current.uuid(), current.receiver(), current.name(),
             current.description(), current.priority(), current.sender(), current.size(),
             current.destinationLocker(), current.entryLocker(), ParcelStatus.SENT);
@@ -251,7 +255,9 @@ public class ParcelReturnService {
 
     private void refund(Player player, double fee) {
         if (fee > 0) {
-            this.economy.depositPlayer(player, fee);
+            // Same primary-thread requirement as the withdrawal in execute(): this runs from
+            // async continuations, so the deposit must be dispatched back onto the main thread.
+            this.scheduler.run(() -> this.economy.depositPlayer(player, fee));
         }
     }
 
