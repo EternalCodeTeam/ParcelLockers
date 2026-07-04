@@ -1,6 +1,7 @@
 package com.eternalcode.parcellockers.database;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.eternalcode.parcellockers.TestScheduler;
@@ -63,6 +64,21 @@ class ParcelRepositoryIntegrationTest extends IntegrationTestSpec {
         Optional<Parcel> parcel = this.await(parcelRepository.findById(uuid));
         assertTrue(parcel.isPresent());
         assertEquals(uuid, parcel.get().uuid());
+
+        // updateIfStatus refuses when the expected status no longer matches the row (e.g. a
+        // concurrent status change won the race) and leaves the row untouched.
+        Parcel staleEdit = new Parcel(uuid, sender, "renamed", "description", true, receiver,
+            ParcelSize.SMALL, entryLocker, destinationLocker, ParcelStatus.DELIVERED);
+        boolean staleApplied = this.await(parcelRepository.updateIfStatus(staleEdit, ParcelStatus.DELIVERED));
+        assertFalse(staleApplied);
+        assertEquals("name", this.await(parcelRepository.findById(uuid)).orElseThrow().name());
+
+        // updateIfStatus applies when the expected status still matches.
+        Parcel freshEdit = new Parcel(uuid, sender, "renamed", "description", true, receiver,
+            ParcelSize.SMALL, entryLocker, destinationLocker, ParcelStatus.SENT);
+        boolean freshApplied = this.await(parcelRepository.updateIfStatus(freshEdit, ParcelStatus.SENT));
+        assertTrue(freshApplied);
+        assertEquals("renamed", this.await(parcelRepository.findById(uuid)).orElseThrow().name());
 
         List<Parcel> byReceiver = this.await(parcelRepository.findByReceiver(receiver));
         assertEquals(1, byReceiver.size());

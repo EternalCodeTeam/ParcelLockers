@@ -39,22 +39,19 @@ public class ReturnGui implements GuiView {
     private final GuiManager guiManager;
     private final MiniMessage miniMessage;
     private final NoticeService noticeService;
-    private final Duration returnWindow;
 
     public ReturnGui(
         GuiSettings guiSettings,
         Scheduler scheduler,
         GuiManager guiManager,
         MiniMessage miniMessage,
-        NoticeService noticeService,
-        Duration returnWindow
+        NoticeService noticeService
     ) {
         this.guiSettings = guiSettings;
         this.scheduler = scheduler;
         this.guiManager = guiManager;
         this.miniMessage = miniMessage;
         this.noticeService = noticeService;
-        this.returnWindow = returnWindow;
     }
 
     @Override
@@ -76,7 +73,7 @@ public class ReturnGui implements GuiView {
         this.setupStaticItems(player, gui);
 
         this.guiManager.getReturnableParcels(player.getUniqueId(), page).thenAccept(result -> {
-            if (result == null || result.items().isEmpty()) {
+            if (result.items().isEmpty()) {
                 gui.setItem(22, this.guiSettings.noReturnableParcelsItem.toGuiItem());
                 this.scheduler.run(() -> gui.open(player));
                 return;
@@ -131,7 +128,7 @@ public class ReturnGui implements GuiView {
         CompletableFuture<String> windowLineFuture = this.guiManager.getCollectedInfo(parcel.uuid())
             .thenApply(optional -> optional
                 .map(collected -> {
-                    Duration remaining = Duration.between(Instant.now(), collected.collectedAt().plus(this.returnWindow));
+                    Duration remaining = Duration.between(Instant.now(), collected.collectedAt().plus(this.guiManager.returnWindow()));
                     return remaining.isNegative() || remaining.isZero()
                         ? this.guiSettings.returnWindowExpiredLine
                         : this.guiSettings.returnWindowRemainingLine.replace("{DURATION}", DurationUtil.format(remaining));

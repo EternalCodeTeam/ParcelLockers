@@ -18,6 +18,7 @@ import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.PageResult;
 import com.eternalcode.parcellockers.user.User;
 import com.eternalcode.parcellockers.user.UserManager;
+import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -38,6 +39,7 @@ public class GuiManager {
     private final DeliveryManager deliveryManager;
     private final boolean allowCollectingFromAnyLocker;
     private final ParcelReturnService parcelReturnService;
+    private final Duration returnWindow;
 
     public GuiManager(
         ParcelService parcelService,
@@ -48,7 +50,8 @@ public class GuiManager {
         ParcelContentManager parcelContentManager,
         DeliveryManager deliveryManager,
         boolean allowCollectingFromAnyLocker,
-        ParcelReturnService parcelReturnService
+        ParcelReturnService parcelReturnService,
+        Duration returnWindow
     ) {
         this.parcelService = parcelService;
         this.lockerManager = lockerManager;
@@ -59,6 +62,12 @@ public class GuiManager {
         this.deliveryManager = deliveryManager;
         this.allowCollectingFromAnyLocker = allowCollectingFromAnyLocker;
         this.parcelReturnService = parcelReturnService;
+        this.returnWindow = returnWindow;
+    }
+
+    /** The configured return window, exposed so GUIs don't each need their own copy threaded in. */
+    public Duration returnWindow() {
+        return this.returnWindow;
     }
 
     /**

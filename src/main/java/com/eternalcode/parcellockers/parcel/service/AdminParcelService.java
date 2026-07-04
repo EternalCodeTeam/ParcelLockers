@@ -73,7 +73,12 @@ public class AdminParcelService {
             return CompletableFuture.completedFuture(EditResult.of(EditResult.Status.PARCEL_COLLECTED));
         }
         Parcel updated = withStatus(parcel, status);
-        return this.parcelService.update(updated).thenCompose(ignored -> {
+        // Conditional on the snapshot's status: a concurrent collect between the GUI opening and
+        // this edit landing must not resurrect a COLLECTED parcel back to SENT/DELIVERED.
+        return this.parcelService.updateIfStatus(updated, parcel.status()).thenCompose(applied -> {
+            if (!Boolean.TRUE.equals(applied)) {
+                return CompletableFuture.completedFuture(EditResult.of(EditResult.Status.PARCEL_COLLECTED));
+            }
             if (status == parcel.status()) {
                 return CompletableFuture.completedFuture(EditResult.ok());
             }

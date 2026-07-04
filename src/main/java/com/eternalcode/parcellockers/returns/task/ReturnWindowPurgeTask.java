@@ -1,6 +1,7 @@
 package com.eternalcode.parcellockers.returns.task;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
+import com.eternalcode.parcellockers.delivery.DeliveryManager;
 import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import com.eternalcode.parcellockers.parcel.service.ParcelService;
 import com.eternalcode.parcellockers.returns.CollectedParcel;
@@ -8,6 +9,7 @@ import com.eternalcode.parcellockers.returns.repository.CollectedParcelRepositor
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -23,15 +25,18 @@ public class ReturnWindowPurgeTask implements Runnable {
 
     private final ParcelService parcelService;
     private final CollectedParcelRepository collectedParcelRepository;
+    private final DeliveryManager deliveryManager;
     private final PluginConfig config;
 
     public ReturnWindowPurgeTask(
         ParcelService parcelService,
         CollectedParcelRepository collectedParcelRepository,
+        DeliveryManager deliveryManager,
         PluginConfig config
     ) {
         this.parcelService = parcelService;
         this.collectedParcelRepository = collectedParcelRepository;
+        this.deliveryManager = deliveryManager;
         this.config = config;
     }
 
@@ -42,7 +47,7 @@ public class ReturnWindowPurgeTask implements Runnable {
         this.collectedParcelRepository.findExpired(cutoff)
             .thenAccept(expired -> expired.forEach(this::purge))
             .exceptionally(throwable -> {
-                LOGGER.severe("Failed to query expired collected parcels: " + throwable.getMessage());
+                LOGGER.log(Level.SEVERE, "Failed to query expired collected parcels", throwable);
                 return null;
             });
     }
@@ -56,14 +61,24 @@ public class ReturnWindowPurgeTask implements Runnable {
                     return this.parcelService.delete(collected.parcel())
                         .thenCompose(deleted -> Boolean.TRUE.equals(deleted)
                             ? this.collectedParcelRepository.delete(collected.parcel())
-                            : CompletableFuture.completedFuture(false));
+                            : CompletableFuture.completedFuture(false))
+                        .thenCompose(unused -> {
+                            // Best-effort: clears a stray delivery row left behind by a failed
+                            // delete at ParcelSendTask.deliver time; inert but leaks otherwise.
+                            return this.deliveryManager.delete(collected.parcel())
+                                .exceptionally(throwable -> {
+                                    LOGGER.log(Level.WARNING, "Failed to delete stray delivery for purged parcel "
+                                        + collected.parcel(), throwable);
+                                    return false;
+                                });
+                        });
                 }
                 // Stray row: the parcel is gone or is a live shipment again — drop only the row.
                 return this.collectedParcelRepository.delete(collected.parcel());
             })
             .exceptionally(throwable -> {
-                LOGGER.warning("Failed to purge expired collected parcel " + collected.parcel()
-                    + " (will retry next run): " + throwable.getMessage());
+                LOGGER.log(Level.WARNING, "Failed to purge expired collected parcel " + collected.parcel()
+                    + " (will retry next run)", throwable);
                 return false;
             });
     }

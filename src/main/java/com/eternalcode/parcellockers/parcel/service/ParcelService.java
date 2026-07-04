@@ -2,6 +2,7 @@ package com.eternalcode.parcellockers.parcel.service;
 
 import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.parcel.Parcel;
+import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.PageResult;
 import java.util.List;
@@ -23,6 +24,12 @@ public interface ParcelService {
     CompletableFuture<Void> rollbackSend(Player sender, Parcel parcel);
 
     CompletableFuture<Void> update(Parcel parcel);
+
+    /**
+     * Conditionally applies {@code updated}, refusing when the parcel's current status no
+     * longer matches {@code expectedStatus} (e.g. a concurrent collect raced an admin edit).
+     */
+    CompletableFuture<Boolean> updateIfStatus(Parcel updated, ParcelStatus expectedStatus);
 
     CompletableFuture<Void> collect(Player player, Parcel parcel);
 

@@ -7,7 +7,9 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
+import java.util.List;
 import java.util.Map;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
@@ -99,6 +101,42 @@ class ReturnItemEquivalenceTest {
     @SuppressWarnings({"unchecked", "rawtypes"})
     private static Map<Enchantment, Integer> enchantsOf(String key, int level) {
         return (Map) Map.of(key, level);
+    }
+
+    @Test
+    void nameMismatchFailsWhenChecked() {
+        ItemStack expected = item(Material.DIAMOND_SWORD);
+        ItemStack actual = item(Material.DIAMOND_SWORD);
+
+        ItemMeta expectedMeta = mock(ItemMeta.class);
+        ItemMeta actualMeta = mock(ItemMeta.class);
+        when(expectedMeta.displayName()).thenReturn(Component.text("Old Sword"));
+        when(actualMeta.displayName()).thenReturn(Component.text("New Sword"));
+        when(expectedMeta.getEnchants()).thenReturn(Map.of());
+        when(actualMeta.getEnchants()).thenReturn(Map.of());
+        when(expected.getItemMeta()).thenReturn(expectedMeta);
+        when(actual.getItemMeta()).thenReturn(actualMeta);
+
+        assertFalse(new ReturnItemEquivalence(checks(false, true, false, false, false)).test(expected, actual));
+        assertTrue(new ReturnItemEquivalence(checks(false, false, false, false, false)).test(expected, actual));
+    }
+
+    @Test
+    void loreMismatchFailsWhenChecked() {
+        ItemStack expected = item(Material.DIAMOND_SWORD);
+        ItemStack actual = item(Material.DIAMOND_SWORD);
+
+        ItemMeta expectedMeta = mock(ItemMeta.class);
+        ItemMeta actualMeta = mock(ItemMeta.class);
+        when(expectedMeta.lore()).thenReturn(List.of(Component.text("Enchanted")));
+        when(actualMeta.lore()).thenReturn(List.of());
+        when(expectedMeta.getEnchants()).thenReturn(Map.of());
+        when(actualMeta.getEnchants()).thenReturn(Map.of());
+        when(expected.getItemMeta()).thenReturn(expectedMeta);
+        when(actual.getItemMeta()).thenReturn(actualMeta);
+
+        assertFalse(new ReturnItemEquivalence(checks(false, false, false, true, false)).test(expected, actual));
+        assertTrue(new ReturnItemEquivalence(checks(false, false, false, false, false)).test(expected, actual));
     }
 
     @Test

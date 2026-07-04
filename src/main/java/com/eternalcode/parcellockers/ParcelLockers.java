@@ -175,7 +175,7 @@ public final class ParcelLockers extends JavaPlugin {
         );
 
         scheduler.timerAsync(
-            new ReturnWindowPurgeTask(parcelService, collectedParcelRepository, config),
+            new ReturnWindowPurgeTask(parcelService, collectedParcelRepository, deliveryManager, config),
             Duration.ofSeconds(30),
             Duration.ofMinutes(30)
         );
@@ -191,7 +191,8 @@ public final class ParcelLockers extends JavaPlugin {
             parcelContentManager,
             deliveryManager,
             config.settings.allowCollectingFromAnyLocker,
-            parcelReturnService
+            parcelReturnService,
+            config.settings.parcelReturnWindow
         );
 
         MainGui mainGUI = new MainGui(
@@ -206,8 +207,7 @@ public final class ParcelLockers extends JavaPlugin {
             scheduler,
             config.guiSettings,
             guiManager,
-            noticeService,
-            config.settings.parcelReturnWindow
+            noticeService
         );
 
         AdminParcelService adminParcelService = new AdminParcelService(

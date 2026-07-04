@@ -118,7 +118,7 @@ public class MessageConfig extends OkaeriConfig {
             .sound(SoundEventKeys.ENTITY_ITEM_BREAK)
             .build();
         public Notice insufficientFunds = Notice.builder()
-            .chat("&4✘ &cYou do not have enough funds to send this parcel! Required: &6${AMOUNT}&c.")
+            .chat("&4✘ &cYou do not have enough funds to cover this fee! Required: &6${AMOUNT}&c.")
             .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
             .build();
         public Notice feeWithdrawn = Notice.builder()

@@ -9,7 +9,6 @@ import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.notification.NoticeService;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
-import java.time.Duration;
 import java.util.UUID;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -22,19 +21,17 @@ public class LockerGui implements GuiView {
     private final GuiSettings guiSettings;
     private final GuiManager guiManager;
     private final NoticeService noticeService;
-    private final Duration returnWindow;
 
     public LockerGui(
         MiniMessage miniMessage, Scheduler scheduler,
         GuiSettings guiSettings, GuiManager guiManager,
-        NoticeService noticeService, Duration returnWindow
+        NoticeService noticeService
     ) {
         this.miniMessage = miniMessage;
         this.scheduler = scheduler;
         this.guiSettings = guiSettings;
         this.guiManager = guiManager;
         this.noticeService = noticeService;
-        this.returnWindow = returnWindow;
     }
 
     public void show(Player player, UUID entryLocker) {
@@ -61,8 +58,7 @@ public class LockerGui implements GuiView {
             this.scheduler,
             this.guiManager,
             this.miniMessage,
-            this.noticeService,
-            this.returnWindow
+            this.noticeService
         );
 
         gui.setItem(21, this.guiSettings.parcelLockerCollectItem.toGuiItem(event -> collectionGui.show(player)));
@@ -73,8 +69,7 @@ public class LockerGui implements GuiView {
             this.miniMessage,
             this.noticeService,
             this.guiManager,
-            new SendingGuiState().entryLocker(entryLocker),
-            this.returnWindow
+            new SendingGuiState().entryLocker(entryLocker)
         ).show(player, entryLocker)));
 
         gui.open(player);

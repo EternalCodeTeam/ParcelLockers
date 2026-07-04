@@ -11,7 +11,6 @@ import com.eternalcode.parcellockers.util.MaterialUtil;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.StorageGui;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -27,7 +26,6 @@ public class ItemStorageGui {
     private final GuiManager guiManager;
     private final NoticeService noticeService;
     private final SendingGuiState state;
-    private final Duration returnWindow;
 
     public ItemStorageGui(
         Scheduler scheduler,
@@ -35,8 +33,7 @@ public class ItemStorageGui {
         MiniMessage miniMessage,
         GuiManager guiManager,
         NoticeService noticeService,
-        SendingGuiState state,
-        Duration returnWindow
+        SendingGuiState state
     ) {
         this.scheduler = scheduler;
         this.guiSettings = guiSettings;
@@ -44,7 +41,6 @@ public class ItemStorageGui {
         this.guiManager = guiManager;
         this.noticeService = noticeService;
         this.state = state;
-        this.returnWindow = returnWindow;
     }
 
     void show(Player player, ParcelSize size) {
@@ -115,8 +111,7 @@ public class ItemStorageGui {
                     this.miniMessage,
                     this.noticeService,
                     this.guiManager,
-                    this.state,
-                    this.returnWindow
+                    this.state
                 ).show(player))
                 .exceptionally(throwable -> {
                     // Persisting the staged items failed; hand them back so they are not lost.

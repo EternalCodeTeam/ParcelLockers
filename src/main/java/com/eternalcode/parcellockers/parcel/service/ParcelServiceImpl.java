@@ -182,6 +182,20 @@ public class ParcelServiceImpl implements ParcelService {
     }
 
     @Override
+    public CompletableFuture<Boolean> updateIfStatus(Parcel updated, ParcelStatus expectedStatus) {
+        Objects.requireNonNull(updated, "Updated parcel cannot be null");
+        Objects.requireNonNull(expectedStatus, "Expected status cannot be null");
+        return this.parcelRepository.updateIfStatus(updated, expectedStatus).thenApply(applied -> {
+            if (applied) {
+                this.parcelsByUuid.put(updated.uuid(), updated);
+            } else {
+                this.parcelsByUuid.invalidate(updated.uuid());
+            }
+            return applied;
+        });
+    }
+
+    @Override
     public CompletableFuture<Void> delete(CommandSender sender, Parcel parcel) {
         Objects.requireNonNull(sender, "Sender cannot be null");
         Objects.requireNonNull(parcel, "Parcel cannot be null");

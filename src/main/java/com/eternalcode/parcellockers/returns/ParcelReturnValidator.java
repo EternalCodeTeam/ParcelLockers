@@ -9,6 +9,13 @@ import org.bukkit.inventory.ItemStack;
  * Validates that deposited items are, as a multiset, exactly the original parcel content:
  * every deposited stack must be equivalent to some original item, and the total amount per
  * equivalence group must match. Stack splitting or merging is irrelevant.
+ *
+ * <p>Grouping ({@link #indexOf}) assumes {@code equivalence} is a true equivalence relation
+ * (reflexive, symmetric, <b>transitive</b>): each expected item is bucketed under the first
+ * sample it matches, and later items are folded into that same bucket without being re-compared
+ * to each other. If the predicate is not transitive (e.g. a "close enough" relaxed-attribute
+ * check where A~B and B~C but not A~C), distinct original items can collapse into one bucket
+ * and the amount check may pass for a return that should not have matched.
  */
 public class ParcelReturnValidator {
 

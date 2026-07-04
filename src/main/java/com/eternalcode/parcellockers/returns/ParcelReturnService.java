@@ -23,6 +23,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Server;
@@ -130,7 +131,7 @@ public class ParcelReturnService {
                 });
             });
         }).exceptionally(throwable -> {
-            LOGGER.severe("Failed to return parcel " + parcel.uuid() + " for " + player.getName() + ": " + throwable.getMessage());
+            LOGGER.log(Level.SEVERE, "Failed to return parcel " + parcel.uuid() + " for " + player.getName(), throwable);
             this.giveBack(player, deposited);
             this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.cannotReturn);
             return null;
@@ -154,11 +155,9 @@ public class ParcelReturnService {
                     return CompletableFuture.completedFuture(null);
                 }
                 chargedFee = fee;
-                this.noticeService.create()
-                    .notice(messages -> messages.parcel.returnFeeWithdrawn)
-                    .player(player.getUniqueId())
-                    .placeholder(PLACEHOLDER_AMOUNT, formattedFee)
-                    .send();
+                // The fee-withdrawn notice is sent only after the status flip commits (below): if
+                // markReturned loses the race and the fee is refunded, the player must not have
+                // already been told the fee was withdrawn.
             }
         }
         double refundableFee = chargedFee;
@@ -186,11 +185,19 @@ public class ParcelReturnService {
                 // synchronous throw (e.g. the scheduler rejecting work during plugin disable) is only
                 // logged, never allowed to reach the outer exceptionally.
                 try {
+                    if (refundableFee > 0) {
+                        this.noticeService.create()
+                            .notice(messages -> messages.parcel.returnFeeWithdrawn)
+                            .player(player.getUniqueId())
+                            .placeholder(PLACEHOLDER_AMOUNT, String.format("%.2f", refundableFee))
+                            .send();
+                    }
+
                     // Best-effort cleanup: a leftover row is ignored by the purge task because the
                     // parcel is no longer COLLECTED.
                     this.collectedParcelRepository.delete(current.uuid()).exceptionally(throwable -> {
-                        LOGGER.warning("Failed to delete collected_parcels row for returned parcel "
-                            + current.uuid() + ": " + throwable.getMessage());
+                        LOGGER.log(Level.WARNING, "Failed to delete collected_parcels row for returned parcel "
+                            + current.uuid(), throwable);
                         return false;
                     });
 
@@ -211,17 +218,17 @@ public class ParcelReturnService {
                     // existing cache entry. Throwing here must not happen post-commit.
                     this.deliveryManager.update(returned.uuid(), Instant.now().plus(delay))
                         .exceptionally(throwable -> {
-                            LOGGER.severe("Failed to persist delivery for returned parcel " + returned.uuid()
-                                + " (send task scheduled in-memory; a restart before it fires may strand the parcel): "
-                                + throwable.getMessage());
+                            LOGGER.log(Level.SEVERE, "Failed to persist delivery for returned parcel " + returned.uuid()
+                                + " (send task scheduled in-memory; a restart before it fires may strand the parcel)",
+                                throwable);
                             return null;
                         });
 
                     this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.returned);
                 } catch (Exception exception) {
-                    LOGGER.severe("Post-commit step threw for returned parcel " + current.uuid()
+                    LOGGER.log(Level.SEVERE, "Post-commit step threw for returned parcel " + current.uuid()
                         + ": the return is already committed (parcel is SENT, content holds the deposited "
-                        + "items) so no refund/give-back recovery was attempted: " + exception.getMessage());
+                        + "items) so no refund/give-back recovery was attempted", exception);
                 }
                 return CompletableFuture.<Void>completedFuture(null);
             })
@@ -229,7 +236,7 @@ public class ParcelReturnService {
                 this.refund(player, refundableFee);
                 this.giveBack(player, deposited);
                 this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.cannotReturn);
-                LOGGER.severe("Failed to execute return of parcel " + current.uuid() + ": " + throwable.getMessage());
+                LOGGER.log(Level.SEVERE, "Failed to execute return of parcel " + current.uuid(), throwable);
                 return null;
             });
     }

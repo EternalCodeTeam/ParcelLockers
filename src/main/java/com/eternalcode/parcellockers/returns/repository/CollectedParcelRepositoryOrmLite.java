@@ -21,8 +21,11 @@ public class CollectedParcelRepositoryOrmLite extends AbstractRepositoryOrmLite 
     @Override
     public CompletableFuture<Void> save(CollectedParcel collectedParcel) {
         Objects.requireNonNull(collectedParcel, "CollectedParcel cannot be null");
-        return this.insertIfAbsent(CollectedParcelTable.class, CollectedParcelTable.from(collectedParcel))
-            .thenApply(dao -> null);
+        // Upsert, not insert-if-absent: a re-collect after a failed best-effort delete of the
+        // previous row must overwrite the stale collectedAt, not silently keep it (which would
+        // shorten the new return window by however long the parcel spent on its second trip).
+        return this.upsert(CollectedParcelTable.class, CollectedParcelTable.from(collectedParcel))
+            .thenApply(status -> null);
     }
 
     @Override
