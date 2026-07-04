@@ -182,40 +182,47 @@ public class ParcelReturnService {
 
                 // Past the commit point: the parcel is now a live SENT shipment and its content IS the
                 // deposited items. Nothing below may route to the refund/give-back recovery — undoing
-                // here would duplicate the items.
-
-                // Best-effort cleanup: a leftover row is ignored by the purge task because the
-                // parcel is no longer COLLECTED.
-                this.collectedParcelRepository.delete(current.uuid()).exceptionally(throwable -> {
-                    LOGGER.warning("Failed to delete collected_parcels row for returned parcel "
-                        + current.uuid() + ": " + throwable.getMessage());
-                    return false;
-                });
-
-                Duration delay = returned.priority()
-                    ? this.config.settings.priorityParcelSendDuration
-                    : this.config.settings.parcelSendDuration;
-
-                // Schedule the send task before persisting the delivery: ParcelSendTask.decide treats
-                // a missing delivery row as "deliver when due", so the task is safe even if the
-                // delivery upsert below fails.
-                this.scheduler.runLaterAsync(
-                    new ParcelSendTask(returned, this.parcelService, this.deliveryManager, this.scheduler),
-                    delay);
-
-                // Use update (upsert), not create: a stale delivery entry can still be cached for
-                // this UUID from the parcel's original trip (its cleanup delete is best-effort and
-                // re-cached on restart via cacheAll), and create() throws IllegalStateException on an
-                // existing cache entry. Throwing here must not happen post-commit.
-                this.deliveryManager.update(returned.uuid(), Instant.now().plus(delay))
-                    .exceptionally(throwable -> {
-                        LOGGER.severe("Failed to persist delivery for returned parcel " + returned.uuid()
-                            + " (send task scheduled in-memory; a restart before it fires may strand the parcel): "
-                            + throwable.getMessage());
-                        return null;
+                // here would duplicate the items. The try/catch below makes that structural: even a
+                // synchronous throw (e.g. the scheduler rejecting work during plugin disable) is only
+                // logged, never allowed to reach the outer exceptionally.
+                try {
+                    // Best-effort cleanup: a leftover row is ignored by the purge task because the
+                    // parcel is no longer COLLECTED.
+                    this.collectedParcelRepository.delete(current.uuid()).exceptionally(throwable -> {
+                        LOGGER.warning("Failed to delete collected_parcels row for returned parcel "
+                            + current.uuid() + ": " + throwable.getMessage());
+                        return false;
                     });
 
-                this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.returned);
+                    Duration delay = returned.priority()
+                        ? this.config.settings.priorityParcelSendDuration
+                        : this.config.settings.parcelSendDuration;
+
+                    // Schedule the send task before persisting the delivery: ParcelSendTask.decide treats
+                    // a missing delivery row as "deliver when due", so the task is safe even if the
+                    // delivery upsert below fails.
+                    this.scheduler.runLaterAsync(
+                        new ParcelSendTask(returned, this.parcelService, this.deliveryManager, this.scheduler),
+                        delay);
+
+                    // Use update (upsert), not create: a stale delivery entry can still be cached for
+                    // this UUID from the parcel's original trip (its cleanup delete is best-effort and
+                    // re-cached on restart via cacheAll), and create() throws IllegalStateException on an
+                    // existing cache entry. Throwing here must not happen post-commit.
+                    this.deliveryManager.update(returned.uuid(), Instant.now().plus(delay))
+                        .exceptionally(throwable -> {
+                            LOGGER.severe("Failed to persist delivery for returned parcel " + returned.uuid()
+                                + " (send task scheduled in-memory; a restart before it fires may strand the parcel): "
+                                + throwable.getMessage());
+                            return null;
+                        });
+
+                    this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.returned);
+                } catch (Exception exception) {
+                    LOGGER.severe("Post-commit step threw for returned parcel " + current.uuid()
+                        + ": the return is already committed (parcel is SENT, content holds the deposited "
+                        + "items) so no refund/give-back recovery was attempted: " + exception.getMessage());
+                }
                 return CompletableFuture.<Void>completedFuture(null);
             })
             .exceptionally(throwable -> {
