@@ -29,7 +29,7 @@ object Versions {
     const val DISCORD4J = "3.3.2"
     const val DISCORDSRV = "1.30.5"
 
-    const val JUNIT = "6.1.1"
+    const val JUNIT = "6.1.2"
     const val TESTCONTAINERS = "1.21.4"
     const val MYSQL_CONNECTOR = "8.0.33"
     const val MOCKITO = "5.23.0"
