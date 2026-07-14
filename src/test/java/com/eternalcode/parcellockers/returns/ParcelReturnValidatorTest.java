@@ -141,4 +141,71 @@ class ParcelReturnValidatorTest {
             ReturnItemMismatch.attribute(ReturnMismatchType.ITEM_NAME, expectedNamed, depositedChangedName)
         ), result.mismatches());
     }
+
+    @Test
+    void choosesThePairWithTheFewestDifferences() {
+        ItemStack expectedNamed = item(Material.DIAMOND_SWORD, 1);
+        ItemStack expectedEnchanted = item(Material.DIAMOND_SWORD, 1);
+        ItemStack depositedEnchanted = item(Material.DIAMOND_SWORD, 1);
+        ItemStack depositedNamed = item(Material.DIAMOND_SWORD, 1);
+
+        ReturnItemComparator variants = (expected, deposited) -> {
+            if (expected == expectedNamed && deposited == depositedNamed) {
+                return EnumSet.of(ReturnItemDifference.ITEM_NAME);
+            }
+            if (expected == expectedEnchanted && deposited == depositedEnchanted) {
+                return EnumSet.of(ReturnItemDifference.ENCHANTMENTS);
+            }
+            return EnumSet.of(ReturnItemDifference.ITEM_NAME, ReturnItemDifference.ENCHANTMENTS);
+        };
+
+        ParcelReturnValidationResult result = new ParcelReturnValidator(variants).validate(
+            List.of(depositedEnchanted, depositedNamed),
+            List.of(expectedNamed, expectedEnchanted)
+        );
+
+        assertEquals(List.of(
+            ReturnItemMismatch.attribute(ReturnMismatchType.ITEM_NAME, expectedNamed, depositedNamed),
+            ReturnItemMismatch.attribute(ReturnMismatchType.ENCHANTMENTS, expectedEnchanted, depositedEnchanted)
+        ), result.mismatches());
+    }
+
+    @Test
+    void aggregatesDuplicateAttributeReasons() {
+        ItemStack firstExpected = item(Material.DIAMOND_SWORD, 1);
+        ItemStack secondExpected = item(Material.DIAMOND_SWORD, 1);
+        ItemStack firstDeposited = item(Material.DIAMOND_SWORD, 1);
+        ItemStack secondDeposited = item(Material.DIAMOND_SWORD, 1);
+        ReturnItemComparator enchantments = (expected, deposited) ->
+            EnumSet.of(ReturnItemDifference.ENCHANTMENTS);
+
+        ParcelReturnValidationResult result = new ParcelReturnValidator(enchantments).validate(
+            List.of(firstDeposited, secondDeposited),
+            List.of(firstExpected, secondExpected)
+        );
+
+        assertEquals(List.of(
+            ReturnItemMismatch.attribute(ReturnMismatchType.ENCHANTMENTS, firstExpected, firstDeposited)
+        ), result.mismatches());
+    }
+
+    @Test
+    void resolvesEqualDifferenceCountsInInputOrder() {
+        ItemStack firstExpected = damagedItem(Material.DIAMOND_SWORD, 1, 1);
+        ItemStack secondExpected = damagedItem(Material.DIAMOND_SWORD, 1, 2);
+        ItemStack firstDeposited = damagedItem(Material.DIAMOND_SWORD, 1, 10);
+        ItemStack secondDeposited = damagedItem(Material.DIAMOND_SWORD, 1, 20);
+        ReturnItemComparator durability = (expected, deposited) ->
+            EnumSet.of(ReturnItemDifference.DURABILITY);
+
+        ParcelReturnValidationResult result = new ParcelReturnValidator(durability).validate(
+            List.of(firstDeposited, secondDeposited),
+            List.of(firstExpected, secondExpected)
+        );
+
+        assertEquals(List.of(
+            ReturnItemMismatch.attribute(ReturnMismatchType.DURABILITY, firstExpected, firstDeposited),
+            ReturnItemMismatch.attribute(ReturnMismatchType.DURABILITY, secondExpected, secondDeposited)
+        ), result.mismatches());
+    }
 }

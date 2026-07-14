@@ -29,10 +29,38 @@ import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 class ReturnGuiTest {
+
+    private Field serverField;
+    private Field triumphPluginField;
+    private Object previousServer;
+    private Object previousTriumphPlugin;
+
+    @BeforeEach
+    void installGuiEnvironment() throws ReflectiveOperationException {
+        Server server = mock(Server.class);
+        when(server.getPluginManager()).thenReturn(mock(PluginManager.class));
+        this.serverField = Bukkit.class.getDeclaredField("server");
+        this.serverField.setAccessible(true);
+        this.previousServer = this.serverField.get(null);
+        this.serverField.set(null, server);
+
+        this.triumphPluginField = TriumphGui.class.getDeclaredField("PLUGIN");
+        this.triumphPluginField.setAccessible(true);
+        this.previousTriumphPlugin = this.triumphPluginField.get(null);
+        TriumphGui.init(mock(Plugin.class));
+    }
+
+    @AfterEach
+    void restoreGuiEnvironment() throws ReflectiveOperationException {
+        this.serverField.set(null, this.previousServer);
+        this.triumphPluginField.set(null, this.previousTriumphPlugin);
+    }
 
     @Test
     void emptyResultMutatesGuiOnlyInsideScheduledMainThreadCallback() throws ReflectiveOperationException {
@@ -50,12 +78,6 @@ class ReturnGuiTest {
         GuiManager guiManager = mock(GuiManager.class);
         MiniMessage miniMessage = mock(MiniMessage.class);
         NoticeService noticeService = mock(NoticeService.class);
-        Server server = mock(Server.class);
-        when(server.getPluginManager()).thenReturn(mock(PluginManager.class));
-        Field serverField = Bukkit.class.getDeclaredField("server");
-        serverField.setAccessible(true);
-        serverField.set(null, server);
-        TriumphGui.init(mock(Plugin.class));
         PaginatedGui gui = mock(PaginatedGui.class);
         Player player = mock(Player.class);
         UUID playerId = UUID.randomUUID();

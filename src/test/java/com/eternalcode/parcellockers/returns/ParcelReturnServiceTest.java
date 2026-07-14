@@ -8,10 +8,12 @@ import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_SELF;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.eternalcode.commons.bukkit.ItemUtil;
 import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.multification.notice.Notice;
 import com.eternalcode.multification.notice.NoticeBroadcast;
@@ -42,6 +44,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginManager;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
 
 class ParcelReturnServiceTest {
 
@@ -153,7 +156,13 @@ class ParcelReturnServiceTest {
         verify(broadcast).notice(mismatchNotice);
         verify(broadcast).placeholder("{MISMATCHES}", "first<newline>second");
         verify(broadcast).send();
-        verify(fixture.scheduler).run(any(Runnable.class));
+        ArgumentCaptor<Runnable> giveBack = ArgumentCaptor.forClass(Runnable.class);
+        verify(fixture.scheduler).run(giveBack.capture());
+        try (MockedStatic<ItemUtil> itemUtil = mockStatic(ItemUtil.class)) {
+            giveBack.getValue().run();
+            itemUtil.verify(() -> ItemUtil.giveItem(fixture.player, fixture.item));
+        }
+
         verify(fixture.returnRepository, never()).commit(any(), any(), any());
         verify(fixture.economy, never()).withdrawPlayer(any(Player.class), anyDouble());
         verify(fixture.scheduler, never()).runLaterAsync(any(Runnable.class), any(Duration.class));

@@ -98,6 +98,7 @@ dependencies {
     testImplementation("mysql:mysql-connector-java:${Versions.MYSQL_CONNECTOR}")
     testImplementation("de.eldoria.jacksonbukkit:paper:${Versions.JACKSON_BUKKIT}")
     testImplementation("com.eternalcode:eternalcode-commons-adventure:${Versions.ETERNALCODE_COMMONS}")
+    testImplementation("com.eternalcode:eternalcode-commons-bukkit:${Versions.ETERNALCODE_COMMONS}")
     testImplementation("com.eternalcode:eternalcode-commons-shared:${Versions.ETERNALCODE_COMMONS}")
     testImplementation("com.eternalcode:multification-bukkit:${Versions.MULTIFICATION}")
     testImplementation("com.github.MilkBowl:VaultAPI:${Versions.VAULT_API}")
