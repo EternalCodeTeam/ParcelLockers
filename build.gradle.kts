@@ -153,7 +153,7 @@ modrinth {
     versionNumber.set(project.version.toString())
     versionType.set(getVersionType(project.version.toString()))
     uploadFile.set(tasks.shadowJar)
-    gameVersions.addAll("1.21.11")
+    gameVersions.addAll("1.21.11", "26.1", "26.1.1", "26.1.2", "26.2")
     loaders.addAll("paper", "purpur")
     syncBodyFrom = rootProject.file("README.md").readText()
 }
