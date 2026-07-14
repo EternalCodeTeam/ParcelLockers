@@ -12,7 +12,7 @@ object Versions {
     const val HIKARICP = "7.1.0"
     const val ORMLITE = "6.1"
     const val H2 = "2.4.240"
-    const val POSTGRESQL = "42.7.12"
+    const val POSTGRESQL = "42.7.13"
 
     const val LOMBOK = "1.18.46"
     const val JETBRAINS_ANNOTATIONS = "26.1.0"
