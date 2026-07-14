@@ -98,6 +98,13 @@ public class PluginConfig extends OkaeriConfig {
         @Comment({"", "# How long after collection a parcel can still be returned.", "# Expired collected parcels are purged periodically."})
         public Duration parcelReturnWindow = Duration.ofDays(7);
 
+        @Comment({
+            "",
+            "# The name format applied when a parcel is returned.",
+            "# Placeholder: {NAME} - the original parcel name."
+        })
+        public String parcelReturnNameFormat = "[Refund] {NAME}";
+
         @Comment({"", "# Small parcel return fee in in-game currency"})
         public double smallParcelReturnFee = 5.0;
 

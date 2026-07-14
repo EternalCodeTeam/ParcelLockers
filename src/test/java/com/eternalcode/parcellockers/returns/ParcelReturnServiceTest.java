@@ -1,5 +1,6 @@
 package com.eternalcode.parcellockers.returns;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -36,6 +37,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginManager;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class ParcelReturnServiceTest {
 
@@ -104,6 +106,29 @@ class ParcelReturnServiceTest {
         fixture.service.returnParcel(fixture.player, fixture.parcel, fixture.deposited);
 
         verify(fixture.player).hasPermission("parcellockers.fee.bypass");
+    }
+
+    @Test
+    void appliesDefaultPrefixToReturnedParcelName() {
+        Fixture fixture = new Fixture();
+
+        assertEquals("[Refund] parcel", fixture.returnedParcelName());
+    }
+
+    @Test
+    void appliesCustomReturnedParcelNameFormat() {
+        Fixture fixture = new Fixture();
+        fixture.config.settings.parcelReturnNameFormat = "Returned: {NAME} / {NAME}";
+
+        assertEquals("Returned: parcel / parcel", fixture.returnedParcelName());
+    }
+
+    @Test
+    void usesLiteralReturnedParcelNameWhenFormatHasNoPlaceholder() {
+        Fixture fixture = new Fixture();
+        fixture.config.settings.parcelReturnNameFormat = "Returned parcel";
+
+        assertEquals("Returned parcel", fixture.returnedParcelName());
     }
 
     private static final class Fixture {
@@ -176,6 +201,18 @@ class ParcelReturnServiceTest {
                     new Locker(this.parcel.entryLocker(), "Entry", null))));
             when(this.lockerManager.isLockerFull(this.parcel.entryLocker()))
                 .thenReturn(CompletableFuture.completedFuture(false));
+        }
+
+        private String returnedParcelName() {
+            this.validReturn();
+            when(this.returnRepository.commit(any(), any(), any()))
+                .thenReturn(CompletableFuture.completedFuture(true));
+
+            this.service.returnParcel(this.player, this.parcel, this.deposited).join();
+
+            ArgumentCaptor<Parcel> returnedParcel = ArgumentCaptor.forClass(Parcel.class);
+            verify(this.returnRepository).commit(returnedParcel.capture(), any(), any());
+            return returnedParcel.getValue().name();
         }
     }
 }

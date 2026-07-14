@@ -184,7 +184,8 @@ public class ParcelReturnService {
     }
 
     private CompletableFuture<Void> proceedWithReturn(Player player, Parcel current, List<ItemStack> deposited, double refundableFee) {
-        Parcel returned = new Parcel(current.uuid(), current.receiver(), current.name(),
+        String returnedName = this.config.settings.parcelReturnNameFormat.replace("{NAME}", current.name());
+        Parcel returned = new Parcel(current.uuid(), current.receiver(), returnedName,
             current.description(), current.priority(), current.sender(), current.size(),
             current.destinationLocker(), current.entryLocker(), ParcelStatus.SENT);
 
