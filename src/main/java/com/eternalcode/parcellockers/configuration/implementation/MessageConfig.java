@@ -134,7 +134,7 @@ public class MessageConfig extends OkaeriConfig {
             .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
             .build();
         public Notice returnItemsMismatch = Notice.builder()
-            .chat("&4✘ &cThe deposited items do not match the original parcel contents!", "{MISMATCHES}")
+            .chat("&4✘ &cThe deposited items do not match the original parcel contents!")
             .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
             .build();
         public String returnMismatchSeparator = "<newline>";

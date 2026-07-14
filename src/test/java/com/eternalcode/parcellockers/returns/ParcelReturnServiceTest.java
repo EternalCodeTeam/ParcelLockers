@@ -13,6 +13,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.eternalcode.commons.scheduler.Scheduler;
+import com.eternalcode.multification.notice.Notice;
 import com.eternalcode.multification.notice.NoticeBroadcast;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.content.ParcelContent;
@@ -142,11 +143,14 @@ class ParcelReturnServiceTest {
         ));
         when(fixture.validator.validate(fixture.deposited, fixture.deposited)).thenReturn(mismatch);
         when(fixture.mismatchFormatter.format(mismatch)).thenReturn("first<newline>second");
+        Notice mismatchNotice = mock(Notice.class);
+        when(fixture.mismatchFormatter.notice(mismatch)).thenReturn(mismatchNotice);
         NoticeBroadcast broadcast = mock(NoticeBroadcast.class, RETURNS_SELF);
         when(fixture.noticeService.create()).thenReturn(broadcast);
 
         fixture.service.returnParcel(fixture.player, fixture.parcel, fixture.deposited).join();
 
+        verify(broadcast).notice(mismatchNotice);
         verify(broadcast).placeholder("{MISMATCHES}", "first<newline>second");
         verify(broadcast).send();
         verify(fixture.scheduler).run(any(Runnable.class));

@@ -3,6 +3,8 @@ package com.eternalcode.parcellockers.returns;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.eternalcode.multification.notice.Notice;
+import com.eternalcode.multification.notice.resolver.chat.ChatContent;
 import com.eternalcode.parcellockers.configuration.implementation.MessageConfig;
 import java.util.List;
 import org.bukkit.Material;
@@ -41,6 +43,21 @@ class ReturnMismatchFormatterTest {
                 + " | lore:Paper | nbt:Shulker box",
             formatted
         );
+    }
+
+    @Test
+    void appendsMismatchPlaceholderToLegacyConfiguredNotice() {
+        MessageConfig.ParcelMessages messages = new MessageConfig.ParcelMessages();
+        messages.returnItemsMismatch = Notice.chat("legacy mismatch message");
+        ReturnMismatchFormatter formatter = new ReturnMismatchFormatter(messages);
+        ParcelReturnValidationResult mismatch = new ParcelReturnValidationResult(List.of(
+            ReturnItemMismatch.unexpected(Material.DIRT, 2)
+        ));
+
+        Notice notice = formatter.notice(mismatch);
+        ChatContent chat = (ChatContent) notice.parts().getFirst().content();
+
+        assertEquals(List.of("legacy mismatch message", "{MISMATCHES}"), chat.messages());
     }
 
     @Test

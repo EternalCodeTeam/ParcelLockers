@@ -276,7 +276,7 @@ public class ParcelReturnService {
     ) {
         this.giveBack(player, deposited);
         this.noticeService.create()
-            .notice(messages -> messages.parcel.returnItemsMismatch)
+            .notice(this.mismatchFormatter.notice(validation))
             .player(player.getUniqueId())
             .placeholder("{MISMATCHES}", this.mismatchFormatter.format(validation))
             .send();
