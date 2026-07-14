@@ -57,8 +57,7 @@ public class LockerGui implements GuiView {
             this.guiSettings,
             this.scheduler,
             this.guiManager,
-            this.miniMessage,
-            this.noticeService
+            this.miniMessage
         );
 
         gui.setItem(21, this.guiSettings.parcelLockerCollectItem.toGuiItem(event -> collectionGui.show(player)));

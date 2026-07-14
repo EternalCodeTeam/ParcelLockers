@@ -66,7 +66,7 @@ class ReturnGuiTest {
 
         Function<Component, PaginatedGui> guiFactory = ignored -> gui;
         ReturnGui returnGui = new ReturnGui(
-            settings, scheduler, guiManager, miniMessage, noticeService, guiFactory);
+            settings, scheduler, guiManager, miniMessage, guiFactory);
         returnGui.show(player);
         clearInvocations(gui, scheduler);
 

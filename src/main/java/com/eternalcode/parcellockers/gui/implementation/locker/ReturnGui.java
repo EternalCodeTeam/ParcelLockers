@@ -7,7 +7,6 @@ import com.eternalcode.parcellockers.configuration.serializable.ConfigItem;
 import com.eternalcode.parcellockers.gui.GuiManager;
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.gui.PaginatedGuiRefresher;
-import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.util.PlaceholderUtil;
 import com.eternalcode.parcellockers.shared.Page;
@@ -39,22 +38,19 @@ public class ReturnGui implements GuiView {
     private final Scheduler scheduler;
     private final GuiManager guiManager;
     private final MiniMessage miniMessage;
-    private final NoticeService noticeService;
     private final Function<Component, PaginatedGui> guiFactory;
 
     public ReturnGui(
         GuiSettings guiSettings,
         Scheduler scheduler,
         GuiManager guiManager,
-        MiniMessage miniMessage,
-        NoticeService noticeService
+        MiniMessage miniMessage
     ) {
         this(
             guiSettings,
             scheduler,
             guiManager,
             miniMessage,
-            noticeService,
             title -> Gui.paginated()
                 .rows(6)
                 .disableAllInteractions()
@@ -68,14 +64,12 @@ public class ReturnGui implements GuiView {
         Scheduler scheduler,
         GuiManager guiManager,
         MiniMessage miniMessage,
-        NoticeService noticeService,
         Function<Component, PaginatedGui> guiFactory
     ) {
         this.guiSettings = guiSettings;
         this.scheduler = scheduler;
         this.guiManager = guiManager;
         this.miniMessage = miniMessage;
-        this.noticeService = noticeService;
         this.guiFactory = guiFactory;
     }
 
@@ -181,7 +175,6 @@ public class ReturnGui implements GuiView {
                     this.guiSettings,
                     this.miniMessage,
                     this.guiManager,
-                    this.noticeService,
                     parcel
                 ).show(player));
             };

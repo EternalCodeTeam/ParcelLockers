@@ -50,6 +50,7 @@ public class ParcelReturnService {
     private final DeliveryManager deliveryManager;
     private final LockerManager lockerManager;
     private final ParcelReturnValidator validator;
+    private final ReturnMismatchFormatter mismatchFormatter;
     private final ParcelReturnRepository parcelReturnRepository;
     private final Scheduler scheduler;
     private final PluginConfig config;
@@ -64,6 +65,7 @@ public class ParcelReturnService {
         DeliveryManager deliveryManager,
         LockerManager lockerManager,
         ParcelReturnValidator validator,
+        ReturnMismatchFormatter mismatchFormatter,
         ParcelReturnRepository parcelReturnRepository,
         Scheduler scheduler,
         PluginConfig config,
@@ -77,6 +79,7 @@ public class ParcelReturnService {
         this.deliveryManager = deliveryManager;
         this.lockerManager = lockerManager;
         this.validator = validator;
+        this.mismatchFormatter = mismatchFormatter;
         this.parcelReturnRepository = parcelReturnRepository;
         this.scheduler = scheduler;
         this.config = config;
@@ -124,8 +127,9 @@ public class ParcelReturnService {
                     if (optionalContent.isEmpty()) {
                         return this.abort(player, deposited, messages -> messages.parcel.cannotReturn);
                     }
-                    if (!this.validator.matches(deposited, optionalContent.get().items())) {
-                        return this.abort(player, deposited, messages -> messages.parcel.returnItemsMismatch);
+                    ParcelReturnValidationResult validation = this.validator.validate(deposited, optionalContent.get().items());
+                    if (!validation.matches()) {
+                        return this.abortMismatch(player, deposited, validation);
                     }
 
                     // The return ships to the original entry locker. It may have been deleted
@@ -262,6 +266,20 @@ public class ParcelReturnService {
     private CompletableFuture<Void> abort(Player player, List<ItemStack> deposited, NoticeProvider<MessageConfig> notice) {
         this.giveBack(player, deposited);
         this.noticeService.player(player.getUniqueId(), notice);
+        return CompletableFuture.completedFuture(null);
+    }
+
+    private CompletableFuture<Void> abortMismatch(
+        Player player,
+        List<ItemStack> deposited,
+        ParcelReturnValidationResult validation
+    ) {
+        this.giveBack(player, deposited);
+        this.noticeService.create()
+            .notice(messages -> messages.parcel.returnItemsMismatch)
+            .player(player.getUniqueId())
+            .placeholder("{MISMATCHES}", this.mismatchFormatter.format(validation))
+            .send();
         return CompletableFuture.completedFuture(null);
     }
 

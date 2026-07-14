@@ -4,7 +4,6 @@ import com.eternalcode.commons.bukkit.ItemUtil;
 import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig.GuiSettings;
 import com.eternalcode.parcellockers.gui.GuiManager;
-import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
@@ -12,7 +11,9 @@ import dev.triumphteam.gui.guis.StorageGui;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiFunction;
 import java.util.stream.IntStream;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -28,23 +29,40 @@ public class ReturnDepositGui {
     private final GuiSettings guiSettings;
     private final MiniMessage miniMessage;
     private final GuiManager guiManager;
-    private final NoticeService noticeService;
     private final Parcel parcel;
+    private final BiFunction<Component, Integer, StorageGui> guiFactory;
 
     public ReturnDepositGui(
         Scheduler scheduler,
         GuiSettings guiSettings,
         MiniMessage miniMessage,
         GuiManager guiManager,
-        NoticeService noticeService,
         Parcel parcel
+    ) {
+        this(
+            scheduler,
+            guiSettings,
+            miniMessage,
+            guiManager,
+            parcel,
+            (title, rows) -> Gui.storage().title(title).rows(rows).create()
+        );
+    }
+
+    ReturnDepositGui(
+        Scheduler scheduler,
+        GuiSettings guiSettings,
+        MiniMessage miniMessage,
+        GuiManager guiManager,
+        Parcel parcel,
+        BiFunction<Component, Integer, StorageGui> guiFactory
     ) {
         this.scheduler = scheduler;
         this.guiSettings = guiSettings;
         this.miniMessage = miniMessage;
         this.guiManager = guiManager;
-        this.noticeService = noticeService;
         this.parcel = parcel;
+        this.guiFactory = guiFactory;
     }
 
     void show(Player player) {
@@ -54,10 +72,8 @@ public class ReturnDepositGui {
             case LARGE -> 4;
         };
 
-        StorageGui gui = Gui.storage()
-            .title(this.miniMessage.deserialize(this.guiSettings.parcelReturnDepositGuiTitle))
-            .rows(rows)
-            .create();
+        Component title = this.miniMessage.deserialize(this.guiSettings.parcelReturnDepositGuiTitle);
+        StorageGui gui = this.guiFactory.apply(title, rows);
 
         GuiItem backgroundItem = this.guiSettings.mainGuiBackgroundItem.toGuiItem(event -> event.setCancelled(true));
         IntStream.rangeClosed(1, 9).forEach(i -> gui.setItem(gui.getRows(), i, backgroundItem));
@@ -68,11 +84,6 @@ public class ReturnDepositGui {
             event.setCancelled(true);
 
             List<ItemStack> deposited = this.takeDepositedItems(gui);
-            if (deposited.isEmpty()) {
-                this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.returnItemsMismatch);
-                return;
-            }
-
             confirmed.set(true);
             gui.close(player);
             this.guiManager.returnParcel(player, this.parcel, deposited);
@@ -83,7 +94,6 @@ public class ReturnDepositGui {
             if (confirmed.get()) {
                 return;
             }
-            // Closed without confirming: give every deposited stack back.
             List<ItemStack> leftovers = this.takeDepositedItems(gui);
             this.scheduler.run(() -> leftovers.forEach(item -> ItemUtil.giveItem(player, item)));
         });
@@ -91,7 +101,6 @@ public class ReturnDepositGui {
         this.scheduler.run(() -> gui.open(player));
     }
 
-    /** Snapshots and clears the deposit slots (everything above the bottom control row). */
     private List<ItemStack> takeDepositedItems(StorageGui gui) {
         ItemStack[] contents = gui.getInventory().getContents();
         List<ItemStack> items = new ArrayList<>();

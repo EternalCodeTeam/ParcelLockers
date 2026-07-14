@@ -6,12 +6,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.RETURNS_SELF;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.eternalcode.commons.scheduler.Scheduler;
+import com.eternalcode.multification.notice.NoticeBroadcast;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.content.ParcelContent;
 import com.eternalcode.parcellockers.content.ParcelContentManager;
@@ -32,6 +34,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Material;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -111,7 +114,6 @@ class ParcelReturnServiceTest {
     @Test
     void appliesDefaultPrefixToReturnedParcelName() {
         Fixture fixture = new Fixture();
-
         assertEquals("[Refund] parcel", fixture.returnedParcelName());
     }
 
@@ -119,7 +121,6 @@ class ParcelReturnServiceTest {
     void appliesCustomReturnedParcelNameFormat() {
         Fixture fixture = new Fixture();
         fixture.config.settings.parcelReturnNameFormat = "Returned: {NAME} / {NAME}";
-
         assertEquals("Returned: parcel / parcel", fixture.returnedParcelName());
     }
 
@@ -127,8 +128,31 @@ class ParcelReturnServiceTest {
     void usesLiteralReturnedParcelNameWhenFormatHasNoPlaceholder() {
         Fixture fixture = new Fixture();
         fixture.config.settings.parcelReturnNameFormat = "Returned parcel";
-
         assertEquals("Returned parcel", fixture.returnedParcelName());
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    @Test
+    void reportsAllMismatchReasonsAndStopsReturnProcessing() {
+        Fixture fixture = new Fixture();
+        fixture.validReturn();
+        ParcelReturnValidationResult mismatch = new ParcelReturnValidationResult(List.of(
+            ReturnItemMismatch.insufficient(Material.DIAMOND, 5, 4),
+            ReturnItemMismatch.unexpected(Material.DIRT, 2)
+        ));
+        when(fixture.validator.validate(fixture.deposited, fixture.deposited)).thenReturn(mismatch);
+        when(fixture.mismatchFormatter.format(mismatch)).thenReturn("first<newline>second");
+        NoticeBroadcast broadcast = mock(NoticeBroadcast.class, RETURNS_SELF);
+        when(fixture.noticeService.create()).thenReturn(broadcast);
+
+        fixture.service.returnParcel(fixture.player, fixture.parcel, fixture.deposited).join();
+
+        verify(broadcast).placeholder("{MISMATCHES}", "first<newline>second");
+        verify(broadcast).send();
+        verify(fixture.scheduler).run(any(Runnable.class));
+        verify(fixture.returnRepository, never()).commit(any(), any(), any());
+        verify(fixture.economy, never()).withdrawPlayer(any(Player.class), anyDouble());
+        verify(fixture.scheduler, never()).runLaterAsync(any(Runnable.class), any(Duration.class));
     }
 
     private static final class Fixture {
@@ -141,6 +165,7 @@ class ParcelReturnServiceTest {
         private final DeliveryManager deliveryManager = mock(DeliveryManager.class);
         private final LockerManager lockerManager = mock(LockerManager.class);
         private final ParcelReturnValidator validator = mock(ParcelReturnValidator.class);
+        private final ReturnMismatchFormatter mismatchFormatter = mock(ReturnMismatchFormatter.class);
         private final ParcelReturnRepository returnRepository = mock(ParcelReturnRepository.class);
         private final Scheduler scheduler = mock(Scheduler.class);
         private final NoticeService noticeService = mock(NoticeService.class);
@@ -151,16 +176,8 @@ class ParcelReturnServiceTest {
         private final ItemStack item = mock(ItemStack.class);
         private final List<ItemStack> deposited = List.of(this.item);
         private final Parcel parcel = new Parcel(
-            UUID.randomUUID(),
-            UUID.randomUUID(),
-            "parcel",
-            "description",
-            false,
-            this.playerId,
-            ParcelSize.SMALL,
-            UUID.randomUUID(),
-            UUID.randomUUID(),
-            ParcelStatus.COLLECTED
+            UUID.randomUUID(), UUID.randomUUID(), "parcel", "description", false,
+            this.playerId, ParcelSize.SMALL, UUID.randomUUID(), UUID.randomUUID(), ParcelStatus.COLLECTED
         );
         private final ParcelReturnService service;
 
@@ -177,6 +194,7 @@ class ParcelReturnServiceTest {
                 this.deliveryManager,
                 this.lockerManager,
                 this.validator,
+                this.mismatchFormatter,
                 this.returnRepository,
                 this.scheduler,
                 this.config,
@@ -195,7 +213,8 @@ class ParcelReturnServiceTest {
                     new CollectedParcel(this.parcel.uuid(), Instant.now()))));
             when(this.contentManager.get(this.parcel.uuid()))
                 .thenReturn(CompletableFuture.completedFuture(Optional.of(content)));
-            when(this.validator.matches(this.deposited, this.deposited)).thenReturn(true);
+            when(this.validator.validate(this.deposited, this.deposited))
+                .thenReturn(new ParcelReturnValidationResult(List.of()));
             when(this.lockerManager.get(this.parcel.entryLocker()))
                 .thenReturn(CompletableFuture.completedFuture(Optional.of(
                     new Locker(this.parcel.entryLocker(), "Entry", null))));
