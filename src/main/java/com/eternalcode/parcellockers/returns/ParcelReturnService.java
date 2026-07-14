@@ -5,7 +5,9 @@ import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.multification.notice.provider.NoticeProvider;
 import com.eternalcode.parcellockers.configuration.implementation.MessageConfig;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
+import com.eternalcode.parcellockers.content.ParcelContent;
 import com.eternalcode.parcellockers.content.ParcelContentManager;
+import com.eternalcode.parcellockers.delivery.Delivery;
 import com.eternalcode.parcellockers.delivery.DeliveryManager;
 import com.eternalcode.parcellockers.locker.LockerManager;
 import com.eternalcode.parcellockers.notification.NoticeService;
@@ -16,6 +18,7 @@ import com.eternalcode.parcellockers.parcel.event.ParcelReturnEvent;
 import com.eternalcode.parcellockers.parcel.service.ParcelService;
 import com.eternalcode.parcellockers.parcel.task.ParcelSendTask;
 import com.eternalcode.parcellockers.returns.repository.CollectedParcelRepository;
+import com.eternalcode.parcellockers.returns.repository.ParcelReturnRepository;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -47,6 +50,7 @@ public class ParcelReturnService {
     private final DeliveryManager deliveryManager;
     private final LockerManager lockerManager;
     private final ParcelReturnValidator validator;
+    private final ParcelReturnRepository parcelReturnRepository;
     private final Scheduler scheduler;
     private final PluginConfig config;
     private final NoticeService noticeService;
@@ -60,6 +64,7 @@ public class ParcelReturnService {
         DeliveryManager deliveryManager,
         LockerManager lockerManager,
         ParcelReturnValidator validator,
+        ParcelReturnRepository parcelReturnRepository,
         Scheduler scheduler,
         PluginConfig config,
         NoticeService noticeService,
@@ -72,6 +77,7 @@ public class ParcelReturnService {
         this.deliveryManager = deliveryManager;
         this.lockerManager = lockerManager;
         this.validator = validator;
+        this.parcelReturnRepository = parcelReturnRepository;
         this.scheduler = scheduler;
         this.config = config;
         this.noticeService = noticeService;
@@ -98,6 +104,7 @@ public class ParcelReturnService {
         if (event.isCancelled()) {
             return this.abort(player, deposited, messages -> messages.parcel.cannotReturn);
         }
+        boolean feeBypassed = player.hasPermission(PARCEL_FEE_BYPASS_PERMISSION);
 
         return this.parcelService.get(parcel.uuid()).thenCompose(optionalParcel -> {
             if (optionalParcel.isEmpty()
@@ -121,12 +128,18 @@ public class ParcelReturnService {
                         return this.abort(player, deposited, messages -> messages.parcel.returnItemsMismatch);
                     }
 
-                    // The return ships to the original entry locker.
-                    return this.lockerManager.isLockerFull(current.entryLocker()).thenCompose(isFull -> {
-                        if (Boolean.TRUE.equals(isFull)) {
-                            return this.abort(player, deposited, messages -> messages.parcel.lockerFull);
+                    // The return ships to the original entry locker. It may have been deleted
+                    // while the parcel was in the receiver's return window.
+                    return this.lockerManager.get(current.entryLocker()).thenCompose(locker -> {
+                        if (locker.isEmpty()) {
+                            return this.abort(player, deposited, messages -> messages.parcel.cannotReturn);
                         }
-                        return this.execute(player, current, deposited);
+                        return this.lockerManager.isLockerFull(current.entryLocker()).thenCompose(isFull -> {
+                            if (Boolean.TRUE.equals(isFull)) {
+                                return this.abort(player, deposited, messages -> messages.parcel.lockerFull);
+                            }
+                            return this.execute(player, current, deposited, feeBypassed);
+                        });
                     });
                 });
             });
@@ -138,8 +151,13 @@ public class ParcelReturnService {
         });
     }
 
-    private CompletableFuture<Void> execute(Player player, Parcel current, List<ItemStack> deposited) {
-        double fee = player.hasPermission(PARCEL_FEE_BYPASS_PERMISSION) ? 0 : this.returnFeeFor(current.size());
+    private CompletableFuture<Void> execute(
+        Player player,
+        Parcel current,
+        List<ItemStack> deposited,
+        boolean feeBypassed
+    ) {
+        double fee = feeBypassed ? 0 : this.returnFeeFor(current.size());
         if (fee <= 0) {
             return this.proceedWithReturn(player, current, deposited, 0);
         }
@@ -156,11 +174,11 @@ public class ParcelReturnService {
                         .placeholder(PLACEHOLDER_AMOUNT, String.format("%.2f", fee))
                         .send();
                     this.giveBack(player, deposited);
-                    return CompletableFuture.<Void>completedFuture(null);
+                    return CompletableFuture.completedFuture(null);
                 }
-                // The fee-withdrawn notice is sent only after the status flip commits (below): if
-                // markReturned loses the race and the fee is refunded, the player must not have
-                // already been told the fee was withdrawn.
+                // The fee-withdrawn notice is sent only after the atomic return commit succeeds:
+                // if this attempt loses the race and the fee is refunded, the player must not
+                // already have been told the fee was withdrawn.
                 return this.proceedWithReturn(player, current, deposited, fee);
             });
     }
@@ -171,71 +189,50 @@ public class ParcelReturnService {
             current.destinationLocker(), current.entryLocker(), ParcelStatus.SENT);
 
         List<ItemStack> depositedCopy = deposited.stream().map(ItemStack::clone).toList();
+        Duration delay = returned.priority()
+            ? this.config.settings.priorityParcelSendDuration
+            : this.config.settings.parcelSendDuration;
+        Delivery delivery = new Delivery(returned.uuid(), Instant.now().plus(delay));
 
-        // Content is overwritten with the actually-deposited items first (they may legitimately
-        // differ from the snapshot when check flags are relaxed); only then the status flip makes
-        // the parcel a live shipment. markReturned failing means a concurrent return/purge won.
-        return this.parcelContentManager.update(current.uuid(), depositedCopy)
-            .thenCompose(updated -> this.parcelService.markReturned(returned))
-            .thenCompose(marked -> {
-                if (!Boolean.TRUE.equals(marked)) {
-                    this.refund(player, refundableFee);
-                    return this.abort(player, deposited, messages -> messages.parcel.cannotReturn);
+        // Claim, content replacement, delivery persistence and collected-row cleanup are one
+        // transaction. A losing concurrent attempt cannot overwrite the winner's content.
+        return this.parcelReturnRepository.commit(
+            returned,
+            new ParcelContent(returned.uuid(), depositedCopy),
+            delivery
+        ).thenCompose(committed -> {
+            if (!Boolean.TRUE.equals(committed)) {
+                this.refund(player, refundableFee);
+                return this.abort(player, deposited, messages -> messages.parcel.cannotReturn);
+            }
+
+            // Past the commit point the durable delivery row makes this shipment recoverable at
+            // startup. Nothing below may route to refund/give-back recovery.
+            try {
+                this.parcelService.invalidate(returned.uuid());
+                this.parcelContentManager.invalidate(returned.uuid());
+                this.deliveryManager.invalidate(returned.uuid());
+
+                if (refundableFee > 0) {
+                    this.noticeService.create()
+                        .notice(messages -> messages.parcel.returnFeeWithdrawn)
+                        .player(player.getUniqueId())
+                        .placeholder(PLACEHOLDER_AMOUNT, String.format("%.2f", refundableFee))
+                        .send();
                 }
 
-                // Past the commit point: the parcel is now a live SENT shipment and its content IS the
-                // deposited items. Nothing below may route to the refund/give-back recovery — undoing
-                // here would duplicate the items. The try/catch below makes that structural: even a
-                // synchronous throw (e.g. the scheduler rejecting work during plugin disable) is only
-                // logged, never allowed to reach the outer exceptionally.
-                try {
-                    if (refundableFee > 0) {
-                        this.noticeService.create()
-                            .notice(messages -> messages.parcel.returnFeeWithdrawn)
-                            .player(player.getUniqueId())
-                            .placeholder(PLACEHOLDER_AMOUNT, String.format("%.2f", refundableFee))
-                            .send();
-                    }
+                this.scheduler.runLaterAsync(
+                    new ParcelSendTask(returned, this.parcelService, this.deliveryManager, this.scheduler),
+                    delay);
 
-                    // Best-effort cleanup: a leftover row is ignored by the purge task because the
-                    // parcel is no longer COLLECTED.
-                    this.collectedParcelRepository.delete(current.uuid()).exceptionally(throwable -> {
-                        LOGGER.log(Level.WARNING, "Failed to delete collected_parcels row for returned parcel "
-                            + current.uuid(), throwable);
-                        return false;
-                    });
-
-                    Duration delay = returned.priority()
-                        ? this.config.settings.priorityParcelSendDuration
-                        : this.config.settings.parcelSendDuration;
-
-                    // Schedule the send task before persisting the delivery: ParcelSendTask.decide treats
-                    // a missing delivery row as "deliver when due", so the task is safe even if the
-                    // delivery upsert below fails.
-                    this.scheduler.runLaterAsync(
-                        new ParcelSendTask(returned, this.parcelService, this.deliveryManager, this.scheduler),
-                        delay);
-
-                    // Use update (upsert), not create: a stale delivery entry can still be cached for
-                    // this UUID from the parcel's original trip (its cleanup delete is best-effort and
-                    // re-cached on restart via cacheAll), and create() throws IllegalStateException on an
-                    // existing cache entry. Throwing here must not happen post-commit.
-                    this.deliveryManager.update(returned.uuid(), Instant.now().plus(delay))
-                        .exceptionally(throwable -> {
-                            LOGGER.log(Level.SEVERE, "Failed to persist delivery for returned parcel " + returned.uuid()
-                                + " (send task scheduled in-memory; a restart before it fires may strand the parcel)",
-                                throwable);
-                            return null;
-                        });
-
-                    this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.returned);
-                } catch (Exception exception) {
-                    LOGGER.log(Level.SEVERE, "Post-commit step threw for returned parcel " + current.uuid()
-                        + ": the return is already committed (parcel is SENT, content holds the deposited "
-                        + "items) so no refund/give-back recovery was attempted", exception);
-                }
-                return CompletableFuture.<Void>completedFuture(null);
-            })
+                this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.returned);
+            } catch (Exception exception) {
+                LOGGER.log(Level.SEVERE, "Post-commit step threw for returned parcel " + current.uuid()
+                    + ": the return is already committed (parcel is SENT, content holds the deposited "
+                    + "items) so no refund/give-back recovery was attempted", exception);
+            }
+            return CompletableFuture.completedFuture(null);
+        })
             .exceptionally(throwable -> {
                 this.refund(player, refundableFee);
                 this.giveBack(player, deposited);

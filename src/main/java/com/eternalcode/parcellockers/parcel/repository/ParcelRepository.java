@@ -58,13 +58,6 @@ public interface ParcelRepository {
      */
     CompletableFuture<Boolean> markCollected(UUID uuid);
 
-    /**
-     * Atomically turns a COLLECTED parcel into its reverse SENT shipment (parties and lockers
-     * swapped as prepared by the caller). Returns false when the parcel is missing or not
-     * COLLECTED — the caller must treat that as "already returned or purged".
-     */
-    CompletableFuture<Boolean> markReturned(Parcel returned);
-
     /** Returns the COLLECTED parcels of the given receiver (candidates for a return). */
     CompletableFuture<PageResult<Parcel>> findReturnable(UUID receiver, Page page);
 

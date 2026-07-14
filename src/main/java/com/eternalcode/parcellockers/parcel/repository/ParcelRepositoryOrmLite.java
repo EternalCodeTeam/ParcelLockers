@@ -141,24 +141,6 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     }
 
     @Override
-    public CompletableFuture<Boolean> markReturned(Parcel returned) {
-        Objects.requireNonNull(returned, "Returned parcel cannot be null");
-        return this.action(ParcelTable.class, dao -> {
-            UpdateBuilder<ParcelTable, Object> builder = dao.updateBuilder();
-            builder.updateColumnValue(SENDER_COLUMN, returned.sender());
-            builder.updateColumnValue(RECEIVER_COLUMN, returned.receiver());
-            builder.updateColumnValue(ENTRY_LOCKER_COLUMN, returned.entryLocker());
-            builder.updateColumnValue(DESTINATION_LOCKER_COLUMN, returned.destinationLocker());
-            builder.updateColumnValue(STATUS_COLUMN, ParcelStatus.SENT);
-            builder.where()
-                .eq(UUID_COLUMN, returned.uuid())
-                .and()
-                .eq(STATUS_COLUMN, ParcelStatus.COLLECTED);
-            return builder.update() > 0;
-        });
-    }
-
-    @Override
     public CompletableFuture<PageResult<Parcel>> findReturnable(UUID receiver, Page page) {
         Objects.requireNonNull(receiver, "Receiver UUID cannot be null");
         Objects.requireNonNull(page, "Page cannot be null");

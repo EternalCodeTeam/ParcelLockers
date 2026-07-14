@@ -9,7 +9,7 @@ import java.util.UUID;
 import org.bukkit.inventory.ItemStack;
 
 @DatabaseTable(tableName = "parcel_content")
-class ParcelContentTable {
+public class ParcelContentTable {
 
     @DatabaseField(id = true)
     private UUID uniqueId;
@@ -25,7 +25,7 @@ class ParcelContentTable {
         this.content = content;
     }
 
-    static ParcelContentTable from(ParcelContent parcelContent) {
+    public static ParcelContentTable from(ParcelContent parcelContent) {
         return new ParcelContentTable(parcelContent.uniqueId(), parcelContent.items());
     }
 

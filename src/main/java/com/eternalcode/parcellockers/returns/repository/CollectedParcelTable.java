@@ -8,7 +8,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @DatabaseTable(tableName = "collected_parcels")
-class CollectedParcelTable {
+public class CollectedParcelTable {
 
     static final String COLLECTED_AT_COLUMN = "collected_at";
 

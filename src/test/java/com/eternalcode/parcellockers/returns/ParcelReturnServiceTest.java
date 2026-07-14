@@ -2,10 +2,39 @@ package com.eternalcode.parcellockers.returns;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import com.eternalcode.commons.scheduler.Scheduler;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
+import com.eternalcode.parcellockers.content.ParcelContent;
+import com.eternalcode.parcellockers.content.ParcelContentManager;
+import com.eternalcode.parcellockers.delivery.DeliveryManager;
+import com.eternalcode.parcellockers.locker.Locker;
+import com.eternalcode.parcellockers.locker.LockerManager;
+import com.eternalcode.parcellockers.notification.NoticeService;
+import com.eternalcode.parcellockers.parcel.Parcel;
+import com.eternalcode.parcellockers.parcel.ParcelSize;
+import com.eternalcode.parcellockers.parcel.ParcelStatus;
+import com.eternalcode.parcellockers.parcel.service.ParcelService;
+import com.eternalcode.parcellockers.returns.repository.CollectedParcelRepository;
+import com.eternalcode.parcellockers.returns.repository.ParcelReturnRepository;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Server;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.PluginManager;
 import org.junit.jupiter.api.Test;
 
 class ParcelReturnServiceTest {
@@ -29,5 +58,124 @@ class ParcelReturnServiceTest {
     void exactExpiryInstantIsOutsideWindow() {
         CollectedParcel collected = new CollectedParcel(UUID.randomUUID(), NOW.minus(WINDOW));
         assertFalse(ParcelReturnService.isWithinReturnWindow(collected, WINDOW, NOW));
+    }
+
+    @Test
+    void waitsForDurableCommitBeforeSchedulingOrReportingSuccess() {
+        Fixture fixture = new Fixture();
+        fixture.validReturn();
+        CompletableFuture<Boolean> commit = new CompletableFuture<>();
+        when(fixture.returnRepository.commit(any(), any(), any())).thenReturn(commit);
+
+        CompletableFuture<Void> result = fixture.service.returnParcel(
+            fixture.player, fixture.parcel, fixture.deposited);
+
+        assertFalse(result.isDone());
+        verify(fixture.scheduler, never()).runLaterAsync(any(Runnable.class), any(Duration.class));
+        verify(fixture.noticeService, never()).player(eq(fixture.playerId), any());
+
+        commit.complete(true);
+        result.join();
+
+        verify(fixture.scheduler).runLaterAsync(any(Runnable.class), any(Duration.class));
+        verify(fixture.noticeService).player(eq(fixture.playerId), any());
+    }
+
+    @Test
+    void rejectsReturnWhenOriginalEntryLockerNoLongerExists() {
+        Fixture fixture = new Fixture();
+        fixture.validReturn();
+        when(fixture.lockerManager.get(fixture.parcel.entryLocker()))
+            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+
+        fixture.service.returnParcel(fixture.player, fixture.parcel, fixture.deposited).join();
+
+        verify(fixture.lockerManager, never()).isLockerFull(any());
+        verify(fixture.returnRepository, never()).commit(any(), any(), any());
+        verify(fixture.economy, never()).withdrawPlayer(any(Player.class), anyDouble());
+    }
+
+    @Test
+    void capturesFeeBypassPermissionBeforeRepositoryContinuation() {
+        Fixture fixture = new Fixture();
+        CompletableFuture<Optional<Parcel>> pendingParcel = new CompletableFuture<>();
+        when(fixture.parcelService.get(fixture.parcel.uuid())).thenReturn(pendingParcel);
+
+        fixture.service.returnParcel(fixture.player, fixture.parcel, fixture.deposited);
+
+        verify(fixture.player).hasPermission("parcellockers.fee.bypass");
+    }
+
+    private static final class Fixture {
+
+        private final UUID playerId = UUID.randomUUID();
+        private final Player player = mock(Player.class);
+        private final ParcelService parcelService = mock(ParcelService.class);
+        private final ParcelContentManager contentManager = mock(ParcelContentManager.class);
+        private final CollectedParcelRepository collectedRepository = mock(CollectedParcelRepository.class);
+        private final DeliveryManager deliveryManager = mock(DeliveryManager.class);
+        private final LockerManager lockerManager = mock(LockerManager.class);
+        private final ParcelReturnValidator validator = mock(ParcelReturnValidator.class);
+        private final ParcelReturnRepository returnRepository = mock(ParcelReturnRepository.class);
+        private final Scheduler scheduler = mock(Scheduler.class);
+        private final NoticeService noticeService = mock(NoticeService.class);
+        private final Economy economy = mock(Economy.class);
+        private final Server server = mock(Server.class);
+        private final PluginManager pluginManager = mock(PluginManager.class);
+        private final PluginConfig config = new PluginConfig();
+        private final ItemStack item = mock(ItemStack.class);
+        private final List<ItemStack> deposited = List.of(this.item);
+        private final Parcel parcel = new Parcel(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            "parcel",
+            "description",
+            false,
+            this.playerId,
+            ParcelSize.SMALL,
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            ParcelStatus.COLLECTED
+        );
+        private final ParcelReturnService service;
+
+        private Fixture() {
+            this.config.settings.smallParcelReturnFee = 0;
+            when(this.player.getUniqueId()).thenReturn(this.playerId);
+            when(this.player.getName()).thenReturn("Player");
+            when(this.item.clone()).thenReturn(this.item);
+            when(this.server.getPluginManager()).thenReturn(this.pluginManager);
+            this.service = new ParcelReturnService(
+                this.parcelService,
+                this.contentManager,
+                this.collectedRepository,
+                this.deliveryManager,
+                this.lockerManager,
+                this.validator,
+                this.returnRepository,
+                this.scheduler,
+                this.config,
+                this.noticeService,
+                this.economy,
+                this.server
+            );
+        }
+
+        private void validReturn() {
+            ParcelContent content = new ParcelContent(this.parcel.uuid(), this.deposited);
+            when(this.parcelService.get(this.parcel.uuid()))
+                .thenReturn(CompletableFuture.completedFuture(Optional.of(this.parcel)));
+            when(this.collectedRepository.find(this.parcel.uuid()))
+                .thenReturn(CompletableFuture.completedFuture(Optional.of(
+                    new CollectedParcel(this.parcel.uuid(), Instant.now()))));
+            when(this.contentManager.get(this.parcel.uuid()))
+                .thenReturn(CompletableFuture.completedFuture(Optional.of(content)));
+            when(this.validator.matches(this.deposited, this.deposited)).thenReturn(true);
+            when(this.lockerManager.get(this.parcel.entryLocker()))
+                .thenReturn(CompletableFuture.completedFuture(Optional.of(
+                    new Locker(this.parcel.entryLocker(), "Entry", null))));
+            when(this.lockerManager.isLockerFull(this.parcel.entryLocker()))
+                .thenReturn(CompletableFuture.completedFuture(false));
+        }
     }
 }

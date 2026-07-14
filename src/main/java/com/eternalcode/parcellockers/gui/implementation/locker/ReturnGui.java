@@ -22,6 +22,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -39,6 +40,7 @@ public class ReturnGui implements GuiView {
     private final GuiManager guiManager;
     private final MiniMessage miniMessage;
     private final NoticeService noticeService;
+    private final Function<Component, PaginatedGui> guiFactory;
 
     public ReturnGui(
         GuiSettings guiSettings,
@@ -47,11 +49,34 @@ public class ReturnGui implements GuiView {
         MiniMessage miniMessage,
         NoticeService noticeService
     ) {
+        this(
+            guiSettings,
+            scheduler,
+            guiManager,
+            miniMessage,
+            noticeService,
+            title -> Gui.paginated()
+                .rows(6)
+                .disableAllInteractions()
+                .title(title)
+                .create()
+        );
+    }
+
+    ReturnGui(
+        GuiSettings guiSettings,
+        Scheduler scheduler,
+        GuiManager guiManager,
+        MiniMessage miniMessage,
+        NoticeService noticeService,
+        Function<Component, PaginatedGui> guiFactory
+    ) {
         this.guiSettings = guiSettings;
         this.scheduler = scheduler;
         this.guiManager = guiManager;
         this.miniMessage = miniMessage;
         this.noticeService = noticeService;
+        this.guiFactory = guiFactory;
     }
 
     @Override
@@ -64,39 +89,35 @@ public class ReturnGui implements GuiView {
         Component guiTitle = this.miniMessage.deserialize(this.guiSettings.parcelReturnGuiTitle);
         ConfigItem rowItem = this.guiSettings.parcelReturnRowItem;
 
-        PaginatedGui gui = Gui.paginated()
-            .rows(6)
-            .disableAllInteractions()
-            .title(guiTitle)
-            .create();
+        PaginatedGui gui = this.guiFactory.apply(guiTitle);
 
         this.setupStaticItems(player, gui);
 
         this.guiManager.getReturnableParcels(player.getUniqueId(), page).thenAccept(result -> {
             if (result.items().isEmpty()) {
-                gui.setItem(22, this.guiSettings.noReturnableParcelsItem.toGuiItem());
-                this.scheduler.run(() -> gui.open(player));
+                this.scheduler.run(() -> {
+                    gui.setItem(22, this.guiSettings.noReturnableParcelsItem.toGuiItem());
+                    gui.open(player);
+                });
                 return;
             }
-
-            PaginatedGuiRefresher refresher = new PaginatedGuiRefresher(gui);
-
-            this.setupNavigation(gui, page, result, player, this.guiSettings);
 
             result.items().stream()
                 .map(parcel -> this.createParcelItemAsync(parcel, rowItem, player))
                 .collect(CompletableFutures.joinList())
-                .thenAccept(suppliers -> {
+                .thenAccept(suppliers -> this.scheduler.run(() -> {
                     if (suppliers.isEmpty()) {
                         gui.setItem(22, this.guiSettings.noReturnableParcelsItem.toGuiItem());
-                        this.scheduler.run(() -> gui.open(player));
+                        gui.open(player);
                         return;
                     }
-                    for (Supplier<GuiItem> supplier : suppliers) {
-                        refresher.addItem(supplier);
-                    }
-                    this.scheduler.run(() -> gui.open(player));
-                }).exceptionally(FutureHandler::handleException);
+
+                    this.setupNavigation(gui, page, result, player, this.guiSettings);
+                    PaginatedGuiRefresher refresher = new PaginatedGuiRefresher(gui);
+                    suppliers.forEach(refresher::addItem);
+                    gui.open(player);
+                }))
+                .exceptionally(FutureHandler::handleException);
         }).exceptionally(FutureHandler::handleException);
     }
 

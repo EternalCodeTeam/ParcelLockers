@@ -75,29 +75,6 @@ class ParcelReturnRepositoryIntegrationTest extends IntegrationTestSpec {
     }
 
     @Test
-    void markReturnedSwapsPartiesAndLockersOnlyWhenCollected() throws SQLException {
-        ParcelRepository repository = this.repository();
-        Parcel collected = parcel(UUID.randomUUID(), UUID.randomUUID(), ParcelStatus.COLLECTED);
-        this.await(repository.save(collected));
-
-        Parcel returned = new Parcel(collected.uuid(), collected.receiver(), collected.name(),
-            collected.description(), collected.priority(), collected.sender(), collected.size(),
-            collected.destinationLocker(), collected.entryLocker(), ParcelStatus.SENT);
-
-        assertTrue(this.await(repository.markReturned(returned)));
-
-        Parcel stored = this.await(repository.findById(collected.uuid())).orElseThrow();
-        assertEquals(collected.receiver(), stored.sender());
-        assertEquals(collected.sender(), stored.receiver());
-        assertEquals(collected.destinationLocker(), stored.entryLocker());
-        assertEquals(collected.entryLocker(), stored.destinationLocker());
-        assertEquals(ParcelStatus.SENT, stored.status());
-
-        // A second return of the same parcel must fail (status is no longer COLLECTED).
-        assertFalse(this.await(repository.markReturned(returned)));
-    }
-
-    @Test
     void findReturnableReturnsOnlyCollectedParcelsOfReceiver() throws SQLException {
         ParcelRepository repository = this.repository();
         UUID receiver = UUID.randomUUID();

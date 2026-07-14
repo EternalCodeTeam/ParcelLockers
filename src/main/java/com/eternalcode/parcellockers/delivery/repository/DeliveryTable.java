@@ -8,7 +8,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @DatabaseTable(tableName = "deliveries")
-class DeliveryTable {
+public class DeliveryTable {
 
     @DatabaseField(id = true)
     private UUID parcel;

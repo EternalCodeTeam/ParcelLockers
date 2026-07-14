@@ -8,7 +8,7 @@ import com.j256.ormlite.table.DatabaseTable;
 import java.util.UUID;
 
 @DatabaseTable(tableName = "parcels")
-class ParcelTable {
+public class ParcelTable {
 
     @DatabaseField(columnName = "uuid", id = true)
     private UUID uuid;

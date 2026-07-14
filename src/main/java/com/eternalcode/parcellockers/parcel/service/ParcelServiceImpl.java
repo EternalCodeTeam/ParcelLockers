@@ -302,6 +302,12 @@ public class ParcelServiceImpl implements ParcelService {
     }
 
     @Override
+    public void invalidate(UUID uuid) {
+        Objects.requireNonNull(uuid, "UUID cannot be null");
+        this.parcelsByUuid.invalidate(uuid);
+    }
+
+    @Override
     public CompletableFuture<PageResult<Parcel>> getBySender(UUID sender, Page page) {
         Objects.requireNonNull(sender, "Sender UUID cannot be null");
         Objects.requireNonNull(page, "Page cannot be null");
@@ -347,18 +353,6 @@ public class ParcelServiceImpl implements ParcelService {
                 result.items().forEach(parcel -> this.parcelsByUuid.put(parcel.uuid(), parcel));
                 return result;
             });
-    }
-
-    @Override
-    public CompletableFuture<Boolean> markReturned(Parcel returned) {
-        Objects.requireNonNull(returned, "Returned parcel cannot be null");
-
-        return this.parcelRepository.markReturned(returned).thenApply(updated -> {
-            if (updated) {
-                this.parcelsByUuid.put(returned.uuid(), returned);
-            }
-            return updated;
-        });
     }
 
     @Override
