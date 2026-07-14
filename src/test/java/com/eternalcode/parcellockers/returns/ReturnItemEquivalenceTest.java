@@ -1,5 +1,6 @@
 package com.eternalcode.parcellockers.returns;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -7,6 +8,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import net.kyori.adventure.text.Component;
@@ -43,16 +45,55 @@ class ReturnItemEquivalenceTest {
     }
 
     @Test
-    void fullyStrictChecksDelegateToIsSimilar() {
+    void reportsEveryEnabledExplicitDifferenceWithoutDuplicatingNbt() {
         ItemStack expected = item(Material.DIAMOND_SWORD);
         ItemStack actual = item(Material.DIAMOND_SWORD);
-        when(expected.isSimilar(actual)).thenReturn(true);
+        ItemMeta expectedMeta = damagedMeta(4);
+        ItemMeta actualMeta = damagedMeta(27);
+        when(expectedMeta.getEnchants()).thenReturn(enchantsOf("sharpness", 3));
+        when(actualMeta.getEnchants()).thenReturn(Map.of());
+        when(expected.getItemMeta()).thenReturn(expectedMeta);
+        when(actual.getItemMeta()).thenReturn(actualMeta);
+
+        ItemStack normalizedExpected = normalizedClone(expected);
+        ItemStack normalizedActual = normalizedClone(actual);
+        when(normalizedExpected.isSimilar(normalizedActual)).thenReturn(true);
 
         ReturnItemEquivalence equivalence = new ReturnItemEquivalence(checks(true, true, true, true, true));
-        assertTrue(equivalence.test(expected, actual));
 
-        when(expected.isSimilar(actual)).thenReturn(false);
+        assertEquals(
+            EnumSet.of(ReturnItemDifference.DURABILITY, ReturnItemDifference.ENCHANTMENTS),
+            equivalence.differences(expected, actual)
+        );
         assertFalse(equivalence.test(expected, actual));
+    }
+
+    @Test
+    void reportsResidualNbtOnlyWhenEnabled() {
+        ItemStack expected = item(Material.DIAMOND_SWORD);
+        ItemStack actual = item(Material.DIAMOND_SWORD);
+        ItemMeta expectedMeta = damagedMeta(0);
+        ItemMeta actualMeta = damagedMeta(0);
+        when(expected.getItemMeta()).thenReturn(expectedMeta);
+        when(actual.getItemMeta()).thenReturn(actualMeta);
+
+        ItemStack normalizedExpected = normalizedClone(expected);
+        ItemStack normalizedActual = normalizedClone(actual);
+        when(normalizedExpected.isSimilar(normalizedActual)).thenReturn(false);
+
+        assertEquals(
+            EnumSet.of(ReturnItemDifference.NBT),
+            new ReturnItemEquivalence(checks(false, false, false, false, true)).differences(expected, actual)
+        );
+        assertTrue(new ReturnItemEquivalence(checks(false, false, false, false, false)).test(expected, actual));
+    }
+
+    private static ItemStack normalizedClone(ItemStack original) {
+        ItemStack clone = item(original.getType());
+        ItemMeta meta = damagedMeta(0);
+        when(clone.getItemMeta()).thenReturn(meta);
+        when(original.clone()).thenReturn(clone);
+        return clone;
     }
 
     @Test
@@ -93,11 +134,6 @@ class ReturnItemEquivalenceTest {
         assertTrue(new ReturnItemEquivalence(checks(false, false, false, false, false)).test(expected, actual));
     }
 
-    /**
-     * Mocking Enchantment triggers its static registry lookup (needs a running server), so the
-     * key is a plain string smuggled through type erasure — getEnchants() map equality is all
-     * the equivalence compares.
-     */
     @SuppressWarnings({"unchecked", "rawtypes"})
     private static Map<Enchantment, Integer> enchantsOf(String key, int level) {
         return (Map) Map.of(key, level);
