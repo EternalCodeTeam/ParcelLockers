@@ -134,9 +134,18 @@ public class MessageConfig extends OkaeriConfig {
             .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
             .build();
         public Notice returnItemsMismatch = Notice.builder()
-            .chat("&4✘ &cThe deposited items do not match the original parcel contents!")
+            .chat("&4✘ &cThe deposited items do not match the original parcel contents!", "{MISMATCHES}")
             .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
             .build();
+        public String returnMismatchSeparator = "<newline>";
+        public String returnMismatchUnexpectedItem = "&8- &f{ITEM}: &cunexpected item (deposited {DEPOSITED_AMOUNT})";
+        public String returnMismatchInsufficientAmount = "&8- &f{ITEM}: &cinsufficient amount (expected {EXPECTED_AMOUNT}, deposited {DEPOSITED_AMOUNT})";
+        public String returnMismatchExcessAmount = "&8- &f{ITEM}: &cexcess amount (expected {EXPECTED_AMOUNT}, deposited {DEPOSITED_AMOUNT})";
+        public String returnMismatchDurability = "&8- &f{ITEM}: &cdurability differs (expected damage {EXPECTED_DAMAGE}, deposited {DEPOSITED_DAMAGE})";
+        public String returnMismatchItemName = "&8- &f{ITEM}: &ccustom name differs";
+        public String returnMismatchEnchantments = "&8- &f{ITEM}: &cenchantments differ";
+        public String returnMismatchLore = "&8- &f{ITEM}: &clore differs";
+        public String returnMismatchNbt = "&8- &f{ITEM}: &cother item data differs";
         public Notice returnWindowExpired = Notice.builder()
             .chat("&4✘ &cThe return window for this parcel has expired!")
             .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
