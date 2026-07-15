@@ -44,6 +44,13 @@ import com.eternalcode.parcellockers.parcel.service.ParcelDispatchService;
 import com.eternalcode.parcellockers.parcel.service.ParcelService;
 import com.eternalcode.parcellockers.parcel.service.ParcelServiceImpl;
 import com.eternalcode.parcellockers.parcel.task.ParcelSendTask;
+import com.eternalcode.parcellockers.returns.ParcelReturnService;
+import com.eternalcode.parcellockers.returns.ParcelReturnValidator;
+import com.eternalcode.parcellockers.returns.ReturnItemEquivalence;
+import com.eternalcode.parcellockers.returns.ReturnMismatchFormatter;
+import com.eternalcode.parcellockers.returns.repository.CollectedParcelRepositoryOrmLite;
+import com.eternalcode.parcellockers.returns.repository.ParcelReturnRepositoryOrmLite;
+import com.eternalcode.parcellockers.returns.task.ReturnWindowPurgeTask;
 import com.eternalcode.parcellockers.updater.UpdaterService;
 import com.eternalcode.parcellockers.user.UserManager;
 import com.eternalcode.parcellockers.user.UserManagerImpl;
@@ -122,12 +129,16 @@ public final class ParcelLockers extends JavaPlugin {
         DeliveryRepositoryOrmLite deliveryRepository = new DeliveryRepositoryOrmLite(databaseManager, scheduler);
         ItemStorageRepository itemStorageRepository = new ItemStorageRepositoryOrmLite(databaseManager, scheduler);
         UserRepository userRepository = new UserRepositoryOrmLite(databaseManager, scheduler);
+        CollectedParcelRepositoryOrmLite collectedParcelRepository = new CollectedParcelRepositoryOrmLite(databaseManager, scheduler);
+        ParcelReturnRepositoryOrmLite parcelReturnRepository =
+            new ParcelReturnRepositoryOrmLite(databaseManager, scheduler);
 
         // service and managers
         ParcelService parcelService = new ParcelServiceImpl(
             noticeService,
             parcelRepository,
             parcelContentRepository,
+            collectedParcelRepository,
             scheduler,
             config,
             this.economy,
@@ -152,6 +163,30 @@ public final class ParcelLockers extends JavaPlugin {
             noticeService
         );
 
+        ParcelReturnValidator returnValidator = new ParcelReturnValidator(new ReturnItemEquivalence(config.settings.returnChecks));
+        ReturnMismatchFormatter returnMismatchFormatter = new ReturnMismatchFormatter(messageConfig.parcel);
+        ParcelReturnService parcelReturnService = new ParcelReturnService(
+            parcelService,
+            parcelContentManager,
+            collectedParcelRepository,
+            deliveryManager,
+            lockerManager,
+            returnValidator,
+            returnMismatchFormatter,
+            parcelReturnRepository,
+            scheduler,
+            config,
+            noticeService,
+            this.economy,
+            server
+        );
+
+        scheduler.timerAsync(
+            new ReturnWindowPurgeTask(parcelService, collectedParcelRepository, deliveryManager, config),
+            Duration.ofSeconds(30),
+            Duration.ofMinutes(30)
+        );
+
         // guis
         TriumphGui.init(this);
         GuiManager guiManager = new GuiManager(
@@ -162,7 +197,9 @@ public final class ParcelLockers extends JavaPlugin {
             parcelDispatchService,
             parcelContentManager,
             deliveryManager,
-            config.settings.allowCollectingFromAnyLocker
+            config.settings.allowCollectingFromAnyLocker,
+            parcelReturnService,
+            config.settings.parcelReturnWindow
         );
 
         MainGui mainGUI = new MainGui(

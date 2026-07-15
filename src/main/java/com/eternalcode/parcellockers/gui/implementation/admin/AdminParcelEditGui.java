@@ -188,6 +188,7 @@ public class AdminParcelEditGui implements GuiView {
             case OK -> this.noticeService.create().notice(m -> m.admin.parcelUpdated).player(player.getUniqueId()).send();
             case SIZE_TOO_SMALL -> this.noticeService.create().notice(m -> m.admin.sizeTooSmall).player(player.getUniqueId()).send();
             case DESTINATION_FULL -> this.noticeService.create().notice(m -> m.admin.destinationFull).player(player.getUniqueId()).send();
+            case PARCEL_COLLECTED -> this.noticeService.create().notice(m -> m.admin.statusLocked).player(player.getUniqueId()).send();
         }
     }
 
@@ -227,6 +228,11 @@ public class AdminParcelEditGui implements GuiView {
     }
 
     private static ParcelStatus nextStatus(ParcelStatus status) {
+        if (status == ParcelStatus.COLLECTED) {
+            // A COLLECTED parcel cannot be toggled back to SENT/DELIVERED; AdminParcelService
+            // rejects the change too, so this only avoids offering the flip in the first place.
+            return ParcelStatus.COLLECTED;
+        }
         return status == ParcelStatus.SENT ? ParcelStatus.DELIVERED : ParcelStatus.SENT;
     }
 }

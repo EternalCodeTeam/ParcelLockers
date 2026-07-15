@@ -2,12 +2,33 @@ package com.eternalcode.parcellockers.parcel.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
+import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class AdminParcelServiceTest {
+
+    private static Parcel collectedParcel() {
+        return new Parcel(UUID.randomUUID(), UUID.randomUUID(), "name", "description", false,
+            UUID.randomUUID(), ParcelSize.SMALL, UUID.randomUUID(), UUID.randomUUID(), ParcelStatus.COLLECTED);
+    }
+
+    @Test
+    void changeStatusRefusesCollectedParcelWithoutTouchingAnyCollaborator() {
+        // No collaborator is a usable mock/instance here on purpose: the COLLECTED guard must
+        // short-circuit before dereferencing any of them, so a regression that removes the guard
+        // and reaches a collaborator call would fail this test with an NPE instead of passing.
+        AdminParcelService service = new AdminParcelService(null, null, null, null, null, null);
+
+        Parcel collected = collectedParcel();
+        EditResult result = service.changeStatus(collected, ParcelStatus.SENT).join();
+
+        assertEquals(EditResult.Status.PARCEL_COLLECTED, result.status());
+    }
 
     @Test
     void capacityMatchesContentGuiUsableSlots() {

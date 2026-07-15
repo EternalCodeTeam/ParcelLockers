@@ -92,8 +92,17 @@ dependencies {
 
     testImplementation("org.testcontainers:junit-jupiter:${Versions.TESTCONTAINERS}")
     testImplementation("org.testcontainers:mysql:${Versions.TESTCONTAINERS}")
+    testImplementation("com.zaxxer:HikariCP:${Versions.HIKARICP}")
+    testImplementation("com.j256.ormlite:ormlite-jdbc:${Versions.ORMLITE}")
+    testImplementation("com.h2database:h2:${Versions.H2}")
     testImplementation("mysql:mysql-connector-java:${Versions.MYSQL_CONNECTOR}")
+    testImplementation("de.eldoria.jacksonbukkit:paper:${Versions.JACKSON_BUKKIT}")
+    testImplementation("com.eternalcode:eternalcode-commons-adventure:${Versions.ETERNALCODE_COMMONS}")
+    testImplementation("com.eternalcode:eternalcode-commons-bukkit:${Versions.ETERNALCODE_COMMONS}")
     testImplementation("com.eternalcode:eternalcode-commons-shared:${Versions.ETERNALCODE_COMMONS}")
+    testImplementation("com.eternalcode:multification-bukkit:${Versions.MULTIFICATION}")
+    testImplementation("com.github.MilkBowl:VaultAPI:${Versions.VAULT_API}")
+    testImplementation("dev.triumphteam:triumph-gui-paper:${Versions.TRIUMPH_GUI}")
 
     testImplementation("io.papermc.paper:paper-api:${Versions.PAPER_API}")
     testImplementation("eu.okaeri:okaeri-configs-yaml-bukkit:${Versions.OKAERI_CONFIGS}")
@@ -145,7 +154,7 @@ modrinth {
     versionNumber.set(project.version.toString())
     versionType.set(getVersionType(project.version.toString()))
     uploadFile.set(tasks.shadowJar)
-    gameVersions.addAll("1.21.11")
+    gameVersions.addAll("1.21.11", "26.1", "26.1.1", "26.1.2", "26.2")
     loaders.addAll("paper", "purpur")
     syncBodyFrom = rootProject.file("README.md").readText()
 }

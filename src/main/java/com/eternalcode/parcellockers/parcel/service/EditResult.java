@@ -2,7 +2,7 @@ package com.eternalcode.parcellockers.parcel.service;
 
 public final class EditResult {
 
-    public enum Status { OK, SIZE_TOO_SMALL, DESTINATION_FULL }
+    public enum Status { OK, SIZE_TOO_SMALL, DESTINATION_FULL, PARCEL_COLLECTED }
 
     private final Status status;
 

@@ -11,6 +11,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -35,7 +36,7 @@ public class ParcelSendTask extends BukkitRunnable {
 
     /** Pure decision: what to do given the latest parcel + delivery state at fire time. */
     public static Decision decide(Optional<Parcel> currentParcel, Optional<Delivery> currentDelivery, Instant now) {
-        if (currentParcel.isEmpty() || currentParcel.get().status() == ParcelStatus.DELIVERED) {
+        if (currentParcel.isEmpty() || currentParcel.get().status() != ParcelStatus.SENT) {
             return Decision.ABORT;
         }
         if (currentDelivery.isPresent() && currentDelivery.get().deliveryTimestamp().isAfter(now)) {
@@ -54,7 +55,7 @@ public class ParcelSendTask extends BukkitRunnable {
                         // Parcel gone or already delivered: clean up any stray delivery row.
                         optionalDelivery.ifPresent(delivery ->
                             this.deliveryManager.delete(this.parcelId).exceptionally(throwable -> {
-                                LOGGER.severe("Failed to delete stray delivery for " + this.parcelId + ": " + throwable.getMessage());
+                                LOGGER.log(Level.SEVERE, "Failed to delete stray delivery for " + this.parcelId, throwable);
                                 return false;
                             }));
                     case RESCHEDULE -> {
@@ -67,7 +68,7 @@ public class ParcelSendTask extends BukkitRunnable {
                     case DELIVER -> this.deliver(optionalParcel.get());
                 }
             })).exceptionally(throwable -> {
-                LOGGER.severe("ParcelSendTask failed for " + this.parcelId + ": " + throwable.getMessage());
+                LOGGER.log(Level.SEVERE, "ParcelSendTask failed for " + this.parcelId, throwable);
                 return null;
             });
     }
@@ -87,8 +88,8 @@ public class ParcelSendTask extends BukkitRunnable {
         this.parcelService.update(delivered)
             .thenCompose(ignored -> this.deliveryManager.delete(delivered.uuid()))
             .exceptionally(throwable -> {
-                LOGGER.severe("Failed to deliver parcel " + delivered.uuid()
-                    + " (delivery left for retry): " + throwable.getMessage());
+                LOGGER.log(Level.SEVERE, "Failed to deliver parcel " + delivered.uuid()
+                    + " (delivery left for retry)", throwable);
                 return null;
             });
     }

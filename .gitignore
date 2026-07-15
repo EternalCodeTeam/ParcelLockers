@@ -7,9 +7,12 @@
 run/
 out/
 build/
+.claude/
+.codex/
+.gemini/
+graphify-out/
 
 .DS_Store
 [Dd]esktop.ini
 
 !gradle/wrapper/gradle-wrapper.jar
-.claude

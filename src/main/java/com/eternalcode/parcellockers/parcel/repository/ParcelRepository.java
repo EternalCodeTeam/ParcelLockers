@@ -1,6 +1,7 @@
 package com.eternalcode.parcellockers.parcel.repository;
 
 import com.eternalcode.parcellockers.parcel.Parcel;
+import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.PageResult;
 import java.util.List;
@@ -14,6 +15,14 @@ public interface ParcelRepository {
     CompletableFuture<Void> save(Parcel parcel);
 
     CompletableFuture<Void> update(Parcel parcel);
+
+    /**
+     * Conditionally persists every mutable field of {@code updated}, but only if the row's
+     * current status still equals {@code expectedStatus}. Returns false when the row moved out
+     * from under the caller (e.g. a concurrent collect), so a stale in-memory snapshot cannot
+     * clobber it.
+     */
+    CompletableFuture<Boolean> updateIfStatus(Parcel updated, ParcelStatus expectedStatus);
 
     CompletableFuture<List<Parcel>> findAll();
 
@@ -42,6 +51,15 @@ public interface ParcelRepository {
      * @param page              the requested page
      */
     CompletableFuture<PageResult<Parcel>> findCollectible(UUID receiver, UUID destinationLocker, Page page);
+
+    /**
+     * Atomically flips a DELIVERED parcel to COLLECTED. Returns false when the parcel is missing
+     * or not DELIVERED — the caller must treat that as "someone else already collected it".
+     */
+    CompletableFuture<Boolean> markCollected(UUID uuid);
+
+    /** Returns the COLLECTED parcels of the given receiver (candidates for a return). */
+    CompletableFuture<PageResult<Parcel>> findReturnable(UUID receiver, Page page);
 
     /**
      * Counts the parcels currently occupying a destination locker. Collected parcels are removed

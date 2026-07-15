@@ -7,6 +7,7 @@ import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.PageResult;
+import com.j256.ormlite.stmt.UpdateBuilder;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -15,10 +16,16 @@ import java.util.concurrent.CompletableFuture;
 
 public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implements ParcelRepository {
 
+    private static final String UUID_COLUMN = "uuid";
     private static final String RECEIVER_COLUMN = "receiver";
     private static final String SENDER_COLUMN = "sender";
     private static final String DESTINATION_LOCKER_COLUMN = "destination_locker";
+    private static final String ENTRY_LOCKER_COLUMN = "entry_locker";
     private static final String STATUS_COLUMN = "status";
+    private static final String NAME_COLUMN = "name";
+    private static final String DESCRIPTION_COLUMN = "description";
+    private static final String PRIORITY_COLUMN = "priority";
+    private static final String SIZE_COLUMN = "size";
 
     public ParcelRepositoryOrmLite(DatabaseManager databaseManager, Scheduler scheduler) {
         super(databaseManager, scheduler);
@@ -35,6 +42,29 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     public CompletableFuture<Void> update(Parcel parcel) {
         Objects.requireNonNull(parcel, "Parcel cannot be null");
         return this.upsert(ParcelTable.class, ParcelTable.from(parcel)).thenApply(dao -> null);
+    }
+
+    @Override
+    public CompletableFuture<Boolean> updateIfStatus(Parcel updated, ParcelStatus expectedStatus) {
+        Objects.requireNonNull(updated, "Parcel cannot be null");
+        Objects.requireNonNull(expectedStatus, "Expected status cannot be null");
+        return this.action(ParcelTable.class, dao -> {
+            UpdateBuilder<ParcelTable, Object> builder = dao.updateBuilder();
+            builder.updateColumnValue(SENDER_COLUMN, updated.sender());
+            builder.updateColumnValue(NAME_COLUMN, updated.name());
+            builder.updateColumnValue(DESCRIPTION_COLUMN, updated.description());
+            builder.updateColumnValue(PRIORITY_COLUMN, updated.priority());
+            builder.updateColumnValue(RECEIVER_COLUMN, updated.receiver());
+            builder.updateColumnValue(SIZE_COLUMN, updated.size());
+            builder.updateColumnValue(ENTRY_LOCKER_COLUMN, updated.entryLocker());
+            builder.updateColumnValue(DESTINATION_LOCKER_COLUMN, updated.destinationLocker());
+            builder.updateColumnValue(STATUS_COLUMN, updated.status());
+            builder.where()
+                .eq(UUID_COLUMN, updated.uuid())
+                .and()
+                .eq(STATUS_COLUMN, expectedStatus);
+            return builder.update() > 0;
+        });
     }
 
     @Override
@@ -97,12 +127,41 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     }
 
     @Override
+    public CompletableFuture<Boolean> markCollected(UUID uuid) {
+        Objects.requireNonNull(uuid, "UUID cannot be null");
+        return this.action(ParcelTable.class, dao -> {
+            UpdateBuilder<ParcelTable, Object> builder = dao.updateBuilder();
+            builder.updateColumnValue(STATUS_COLUMN, ParcelStatus.COLLECTED);
+            builder.where()
+                .eq(UUID_COLUMN, uuid)
+                .and()
+                .eq(STATUS_COLUMN, ParcelStatus.DELIVERED);
+            return builder.update() > 0;
+        });
+    }
+
+    @Override
+    public CompletableFuture<PageResult<Parcel>> findReturnable(UUID receiver, Page page) {
+        Objects.requireNonNull(receiver, "Receiver UUID cannot be null");
+        Objects.requireNonNull(page, "Page cannot be null");
+        return this.queryPage(ParcelTable.class, page, builder -> {
+            builder.where()
+                .eq(RECEIVER_COLUMN, receiver)
+                .and()
+                .eq(STATUS_COLUMN, ParcelStatus.COLLECTED);
+            return builder;
+        }, ParcelTable::toParcel);
+    }
+
+    @Override
     public CompletableFuture<Integer> countParcelsByDestinationLocker(UUID destinationLocker) {
         Objects.requireNonNull(destinationLocker, "Destination locker UUID cannot be null");
         return this.action(ParcelTable.class, dao -> {
             long count = dao.queryBuilder()
                 .where()
                 .eq(DESTINATION_LOCKER_COLUMN, destinationLocker)
+                .and()
+                .ne(STATUS_COLUMN, ParcelStatus.COLLECTED)
                 .countOf();
             return (int) count;
         });

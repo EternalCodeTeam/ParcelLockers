@@ -118,11 +118,40 @@ public class MessageConfig extends OkaeriConfig {
             .sound(SoundEventKeys.ENTITY_ITEM_BREAK)
             .build();
         public Notice insufficientFunds = Notice.builder()
-            .chat("&4✘ &cYou do not have enough funds to send this parcel! Required: &6${AMOUNT}&c.")
+            .chat("&4✘ &cYou do not have enough funds to cover this fee! Required: &6${AMOUNT}&c.")
             .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
             .build();
         public Notice feeWithdrawn = Notice.builder()
             .chat("&2✔ &a${AMOUNT} has been withdrawn from your account to cover the parcel sending fee.")
+            .sound(SoundEventKeys.ENTITY_EXPERIENCE_ORB_PICKUP)
+            .build();
+        public Notice returned = Notice.builder()
+            .chat("&2✔ &aParcel returned. It is on its way back to the sender.")
+            .sound(SoundEventKeys.ENTITY_PLAYER_LEVELUP)
+            .build();
+        public Notice cannotReturn = Notice.builder()
+            .chat("&4✘ &cThis parcel cannot be returned right now. Your items were given back.")
+            .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
+            .build();
+        public Notice returnItemsMismatch = Notice.builder()
+            .chat("&4✘ &cThe deposited items do not match the original parcel contents!")
+            .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
+            .build();
+        public String returnMismatchSeparator = "<newline>";
+        public String returnMismatchUnexpectedItem = "&8- &f{ITEM}: &cunexpected item (deposited {DEPOSITED_AMOUNT})";
+        public String returnMismatchInsufficientAmount = "&8- &f{ITEM}: &cinsufficient amount (expected {EXPECTED_AMOUNT}, deposited {DEPOSITED_AMOUNT})";
+        public String returnMismatchExcessAmount = "&8- &f{ITEM}: &cexcess amount (expected {EXPECTED_AMOUNT}, deposited {DEPOSITED_AMOUNT})";
+        public String returnMismatchDurability = "&8- &f{ITEM}: &cdurability differs (expected damage {EXPECTED_DAMAGE}, deposited {DEPOSITED_DAMAGE})";
+        public String returnMismatchItemName = "&8- &f{ITEM}: &ccustom name differs";
+        public String returnMismatchEnchantments = "&8- &f{ITEM}: &cenchantments differ";
+        public String returnMismatchLore = "&8- &f{ITEM}: &clore differs";
+        public String returnMismatchNbt = "&8- &f{ITEM}: &cother item data differs";
+        public Notice returnWindowExpired = Notice.builder()
+            .chat("&4✘ &cThe return window for this parcel has expired!")
+            .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
+            .build();
+        public Notice returnFeeWithdrawn = Notice.builder()
+            .chat("&2✔ &a${AMOUNT} has been withdrawn from your account to cover the parcel return fee.")
             .sound(SoundEventKeys.ENTITY_EXPERIENCE_ORB_PICKUP)
             .build();
 
@@ -189,6 +218,7 @@ public class MessageConfig extends OkaeriConfig {
         public Notice teleportWorldMissing = Notice.chat("&4✘ &cThat locker's world is not loaded.");
         public Notice sizeTooSmall = Notice.chat("&4✘ &cThe parcel's contents do not fit in that size.");
         public Notice destinationFull = Notice.chat("&4✘ &cThat destination locker is full.");
+        public Notice statusLocked = Notice.chat("&4✘ &cA collected parcel's status cannot be changed; it can only be returned.");
         public Notice contentsUpdated = Notice.chat("&2✔ &aParcel contents updated.");
         public Notice priorityUpdated = Notice.chat("&2✔ &aPriority updated and delivery time adjusted.");
         public Notice noPermission = Notice.chat("&4✘ &cYou do not have permission to do that.");

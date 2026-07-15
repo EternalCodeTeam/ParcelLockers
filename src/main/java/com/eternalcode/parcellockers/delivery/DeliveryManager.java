@@ -64,6 +64,10 @@ public class DeliveryManager {
         });
     }
 
+    public void invalidate(UUID parcel) {
+        this.deliveryCache.invalidate(parcel);
+    }
+
     public CompletableFuture<Void> deleteAll(CommandSender sender, NoticeService noticeService) {
         return this.deliveryRepository.deleteAll().thenAccept(deleted -> {
             this.deliveryCache.invalidateAll();

@@ -66,6 +66,10 @@ public class ParcelContentManager {
         });
     }
 
+    public void invalidate(UUID parcel) {
+        this.cache.invalidate(parcel);
+    }
+
     public CompletableFuture<Void> deleteAll(CommandSender sender, NoticeService noticeService) {
         return this.contentRepository.deleteAll().thenAccept(deleted -> {
             noticeService.create()
