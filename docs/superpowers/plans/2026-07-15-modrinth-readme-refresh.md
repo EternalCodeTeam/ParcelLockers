@@ -1,3 +1,43 @@
+# Modrinth README Refresh Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Replace the sparse project README with an encouraging, accurate, Modrinth-first page that appeals to players and gives server owners enough information to install the plugin.
+
+**Architecture:** This is a documentation-only change. Replace `README.md` as one cohesive publishing artifact, then validate its claims against the approved design and current project metadata.
+
+**Tech Stack:** GitHub-flavored Markdown, Modrinth project-page Markdown, PowerShell validation commands
+
+## Global Constraints
+
+- The same `README.md` must render sensibly on GitHub and when synchronized to Modrinth.
+- The primary reader is a server owner; player-facing benefits lead the page.
+- Use confident, friendly, energetic language and restrained emojis.
+- Preserve absolute GitHub asset URLs so synchronized images continue to work on Modrinth.
+- State Paper or Purpur, Java 21 or newer, and Vault with a compatible economy provider.
+- Do not claim Folia support, Nexo integration, or mandatory Discord integration.
+- Do not hard-code a Minecraft version list; direct readers to the versions shown on each Modrinth release.
+- Do not change plugin code, configuration defaults, build metadata, or publishing automation.
+- Do not push any commits.
+
+---
+
+### Task 1: Rewrite and validate the publishing README
+
+**Files:**
+- Modify: `README.md`
+- Reference: `docs/superpowers/specs/2026-07-15-modrinth-readme-design.md`
+- Include in local commit: `docs/superpowers/plans/2026-07-15-modrinth-readme-refresh.md`
+
+**Interfaces:**
+- Consumes: the verified plugin behavior and publishing constraints in the approved design specification
+- Produces: one self-contained Markdown page used by GitHub and `modrinth.syncBodyFrom`
+
+- [ ] **Step 1: Replace `README.md` with the approved benefit-led copy**
+
+Use this exact content:
+
+````markdown
 <div align="center">
 
 ![ParcelLockers](https://github.com/EternalCodeTeam/ParcelLockers/blob/master/.github/assets/ParcelLockers.svg?raw=true)
@@ -86,3 +126,50 @@ Contributions are welcome! Create a [public fork](https://github.com/EternalCode
 Thank you to JetBrains for providing [Open Source Licenses](https://www.jetbrains.com/opensource/) for their development tools, and to Sentry for supporting the project with an [Open Source plan](https://sentry.io/for/open-source/).
 
 Locker icon created by [Nikita Golubev — Flaticon](https://www.flaticon.com/free-icons/locker).
+````
+
+- [ ] **Step 2: Run mechanical Markdown and whitespace checks**
+
+Run:
+
+```powershell
+git diff --check -- README.md
+rg -n "transfering|an very|early stage|use it at your own risk|Nexo|Folia|Minecraft 1\." README.md
+```
+
+Expected: `git diff --check` prints nothing. The `rg` command exits with code 1 and prints no matches.
+
+- [ ] **Step 3: Verify required content and Modrinth-safe asset links**
+
+Run:
+
+```powershell
+rg -n "Modrinth|Paper or Purpur|Java 21|Vault|DiscordSRV|priority delivery|parcel returns|parcellockers\.admin|parcellockers\.command\.parcel" README.md
+rg --pcre2 -n '(?:!\[[^]]*\]\(|<img[^>]+src=")(?!https://)' README.md
+```
+
+Expected: the first command finds every required topic. The second command exits with code 1 and prints no relative Markdown or HTML image URLs.
+
+- [ ] **Step 4: Review the final documentation diff**
+
+Run:
+
+```powershell
+git diff -- README.md
+git status --short
+```
+
+Expected: `README.md` contains only the approved rewrite. The plan file is untracked, and the pre-existing `PR_REVIEW_feat-parcel-return-gh-69.md` remains untracked and untouched.
+
+- [ ] **Step 5: Create a local documentation commit without pushing**
+
+Run:
+
+```powershell
+git add -- README.md docs/superpowers/plans/2026-07-15-modrinth-readme-refresh.md
+git diff --cached --check
+git diff --cached --name-only
+git commit -m "docs: refresh README for Modrinth"
+```
+
+Expected: the staged-name check lists only `README.md` and `docs/superpowers/plans/2026-07-15-modrinth-readme-refresh.md`; the commit succeeds locally. Do not run `git push`.
