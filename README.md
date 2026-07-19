@@ -1,10 +1,10 @@
 <div align="center">
 
-![ParcelLockers](https://github.com/EternalCodeTeam/ParcelLockers/blob/master/.github/assets/ParcelLockers.svg?raw=true)
+![ParcelLockers](https://raw.githubusercontent.com/EternalCodeTeam/ParcelLockers/master/.github/assets/ParcelLockers.svg)
 
 [![Supports Paper](https://raw.githubusercontent.com/intergrav/devins-badges/v3/assets/cozy/supported/paper_vector.svg)](https://papermc.io)
 
-[![Ko-fi](https://github.com/intergrav/devins-badges/blob/v3/assets/cozy/donate/kofi-plural_vector.svg?raw=true)](https://ko-fi.com/eternalcodeteam)
+[![Ko-fi](https://raw.githubusercontent.com/intergrav/devins-badges/v3/assets/cozy/donate/kofi-plural_vector.svg)](https://ko-fi.com/eternalcodeteam)
 [![Chat on Discord](https://raw.githubusercontent.com/vLuckyyy/badges/main//chat-with-us-on-discord.svg)](https://discord.com/invite/FQ7jmGBd6c)
 [![Website](https://raw.githubusercontent.com/intergrav/devins-badges/v3/assets/cozy/documentation/website_vector.svg)](https://eternalcode.pl/)
 
@@ -81,7 +81,7 @@ Contributions are welcome! Create a [public fork](https://github.com/EternalCode
 ## ❤️ Special thanks
 
 [<img src="https://user-images.githubusercontent.com/65517973/210912946-447a6b9a-2685-4796-9482-a44bffc727ce.png" alt="JetBrains" width="150">](https://www.jetbrains.com)
-[<img src="https://github.com/EternalCodeTeam/ParcelLockers/blob/master/.github/assets/sentry.svg?raw=true" alt="Sentry logo" width="150" height="150">](https://www.sentry.io)
+[<img src="https://raw.githubusercontent.com/EternalCodeTeam/ParcelLockers/master/.github/assets/sentry.svg" alt="Sentry logo" width="150" height="150">](https://www.sentry.io)
 
 Thank you to JetBrains for providing [Open Source Licenses](https://www.jetbrains.com/opensource/) for their development tools, and to Sentry for supporting the project with an [Open Source plan](https://sentry.io/for/open-source/).
 
