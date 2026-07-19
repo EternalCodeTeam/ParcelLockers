@@ -20,16 +20,16 @@ Whether you run a cozy SMP, a busy economy server, or a role-play community, Par
 
 ## ✨ What makes ParcelLockers worth trying?
 
-- **A physical locker network** — place dedicated parcel lockers around your world and give each one a recognizable description.
-- **Simple inventory GUIs** — players can send, collect, review, and return parcels without memorizing a maze of commands.
-- **Three parcel sizes** — small, medium, and large parcels let you price deliveries around the amount being shipped.
-- **Standard and priority delivery** — create a meaningful choice between regular shipping and faster service.
-- **Economy integration** — configurable sending and return fees use Vault to fit naturally into your server economy.
-- **Destination-based collection** — parcels arrive at the locker selected by the sender, with an optional setting that allows collection from any locker.
-- **Fair parcel returns** — collected deliveries can be returned within a configurable window by depositing matching items.
-- **Optional Discord notifications** — notify linked players when deliveries arrive using the built-in Discord bot or your existing DiscordSRV setup.
-- **Administration tools** — built-in GUIs help staff inspect and manage users, parcels, parcel contents, and lockers.
-- **Deep customization** — adjust locker capacity, delivery times, fees, messages, GUI titles, icons, and item appearance.
+- 🏤 **A physical locker network** — place dedicated parcel lockers around your world and give each one a recognizable description.
+- 🖥️ **Simple inventory GUIs** — players can send, collect, review, and return parcels without memorizing a maze of commands.
+- 📦 **Three parcel sizes** — small, medium, and large parcels let you price deliveries around the amount being shipped.
+- ⚡ **Standard and priority delivery** — create a meaningful choice between regular shipping and faster service.
+- 💰 **Economy integration** — configurable sending and return fees use Vault to fit naturally into your server economy.
+- 📍 **Destination-based collection** — parcels arrive at the locker selected by the sender, with an optional setting that allows collection from any locker.
+- ↩️ **Fair parcel returns** — collected deliveries can be returned within a configurable window by depositing matching items.
+- 🔔 **Optional Discord notifications** — notify linked players when deliveries arrive using the built-in Discord bot or your existing DiscordSRV setup.
+- 🛡️ **Administration tools** — built-in GUIs help staff inspect and manage users, parcels, parcel contents, and lockers.
+- 🎨 **Deep customization** — adjust locker capacity, delivery times, fees, messages, GUI titles, icons, and item appearance.
 
 ## 🏡 A natural fit for your server
 
