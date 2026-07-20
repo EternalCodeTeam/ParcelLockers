@@ -27,7 +27,7 @@ import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.ParcelStatus;
-import com.eternalcode.parcellockers.parcel.service.ParcelService;
+import com.eternalcode.parcellockers.parcel.service.PluginParcelService;
 import com.eternalcode.parcellockers.returns.repository.CollectedParcelRepository;
 import com.eternalcode.parcellockers.returns.repository.ParcelReturnRepository;
 import java.time.Duration;
@@ -172,7 +172,7 @@ class ParcelReturnServiceTest {
 
         private final UUID playerId = UUID.randomUUID();
         private final Player player = mock(Player.class);
-        private final ParcelService parcelService = mock(ParcelService.class);
+        private final PluginParcelService parcelService = mock(PluginParcelService.class);
         private final ParcelContentManager contentManager = mock(ParcelContentManager.class);
         private final CollectedParcelRepository collectedRepository = mock(CollectedParcelRepository.class);
         private final DeliveryManager deliveryManager = mock(DeliveryManager.class);

@@ -35,7 +35,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-public class ParcelServiceImpl implements ParcelService {
+public class ParcelServiceImpl implements PluginParcelService {
 
     private static final String PARCEL_FEE_BYPASS_PERMISSION = "parcellockers.fee.bypass";
     private static final String PLACEHOLDER_AMOUNT = "{AMOUNT}";

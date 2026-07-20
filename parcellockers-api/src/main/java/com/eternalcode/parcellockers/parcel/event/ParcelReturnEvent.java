@@ -3,15 +3,14 @@ package com.eternalcode.parcellockers.parcel.event;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.shared.event.CancellableEvent;
 import org.bukkit.event.HandlerList;
-import org.jetbrains.annotations.NotNull;
 
-public class ParcelCollectEvent extends CancellableEvent {
+public class ParcelReturnEvent extends CancellableEvent {
 
     private static final HandlerList HANDLER_LIST = new HandlerList();
 
     private final Parcel parcel;
 
-    public ParcelCollectEvent(Parcel parcel) {
+    public ParcelReturnEvent(Parcel parcel) {
         this.parcel = parcel;
     }
 
@@ -24,7 +23,7 @@ public class ParcelCollectEvent extends CancellableEvent {
     }
 
     @Override
-    public @NotNull HandlerList getHandlers() {
+    public HandlerList getHandlers() {
         return HANDLER_LIST;
     }
 }

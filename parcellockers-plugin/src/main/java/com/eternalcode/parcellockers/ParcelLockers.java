@@ -41,8 +41,8 @@ import com.eternalcode.parcellockers.parcel.command.ParcelCommand;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryOrmLite;
 import com.eternalcode.parcellockers.parcel.service.AdminParcelService;
 import com.eternalcode.parcellockers.parcel.service.ParcelDispatchService;
-import com.eternalcode.parcellockers.parcel.service.ParcelService;
 import com.eternalcode.parcellockers.parcel.service.ParcelServiceImpl;
+import com.eternalcode.parcellockers.parcel.service.PluginParcelService;
 import com.eternalcode.parcellockers.parcel.task.ParcelSendTask;
 import com.eternalcode.parcellockers.returns.ParcelReturnService;
 import com.eternalcode.parcellockers.returns.ParcelReturnValidator;
@@ -134,7 +134,7 @@ public final class ParcelLockers extends JavaPlugin {
             new ParcelReturnRepositoryOrmLite(databaseManager, scheduler);
 
         // service and managers
-        ParcelService parcelService = new ParcelServiceImpl(
+        PluginParcelService parcelService = new ParcelServiceImpl(
             noticeService,
             parcelRepository,
             parcelContentRepository,

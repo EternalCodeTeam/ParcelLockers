@@ -11,7 +11,7 @@ import com.eternalcode.parcellockers.locker.LockerManager;
 import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.service.ParcelDispatchService;
-import com.eternalcode.parcellockers.parcel.service.ParcelService;
+import com.eternalcode.parcellockers.parcel.service.PluginParcelService;
 import com.eternalcode.parcellockers.returns.CollectedParcel;
 import com.eternalcode.parcellockers.returns.ParcelReturnService;
 import com.eternalcode.parcellockers.shared.Page;
@@ -30,7 +30,7 @@ import org.bukkit.inventory.ItemStack;
 
 public class GuiManager {
 
-    private final ParcelService parcelService;
+    private final PluginParcelService parcelService;
     private final LockerManager lockerManager;
     private final UserManager userManager;
     private final ItemStorageManager itemStorageManager;
@@ -42,7 +42,7 @@ public class GuiManager {
     private final Duration returnWindow;
 
     public GuiManager(
-        ParcelService parcelService,
+        PluginParcelService parcelService,
         LockerManager lockerManager,
         UserManager userManager,
         ItemStorageManager itemStorageManager,

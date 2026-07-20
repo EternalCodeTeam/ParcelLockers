@@ -7,7 +7,7 @@ import com.eternalcode.parcellockers.delivery.DeliveryManager;
 import com.eternalcode.parcellockers.itemstorage.ItemStorageManager;
 import com.eternalcode.parcellockers.locker.LockerManager;
 import com.eternalcode.parcellockers.notification.NoticeService;
-import com.eternalcode.parcellockers.parcel.service.ParcelService;
+import com.eternalcode.parcellockers.parcel.service.PluginParcelService;
 import dev.rollczi.litecommands.annotations.argument.Arg;
 import dev.rollczi.litecommands.annotations.command.Command;
 import dev.rollczi.litecommands.annotations.context.Sender;
@@ -27,7 +27,7 @@ import org.bukkit.inventory.ItemType;
 @Permission("parcellockers.debug")
 public class DebugCommand {
 
-    private final ParcelService parcelService;
+    private final PluginParcelService parcelService;
     private final LockerManager lockerManager;
     private final ItemStorageManager itemStorageManager;
     private final ParcelContentManager contentManager;
@@ -35,7 +35,7 @@ public class DebugCommand {
     private final DeliveryManager deliveryManager;
 
     public DebugCommand(
-        ParcelService parcelService,
+        PluginParcelService parcelService,
         LockerManager lockerManager,
         ItemStorageManager itemStorageManager,
         ParcelContentManager contentManager,

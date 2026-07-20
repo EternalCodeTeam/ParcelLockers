@@ -23,7 +23,7 @@ public class ParcelDispatchService {
     private static final Logger LOGGER = Logger.getLogger(ParcelDispatchService.class.getName());
 
     private final LockerManager lockerManager;
-    private final ParcelService parcelService;
+    private final PluginParcelService parcelService;
     private final DeliveryManager deliveryManager;
     private final ItemStorageManager itemStorageManager;
     private final Scheduler scheduler;
@@ -36,7 +36,7 @@ public class ParcelDispatchService {
 
     public ParcelDispatchService(
         LockerManager lockerManager,
-        ParcelService parcelService,
+        PluginParcelService parcelService,
         DeliveryManager deliveryManager,
         ItemStorageManager itemStorageManager,
         Scheduler scheduler,

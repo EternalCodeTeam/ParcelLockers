@@ -3,7 +3,6 @@ package com.eternalcode.parcellockers.parcel.event;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.shared.event.CancellableEvent;
 import org.bukkit.event.HandlerList;
-import org.jetbrains.annotations.NotNull;
 
 public class ParcelDeliverEvent extends CancellableEvent {
 
@@ -25,7 +24,7 @@ public class ParcelDeliverEvent extends CancellableEvent {
     }
 
     @Override
-    public @NotNull HandlerList getHandlers() {
+    public HandlerList getHandlers() {
         return HANDLER_LIST;
     }
 }

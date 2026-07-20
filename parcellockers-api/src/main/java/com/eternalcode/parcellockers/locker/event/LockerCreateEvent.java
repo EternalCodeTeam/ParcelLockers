@@ -4,7 +4,6 @@ import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.shared.event.CancellableEvent;
 import java.util.UUID;
 import org.bukkit.event.HandlerList;
-import org.jetbrains.annotations.NotNull;
 
 public class LockerCreateEvent extends CancellableEvent {
 
@@ -32,7 +31,7 @@ public class LockerCreateEvent extends CancellableEvent {
     }
 
     @Override
-    public @NotNull HandlerList getHandlers() {
+    public HandlerList getHandlers() {
         return HANDLER_LIST;
     }
 }

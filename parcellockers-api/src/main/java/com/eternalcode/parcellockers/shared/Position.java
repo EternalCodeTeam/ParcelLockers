@@ -4,9 +4,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Disclaimer - Bukkit {@link org.bukkit.Location} storage may cause a memory leak because it is a wrapper for
- * coordinates and {@link org.bukkit.World} reference. If you need to store location, use {@link Position} and
- * {@link PositionAdapter}.
+ * Immutable coordinates suitable for storage without retaining a Bukkit world instance.
  */
 public record Position(int x, int y, int z, String world) {
 

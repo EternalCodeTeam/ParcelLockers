@@ -15,7 +15,7 @@ import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import com.eternalcode.parcellockers.parcel.event.ParcelReturnEvent;
-import com.eternalcode.parcellockers.parcel.service.ParcelService;
+import com.eternalcode.parcellockers.parcel.service.PluginParcelService;
 import com.eternalcode.parcellockers.parcel.task.ParcelSendTask;
 import com.eternalcode.parcellockers.returns.repository.CollectedParcelRepository;
 import com.eternalcode.parcellockers.returns.repository.ParcelReturnRepository;
@@ -44,7 +44,7 @@ public class ParcelReturnService {
     private static final String PARCEL_FEE_BYPASS_PERMISSION = "parcellockers.fee.bypass";
     private static final String PLACEHOLDER_AMOUNT = "{AMOUNT}";
 
-    private final ParcelService parcelService;
+    private final PluginParcelService parcelService;
     private final ParcelContentManager parcelContentManager;
     private final CollectedParcelRepository collectedParcelRepository;
     private final DeliveryManager deliveryManager;
@@ -59,7 +59,7 @@ public class ParcelReturnService {
     private final Server server;
 
     public ParcelReturnService(
-        ParcelService parcelService,
+        PluginParcelService parcelService,
         ParcelContentManager parcelContentManager,
         CollectedParcelRepository collectedParcelRepository,
         DeliveryManager deliveryManager,
