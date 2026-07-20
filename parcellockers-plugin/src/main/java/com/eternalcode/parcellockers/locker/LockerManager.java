@@ -11,10 +11,10 @@ import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.PageResult;
 import com.eternalcode.parcellockers.shared.Position;
+import com.eternalcode.parcellockers.shared.exception.ValidationException;
 import com.eternalcode.parcellockers.shared.validation.ValidationResult;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import eu.okaeri.configs.exception.ValidationException;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.UUID;
@@ -23,7 +23,7 @@ import java.util.function.Function;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
 
-public class LockerManager {
+public class LockerManager implements LockerService {
 
     private final PluginConfig config;
     private final LockerRepository lockerRepository;
@@ -60,6 +60,7 @@ public class LockerManager {
             .build();
     }
 
+    @Override
     public CompletableFuture<Optional<Locker>> get(UUID uniqueId) {
         if (uniqueId == null) {
             return CompletableFuture.completedFuture(Optional.empty());
@@ -89,6 +90,7 @@ public class LockerManager {
         return Optional.ofNullable(this.lockersByPosition.getIfPresent(position));
     }
 
+    @Override
     public CompletableFuture<Optional<Locker>> get(Position position) {
         Locker locker = this.lockersByPosition.getIfPresent(position);
 
@@ -105,6 +107,7 @@ public class LockerManager {
         });
     }
 
+    @Override
     public CompletableFuture<PageResult<Locker>> get(Page page) {
         // The cache holds an arbitrary, partially-evicted subset of lockers - it is not the full
         // dataset, so it cannot answer pagination. Always query the repository (warming the cache
@@ -118,6 +121,7 @@ public class LockerManager {
         });
     }
 
+    @Override
     public CompletableFuture<Locker> create(UUID uniqueId, String name, Position position, UUID playerUUID) {
         return CompletableFuture.supplyAsync(() -> {
 
@@ -162,6 +166,7 @@ public class LockerManager {
         }).thenCompose(Function.identity());
     }
 
+    @Override
     public CompletableFuture<Void> delete(UUID uniqueId, UUID playerUUID) {
         Locker cachedLocker = this.lockersByUUID.getIfPresent(uniqueId);
 
@@ -208,6 +213,7 @@ public class LockerManager {
         });
     }
 
+    @Override
     public CompletableFuture<Locker> rename(UUID uniqueId, String newName) {
         return this.get(uniqueId).thenCompose(optional -> {
             if (optional.isEmpty()) {
@@ -226,6 +232,7 @@ public class LockerManager {
         });
     }
 
+    @Override
     public CompletableFuture<Boolean> isLockerFull(UUID uniqueId) {
         return this.parcelRepository.countParcelsByDestinationLocker(uniqueId)
             .thenApply(count -> count >= this.config.settings.maxParcelsPerLocker);
