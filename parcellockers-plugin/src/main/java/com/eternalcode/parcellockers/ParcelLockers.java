@@ -29,6 +29,7 @@ import com.eternalcode.parcellockers.itemstorage.ItemStorageManager;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
 import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepositoryOrmLite;
 import com.eternalcode.parcellockers.locker.LockerManager;
+import com.eternalcode.parcellockers.locker.LockerService;
 import com.eternalcode.parcellockers.locker.controller.LockerBreakController;
 import com.eternalcode.parcellockers.locker.controller.LockerInteractionController;
 import com.eternalcode.parcellockers.locker.controller.LockerPlaceController;
@@ -41,6 +42,7 @@ import com.eternalcode.parcellockers.parcel.command.ParcelCommand;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryOrmLite;
 import com.eternalcode.parcellockers.parcel.service.AdminParcelService;
 import com.eternalcode.parcellockers.parcel.service.ParcelDispatchService;
+import com.eternalcode.parcellockers.parcel.service.ParcelService;
 import com.eternalcode.parcellockers.parcel.service.ParcelServiceImpl;
 import com.eternalcode.parcellockers.parcel.service.PluginParcelService;
 import com.eternalcode.parcellockers.parcel.task.ParcelSendTask;
@@ -74,6 +76,7 @@ import java.sql.SQLException;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.stream.Stream;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.milkbowl.vault.economy.Economy;
@@ -84,12 +87,15 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public final class ParcelLockers extends JavaPlugin {
+public final class ParcelLockers extends JavaPlugin implements ParcelLockersApi {
 
     private LiteCommands<CommandSender> liteCommands;
     private DatabaseManager databaseManager;
     private Economy economy;
     private DiscordClientManager discordClientManager;
+    private ParcelService parcelService;
+    private LockerService lockerService;
+    private boolean apiInitialized;
 
     @Override
     public void onEnable() {
@@ -149,6 +155,8 @@ public final class ParcelLockers extends JavaPlugin {
         UserManager userManager = new UserManagerImpl(userRepository, userValidationService, server);
         LockerValidationService lockerValidationService = new LockerValidator();
         LockerManager lockerManager = new LockerManager(config, lockerRepository, lockerValidationService, parcelRepository, server, scheduler);
+        this.parcelService = parcelService;
+        this.lockerService = lockerManager;
         ParcelContentManager parcelContentManager = new ParcelContentManager(parcelContentRepository);
         ItemStorageManager itemStorageManager = new ItemStorageManager(itemStorageRepository, server);
         DeliveryManager deliveryManager = new DeliveryManager(deliveryRepository);
@@ -274,10 +282,18 @@ public final class ParcelLockers extends JavaPlugin {
                         Duration.ofMillis(delay));
                 })
             )));
+
+        ParcelLockersProvider.initialize(this);
+        this.apiInitialized = true;
     }
 
     @Override
     public void onDisable() {
+        if (this.apiInitialized) {
+            ParcelLockersProvider.deinitialize();
+            this.apiInitialized = false;
+        }
+
         // Stop accepting new work before closing the datasource, so fewer in-flight async DB tasks
         // run into an already-closed connection pool.
         HandlerList.unregisterAll(this);
@@ -294,6 +310,16 @@ public final class ParcelLockers extends JavaPlugin {
         if (this.databaseManager != null) {
             this.databaseManager.disconnect();
         }
+    }
+
+    @Override
+    public ParcelService getParcelService() {
+        return Objects.requireNonNull(this.parcelService, "ParcelService is not initialized");
+    }
+
+    @Override
+    public LockerService getLockerService() {
+        return Objects.requireNonNull(this.lockerService, "LockerService is not initialized");
     }
 
     private boolean setupEconomy() {
