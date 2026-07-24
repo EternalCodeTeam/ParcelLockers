@@ -85,7 +85,10 @@ public class ParcelDispatchService {
         } catch (Throwable throwable) {
             reservation.close();
             this.notifyCannotSend(sender);
-            return CompletableFuture.failedFuture(throwable);
+            return CompletableFuture.failedFuture(this.operationFailure(
+                "Failed to start dispatch for parcel " + parcel.uuid(),
+                throwable
+            ));
         }
     }
 
@@ -113,37 +116,53 @@ public class ParcelDispatchService {
                             return CompletableFuture.completedFuture(false);
                         }
 
-                        return reservation.delete()
-                            // A failed delete must trigger the rollback, not skip straight to the outer
-                            // exceptionally handler (which would leave the parcel sent and the fee charged).
-                            .exceptionally(throwable -> false)
-                            .thenCompose(deleted -> {
-                                if (!Boolean.TRUE.equals(deleted)) {
-                                    // The parcel and its content were already persisted and the fee charged,
-                                    // but the sender's staged storage could not be cleared. Fully roll back
-                                    // (parcel + content + fee) instead of leaving orphaned content behind.
-                                    return this.rollback(sender, parcel);
+                        return this.deleteStorage(reservation)
+                            .handle((deleted, throwable) -> {
+                                if (throwable != null) {
+                                    return this.compensate(
+                                        sender,
+                                        parcel,
+                                        "Failed to delete sender storage for parcel "
+                                            + parcel.uuid(),
+                                        unwrap(throwable),
+                                        List.of(this.rollbackStep(sender, parcel))
+                                    );
                                 }
-
-                                return this.createDelivery(sender, parcel, items, delay, reservation);
-                            });
+                                if (!Boolean.TRUE.equals(deleted)) {
+                                    return this.compensate(
+                                        sender,
+                                        parcel,
+                                        "Sender storage was not deleted for parcel "
+                                            + parcel.uuid(),
+                                        new IllegalStateException(
+                                            "Sender storage delete returned false"),
+                                        List.of(this.rollbackStep(sender, parcel))
+                                    );
+                                }
+                                return this.createDelivery(
+                                    sender, parcel, items, delay, reservation);
+                            })
+                            .thenCompose(Function.identity());
                     });
             })
-            .exceptionally(throwable -> {
-                Throwable cause = unwrap(throwable);
-                if (cause instanceof CompensationException compensationException) {
-                    LOGGER.log(
-                        Level.SEVERE,
-                        "Failed to compensate parcel " + parcel.uuid()
-                            + " for sender " + sender.getUniqueId(),
-                        compensationException);
-                    this.notifyCannotSend(sender);
-                    throw compensationException;
+            .handle((result, throwable) -> {
+                if (throwable == null) {
+                    return CompletableFuture.completedFuture(result);
                 }
-                LOGGER.severe("Failed to dispatch parcel for player " + sender.getName() + ": " + throwable.getMessage());
+                ParcelOperationException failure = this.operationFailure(
+                    "Failed to dispatch parcel " + parcel.uuid()
+                        + " for sender " + sender.getUniqueId(),
+                    throwable
+                );
+                LOGGER.log(
+                    Level.SEVERE,
+                    "Failed to dispatch parcel " + parcel.uuid()
+                        + " for sender " + sender.getUniqueId(),
+                    failure);
                 this.notifyCannotSend(sender);
-                return false;
-            });
+                return CompletableFuture.<Boolean>failedFuture(failure);
+            })
+            .thenCompose(Function.identity());
     }
 
     private CompletableFuture<Boolean> createDelivery(
@@ -162,7 +181,16 @@ public class ParcelDispatchService {
 
         return deliveryCreated.handle((delivery, throwable) -> {
             if (throwable != null) {
-                return this.restoreAndRollback(sender, parcel, items, reservation);
+                return this.compensate(
+                    sender,
+                    parcel,
+                    "Failed to persist delivery for parcel " + parcel.uuid(),
+                    unwrap(throwable),
+                    List.of(
+                        this.restoreStep(reservation, items),
+                        this.rollbackStep(sender, parcel)
+                    )
+                );
             }
             return this.scheduleDelivery(sender, parcel, items, delay, reservation);
         }).thenCompose(Function.identity());
@@ -185,7 +213,17 @@ public class ParcelDispatchService {
         try {
             this.scheduler.runLaterAsync(task, delay);
         } catch (Throwable throwable) {
-            return this.deleteDeliveryRestoreAndRollback(sender, parcel, items, reservation);
+            return this.compensate(
+                sender,
+                parcel,
+                "Failed to schedule delivery for parcel " + parcel.uuid(),
+                throwable,
+                List.of(
+                    this.deliveryDeleteStep(parcel),
+                    this.restoreStep(reservation, items),
+                    this.rollbackStep(sender, parcel)
+                )
+            );
         }
 
         try {
@@ -197,76 +235,84 @@ public class ParcelDispatchService {
         return CompletableFuture.completedFuture(true);
     }
 
-    private CompletableFuture<Boolean> deleteDeliveryRestoreAndRollback(
+    private CompletableFuture<Boolean> compensate(
         Player sender,
         Parcel parcel,
-        List<ItemStack> items,
+        String message,
+        Throwable trigger,
+        List<CleanupStep> steps
+    ) {
+        ParcelOperationException failure =
+            new ParcelOperationException(message, unwrap(trigger));
+        CompletableFuture<Void> cleanup = CompletableFuture.completedFuture(null);
+        for (CleanupStep step : steps) {
+            cleanup = cleanup.thenCompose(ignored ->
+                this.attemptCleanup(step, failure));
+        }
+        return cleanup.thenCompose(ignored -> CompletableFuture.failedFuture(failure));
+    }
+
+    private CompletableFuture<Boolean> deleteStorage(
         ItemStorageReservation reservation
     ) {
-        return this.compensationStep(
-                () -> this.deliveryManager.delete(parcel.uuid()),
-                "Failed to delete delivery " + parcel.uuid() + " during dispatch compensation"
-            )
-            .thenCompose(deleted -> Boolean.TRUE.equals(deleted)
-                ? CompletableFuture.completedFuture(null)
-                : CompletableFuture.failedFuture(new CompensationException(
-                    "Delivery " + parcel.uuid() + " was not deleted during dispatch compensation"
-                )))
-            .thenCompose(ignored -> this.restoreStorage(reservation, items))
-            .thenCompose(ignored -> this.rollbackParcel(sender, parcel))
-            .thenApply(ignored -> this.compensatedFailure(sender));
+        try {
+            return reservation.delete();
+        } catch (Throwable throwable) {
+            return CompletableFuture.failedFuture(throwable);
+        }
     }
 
-    private CompletableFuture<Boolean> restoreAndRollback(
-        Player sender,
-        Parcel parcel,
-        List<ItemStack> items,
-        ItemStorageReservation reservation
+    private CompletableFuture<Void> attemptCleanup(
+        CleanupStep step,
+        ParcelOperationException failure
     ) {
-        return this.restoreStorage(reservation, items)
-            .thenCompose(ignored -> this.rollbackParcel(sender, parcel))
-            .thenApply(ignored -> this.compensatedFailure(sender));
+        CompletableFuture<?> action;
+        try {
+            action = step.action().get();
+        } catch (Throwable throwable) {
+            failure.addSuppressed(unwrap(throwable));
+            return CompletableFuture.completedFuture(null);
+        }
+        if (action == null) {
+            failure.addSuppressed(new IllegalStateException(
+                step.description() + " returned a null future"));
+            return CompletableFuture.completedFuture(null);
+        }
+        return action.handle((ignored, throwable) -> {
+            if (throwable != null) {
+                failure.addSuppressed(unwrap(throwable));
+            }
+            return null;
+        });
     }
 
-    private CompletableFuture<Boolean> rollback(Player sender, Parcel parcel) {
-        return this.rollbackParcel(sender, parcel)
-            .thenApply(ignored -> this.compensatedFailure(sender));
+    private CleanupStep deliveryDeleteStep(Parcel parcel) {
+        return new CleanupStep(
+            "Delete delivery " + parcel.uuid(),
+            () -> this.deliveryManager.delete(parcel.uuid()).thenCompose(deleted ->
+                Boolean.TRUE.equals(deleted)
+                    ? CompletableFuture.completedFuture(null)
+                    : CompletableFuture.failedFuture(new IllegalStateException(
+                        "Delivery " + parcel.uuid()
+                            + " was not deleted during dispatch compensation")))
+        );
     }
 
-    private CompletableFuture<?> restoreStorage(
+    private CleanupStep restoreStep(
         ItemStorageReservation reservation,
         List<ItemStack> items
     ) {
-        return this.compensationStep(
-            () -> reservation.restore(items),
-            "Failed to restore item storage for player " + reservation.owner()
+        return new CleanupStep(
+            "Restore sender storage " + reservation.owner(),
+            () -> reservation.restore(items)
         );
     }
 
-    private boolean compensatedFailure(Player sender) {
-        this.notifyCannotSend(sender);
-        return false;
-    }
-
-    private CompletableFuture<Void> rollbackParcel(Player sender, Parcel parcel) {
-        return this.compensationStep(
-            () -> this.parcelService.rollbackSend(sender, parcel),
-            "Failed to roll back parcel " + parcel.uuid()
+    private CleanupStep rollbackStep(Player sender, Parcel parcel) {
+        return new CleanupStep(
+            "Roll back parcel " + parcel.uuid(),
+            () -> this.parcelService.rollbackSend(sender, parcel)
         );
-    }
-
-    private <T> CompletableFuture<T> compensationStep(
-        Supplier<CompletableFuture<T>> action,
-        String failureMessage
-    ) {
-        try {
-            return action.get().exceptionallyCompose(throwable ->
-                CompletableFuture.failedFuture(
-                    new CompensationException(failureMessage, unwrap(throwable))));
-        } catch (Throwable throwable) {
-            return CompletableFuture.failedFuture(
-                new CompensationException(failureMessage, unwrap(throwable)));
-        }
     }
 
     private void notifyCannotSend(Player sender) {
@@ -285,14 +331,17 @@ public class ParcelDispatchService {
         return throwable;
     }
 
-    private static final class CompensationException extends ParcelOperationException {
-
-        private CompensationException(String message) {
-            super(message);
+    private ParcelOperationException operationFailure(String message, Throwable throwable) {
+        Throwable cause = unwrap(throwable);
+        if (cause instanceof ParcelOperationException operationException) {
+            return operationException;
         }
+        return new ParcelOperationException(message, cause);
+    }
 
-        private CompensationException(String message, Throwable cause) {
-            super(message, cause);
-        }
+    private record CleanupStep(
+        String description,
+        Supplier<CompletableFuture<?>> action
+    ) {
     }
 }

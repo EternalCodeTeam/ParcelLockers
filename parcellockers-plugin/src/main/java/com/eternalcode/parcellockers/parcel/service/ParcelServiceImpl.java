@@ -23,6 +23,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.base.Preconditions;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -126,22 +127,56 @@ public class ParcelServiceImpl implements PluginParcelService {
         }
 
         double refundableFee = chargedFee;
-        return this.parcelRepository.save(parcel)
-            .thenCompose(unused -> this.parcelContentRepository.save(new ParcelContent(parcel.uuid(), itemsCopy))
+        CompletableFuture<Boolean> persistence;
+        try {
+            persistence = this.parcelRepository.save(parcel)
+                .thenCompose(unused -> this.parcelContentRepository.save(
+                    new ParcelContent(parcel.uuid(), itemsCopy))
                 .thenApply(contentSaved -> {
                     this.parcelsByUuid.put(parcel.uuid(), parcel);
                     // The "sent" notice is issued by the dispatcher once the whole send succeeds, so it
                     // is not shown when a later step (e.g. clearing storage) fails and rolls back.
                     return true;
-                })
-                .exceptionallyCompose(contentError -> this.parcelRepository.delete(parcel.uuid())
-                    .thenCompose(deleted -> CompletableFuture.failedFuture(new ParcelOperationException("Failed to save parcel content, rolled back parcel", contentError))))
+                }));
+        } catch (Throwable throwable) {
+            persistence = CompletableFuture.failedFuture(throwable);
+        }
+        return persistence.exceptionallyCompose(throwable ->
+            this.compensatePersistenceFailure(
+                sender, parcel, refundableFee, unwrap(throwable)));
+    }
+
+    private CompletableFuture<Boolean> compensatePersistenceFailure(
+        Player sender,
+        Parcel parcel,
+        double refundableFee,
+        Throwable trigger
+    ) {
+        ParcelOperationException failure = new ParcelOperationException(
+            "Failed to persist parcel " + parcel.uuid(),
+            trigger
+        );
+        List<Throwable> cleanupFailures = new ArrayList<>();
+        this.parcelsByUuid.invalidate(parcel.uuid());
+
+        return this.attemptRollback(
+                () -> this.parcelRepository.delete(parcel.uuid()),
+                "Delete parcel " + parcel.uuid(),
+                cleanupFailures
             )
-            .exceptionally(throwable -> {
-                // Persistence failed after the fee was withdrawn - refund it so the player is not charged for a parcel that was never created.
+            .thenCompose(ignored -> this.attemptRollback(
+                () -> this.parcelContentRepository.delete(parcel.uuid()),
+                "Delete parcel content " + parcel.uuid(),
+                cleanupFailures
+            ))
+            .thenCompose(ignored -> this.attemptRollback(() -> {
                 this.refundFee(sender, refundableFee);
-                this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.cannotSend);
-                throw new ParcelOperationException("Failed to save parcel", throwable);
+                return CompletableFuture.completedFuture(null);
+            }, "Refund parcel fee for " + parcel.uuid(), cleanupFailures))
+            .thenCompose(ignored -> {
+                cleanupFailures.forEach(failure::addSuppressed);
+                this.notifyCannotSend(sender);
+                return CompletableFuture.failedFuture(failure);
             });
     }
 
@@ -150,14 +185,64 @@ public class ParcelServiceImpl implements PluginParcelService {
         Objects.requireNonNull(sender, "Sender cannot be null");
         Objects.requireNonNull(parcel, "Parcel cannot be null");
 
+        List<Throwable> failures = new ArrayList<>();
         if (!sender.hasPermission(PARCEL_FEE_BYPASS_PERMISSION)) {
-            this.refundFee(sender, this.feeFor(parcel.size()));
+            try {
+                this.refundFee(sender, this.feeFor(parcel.size()));
+            } catch (Throwable throwable) {
+                failures.add(unwrap(throwable));
+            }
         }
         this.parcelsByUuid.invalidate(parcel.uuid());
 
-        return this.parcelRepository.delete(parcel.uuid())
-            .thenCompose(deleted -> this.parcelContentRepository.delete(parcel.uuid()))
-            .thenApply(contentDeleted -> null);
+        return this.attemptRollback(
+                () -> this.parcelRepository.delete(parcel.uuid()),
+                "Delete parcel " + parcel.uuid(),
+                failures
+            )
+            .thenCompose(ignored -> this.attemptRollback(
+                () -> this.parcelContentRepository.delete(parcel.uuid()),
+                "Delete parcel content " + parcel.uuid(),
+                failures
+            ))
+            .thenCompose(ignored -> {
+                if (failures.isEmpty()) {
+                    return CompletableFuture.completedFuture(null);
+                }
+                ParcelOperationException failure = new ParcelOperationException(
+                    "Failed to completely roll back parcel " + parcel.uuid(),
+                    failures.get(0)
+                );
+                failures.stream().skip(1).forEach(failure::addSuppressed);
+                return CompletableFuture.failedFuture(failure);
+            });
+    }
+
+    private CompletableFuture<Void> attemptRollback(
+        java.util.function.Supplier<CompletableFuture<?>> action,
+        String description,
+        List<Throwable> failures
+    ) {
+        CompletableFuture<?> result;
+        try {
+            result = action.get();
+        } catch (Throwable throwable) {
+            failures.add(unwrap(throwable));
+            return CompletableFuture.completedFuture(null);
+        }
+        if (result == null) {
+            failures.add(new IllegalStateException("Rollback action returned a null future"));
+            return CompletableFuture.completedFuture(null);
+        }
+        return result.handle((value, throwable) -> {
+            if (throwable != null) {
+                failures.add(unwrap(throwable));
+            } else if (value instanceof Boolean completed && !completed) {
+                failures.add(new IllegalStateException(
+                    description + " returned false"));
+            }
+            return null;
+        });
     }
 
     private double feeFor(ParcelSize size) {
@@ -170,7 +255,31 @@ public class ParcelServiceImpl implements PluginParcelService {
 
     private void refundFee(Player sender, double fee) {
         if (fee > 0) {
-            this.economy.depositPlayer(sender, fee);
+            if (!this.economy.depositPlayer(sender, fee).transactionSuccess()) {
+                throw new IllegalStateException(
+                    "Economy provider rejected parcel fee refund");
+            }
+        }
+    }
+
+    private static Throwable unwrap(Throwable throwable) {
+        if (throwable instanceof java.util.concurrent.CompletionException
+            && throwable.getCause() != null) {
+            return throwable.getCause();
+        }
+        return throwable;
+    }
+
+    private void notifyCannotSend(Player sender) {
+        try {
+            this.noticeService.player(
+                sender.getUniqueId(), messages -> messages.parcel.cannotSend);
+        } catch (Throwable throwable) {
+            if (this.server.getLogger() != null) {
+                this.server.getLogger().warning(
+                    "Failed to send parcel failure notice to " + sender.getUniqueId()
+                        + ": " + throwable.getMessage());
+            }
         }
     }
 
@@ -222,63 +331,108 @@ public class ParcelServiceImpl implements PluginParcelService {
         Objects.requireNonNull(player, "Player cannot be null");
         Objects.requireNonNull(parcel, "Parcel cannot be null");
 
-        // Fire ParcelCollectEvent
-        ParcelCollectEvent event = new ParcelCollectEvent(parcel);
-        this.server.getPluginManager().callEvent(event);
-        
-        if (event.isCancelled()) {
-            this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.cannotCollect);
-            return CompletableFuture.completedFuture(null);
-        }
-
-        return this.parcelContentRepository.find(parcel.uuid()).thenCompose(optional -> {
-            if (optional.isEmpty()) {
-                this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.cannotCollect);
+        return this.fireCollectEvent(parcel).thenCompose(cancelled -> {
+            if (cancelled) {
+                this.noticeService.player(
+                    player.getUniqueId(), messages -> messages.parcel.cannotCollect);
                 return CompletableFuture.completedFuture(null);
             }
 
-            List<ItemStack> items = optional.get().items();
-            CompletableFuture<Void> result = new CompletableFuture<>();
-
-            // Re-check inventory space on the main thread (the previous async check was a TOCTOU),
-            // then flip the status BEFORE handing the items back so the parcel cannot be collected
-            // twice. The parcel and content rows are kept: they are the snapshot a later return is
-            // validated against. The collected_parcels row is written first so that a successful
-            // flip always has a collection timestamp; a stray row from a failed flip is ignored by
-            // the purge task (it only purges parcels that are actually COLLECTED).
-            this.scheduler.run(() -> {
-                if (!canHold(player, items)) {
-                    this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.noInventorySpace);
-                    result.complete(null);
-                    return;
+            return this.parcelContentRepository.find(parcel.uuid()).thenCompose(optional -> {
+                if (optional.isEmpty()) {
+                    this.noticeService.player(
+                        player.getUniqueId(), messages -> messages.parcel.cannotCollect);
+                    return CompletableFuture.completedFuture(null);
                 }
 
-                this.collectedParcelRepository.save(new CollectedParcel(parcel.uuid(), Instant.now()))
-                    .thenCompose(saved -> this.parcelRepository.markCollected(parcel.uuid()))
-                    .thenAccept(marked -> {
-                        if (!Boolean.TRUE.equals(marked)) {
-                            // Someone else collected it first (or the status changed under us).
-                            this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.cannotCollect);
+                List<ItemStack> items = optional.get().items();
+                CompletableFuture<Void> result = new CompletableFuture<>();
+
+                // Re-check inventory space on the main thread (the previous async check was a TOCTOU),
+                // then flip the status BEFORE handing the items back so the parcel cannot be collected
+                // twice. The parcel and content rows are kept: they are the snapshot a later return is
+                // validated against. The collected_parcels row is written first so that a successful
+                // flip always has a collection timestamp; a stray row from a failed flip is ignored by
+                // the purge task (it only purges parcels that are actually COLLECTED).
+                this.scheduler.run(() -> {
+                    if (!canHold(player, items)) {
+                        this.noticeService.player(
+                            player.getUniqueId(),
+                            messages -> messages.parcel.noInventorySpace
+                        );
+                        result.complete(null);
+                        return;
+                    }
+
+                    this.collectedParcelRepository.save(
+                            new CollectedParcel(parcel.uuid(), Instant.now()))
+                        .thenCompose(saved ->
+                            this.parcelRepository.markCollected(parcel.uuid()))
+                        .thenAccept(marked -> {
+                            if (!Boolean.TRUE.equals(marked)) {
+                                // Someone else collected it first (or the status changed under us).
+                                this.noticeService.player(
+                                    player.getUniqueId(),
+                                    messages -> messages.parcel.cannotCollect
+                                );
+                                result.complete(null);
+                                return;
+                            }
+
+                            this.parcelsByUuid.put(
+                                parcel.uuid(),
+                                withStatus(parcel, ParcelStatus.COLLECTED)
+                            );
+                            this.scheduler.run(() -> {
+                                items.forEach(item -> ItemUtil.giveItem(player, item));
+                                this.noticeService.player(
+                                    player.getUniqueId(),
+                                    messages -> messages.parcel.collected
+                                );
+                            });
                             result.complete(null);
-                            return;
-                        }
-
-                        this.parcelsByUuid.put(parcel.uuid(), withStatus(parcel, ParcelStatus.COLLECTED));
-                        this.scheduler.run(() -> {
-                            items.forEach(item -> ItemUtil.giveItem(player, item));
-                            this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.collected);
+                        })
+                        .exceptionally(throwable -> {
+                            this.noticeService.player(
+                                player.getUniqueId(),
+                                messages -> messages.parcel.cannotCollect
+                            );
+                            result.complete(null);
+                            return null;
                         });
-                        result.complete(null);
-                    })
-                    .exceptionally(throwable -> {
-                        this.noticeService.player(player.getUniqueId(), messages -> messages.parcel.cannotCollect);
-                        result.complete(null);
-                        return null;
-                    });
-            });
+                });
 
-            return result;
+                return result;
+            });
         });
+    }
+
+    private CompletableFuture<Boolean> fireCollectEvent(Parcel parcel) {
+        if (this.server.isPrimaryThread()) {
+            try {
+                ParcelCollectEvent event = new ParcelCollectEvent(parcel);
+                this.server.getPluginManager().callEvent(event);
+                return CompletableFuture.completedFuture(event.isCancelled());
+            } catch (Throwable throwable) {
+                return CompletableFuture.failedFuture(throwable);
+            }
+        }
+
+        CompletableFuture<Boolean> result = new CompletableFuture<>();
+        try {
+            this.scheduler.run(() -> {
+                try {
+                    ParcelCollectEvent event = new ParcelCollectEvent(parcel);
+                    this.server.getPluginManager().callEvent(event);
+                    result.complete(event.isCancelled());
+                } catch (Throwable throwable) {
+                    result.completeExceptionally(throwable);
+                }
+            });
+        } catch (Throwable throwable) {
+            result.completeExceptionally(throwable);
+        }
+        return result;
     }
 
     private static Parcel withStatus(Parcel parcel, ParcelStatus status) {
