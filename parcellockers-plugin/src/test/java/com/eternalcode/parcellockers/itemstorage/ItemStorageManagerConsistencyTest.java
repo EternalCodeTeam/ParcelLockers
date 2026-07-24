@@ -58,6 +58,67 @@ class ItemStorageManagerConsistencyTest {
     }
 
     @Test
+    void cacheMissGetRejectsSameOwnerDeleteUntilReadCompletes() {
+        UUID owner = UUID.randomUUID();
+        ItemStorage stale = new ItemStorage(owner, List.of(mock(ItemStack.class)));
+        CompletableFuture<Optional<ItemStorage>> fetched = new CompletableFuture<>();
+        when(this.repository.fetch(owner)).thenReturn(fetched);
+        when(this.repository.delete(owner)).thenReturn(CompletableFuture.completedFuture(1));
+        ItemStorageManager manager = new ItemStorageManager(this.repository, this.server);
+
+        CompletableFuture<Optional<ItemStorage>> read = manager.get(owner);
+
+        assertThrows(CompletionException.class, () -> manager.delete(owner).join());
+        verify(this.repository, never()).delete(owner);
+
+        fetched.complete(Optional.of(stale));
+        assertEquals(stale, read.join().orElseThrow());
+        assertTrue(manager.delete(owner).join());
+        verify(this.repository).delete(owner);
+    }
+
+    @Test
+    void overlappingSameOwnerCreatesAreRejectedBeforeSecondWrite() {
+        UUID owner = UUID.randomUUID();
+        List<ItemStack> firstItems = List.of(mock(ItemStack.class));
+        List<ItemStack> secondItems = List.of(mock(ItemStack.class));
+        CompletableFuture<Void> firstSave = new CompletableFuture<>();
+        when(this.repository.save(any()))
+            .thenReturn(firstSave, CompletableFuture.completedFuture(null));
+        ItemStorageManager manager = new ItemStorageManager(this.repository, this.server);
+
+        CompletableFuture<ItemStorage> firstCreate = manager.create(owner, firstItems);
+
+        assertThrows(CompletionException.class,
+            () -> manager.create(owner, secondItems).join());
+        verify(this.repository).save(new ItemStorage(owner, firstItems));
+
+        firstSave.complete(null);
+        assertEquals(firstItems, firstCreate.join().items());
+        assertEquals(firstItems, manager.get(owner).join().orElseThrow().items());
+    }
+
+    @Test
+    void differentOwnerCreatesMayOverlap() {
+        UUID firstOwner = UUID.randomUUID();
+        UUID secondOwner = UUID.randomUUID();
+        CompletableFuture<Void> firstSave = new CompletableFuture<>();
+        CompletableFuture<Void> secondSave = new CompletableFuture<>();
+        when(this.repository.save(any())).thenReturn(firstSave, secondSave);
+        ItemStorageManager manager = new ItemStorageManager(this.repository, this.server);
+
+        CompletableFuture<ItemStorage> firstCreate = manager.create(firstOwner, List.of());
+        CompletableFuture<ItemStorage> secondCreate = manager.create(secondOwner, List.of());
+
+        verify(this.repository).save(new ItemStorage(firstOwner, List.of()));
+        verify(this.repository).save(new ItemStorage(secondOwner, List.of()));
+        firstSave.complete(null);
+        secondSave.complete(null);
+        assertEquals(firstOwner, firstCreate.join().owner());
+        assertEquals(secondOwner, secondCreate.join().owner());
+    }
+
+    @Test
     void getOrCreateMissMustCompleteBeforeReservationCanBeAcquired() {
         UUID owner = UUID.randomUUID();
         CompletableFuture<Void> saved = new CompletableFuture<>();

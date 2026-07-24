@@ -2,6 +2,9 @@ package com.eternalcode.parcellockers.itemstorage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -19,6 +22,31 @@ import org.bukkit.plugin.PluginManager;
 import org.junit.jupiter.api.Test;
 
 class ItemStorageManagerReservationTest {
+
+    @Test
+    void overlappingReservationOperationsAreRejectedUntilActiveOperationCompletes() {
+        ItemStorageRepository repository = mock(ItemStorageRepository.class);
+        Server server = mock(Server.class);
+        when(server.getPluginManager()).thenReturn(mock(PluginManager.class));
+        when(repository.fetchAll()).thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+        CompletableFuture<Integer> deleted = new CompletableFuture<>();
+        when(repository.delete(any())).thenReturn(deleted);
+        when(repository.save(any())).thenReturn(CompletableFuture.completedFuture(null));
+        ItemStorageManager manager = new ItemStorageManager(repository, server);
+        UUID owner = UUID.randomUUID();
+        ItemStorageReservation reservation = manager.reserve(owner).orElseThrow();
+
+        CompletableFuture<Boolean> firstDelete = reservation.delete();
+
+        assertThrows(CompletionException.class,
+            () -> reservation.restore(List.of(mock(ItemStack.class))).join());
+        verify(repository, never()).save(any());
+
+        deleted.complete(1);
+        assertTrue(firstDelete.join());
+        reservation.restore(List.of()).join();
+        verify(repository).save(new ItemStorage(owner, List.of()));
+    }
 
     @Test
     void reservedRestoreCannotBeOverwrittenByFreshOrdinaryStorage() {

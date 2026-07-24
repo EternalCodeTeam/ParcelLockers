@@ -178,10 +178,12 @@ public class ItemStorageManager {
 
     private boolean beginOrdinaryOperation(UUID owner) {
         synchronized (this.reservationLock) {
-            if (this.globalOperation || this.reservations.containsKey(owner)) {
+            if (this.globalOperation
+                || this.reservations.containsKey(owner)
+                || this.ordinaryOperations.containsKey(owner)) {
                 return false;
             }
-            this.ordinaryOperations.merge(owner, 1, Integer::sum);
+            this.ordinaryOperations.put(owner, 1);
             return true;
         }
     }
@@ -219,7 +221,8 @@ public class ItemStorageManager {
     private boolean beginReservedOperation(Reservation reservation) {
         synchronized (this.reservationLock) {
             if (this.reservations.get(reservation.owner()) != reservation
-                || reservation.closed.get()) {
+                || reservation.closed.get()
+                || reservation.activeOperations > 0) {
                 return false;
             }
             reservation.activeOperations++;
