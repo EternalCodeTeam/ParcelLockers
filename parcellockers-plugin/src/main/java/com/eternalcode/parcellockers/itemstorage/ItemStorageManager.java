@@ -117,7 +117,7 @@ public class ItemStorageManager {
                 itemStorage.owner(),
                 itemStorage)))));
     }
-    
+
     public CompletableFuture<Boolean> delete(UUID owner) {
         return this.runOrdinaryOperation(owner, () -> this.deleteInternal(owner));
     }
