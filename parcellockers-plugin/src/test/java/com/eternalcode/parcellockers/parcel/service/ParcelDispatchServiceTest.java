@@ -36,6 +36,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.function.Supplier;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -73,6 +74,12 @@ class ParcelDispatchServiceTest {
         when(this.sender.getUniqueId()).thenReturn(this.parcel.sender());
         when(this.itemStorageManager.reserve(this.parcel.sender()))
             .thenReturn(Optional.of(this.reservation));
+        when(this.parcelService.serializeParcelOperation(any(), any()))
+            .thenAnswer(invocation -> {
+                @SuppressWarnings("unchecked")
+                Supplier<CompletableFuture<Boolean>> operation = invocation.getArgument(1);
+                return operation.get();
+            });
     }
 
     @Test
@@ -80,7 +87,7 @@ class ParcelDispatchServiceTest {
         CompletableFuture<Delivery> deliveryCreated = new CompletableFuture<>();
         when(this.lockerManager.isLockerFull(this.parcel.destinationLocker()))
             .thenReturn(CompletableFuture.completedFuture(false));
-        when(this.parcelService.send(this.sender, this.parcel, this.items))
+        when(this.parcelService.sendWithinParcelOperation(this.sender, this.parcel, this.items))
             .thenReturn(CompletableFuture.completedFuture(true));
         when(this.reservation.delete())
             .thenReturn(CompletableFuture.completedFuture(true));
@@ -106,7 +113,7 @@ class ParcelDispatchServiceTest {
 
         assertFalse(this.dispatcher.dispatch(this.sender, this.parcel, this.items).join());
 
-        verify(this.parcelService, never()).send(any(), any(), any());
+        verify(this.parcelService, never()).sendWithinParcelOperation(any(), any(), any());
         verify(this.reservation).close();
     }
 
@@ -121,14 +128,14 @@ class ParcelDispatchServiceTest {
 
         assertInstanceOf(ParcelOperationException.class, exception.getCause());
         assertSame(lookupFailure, exception.getCause().getCause());
-        verify(this.parcelService, never()).send(any(), any(), any());
+        verify(this.parcelService, never()).sendWithinParcelOperation(any(), any(), any());
     }
 
     @Test
     void cancelledPersistenceStepCompletesFalseWithoutContinuing() {
         when(this.lockerManager.isLockerFull(this.parcel.destinationLocker()))
             .thenReturn(CompletableFuture.completedFuture(false));
-        when(this.parcelService.send(this.sender, this.parcel, this.items))
+        when(this.parcelService.sendWithinParcelOperation(this.sender, this.parcel, this.items))
             .thenReturn(CompletableFuture.completedFuture(false));
 
         assertFalse(this.dispatcher.dispatch(this.sender, this.parcel, this.items).join());
@@ -142,7 +149,7 @@ class ParcelDispatchServiceTest {
             new IllegalStateException("persistence failed");
         when(this.lockerManager.isLockerFull(this.parcel.destinationLocker()))
             .thenReturn(CompletableFuture.completedFuture(false));
-        when(this.parcelService.send(this.sender, this.parcel, this.items))
+        when(this.parcelService.sendWithinParcelOperation(this.sender, this.parcel, this.items))
             .thenReturn(CompletableFuture.failedFuture(persistenceFailure));
 
         CompletionException exception = assertThrows(CompletionException.class,
@@ -158,11 +165,11 @@ class ParcelDispatchServiceTest {
         IllegalStateException deleteFailure = new IllegalStateException("delete failed");
         when(this.lockerManager.isLockerFull(this.parcel.destinationLocker()))
             .thenReturn(CompletableFuture.completedFuture(false));
-        when(this.parcelService.send(this.sender, this.parcel, this.items))
+        when(this.parcelService.sendWithinParcelOperation(this.sender, this.parcel, this.items))
             .thenReturn(CompletableFuture.completedFuture(true));
         when(this.reservation.delete())
             .thenReturn(CompletableFuture.failedFuture(deleteFailure));
-        when(this.parcelService.rollbackSend(this.sender, this.parcel))
+        when(this.parcelService.rollbackSendWithinParcelOperation(this.sender, this.parcel))
             .thenReturn(CompletableFuture.completedFuture(null));
 
         CompletionException exception = assertThrows(CompletionException.class,
@@ -170,7 +177,7 @@ class ParcelDispatchServiceTest {
 
         assertInstanceOf(ParcelOperationException.class, exception.getCause());
         assertSame(deleteFailure, exception.getCause().getCause());
-        verify(this.parcelService).rollbackSend(this.sender, this.parcel);
+        verify(this.parcelService).rollbackSendWithinParcelOperation(this.sender, this.parcel);
         verify(this.deliveryManager, never()).create(any(), any());
         verify(this.scheduler, never()).runLaterAsync(any(), any());
     }
@@ -180,10 +187,10 @@ class ParcelDispatchServiceTest {
         IllegalStateException deleteFailure = new IllegalStateException("delete failed");
         when(this.lockerManager.isLockerFull(this.parcel.destinationLocker()))
             .thenReturn(CompletableFuture.completedFuture(false));
-        when(this.parcelService.send(this.sender, this.parcel, this.items))
+        when(this.parcelService.sendWithinParcelOperation(this.sender, this.parcel, this.items))
             .thenReturn(CompletableFuture.completedFuture(true));
         when(this.reservation.delete()).thenThrow(deleteFailure);
-        when(this.parcelService.rollbackSend(this.sender, this.parcel))
+        when(this.parcelService.rollbackSendWithinParcelOperation(this.sender, this.parcel))
             .thenReturn(CompletableFuture.completedFuture(null));
 
         CompletionException exception = assertThrows(CompletionException.class,
@@ -192,7 +199,7 @@ class ParcelDispatchServiceTest {
         ParcelOperationException operationException =
             assertInstanceOf(ParcelOperationException.class, exception.getCause());
         assertSame(deleteFailure, operationException.getCause());
-        verify(this.parcelService).rollbackSend(this.sender, this.parcel);
+        verify(this.parcelService).rollbackSendWithinParcelOperation(this.sender, this.parcel);
         verify(this.deliveryManager, never()).create(any(), any());
     }
 
@@ -203,7 +210,7 @@ class ParcelDispatchServiceTest {
         CompletableFuture<Void> rolledBack = new CompletableFuture<>();
         when(this.lockerManager.isLockerFull(this.parcel.destinationLocker()))
             .thenReturn(CompletableFuture.completedFuture(false));
-        when(this.parcelService.send(this.sender, this.parcel, this.items))
+        when(this.parcelService.sendWithinParcelOperation(this.sender, this.parcel, this.items))
             .thenReturn(CompletableFuture.completedFuture(true));
         when(this.reservation.delete())
             .thenReturn(CompletableFuture.completedFuture(true));
@@ -211,18 +218,18 @@ class ParcelDispatchServiceTest {
             .thenThrow(createFailure);
         when(this.reservation.restore(this.items))
             .thenReturn(restored);
-        when(this.parcelService.rollbackSend(this.sender, this.parcel))
+        when(this.parcelService.rollbackSendWithinParcelOperation(this.sender, this.parcel))
             .thenReturn(rolledBack);
 
         CompletableFuture<Boolean> result = this.dispatcher.dispatch(this.sender, this.parcel, this.items);
 
         assertFalse(result.isDone());
-        verify(this.parcelService, never()).rollbackSend(this.sender, this.parcel);
+        verify(this.parcelService, never()).rollbackSendWithinParcelOperation(this.sender, this.parcel);
 
         restored.complete(mock(ItemStorage.class));
 
         assertFalse(result.isDone());
-        verify(this.parcelService).rollbackSend(this.sender, this.parcel);
+        verify(this.parcelService).rollbackSendWithinParcelOperation(this.sender, this.parcel);
 
         rolledBack.complete(null);
         CompletionException exception =
@@ -238,7 +245,7 @@ class ParcelDispatchServiceTest {
         IllegalStateException createFailure = new IllegalStateException("create failed");
         when(this.lockerManager.isLockerFull(this.parcel.destinationLocker()))
             .thenReturn(CompletableFuture.completedFuture(false));
-        when(this.parcelService.send(this.sender, this.parcel, this.items))
+        when(this.parcelService.sendWithinParcelOperation(this.sender, this.parcel, this.items))
             .thenReturn(CompletableFuture.completedFuture(true));
         when(this.reservation.delete())
             .thenReturn(CompletableFuture.completedFuture(true));
@@ -246,7 +253,7 @@ class ParcelDispatchServiceTest {
             .thenReturn(CompletableFuture.failedFuture(createFailure));
         when(this.reservation.restore(this.items))
             .thenReturn(CompletableFuture.completedFuture(mock(ItemStorage.class)));
-        when(this.parcelService.rollbackSend(this.sender, this.parcel))
+        when(this.parcelService.rollbackSendWithinParcelOperation(this.sender, this.parcel))
             .thenReturn(CompletableFuture.completedFuture(null));
 
         CompletionException exception = assertThrows(CompletionException.class,
@@ -255,7 +262,7 @@ class ParcelDispatchServiceTest {
         assertInstanceOf(ParcelOperationException.class, exception.getCause());
         assertSame(createFailure, exception.getCause().getCause());
         verify(this.reservation).restore(this.items);
-        verify(this.parcelService).rollbackSend(this.sender, this.parcel);
+        verify(this.parcelService).rollbackSendWithinParcelOperation(this.sender, this.parcel);
         verify(this.scheduler, never()).runLaterAsync(any(), any());
         verify(this.noticeService, times(1)).player(eq(this.parcel.sender()), any());
     }
@@ -273,7 +280,7 @@ class ParcelDispatchServiceTest {
             .thenThrow(schedulingFailure);
         when(this.deliveryManager.delete(this.parcel.uuid())).thenReturn(deliveryDeleted);
         when(this.reservation.restore(this.items)).thenReturn(restored);
-        when(this.parcelService.rollbackSend(this.sender, this.parcel)).thenReturn(rolledBack);
+        when(this.parcelService.rollbackSendWithinParcelOperation(this.sender, this.parcel)).thenReturn(rolledBack);
 
         CompletableFuture<Boolean> result = this.dispatcher.dispatch(this.sender, this.parcel, this.items);
 
@@ -283,10 +290,10 @@ class ParcelDispatchServiceTest {
 
         deliveryDeleted.complete(true);
         verify(this.reservation).restore(this.items);
-        verify(this.parcelService, never()).rollbackSend(this.sender, this.parcel);
+        verify(this.parcelService, never()).rollbackSendWithinParcelOperation(this.sender, this.parcel);
 
         restored.complete(mock(ItemStorage.class));
-        verify(this.parcelService).rollbackSend(this.sender, this.parcel);
+        verify(this.parcelService).rollbackSendWithinParcelOperation(this.sender, this.parcel);
         assertFalse(result.isDone());
 
         rolledBack.complete(null);
@@ -320,7 +327,7 @@ class ParcelDispatchServiceTest {
             .thenReturn(CompletableFuture.failedFuture(new IllegalStateException("create failed")));
         when(this.reservation.restore(this.items))
             .thenReturn(CompletableFuture.failedFuture(new IllegalStateException("restore failed")));
-        when(this.parcelService.rollbackSend(this.sender, this.parcel))
+        when(this.parcelService.rollbackSendWithinParcelOperation(this.sender, this.parcel))
             .thenReturn(CompletableFuture.completedFuture(null));
 
         CompletionException exception;
@@ -332,7 +339,7 @@ class ParcelDispatchServiceTest {
         }
 
         assertInstanceOf(ParcelOperationException.class, exception.getCause());
-        verify(this.parcelService).rollbackSend(this.sender, this.parcel);
+        verify(this.parcelService).rollbackSendWithinParcelOperation(this.sender, this.parcel);
         verify(this.noticeService, times(1)).player(eq(this.parcel.sender()), any());
         verify(this.reservation).close();
         assertTrue(records.stream().anyMatch(record ->
@@ -352,7 +359,7 @@ class ParcelDispatchServiceTest {
             .thenReturn(CompletableFuture.completedFuture(false));
         when(this.reservation.restore(this.items))
             .thenReturn(CompletableFuture.completedFuture(mock(ItemStorage.class)));
-        when(this.parcelService.rollbackSend(this.sender, this.parcel))
+        when(this.parcelService.rollbackSendWithinParcelOperation(this.sender, this.parcel))
             .thenReturn(CompletableFuture.completedFuture(null));
 
         CompletionException exception = assertThrows(CompletionException.class,
@@ -360,7 +367,7 @@ class ParcelDispatchServiceTest {
 
         assertInstanceOf(ParcelOperationException.class, exception.getCause());
         verify(this.reservation).restore(this.items);
-        verify(this.parcelService).rollbackSend(this.sender, this.parcel);
+        verify(this.parcelService).rollbackSendWithinParcelOperation(this.sender, this.parcel);
     }
 
     @Test
@@ -378,7 +385,7 @@ class ParcelDispatchServiceTest {
             .thenReturn(CompletableFuture.failedFuture(deliveryCleanupFailure));
         when(this.reservation.restore(this.items))
             .thenReturn(CompletableFuture.failedFuture(restoreFailure));
-        when(this.parcelService.rollbackSend(this.sender, this.parcel))
+        when(this.parcelService.rollbackSendWithinParcelOperation(this.sender, this.parcel))
             .thenReturn(CompletableFuture.failedFuture(rollbackFailure));
 
         CompletionException exception = assertThrows(CompletionException.class,
@@ -393,7 +400,7 @@ class ParcelDispatchServiceTest {
         );
         verify(this.deliveryManager).delete(this.parcel.uuid());
         verify(this.reservation).restore(this.items);
-        verify(this.parcelService).rollbackSend(this.sender, this.parcel);
+        verify(this.parcelService).rollbackSendWithinParcelOperation(this.sender, this.parcel);
     }
 
     @Test
@@ -403,7 +410,7 @@ class ParcelDispatchServiceTest {
             .thenReturn(CompletableFuture.failedFuture(new IllegalStateException("create failed")));
         when(this.reservation.restore(this.items))
             .thenReturn(CompletableFuture.completedFuture(mock(ItemStorage.class)));
-        when(this.parcelService.rollbackSend(this.sender, this.parcel))
+        when(this.parcelService.rollbackSendWithinParcelOperation(this.sender, this.parcel))
             .thenReturn(CompletableFuture.failedFuture(new IllegalStateException("rollback failed")));
 
         CompletionException exception = assertThrows(CompletionException.class,
@@ -424,13 +431,13 @@ class ParcelDispatchServiceTest {
 
         verify(this.deliveryManager, never()).delete(this.parcel.uuid());
         verify(this.reservation, never()).restore(this.items);
-        verify(this.parcelService, never()).rollbackSend(this.sender, this.parcel);
+        verify(this.parcelService, never()).rollbackSendWithinParcelOperation(this.sender, this.parcel);
     }
 
     private void stubSuccessfulStart() {
         when(this.lockerManager.isLockerFull(this.parcel.destinationLocker()))
             .thenReturn(CompletableFuture.completedFuture(false));
-        when(this.parcelService.send(this.sender, this.parcel, this.items))
+        when(this.parcelService.sendWithinParcelOperation(this.sender, this.parcel, this.items))
             .thenReturn(CompletableFuture.completedFuture(true));
         when(this.reservation.delete())
             .thenReturn(CompletableFuture.completedFuture(true));

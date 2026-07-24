@@ -14,8 +14,10 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockingDetails;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -41,6 +43,8 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Server;
@@ -50,9 +54,170 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.PluginManager;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.MockedStatic;
 
 class ParcelServiceImplTest {
+
+    @Test
+    void releasesParcelGateBeforeCompletingOutwardFuture() {
+        OperationFixture fixture = new OperationFixture();
+        CompletableFuture<Void> contentSaved = new CompletableFuture<>();
+        when(fixture.parcelRepository.saveIfAbsent(fixture.parcel))
+            .thenReturn(CompletableFuture.completedFuture(true));
+        when(fixture.contentRepository.save(any())).thenReturn(contentSaved);
+        when(fixture.parcelRepository.delete(fixture.parcel.uuid()))
+            .thenReturn(CompletableFuture.completedFuture(true));
+        when(fixture.contentRepository.delete(fixture.parcel.uuid()))
+            .thenReturn(CompletableFuture.completedFuture(true));
+        AtomicBoolean callbackDeleteCompleted = new AtomicBoolean();
+
+        CompletableFuture<Boolean> send =
+            fixture.service.send(fixture.sender, fixture.parcel, fixture.items);
+        send.whenComplete((ignored, throwable) -> callbackDeleteCompleted.set(
+            fixture.service.delete(fixture.parcel.uuid()).isDone()));
+
+        contentSaved.complete(null);
+
+        assertTrue(send.join());
+        assertTrue(callbackDeleteCompleted.get());
+    }
+
+    @Test
+    void sameParcelMutationFromSendEventFailsFastInsteadOfQueuingBehindItself() {
+        OperationFixture fixture = new OperationFixture();
+        when(fixture.parcelRepository.saveIfAbsent(fixture.parcel))
+            .thenReturn(CompletableFuture.completedFuture(true));
+        when(fixture.contentRepository.save(any()))
+            .thenReturn(CompletableFuture.completedFuture(null));
+        AtomicReference<CompletableFuture<Boolean>> reentrant = new AtomicReference<>();
+        AtomicReference<CompletableFuture<Void>> reentrantBulk = new AtomicReference<>();
+        doAnswer(invocation -> {
+            reentrant.set(fixture.service.delete(fixture.parcel.uuid()));
+            reentrantBulk.set(
+                fixture.service.deleteAll(fixture.sender, fixture.noticeService));
+            return null;
+        }).when(fixture.pluginManager).callEvent(any());
+
+        assertTrue(fixture.service.send(
+            fixture.sender, fixture.parcel, fixture.items).join());
+
+        assertTrue(reentrant.get().isCompletedExceptionally());
+        assertInstanceOf(IllegalStateException.class,
+            assertThrows(CompletionException.class, () -> reentrant.get().join()).getCause());
+        assertTrue(reentrantBulk.get().isCompletedExceptionally());
+        assertInstanceOf(IllegalStateException.class,
+            assertThrows(
+                CompletionException.class, () -> reentrantBulk.get().join()).getCause());
+        verify(fixture.parcelRepository, never()).delete(fixture.parcel.uuid());
+        verify(fixture.parcelRepository, never()).deleteAll();
+    }
+
+    @Test
+    void deleteAllWaitsForInFlightParcelOperationsAndBlocksNewOnes() {
+        OperationFixture fixture = new OperationFixture();
+        CompletableFuture<Void> contentSaved = new CompletableFuture<>();
+        CompletableFuture<Integer> bulkDeleted = new CompletableFuture<>();
+        when(fixture.parcelRepository.saveIfAbsent(fixture.parcel))
+            .thenReturn(CompletableFuture.completedFuture(true));
+        when(fixture.contentRepository.save(any())).thenReturn(contentSaved);
+        when(fixture.parcelRepository.deleteAll()).thenReturn(bulkDeleted);
+
+        CompletableFuture<Boolean> send =
+            fixture.service.send(fixture.sender, fixture.parcel, fixture.items);
+        CompletableFuture<Void> deleteAll =
+            fixture.service.deleteAll(fixture.sender, fixture.noticeService);
+        CompletableFuture<Void> update = fixture.service.update(fixture.parcel);
+
+        assertFalse(deleteAll.isDone());
+        assertFalse(update.isDone());
+        verify(fixture.parcelRepository, never()).deleteAll();
+        verify(fixture.parcelRepository, never()).update(fixture.parcel);
+
+        contentSaved.complete(null);
+
+        assertTrue(send.join());
+        verify(fixture.parcelRepository).deleteAll();
+        assertFalse(update.isDone());
+    }
+
+    @Test
+    void deleteAndUpdateWaitForInFlightSendOfSameParcel() {
+        OperationFixture fixture = new OperationFixture();
+        CompletableFuture<Void> contentSaved = new CompletableFuture<>();
+        when(fixture.parcelRepository.saveIfAbsent(fixture.parcel))
+            .thenReturn(CompletableFuture.completedFuture(true));
+        when(fixture.contentRepository.save(any())).thenReturn(contentSaved);
+        when(fixture.parcelRepository.delete(fixture.parcel.uuid()))
+            .thenReturn(CompletableFuture.completedFuture(true));
+        when(fixture.contentRepository.delete(fixture.parcel.uuid()))
+            .thenReturn(CompletableFuture.completedFuture(true));
+        when(fixture.parcelRepository.update(fixture.parcel))
+            .thenReturn(CompletableFuture.completedFuture(null));
+
+        CompletableFuture<Boolean> send =
+            fixture.service.send(fixture.sender, fixture.parcel, fixture.items);
+        CompletableFuture<Boolean> delete = fixture.service.delete(fixture.parcel.uuid());
+        CompletableFuture<Void> update = fixture.service.update(fixture.parcel);
+
+        assertFalse(delete.isDone());
+        assertFalse(update.isDone());
+        verify(fixture.parcelRepository, never()).delete(fixture.parcel.uuid());
+        verify(fixture.parcelRepository, never()).update(fixture.parcel);
+
+        contentSaved.complete(null);
+
+        assertTrue(send.join());
+        assertTrue(delete.join());
+        update.join();
+        InOrder order = org.mockito.Mockito.inOrder(
+            fixture.contentRepository, fixture.parcelRepository);
+        order.verify(fixture.contentRepository).save(any());
+        order.verify(fixture.parcelRepository).delete(fixture.parcel.uuid());
+        order.verify(fixture.contentRepository).delete(fixture.parcel.uuid());
+        order.verify(fixture.parcelRepository).update(fixture.parcel);
+    }
+
+    @Test
+    void staleSendCompensationFinishesBeforeDeleteAndReplacementInsert() {
+        OperationFixture fixture = new OperationFixture();
+        CompletableFuture<Boolean> compensationDelete = new CompletableFuture<>();
+        when(fixture.parcelRepository.saveIfAbsent(fixture.parcel))
+            .thenReturn(
+                CompletableFuture.completedFuture(true),
+                CompletableFuture.completedFuture(true));
+        when(fixture.contentRepository.save(any()))
+            .thenReturn(
+                CompletableFuture.failedFuture(new IllegalStateException("first save failed")),
+                CompletableFuture.completedFuture(null));
+        when(fixture.parcelRepository.delete(fixture.parcel.uuid()))
+            .thenReturn(compensationDelete, CompletableFuture.completedFuture(true));
+        when(fixture.contentRepository.delete(fixture.parcel.uuid()))
+            .thenReturn(CompletableFuture.completedFuture(true));
+
+        CompletableFuture<Boolean> first =
+            fixture.service.send(fixture.sender, fixture.parcel, fixture.items);
+        CompletableFuture<Boolean> delete = fixture.service.delete(fixture.parcel.uuid());
+        CompletableFuture<Boolean> replacement =
+            fixture.service.send(fixture.sender, fixture.parcel, fixture.items);
+
+        verify(fixture.parcelRepository, times(1)).saveIfAbsent(fixture.parcel);
+        assertFalse(delete.isDone());
+        assertFalse(replacement.isDone());
+
+        compensationDelete.complete(true);
+
+        assertThrows(CompletionException.class, first::join);
+        assertTrue(delete.join());
+        assertTrue(replacement.join());
+        assertEquals(
+            List.of("saveIfAbsent", "delete", "delete", "saveIfAbsent"),
+            mockingDetails(fixture.parcelRepository).getInvocations().stream()
+                .map(invocation -> invocation.getMethod().getName())
+                .filter(name -> name.equals("saveIfAbsent") || name.equals("delete"))
+                .toList()
+        );
+    }
 
     @Test
     void collectRejectsForgedReceiverFromAuthoritativeRecordWithoutSideEffects() {
@@ -635,6 +800,35 @@ class ParcelServiceImplTest {
         private void runNextMainTask() {
             Runnable task = this.mainTasks.remove();
             task.run();
+        }
+    }
+
+    private static final class OperationFixture {
+
+        private final NoticeService noticeService = mock(NoticeService.class);
+        private final ParcelRepository parcelRepository = mock(ParcelRepository.class);
+        private final ParcelContentRepository contentRepository =
+            mock(ParcelContentRepository.class);
+        private final CollectedParcelRepository collectedRepository =
+            mock(CollectedParcelRepository.class);
+        private final Scheduler scheduler = mock(Scheduler.class);
+        private final PluginConfig config = new PluginConfig();
+        private final Economy economy = mock(Economy.class);
+        private final Server server = mock(Server.class);
+        private final PluginManager pluginManager = mock(PluginManager.class);
+        private final Player sender = mock(Player.class);
+        private final Parcel parcel = parcel();
+        private final List<ItemStack> items = List.of(mock(ItemStack.class));
+        private final ParcelServiceImpl service;
+
+        private OperationFixture() {
+            when(this.server.getPluginManager()).thenReturn(this.pluginManager);
+            when(this.sender.getUniqueId()).thenReturn(this.parcel.sender());
+            when(this.sender.hasPermission("parcellockers.fee.bypass")).thenReturn(true);
+            when(this.items.getFirst().clone()).thenReturn(this.items.getFirst());
+            this.service = new ParcelServiceImpl(
+                this.noticeService, this.parcelRepository, this.contentRepository,
+                this.collectedRepository, this.scheduler, this.config, this.economy, this.server);
         }
     }
 }

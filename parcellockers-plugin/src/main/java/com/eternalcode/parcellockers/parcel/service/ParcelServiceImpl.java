@@ -25,12 +25,15 @@ import com.google.common.base.Preconditions;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
@@ -56,6 +59,10 @@ public class ParcelServiceImpl implements PluginParcelService {
     private final Server server;
 
     private final Cache<UUID, Parcel> parcelsByUuid;
+    private final Map<UUID, CompletableFuture<Void>> parcelOperationTails = new HashMap<>();
+    private CompletableFuture<Void> globalParcelOperationTail =
+        CompletableFuture.completedFuture(null);
+    private final ThreadLocal<UUID> parcelOperationCallback = new ThreadLocal<>();
 
     public ParcelServiceImpl(
         NoticeService noticeService,
@@ -84,14 +91,26 @@ public class ParcelServiceImpl implements PluginParcelService {
 
     @Override
     public CompletableFuture<Boolean> send(Player sender, Parcel parcel, List<ItemStack> items) {
+        Objects.requireNonNull(parcel, "Parcel cannot be null");
+        return this.serializeParcelOperation(
+            parcel.uuid(), () -> this.sendWithinParcelOperation(sender, parcel, items));
+    }
+
+    @Override
+    public CompletableFuture<Boolean> sendWithinParcelOperation(
+        Player sender,
+        Parcel parcel,
+        List<ItemStack> items
+    ) {
         Objects.requireNonNull(sender, "Sender cannot be null");
         Objects.requireNonNull(parcel, "Parcel cannot be null");
         Objects.requireNonNull(items, "Items list cannot be null");
         Preconditions.checkArgument(!items.isEmpty(), "Items list cannot be empty");
 
         ParcelSendEvent event = new ParcelSendEvent(parcel);
-        this.server.getPluginManager().callEvent(event);
-        
+        this.runParcelOperationCallback(
+            parcel.uuid(), () -> this.server.getPluginManager().callEvent(event));
+
         if (event.isCancelled()) {
             this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.cannotSend);
             return CompletableFuture.completedFuture(false);
@@ -226,6 +245,16 @@ public class ParcelServiceImpl implements PluginParcelService {
 
     @Override
     public CompletableFuture<Void> rollbackSend(Player sender, Parcel parcel) {
+        Objects.requireNonNull(parcel, "Parcel cannot be null");
+        return this.serializeParcelOperation(
+            parcel.uuid(), () -> this.rollbackSendWithinParcelOperation(sender, parcel));
+    }
+
+    @Override
+    public CompletableFuture<Void> rollbackSendWithinParcelOperation(
+        Player sender,
+        Parcel parcel
+    ) {
         Objects.requireNonNull(sender, "Sender cannot be null");
         Objects.requireNonNull(parcel, "Parcel cannot be null");
 
@@ -330,6 +359,12 @@ public class ParcelServiceImpl implements PluginParcelService {
     @Override
     public CompletableFuture<Void> update(Parcel updated) {
         Objects.requireNonNull(updated, "Updated parcel cannot be null");
+        return this.serializeParcelOperation(
+            updated.uuid(), () -> this.updateWithinParcelOperation(updated));
+    }
+
+    @Override
+    public CompletableFuture<Void> updateWithinParcelOperation(Parcel updated) {
         this.parcelsByUuid.put(updated.uuid(), updated);
         return this.parcelRepository.update(updated);
     }
@@ -338,6 +373,14 @@ public class ParcelServiceImpl implements PluginParcelService {
     public CompletableFuture<Boolean> updateIfStatus(Parcel updated, ParcelStatus expectedStatus) {
         Objects.requireNonNull(updated, "Updated parcel cannot be null");
         Objects.requireNonNull(expectedStatus, "Expected status cannot be null");
+        return this.serializeParcelOperation(
+            updated.uuid(), () -> this.updateIfStatusWithinOperation(updated, expectedStatus));
+    }
+
+    private CompletableFuture<Boolean> updateIfStatusWithinOperation(
+        Parcel updated,
+        ParcelStatus expectedStatus
+    ) {
         return this.parcelRepository.updateIfStatus(updated, expectedStatus).thenApply(applied -> {
             if (applied) {
                 this.parcelsByUuid.put(updated.uuid(), updated);
@@ -352,7 +395,11 @@ public class ParcelServiceImpl implements PluginParcelService {
     public CompletableFuture<Void> delete(CommandSender sender, Parcel parcel) {
         Objects.requireNonNull(sender, "Sender cannot be null");
         Objects.requireNonNull(parcel, "Parcel cannot be null");
+        return this.serializeParcelOperation(
+            parcel.uuid(), () -> this.deleteWithinOperation(sender, parcel));
+    }
 
+    private CompletableFuture<Void> deleteWithinOperation(CommandSender sender, Parcel parcel) {
         return this.parcelRepository.delete(parcel)
             .thenAccept(unused -> {
                 this.noticeService.create()
@@ -374,7 +421,11 @@ public class ParcelServiceImpl implements PluginParcelService {
     public CompletableFuture<Void> collect(Player player, Parcel parcel) {
         Objects.requireNonNull(player, "Player cannot be null");
         Objects.requireNonNull(parcel, "Parcel cannot be null");
+        return this.serializeParcelOperation(
+            parcel.uuid(), () -> this.collectWithinOperation(player, parcel));
+    }
 
+    private CompletableFuture<Void> collectWithinOperation(Player player, Parcel parcel) {
         UUID playerId = player.getUniqueId();
         CompletableFuture<Optional<Parcel>> authoritativeFuture;
         try {
@@ -577,7 +628,8 @@ public class ParcelServiceImpl implements PluginParcelService {
         if (this.server.isPrimaryThread()) {
             try {
                 ParcelCollectEvent event = new ParcelCollectEvent(parcel);
-                this.server.getPluginManager().callEvent(event);
+                this.runParcelOperationCallback(
+                    parcel.uuid(), () -> this.server.getPluginManager().callEvent(event));
                 return CompletableFuture.completedFuture(event.isCancelled());
             } catch (Throwable throwable) {
                 return CompletableFuture.failedFuture(throwable);
@@ -589,7 +641,8 @@ public class ParcelServiceImpl implements PluginParcelService {
             this.scheduler.run(() -> {
                 try {
                     ParcelCollectEvent event = new ParcelCollectEvent(parcel);
-                    this.server.getPluginManager().callEvent(event);
+                    this.runParcelOperationCallback(
+                        parcel.uuid(), () -> this.server.getPluginManager().callEvent(event));
                     result.complete(event.isCancelled());
                 } catch (Throwable throwable) {
                     result.completeExceptionally(throwable);
@@ -688,6 +741,23 @@ public class ParcelServiceImpl implements PluginParcelService {
     @Override
     public CompletableFuture<Boolean> delete(UUID uuid) {
         Objects.requireNonNull(uuid, "UUID cannot be null");
+        return this.serializeParcelOperation(uuid, () -> this.deleteWithinOperation(uuid));
+    }
+
+    @Override
+    public CompletableFuture<Optional<Parcel>> getAuthoritativeWithinParcelOperation(UUID uuid) {
+        Objects.requireNonNull(uuid, "UUID cannot be null");
+        return this.parcelRepository.findById(uuid).thenApply(optional -> {
+            if (optional.isPresent()) {
+                this.parcelsByUuid.put(uuid, optional.get());
+            } else {
+                this.parcelsByUuid.invalidate(uuid);
+            }
+            return optional;
+        });
+    }
+
+    private CompletableFuture<Boolean> deleteWithinOperation(UUID uuid) {
         return this.parcelRepository.delete(uuid).thenCompose(deleted -> {
             if (!deleted) {
                 return CompletableFuture.completedFuture(false);
@@ -713,10 +783,135 @@ public class ParcelServiceImpl implements PluginParcelService {
     }
 
     @Override
+    public <T> CompletableFuture<T> serializeParcelOperation(
+        UUID parcel,
+        Supplier<CompletableFuture<T>> operation
+    ) {
+        Objects.requireNonNull(parcel, "Parcel UUID cannot be null");
+        Objects.requireNonNull(operation, "Parcel operation cannot be null");
+        if (this.parcelOperationCallback.get() != null) {
+            return CompletableFuture.failedFuture(new IllegalStateException(
+                "Parcel mutations cannot be started from a parcel event callback"));
+        }
+
+        CompletableFuture<Void> gate = new CompletableFuture<>();
+        CompletableFuture<Void> predecessor;
+        CompletableFuture<Void> globalPredecessor;
+        synchronized (this.parcelOperationTails) {
+            predecessor = this.parcelOperationTails.put(parcel, gate);
+            globalPredecessor = this.globalParcelOperationTail;
+        }
+        if (predecessor == null) {
+            predecessor = CompletableFuture.completedFuture(null);
+        }
+
+        CompletableFuture<Void> ready = CompletableFuture.allOf(
+            predecessor.handle((ignored, throwable) -> null),
+            globalPredecessor.handle((ignored, throwable) -> null));
+        CompletableFuture<T> result = new CompletableFuture<>();
+        ready.thenRun(() -> {
+            CompletableFuture<T> running;
+            try {
+                running = Objects.requireNonNull(
+                    operation.get(), "Parcel operation returned a null future");
+            } catch (Throwable throwable) {
+                gate.complete(null);
+                result.completeExceptionally(throwable);
+                return;
+            }
+            running.whenComplete((value, throwable) -> {
+                gate.complete(null);
+                if (throwable != null) {
+                    result.completeExceptionally(throwable);
+                } else {
+                    result.complete(value);
+                }
+            });
+        });
+        gate.whenComplete((ignored, throwable) -> {
+            synchronized (this.parcelOperationTails) {
+                this.parcelOperationTails.remove(parcel, gate);
+            }
+        });
+        return result;
+    }
+
+    @Override
+    public void runParcelOperationCallback(UUID parcel, Runnable callback) {
+        Objects.requireNonNull(parcel, "Parcel UUID cannot be null");
+        Objects.requireNonNull(callback, "Parcel callback cannot be null");
+        UUID previous = this.parcelOperationCallback.get();
+        this.parcelOperationCallback.set(parcel);
+        try {
+            callback.run();
+        } finally {
+            if (previous == null) {
+                this.parcelOperationCallback.remove();
+            } else {
+                this.parcelOperationCallback.set(previous);
+            }
+        }
+    }
+
+    private <T> CompletableFuture<T> serializeAllParcelOperations(
+        Supplier<CompletableFuture<T>> operation
+    ) {
+        if (this.parcelOperationCallback.get() != null) {
+            return CompletableFuture.failedFuture(new IllegalStateException(
+                "Bulk parcel mutations cannot be started from a parcel event callback"));
+        }
+        CompletableFuture<Void> gate = new CompletableFuture<>();
+        CompletableFuture<Void> ready;
+        synchronized (this.parcelOperationTails) {
+            List<CompletableFuture<Void>> predecessors =
+                new ArrayList<>(this.parcelOperationTails.values());
+            predecessors.add(this.globalParcelOperationTail);
+            ready = CompletableFuture.allOf(predecessors.toArray(CompletableFuture[]::new));
+            this.globalParcelOperationTail = gate;
+        }
+
+        CompletableFuture<T> result = new CompletableFuture<>();
+        ready.handle((ignored, throwable) -> null).thenRun(() -> {
+            CompletableFuture<T> running;
+            try {
+                running = Objects.requireNonNull(
+                    operation.get(), "Global parcel operation returned a null future");
+            } catch (Throwable throwable) {
+                gate.complete(null);
+                result.completeExceptionally(throwable);
+                return;
+            }
+            running.whenComplete((value, throwable) -> {
+                gate.complete(null);
+                if (throwable != null) {
+                    result.completeExceptionally(throwable);
+                } else {
+                    result.complete(value);
+                }
+            });
+        });
+        gate.whenComplete((ignored, throwable) -> {
+            synchronized (this.parcelOperationTails) {
+                if (this.globalParcelOperationTail == gate) {
+                    this.globalParcelOperationTail = CompletableFuture.completedFuture(null);
+                }
+            }
+        });
+        return result;
+    }
+
+    @Override
     public CompletableFuture<Void> deleteAll(CommandSender sender, NoticeService noticeService) {
         Objects.requireNonNull(sender, "Sender cannot be null");
         Objects.requireNonNull(noticeService, "NoticeService cannot be null");
+        return this.serializeAllParcelOperations(
+            () -> this.deleteAllWithinOperation(sender, noticeService));
+    }
 
+    private CompletableFuture<Void> deleteAllWithinOperation(
+        CommandSender sender,
+        NoticeService noticeService
+    ) {
         return this.parcelRepository.deleteAll().thenCompose(deleted -> {
             noticeService.create()
                 .notice(messages -> messages.admin.deletedParcels)

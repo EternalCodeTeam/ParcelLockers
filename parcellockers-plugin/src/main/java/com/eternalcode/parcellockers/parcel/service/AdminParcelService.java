@@ -16,14 +16,14 @@ import java.util.concurrent.CompletableFuture;
 
 public class AdminParcelService {
 
-    private final ParcelService parcelService;
+    private final PluginParcelService parcelService;
     private final ParcelContentManager parcelContentManager;
     private final DeliveryManager deliveryManager;
     private final LockerManager lockerManager;
     private final PluginConfig config;
     private final Scheduler scheduler;
 
-    public AdminParcelService(ParcelService parcelService, ParcelContentManager parcelContentManager,
+    public AdminParcelService(PluginParcelService parcelService, ParcelContentManager parcelContentManager,
             DeliveryManager deliveryManager, LockerManager lockerManager, PluginConfig config, Scheduler scheduler) {
         this.parcelService = parcelService;
         this.parcelContentManager = parcelContentManager;

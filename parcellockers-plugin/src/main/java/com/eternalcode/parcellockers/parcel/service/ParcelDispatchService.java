@@ -59,6 +59,21 @@ public class ParcelDispatchService {
     }
 
     public CompletableFuture<Boolean> dispatch(Player sender, Parcel parcel, List<ItemStack> items) {
+        try {
+            return this.parcelService.serializeParcelOperation(
+                parcel.uuid(), () -> this.dispatchWithinParcelOperation(sender, parcel, items));
+        } catch (Throwable throwable) {
+            this.notifyCannotSend(sender);
+            return CompletableFuture.failedFuture(this.operationFailure(
+                "Failed to serialize dispatch for parcel " + parcel.uuid(), throwable));
+        }
+    }
+
+    private CompletableFuture<Boolean> dispatchWithinParcelOperation(
+        Player sender,
+        Parcel parcel,
+        List<ItemStack> items
+    ) {
         ItemStorageReservation reservation = this.itemStorageManager
             .reserve(sender.getUniqueId())
             .orElse(null);
@@ -109,7 +124,7 @@ public class ParcelDispatchService {
                     ? this.config.settings.priorityParcelSendDuration
                     : this.config.settings.parcelSendDuration;
 
-                return this.parcelService.send(sender, parcel, items)
+                return this.parcelService.sendWithinParcelOperation(sender, parcel, items)
                     .thenCompose(success -> {
                         if (!Boolean.TRUE.equals(success)) {
                             this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.cannotSend);
@@ -311,7 +326,7 @@ public class ParcelDispatchService {
     private CleanupStep rollbackStep(Player sender, Parcel parcel) {
         return new CleanupStep(
             "Roll back parcel " + parcel.uuid(),
-            () -> this.parcelService.rollbackSend(sender, parcel)
+            () -> this.parcelService.rollbackSendWithinParcelOperation(sender, parcel)
         );
     }
 
