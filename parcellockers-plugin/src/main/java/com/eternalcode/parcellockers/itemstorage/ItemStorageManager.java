@@ -5,11 +5,14 @@ import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepositor
 import com.eternalcode.parcellockers.notification.NoticeService;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.ItemStack;
@@ -20,6 +23,9 @@ public class ItemStorageManager {
 
     private final ItemStorageRepository itemStorageRepository;
     private final Server server;
+    private final Object reservationLock = new Object();
+    private final Map<UUID, Reservation> reservations = new HashMap<>();
+    private final Map<UUID, Integer> ordinaryMutations = new HashMap<>();
 
     public ItemStorageManager(ItemStorageRepository itemStorageRepository, Server server) {
         this.itemStorageRepository = itemStorageRepository;
@@ -55,15 +61,38 @@ public class ItemStorageManager {
     }
 
     public CompletableFuture<ItemStorage> create(UUID owner, List<ItemStack> items) {
+        if (!this.beginOrdinaryMutation(owner)) {
+            return CompletableFuture.failedFuture(
+                new IllegalStateException("Item storage is reserved for active dispatch: " + owner));
+        }
+
+        CompletableFuture<ItemStorage> operation;
+        try {
+            operation = this.createInternal(owner, items, true);
+        } catch (Throwable throwable) {
+            this.endOrdinaryMutation(owner);
+            return CompletableFuture.failedFuture(throwable);
+        }
+        return operation.whenComplete((ignored, throwable) -> this.endOrdinaryMutation(owner));
+    }
+
+    private CompletableFuture<ItemStorage> createInternal(
+        UUID owner,
+        List<ItemStack> items,
+        boolean fireEvent
+    ) {
         ItemStorage oldItemStorage = this.cache.getIfPresent(owner);
         ItemStorage newItemStorage = new ItemStorage(owner, items);
 
-        // This is an update operation - fire ItemStorageUpdateEvent
-        ItemStorageUpdateEvent event = new ItemStorageUpdateEvent(oldItemStorage, newItemStorage);
-        this.server.getPluginManager().callEvent(event);
+        if (fireEvent) {
+            // This is an update operation - fire ItemStorageUpdateEvent
+            ItemStorageUpdateEvent event = new ItemStorageUpdateEvent(oldItemStorage, newItemStorage);
+            this.server.getPluginManager().callEvent(event);
 
-        if (event.isCancelled()) {
-            return CompletableFuture.failedFuture(new IllegalStateException("ItemStorage update was cancelled by event"));
+            if (event.isCancelled()) {
+                return CompletableFuture.failedFuture(
+                    new IllegalStateException("ItemStorage update was cancelled by event"));
+            }
         }
 
         this.cache.put(owner, newItemStorage);
@@ -91,10 +120,93 @@ public class ItemStorageManager {
     }
     
     public CompletableFuture<Boolean> delete(UUID owner) {
+        if (!this.beginOrdinaryMutation(owner)) {
+            return CompletableFuture.failedFuture(
+                new IllegalStateException("Item storage is reserved for active dispatch: " + owner));
+        }
+
+        CompletableFuture<Boolean> operation;
+        try {
+            operation = this.deleteInternal(owner);
+        } catch (Throwable throwable) {
+            this.endOrdinaryMutation(owner);
+            return CompletableFuture.failedFuture(throwable);
+        }
+        return operation.whenComplete((ignored, throwable) -> this.endOrdinaryMutation(owner));
+    }
+
+    public Optional<ItemStorageReservation> reserve(UUID owner) {
+        synchronized (this.reservationLock) {
+            if (this.reservations.containsKey(owner)
+                || this.ordinaryMutations.getOrDefault(owner, 0) > 0) {
+                return Optional.empty();
+            }
+            Reservation reservation = new Reservation(owner);
+            this.reservations.put(owner, reservation);
+            return Optional.of(reservation);
+        }
+    }
+
+    private CompletableFuture<Boolean> deleteReserved(Reservation reservation) {
+        if (!this.isActive(reservation)) {
+            return CompletableFuture.failedFuture(
+                new IllegalStateException("Item storage reservation is no longer active: "
+                    + reservation.owner()));
+        }
+        return this.deleteInternal(reservation.owner());
+    }
+
+    private CompletableFuture<ItemStorage> restoreReserved(
+        Reservation reservation,
+        List<ItemStack> items
+    ) {
+        if (!this.isActive(reservation)) {
+            return CompletableFuture.failedFuture(
+                new IllegalStateException("Item storage reservation is no longer active: "
+                    + reservation.owner()));
+        }
+        return this.createInternal(reservation.owner(), items, false);
+    }
+
+    private CompletableFuture<Boolean> deleteInternal(UUID owner) {
         return this.itemStorageRepository.delete(owner).thenApply(i -> {
             this.cache.invalidate(owner);
             return i > 0;
         });
+    }
+
+    private boolean beginOrdinaryMutation(UUID owner) {
+        synchronized (this.reservationLock) {
+            if (this.reservations.containsKey(owner)) {
+                return false;
+            }
+            this.ordinaryMutations.merge(owner, 1, Integer::sum);
+            return true;
+        }
+    }
+
+    private void endOrdinaryMutation(UUID owner) {
+        synchronized (this.reservationLock) {
+            int remaining = this.ordinaryMutations.getOrDefault(owner, 0) - 1;
+            if (remaining > 0) {
+                this.ordinaryMutations.put(owner, remaining);
+            } else {
+                this.ordinaryMutations.remove(owner);
+            }
+        }
+    }
+
+    private boolean isActive(Reservation reservation) {
+        synchronized (this.reservationLock) {
+            return this.reservations.get(reservation.owner()) == reservation
+                && !reservation.closed.get();
+        }
+    }
+
+    private void release(Reservation reservation) {
+        synchronized (this.reservationLock) {
+            this.reservations.remove(reservation.owner(), reservation);
+        }
     }
 
     public CompletableFuture<Void> deleteAll(CommandSender sender, NoticeService noticeService) {
@@ -107,5 +219,37 @@ public class ItemStorageManager {
 
             this.cache.invalidateAll();
         });
+    }
+
+    private final class Reservation implements ItemStorageReservation {
+
+        private final UUID owner;
+        private final AtomicBoolean closed = new AtomicBoolean();
+
+        private Reservation(UUID owner) {
+            this.owner = owner;
+        }
+
+        @Override
+        public UUID owner() {
+            return this.owner;
+        }
+
+        @Override
+        public CompletableFuture<Boolean> delete() {
+            return ItemStorageManager.this.deleteReserved(this);
+        }
+
+        @Override
+        public CompletableFuture<ItemStorage> restore(List<ItemStack> items) {
+            return ItemStorageManager.this.restoreReserved(this, items);
+        }
+
+        @Override
+        public void close() {
+            if (this.closed.compareAndSet(false, true)) {
+                ItemStorageManager.this.release(this);
+            }
+        }
     }
 }

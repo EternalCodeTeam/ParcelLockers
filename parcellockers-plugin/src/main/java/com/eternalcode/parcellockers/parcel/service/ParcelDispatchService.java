@@ -4,6 +4,7 @@ import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.delivery.DeliveryManager;
 import com.eternalcode.parcellockers.itemstorage.ItemStorageManager;
+import com.eternalcode.parcellockers.itemstorage.ItemStorageReservation;
 import com.eternalcode.parcellockers.locker.LockerManager;
 import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.parcel.Parcel;
@@ -57,21 +58,35 @@ public class ParcelDispatchService {
     }
 
     public CompletableFuture<Boolean> dispatch(Player sender, Parcel parcel, List<ItemStack> items) {
+        ItemStorageReservation reservation = this.itemStorageManager
+            .reserve(sender.getUniqueId())
+            .orElse(null);
+        if (reservation == null) {
+            this.notifyCannotSend(sender);
+            return CompletableFuture.completedFuture(false);
+        }
+
         UUID lockerId = parcel.destinationLocker();
 
         CompletableFuture<Boolean> chained = this.lockerChains.compute(lockerId, (id, previous) -> {
             CompletableFuture<?> predecessor = previous == null
                 ? CompletableFuture.completedFuture(null)
                 : previous.exceptionally(throwable -> null);
-            return predecessor.thenCompose(ignored -> this.dispatchInternal(sender, parcel, items));
+            return predecessor.thenCompose(ignored ->
+                this.dispatchInternal(sender, parcel, items, reservation));
         });
 
         // Drop the chain entry once it drains so the map does not grow unbounded.
         chained.whenComplete((result, throwable) -> this.lockerChains.remove(lockerId, chained));
-        return chained;
+        return chained.whenComplete((result, throwable) -> reservation.close());
     }
 
-    private CompletableFuture<Boolean> dispatchInternal(Player sender, Parcel parcel, List<ItemStack> items) {
+    private CompletableFuture<Boolean> dispatchInternal(
+        Player sender,
+        Parcel parcel,
+        List<ItemStack> items,
+        ItemStorageReservation reservation
+    ) {
         return this.lockerManager.isLockerFull(parcel.destinationLocker())
             .thenCompose(isFull -> {
                 if (isFull) {
@@ -90,7 +105,7 @@ public class ParcelDispatchService {
                             return CompletableFuture.completedFuture(false);
                         }
 
-                        return this.itemStorageManager.delete(sender.getUniqueId())
+                        return reservation.delete()
                             // A failed delete must trigger the rollback, not skip straight to the outer
                             // exceptionally handler (which would leave the parcel sent and the fee charged).
                             .exceptionally(throwable -> false)
@@ -99,17 +114,20 @@ public class ParcelDispatchService {
                                     // The parcel and its content were already persisted and the fee charged,
                                     // but the sender's staged storage could not be cleared. Fully roll back
                                     // (parcel + content + fee) instead of leaving orphaned content behind.
-                                    this.notifyCannotSend(sender);
                                     return this.rollback(sender, parcel);
                                 }
 
-                                return this.createDelivery(sender, parcel, items, delay);
+                                return this.createDelivery(sender, parcel, items, delay, reservation);
                             });
                     });
             })
             .exceptionally(throwable -> {
                 Throwable cause = unwrap(throwable);
                 if (cause instanceof CompensationException compensationException) {
+                    LOGGER.severe("Failed to compensate parcel " + parcel.uuid()
+                        + " for sender " + sender.getUniqueId() + ": "
+                        + compensationException.getMessage());
+                    this.notifyCannotSend(sender);
                     throw compensationException;
                 }
                 LOGGER.severe("Failed to dispatch parcel for player " + sender.getName() + ": " + throwable.getMessage());
@@ -122,7 +140,8 @@ public class ParcelDispatchService {
         Player sender,
         Parcel parcel,
         List<ItemStack> items,
-        Duration delay
+        Duration delay,
+        ItemStorageReservation reservation
     ) {
         CompletableFuture<?> deliveryCreated;
         try {
@@ -133,9 +152,9 @@ public class ParcelDispatchService {
 
         return deliveryCreated.handle((delivery, throwable) -> {
             if (throwable != null) {
-                return this.restoreAndRollback(sender, parcel, items);
+                return this.restoreAndRollback(sender, parcel, items, reservation);
             }
-            return this.scheduleDelivery(sender, parcel, items, delay);
+            return this.scheduleDelivery(sender, parcel, items, delay, reservation);
         }).thenCompose(Function.identity());
     }
 
@@ -143,7 +162,8 @@ public class ParcelDispatchService {
         Player sender,
         Parcel parcel,
         List<ItemStack> items,
-        Duration delay
+        Duration delay,
+        ItemStorageReservation reservation
     ) {
         ParcelSendTask task = new ParcelSendTask(
             parcel,
@@ -155,7 +175,7 @@ public class ParcelDispatchService {
         try {
             this.scheduler.runLaterAsync(task, delay);
         } catch (Throwable throwable) {
-            return this.deleteDeliveryRestoreAndRollback(sender, parcel, items);
+            return this.deleteDeliveryRestoreAndRollback(sender, parcel, items, reservation);
         }
 
         try {
@@ -170,7 +190,8 @@ public class ParcelDispatchService {
     private CompletableFuture<Boolean> deleteDeliveryRestoreAndRollback(
         Player sender,
         Parcel parcel,
-        List<ItemStack> items
+        List<ItemStack> items,
+        ItemStorageReservation reservation
     ) {
         return this.compensationStep(
                 () -> this.deliveryManager.delete(parcel.uuid()),
@@ -181,30 +202,40 @@ public class ParcelDispatchService {
                 : CompletableFuture.failedFuture(new CompensationException(
                     "Delivery " + parcel.uuid() + " was not deleted during dispatch compensation"
                 )))
-            .thenCompose(ignored -> this.restoreStorage(sender, items))
+            .thenCompose(ignored -> this.restoreStorage(reservation, items))
             .thenCompose(ignored -> this.rollbackParcel(sender, parcel))
-            .thenApply(ignored -> false);
+            .thenApply(ignored -> this.compensatedFailure(sender));
     }
 
     private CompletableFuture<Boolean> restoreAndRollback(
         Player sender,
         Parcel parcel,
-        List<ItemStack> items
+        List<ItemStack> items,
+        ItemStorageReservation reservation
     ) {
-        return this.restoreStorage(sender, items)
+        return this.restoreStorage(reservation, items)
             .thenCompose(ignored -> this.rollbackParcel(sender, parcel))
-            .thenApply(ignored -> false);
+            .thenApply(ignored -> this.compensatedFailure(sender));
     }
 
     private CompletableFuture<Boolean> rollback(Player sender, Parcel parcel) {
-        return this.rollbackParcel(sender, parcel).thenApply(ignored -> false);
+        return this.rollbackParcel(sender, parcel)
+            .thenApply(ignored -> this.compensatedFailure(sender));
     }
 
-    private CompletableFuture<?> restoreStorage(Player sender, List<ItemStack> items) {
+    private CompletableFuture<?> restoreStorage(
+        ItemStorageReservation reservation,
+        List<ItemStack> items
+    ) {
         return this.compensationStep(
-            () -> this.itemStorageManager.create(sender.getUniqueId(), items),
-            "Failed to restore item storage for player " + sender.getUniqueId()
+            () -> reservation.restore(items),
+            "Failed to restore item storage for player " + reservation.owner()
         );
+    }
+
+    private boolean compensatedFailure(Player sender) {
+        this.notifyCannotSend(sender);
+        return false;
     }
 
     private CompletableFuture<Void> rollbackParcel(Player sender, Parcel parcel) {
