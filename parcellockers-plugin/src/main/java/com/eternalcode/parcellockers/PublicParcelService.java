@@ -8,6 +8,7 @@ import com.eternalcode.parcellockers.parcel.service.ParcelService;
 import com.eternalcode.parcellockers.parcel.service.PluginParcelService;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.PageResult;
+import com.eternalcode.parcellockers.shared.exception.ParcelOperationException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -35,20 +36,25 @@ final class PublicParcelService implements ParcelService {
     @Override
     public CompletableFuture<Boolean> send(Player sender, Parcel parcel, List<ItemStack> items) {
         CompletableFuture<Boolean> result = new CompletableFuture<>();
-        this.scheduler.runAsync(() -> {
-            try {
-                this.dispatcher.dispatch(sender, parcel, items)
-                    .whenComplete((success, throwable) -> {
-                        if (throwable != null) {
-                            result.completeExceptionally(throwable);
-                        } else {
-                            result.complete(success);
-                        }
-                    });
-            } catch (Throwable throwable) {
-                result.completeExceptionally(throwable);
-            }
-        });
+        try {
+            this.scheduler.runAsync(() -> {
+                try {
+                    this.dispatcher.dispatch(sender, parcel, items)
+                        .whenComplete((success, throwable) -> {
+                            if (throwable != null) {
+                                result.completeExceptionally(throwable);
+                            } else {
+                                result.complete(success);
+                            }
+                        });
+                } catch (Throwable throwable) {
+                    result.completeExceptionally(throwable);
+                }
+            });
+        } catch (Throwable throwable) {
+            result.completeExceptionally(
+                new ParcelOperationException("Failed to submit parcel dispatch", throwable));
+        }
         return result;
     }
 
