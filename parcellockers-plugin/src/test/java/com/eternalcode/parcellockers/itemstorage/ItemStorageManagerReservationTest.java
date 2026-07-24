@@ -41,10 +41,11 @@ class ItemStorageManagerReservationTest {
         assertThrows(CompletionException.class, () -> manager.delete(owner).join());
         reservation.restore(original).join();
 
-        assertEquals(original, manager.get(owner).join().orElseThrow().items());
+        assertThrows(CompletionException.class, () -> manager.get(owner).join());
         verify(repository).save(new ItemStorage(owner, original));
 
         reservation.close();
+        assertEquals(original, manager.get(owner).join().orElseThrow().items());
         manager.create(owner, fresh).join();
 
         assertEquals(fresh, manager.get(owner).join().orElseThrow().items());

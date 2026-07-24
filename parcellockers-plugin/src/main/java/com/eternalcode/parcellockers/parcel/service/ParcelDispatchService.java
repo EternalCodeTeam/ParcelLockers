@@ -19,6 +19,7 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -66,19 +67,26 @@ public class ParcelDispatchService {
             return CompletableFuture.completedFuture(false);
         }
 
-        UUID lockerId = parcel.destinationLocker();
+        try {
+            UUID lockerId = parcel.destinationLocker();
 
-        CompletableFuture<Boolean> chained = this.lockerChains.compute(lockerId, (id, previous) -> {
-            CompletableFuture<?> predecessor = previous == null
-                ? CompletableFuture.completedFuture(null)
-                : previous.exceptionally(throwable -> null);
-            return predecessor.thenCompose(ignored ->
-                this.dispatchInternal(sender, parcel, items, reservation));
-        });
+            CompletableFuture<Boolean> chained =
+                this.lockerChains.compute(lockerId, (id, previous) -> {
+                    CompletableFuture<?> predecessor = previous == null
+                        ? CompletableFuture.completedFuture(null)
+                        : previous.exceptionally(throwable -> null);
+                    return predecessor.thenCompose(ignored ->
+                        this.dispatchInternal(sender, parcel, items, reservation));
+                });
 
-        // Drop the chain entry once it drains so the map does not grow unbounded.
-        chained.whenComplete((result, throwable) -> this.lockerChains.remove(lockerId, chained));
-        return chained.whenComplete((result, throwable) -> reservation.close());
+            CompletableFuture<Boolean> draining = chained.whenComplete(
+                (result, throwable) -> this.lockerChains.remove(lockerId, chained));
+            return draining.whenComplete((result, throwable) -> reservation.close());
+        } catch (Throwable throwable) {
+            reservation.close();
+            this.notifyCannotSend(sender);
+            return CompletableFuture.failedFuture(throwable);
+        }
     }
 
     private CompletableFuture<Boolean> dispatchInternal(
@@ -124,9 +132,11 @@ public class ParcelDispatchService {
             .exceptionally(throwable -> {
                 Throwable cause = unwrap(throwable);
                 if (cause instanceof CompensationException compensationException) {
-                    LOGGER.severe("Failed to compensate parcel " + parcel.uuid()
-                        + " for sender " + sender.getUniqueId() + ": "
-                        + compensationException.getMessage());
+                    LOGGER.log(
+                        Level.SEVERE,
+                        "Failed to compensate parcel " + parcel.uuid()
+                            + " for sender " + sender.getUniqueId(),
+                        compensationException);
                     this.notifyCannotSend(sender);
                     throw compensationException;
                 }

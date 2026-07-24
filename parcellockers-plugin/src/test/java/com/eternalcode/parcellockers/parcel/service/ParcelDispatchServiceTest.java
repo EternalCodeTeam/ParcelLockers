@@ -1,6 +1,7 @@
 package com.eternalcode.parcellockers.parcel.service;
 
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -266,7 +267,8 @@ class ParcelDispatchServiceTest {
         verify(this.reservation).close();
         assertTrue(records.stream().anyMatch(record ->
             record.getMessage().contains(this.parcel.uuid().toString())
-                && record.getMessage().contains(this.parcel.sender().toString())));
+                && record.getMessage().contains(this.parcel.sender().toString())
+                && record.getThrown() == exception.getCause()));
     }
 
     @Test
@@ -356,6 +358,22 @@ class ParcelDispatchServiceTest {
         firstLockerFull.complete(true);
         assertFalse(first.join());
         verify(this.reservation).close();
+    }
+
+    @Test
+    void synchronousFailureBeforeLockerChainRegistrationReleasesReservation() {
+        Parcel brokenParcel = mock(Parcel.class);
+        IllegalStateException failure = new IllegalStateException("destination unavailable");
+        when(brokenParcel.destinationLocker()).thenThrow(failure);
+
+        CompletableFuture<Boolean> result =
+            this.dispatcher.dispatch(this.sender, brokenParcel, this.items);
+
+        CompletionException exception =
+            assertThrows(CompletionException.class, result::join);
+        assertEquals(failure, exception.getCause());
+        verify(this.reservation).close();
+        verify(this.lockerManager, never()).isLockerFull(any());
     }
 
     private static Parcel parcel() {
