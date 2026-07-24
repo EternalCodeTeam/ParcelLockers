@@ -155,7 +155,6 @@ public final class ParcelLockers extends JavaPlugin implements ParcelLockersApi 
         UserManager userManager = new UserManagerImpl(userRepository, userValidationService, server);
         LockerValidationService lockerValidationService = new LockerValidator();
         LockerManager lockerManager = new LockerManager(config, lockerRepository, lockerValidationService, parcelRepository, server, scheduler);
-        this.parcelService = parcelService;
         this.lockerService = lockerManager;
         ParcelContentManager parcelContentManager = new ParcelContentManager(parcelContentRepository);
         ItemStorageManager itemStorageManager = new ItemStorageManager(itemStorageRepository, server);
@@ -170,6 +169,7 @@ public final class ParcelLockers extends JavaPlugin implements ParcelLockersApi 
             config,
             noticeService
         );
+        this.parcelService = new PublicParcelService(parcelService, parcelDispatchService, scheduler);
 
         ParcelReturnValidator returnValidator = new ParcelReturnValidator(new ReturnItemEquivalence(config.settings.returnChecks));
         ReturnMismatchFormatter returnMismatchFormatter = new ReturnMismatchFormatter(messageConfig.parcel);

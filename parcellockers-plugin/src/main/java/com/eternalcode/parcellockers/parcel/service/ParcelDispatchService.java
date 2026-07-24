@@ -32,7 +32,7 @@ public class ParcelDispatchService {
 
     // Serializes dispatches per destination locker so that two concurrent sends cannot both pass
     // the fullness check before either parcel is persisted (a TOCTOU that could exceed the cap).
-    private final ConcurrentHashMap<UUID, CompletableFuture<Void>> lockerChains = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<UUID, CompletableFuture<Boolean>> lockerChains = new ConcurrentHashMap<>();
 
     public ParcelDispatchService(
         LockerManager lockerManager,
@@ -52,11 +52,11 @@ public class ParcelDispatchService {
         this.noticeService = noticeService;
     }
 
-    public void dispatch(Player sender, Parcel parcel, List<ItemStack> items) {
+    public CompletableFuture<Boolean> dispatch(Player sender, Parcel parcel, List<ItemStack> items) {
         UUID lockerId = parcel.destinationLocker();
 
-        CompletableFuture<Void> chained = this.lockerChains.compute(lockerId, (id, previous) -> {
-            CompletableFuture<Void> predecessor = previous == null
+        CompletableFuture<Boolean> chained = this.lockerChains.compute(lockerId, (id, previous) -> {
+            CompletableFuture<?> predecessor = previous == null
                 ? CompletableFuture.completedFuture(null)
                 : previous.exceptionally(throwable -> null);
             return predecessor.thenCompose(ignored -> this.dispatchInternal(sender, parcel, items));
@@ -64,14 +64,15 @@ public class ParcelDispatchService {
 
         // Drop the chain entry once it drains so the map does not grow unbounded.
         chained.whenComplete((result, throwable) -> this.lockerChains.remove(lockerId, chained));
+        return chained;
     }
 
-    private CompletableFuture<Void> dispatchInternal(Player sender, Parcel parcel, List<ItemStack> items) {
+    private CompletableFuture<Boolean> dispatchInternal(Player sender, Parcel parcel, List<ItemStack> items) {
         return this.lockerManager.isLockerFull(parcel.destinationLocker())
             .thenCompose(isFull -> {
                 if (isFull) {
                     this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.lockerFull);
-                    return CompletableFuture.completedFuture(null);
+                    return CompletableFuture.completedFuture(false);
                 }
 
                 Duration delay = parcel.priority()
@@ -82,7 +83,7 @@ public class ParcelDispatchService {
                     .thenCompose(success -> {
                         if (!Boolean.TRUE.equals(success)) {
                             this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.cannotSend);
-                            return CompletableFuture.completedFuture(null);
+                            return CompletableFuture.completedFuture(false);
                         }
 
                         return this.itemStorageManager.delete(sender.getUniqueId())
@@ -95,30 +96,45 @@ public class ParcelDispatchService {
                                     // but the sender's staged storage could not be cleared. Fully roll back
                                     // (parcel + content + fee) instead of leaving orphaned content behind.
                                     this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.cannotSend);
-                                    return this.parcelService.rollbackSend(sender, parcel);
+                                    return this.parcelService.rollbackSend(sender, parcel)
+                                        .thenApply(ignored -> false);
                                 }
 
-                                this.deliveryManager.create(parcel.uuid(), Instant.now().plus(delay));
+                                CompletableFuture<?> deliveryCreated;
+                                try {
+                                    deliveryCreated = this.deliveryManager.create(
+                                        parcel.uuid(),
+                                        Instant.now().plus(delay)
+                                    );
+                                } catch (Throwable throwable) {
+                                    deliveryCreated = CompletableFuture.failedFuture(throwable);
+                                }
 
-                                ParcelSendTask task = new ParcelSendTask(
-                                    parcel,
-                                    this.parcelService,
-                                    this.deliveryManager,
-                                    this.scheduler
-                                );
+                                return deliveryCreated
+                                    .thenApply(delivery -> {
+                                        ParcelSendTask task = new ParcelSendTask(
+                                            parcel,
+                                            this.parcelService,
+                                            this.deliveryManager,
+                                            this.scheduler
+                                        );
 
-                                this.scheduler.runLaterAsync(task, delay);
-                                // Only confirm success here, once every step has succeeded, to avoid a
-                                // "sent" notice immediately followed by "cannot send" on a rollback.
-                                this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.sent);
-                                return CompletableFuture.completedFuture(null);
+                                        this.scheduler.runLaterAsync(task, delay);
+                                        // Only confirm success here, once every step has succeeded, to avoid a
+                                        // "sent" notice immediately followed by "cannot send" on a rollback.
+                                        this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.sent);
+                                        return true;
+                                    })
+                                    .exceptionallyCompose(throwable ->
+                                        this.parcelService.rollbackSend(sender, parcel)
+                                            .thenApply(ignored -> false));
                             });
                     });
             })
             .exceptionally(throwable -> {
                 LOGGER.severe("Failed to dispatch parcel for player " + sender.getName() + ": " + throwable.getMessage());
                 this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.cannotSend);
-                return null;
+                return false;
             });
     }
 }

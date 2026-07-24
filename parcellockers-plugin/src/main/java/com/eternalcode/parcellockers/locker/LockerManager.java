@@ -215,10 +215,15 @@ public class LockerManager implements LockerService {
 
     @Override
     public CompletableFuture<Locker> rename(UUID uniqueId, String newName) {
+        if (newName == null || newName.isBlank()) {
+            return CompletableFuture.failedFuture(
+                new ValidationException("Locker name cannot be null or blank"));
+        }
+
         return this.get(uniqueId).thenCompose(optional -> {
             if (optional.isEmpty()) {
                 return CompletableFuture.failedFuture(
-                    new IllegalArgumentException("Locker not found: " + uniqueId));
+                    new ValidationException("Locker not found: " + uniqueId));
             }
 
             Locker existing = optional.get();

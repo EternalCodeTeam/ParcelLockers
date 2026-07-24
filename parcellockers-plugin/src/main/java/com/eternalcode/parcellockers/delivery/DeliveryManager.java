@@ -47,14 +47,19 @@ public class DeliveryManager {
         });
     }
 
-    public Delivery create(UUID parcel, Instant deliveryTimestamp) {
+    public CompletableFuture<Delivery> create(UUID parcel, Instant deliveryTimestamp) {
         Delivery delivery = new Delivery(parcel, deliveryTimestamp);
         if (this.deliveryCache.getIfPresent(parcel) != null) {
             throw new IllegalStateException("Delivery for parcel " + parcel + " already exists. Use Delivery#getOrCreate method instead.");
         }
         this.deliveryCache.put(parcel, delivery);
-        this.deliveryRepository.save(delivery);
-        return delivery;
+        return this.deliveryRepository.save(delivery)
+            .whenComplete((saved, throwable) -> {
+                if (throwable != null) {
+                    this.deliveryCache.invalidate(parcel);
+                }
+            })
+            .thenApply(ignored -> delivery);
     }
 
     public CompletableFuture<Boolean> delete(UUID parcel) {
