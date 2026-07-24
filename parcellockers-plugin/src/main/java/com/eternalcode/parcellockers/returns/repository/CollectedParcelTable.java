@@ -10,7 +10,7 @@ import java.util.UUID;
 @DatabaseTable(tableName = "collected_parcels")
 public class CollectedParcelTable {
 
-    static final String COLLECTED_AT_COLUMN = "collected_at";
+    public static final String COLLECTED_AT_COLUMN = "collected_at";
 
     @DatabaseField(id = true)
     private UUID parcel;
@@ -26,7 +26,7 @@ public class CollectedParcelTable {
         this.collectedAt = collectedAt;
     }
 
-    static CollectedParcelTable from(CollectedParcel collectedParcel) {
+    public static CollectedParcelTable from(CollectedParcel collectedParcel) {
         return new CollectedParcelTable(collectedParcel.parcel(), collectedParcel.collectedAt());
     }
 

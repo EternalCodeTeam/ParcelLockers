@@ -5,9 +5,14 @@ import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.eternalcode.parcellockers.database.wrapper.AbstractRepositoryOrmLite;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelStatus;
+import com.eternalcode.parcellockers.returns.CollectedParcel;
+import com.eternalcode.parcellockers.returns.repository.CollectedParcelTable;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.PageResult;
+import com.j256.ormlite.misc.TransactionManager;
+import com.j256.ormlite.stmt.DeleteBuilder;
 import com.j256.ormlite.stmt.UpdateBuilder;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -36,6 +41,14 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     public CompletableFuture<Void> save(Parcel parcel) {
         Objects.requireNonNull(parcel, "Parcel cannot be null");
         return this.insertIfAbsent(ParcelTable.class, ParcelTable.from(parcel)).thenApply(dao -> null);
+    }
+
+    @Override
+    public CompletableFuture<Boolean> saveIfAbsent(Parcel parcel) {
+        Objects.requireNonNull(parcel, "Parcel cannot be null");
+        ParcelTable inserted = ParcelTable.from(parcel);
+        return this.insertIfAbsent(ParcelTable.class, inserted)
+            .thenApply(result -> result == inserted);
     }
 
     @Override
@@ -128,16 +141,90 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     @Override
     public CompletableFuture<Boolean> markCollected(UUID uuid) {
+        return this.markCollected(uuid, null);
+    }
+
+    @Override
+    public CompletableFuture<Boolean> markCollected(UUID uuid, UUID receiver) {
         Objects.requireNonNull(uuid, "UUID cannot be null");
         return this.action(ParcelTable.class, dao -> {
             UpdateBuilder<ParcelTable, Object> builder = dao.updateBuilder();
             builder.updateColumnValue(STATUS_COLUMN, ParcelStatus.COLLECTED);
-            builder.where()
+            var where = builder.where()
                 .eq(UUID_COLUMN, uuid)
                 .and()
                 .eq(STATUS_COLUMN, ParcelStatus.DELIVERED);
+            if (receiver != null) {
+                where.and().eq(RECEIVER_COLUMN, receiver);
+            }
             return builder.update() > 0;
         });
+    }
+
+    @Override
+    public CompletableFuture<Boolean> commitCollection(
+        UUID uuid,
+        UUID receiver,
+        Instant collectedAt
+    ) {
+        Objects.requireNonNull(uuid, "UUID cannot be null");
+        Objects.requireNonNull(receiver, "Receiver UUID cannot be null");
+        Objects.requireNonNull(collectedAt, "Collected timestamp cannot be null");
+        return this.action(ParcelTable.class, parcelDao ->
+            TransactionManager.callInTransaction(this.databaseManager.connectionSource(), () -> {
+                UpdateBuilder<ParcelTable, Object> update = parcelDao.updateBuilder();
+                update.updateColumnValue(STATUS_COLUMN, ParcelStatus.COLLECTED);
+                update.where()
+                    .eq(UUID_COLUMN, uuid)
+                    .and()
+                    .eq(RECEIVER_COLUMN, receiver)
+                    .and()
+                    .eq(STATUS_COLUMN, ParcelStatus.DELIVERED);
+                if (update.update() == 0) {
+                    return false;
+                }
+                this.databaseManager.getDao(CollectedParcelTable.class).createOrUpdate(
+                    CollectedParcelTable.from(new CollectedParcel(uuid, collectedAt)));
+                return true;
+            }));
+    }
+
+    @Override
+    public CompletableFuture<Boolean> rollbackCollection(
+        UUID uuid,
+        UUID receiver,
+        Instant collectedAt
+    ) {
+        Objects.requireNonNull(uuid, "UUID cannot be null");
+        Objects.requireNonNull(receiver, "Receiver UUID cannot be null");
+        Objects.requireNonNull(collectedAt, "Collected timestamp cannot be null");
+        return this.action(ParcelTable.class, parcelDao ->
+            TransactionManager.callInTransaction(this.databaseManager.connectionSource(), () -> {
+                UpdateBuilder<ParcelTable, Object> update = parcelDao.updateBuilder();
+                update.updateColumnValue(STATUS_COLUMN, ParcelStatus.DELIVERED);
+                update.where()
+                    .eq(UUID_COLUMN, uuid)
+                    .and()
+                    .eq(RECEIVER_COLUMN, receiver)
+                    .and()
+                    .eq(STATUS_COLUMN, ParcelStatus.COLLECTED);
+                if (update.update() == 0) {
+                    return false;
+                }
+
+                var collectedDao = this.databaseManager.getDao(CollectedParcelTable.class);
+                DeleteBuilder<CollectedParcelTable, Object> delete =
+                    collectedDao.deleteBuilder();
+                delete.where()
+                    .eq("parcel", uuid)
+                    .and()
+                    .eq(CollectedParcelTable.COLLECTED_AT_COLUMN, collectedAt);
+                if (delete.delete() != 1) {
+                    throw new IllegalStateException(
+                        "Collection token changed while rolling back parcel " + uuid);
+                }
+                return true;
+            }));
     }
 
     @Override

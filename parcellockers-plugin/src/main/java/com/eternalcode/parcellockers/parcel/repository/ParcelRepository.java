@@ -4,6 +4,7 @@ import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.PageResult;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -13,6 +14,13 @@ import org.jetbrains.annotations.TestOnly;
 public interface ParcelRepository {
 
     CompletableFuture<Void> save(Parcel parcel);
+
+    /**
+     * Atomically inserts a parcel if its UUID is not already present.
+     *
+     * @return true only when this call inserted the row
+     */
+    CompletableFuture<Boolean> saveIfAbsent(Parcel parcel);
 
     CompletableFuture<Void> update(Parcel parcel);
 
@@ -57,6 +65,25 @@ public interface ParcelRepository {
      * or not DELIVERED — the caller must treat that as "someone else already collected it".
      */
     CompletableFuture<Boolean> markCollected(UUID uuid);
+
+    /**
+     * Atomically flips a receiver's DELIVERED parcel to COLLECTED.
+     */
+    CompletableFuture<Boolean> markCollected(UUID uuid, UUID receiver);
+
+    /**
+     * Atomically claims a delivered parcel and records the start of its return window.
+     */
+    CompletableFuture<Boolean> commitCollection(UUID uuid, UUID receiver, Instant collectedAt);
+
+    /**
+     * Restores a claimed collection after main-thread item delivery failed.
+     */
+    CompletableFuture<Boolean> rollbackCollection(
+        UUID uuid,
+        UUID receiver,
+        Instant collectedAt
+    );
 
     /** Returns the COLLECTED parcels of the given receiver (candidates for a return). */
     CompletableFuture<PageResult<Parcel>> findReturnable(UUID receiver, Page page);
