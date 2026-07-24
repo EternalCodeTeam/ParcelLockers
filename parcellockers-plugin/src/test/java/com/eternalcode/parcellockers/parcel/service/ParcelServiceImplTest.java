@@ -18,6 +18,7 @@ import static org.mockito.Mockito.mockingDetails;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -35,13 +36,16 @@ import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.returns.repository.CollectedParcelRepository;
 import com.eternalcode.parcellockers.shared.exception.ParcelOperationException;
 import com.eternalcode.parcellockers.shared.exception.ValidationException;
+import java.lang.reflect.Method;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -60,7 +64,7 @@ import org.mockito.MockedStatic;
 class ParcelServiceImplTest {
 
     @Test
-    void releasesParcelGateBeforeCompletingOutwardFuture() {
+    void outwardCompletionCallbackCanQueueAndAwaitFollowingMutation() {
         OperationFixture fixture = new OperationFixture();
         CompletableFuture<Void> contentSaved = new CompletableFuture<>();
         when(fixture.parcelRepository.saveIfAbsent(fixture.parcel))
@@ -70,17 +74,105 @@ class ParcelServiceImplTest {
             .thenReturn(CompletableFuture.completedFuture(true));
         when(fixture.contentRepository.delete(fixture.parcel.uuid()))
             .thenReturn(CompletableFuture.completedFuture(true));
-        AtomicBoolean callbackDeleteCompleted = new AtomicBoolean();
+        AtomicReference<CompletableFuture<Boolean>> callbackDelete = new AtomicReference<>();
 
         CompletableFuture<Boolean> send =
             fixture.service.send(fixture.sender, fixture.parcel, fixture.items);
-        send.whenComplete((ignored, throwable) -> callbackDeleteCompleted.set(
-            fixture.service.delete(fixture.parcel.uuid()).isDone()));
+        send.whenComplete((ignored, throwable) ->
+            callbackDelete.set(fixture.service.delete(fixture.parcel.uuid())));
 
         contentSaved.complete(null);
 
         assertTrue(send.join());
-        assertTrue(callbackDeleteCompleted.get());
+        assertTrue(callbackDelete.get().join());
+    }
+
+    @Test
+    void queuedParcelCallbacksCanJoinPredecessorAndSuccessorWithoutDeadlock()
+        throws Exception {
+        OperationFixture fixture = new OperationFixture();
+        CompletableFuture<Void> firstRunning = new CompletableFuture<>();
+        CompletableFuture<Void> first = fixture.service.serializeParcelOperation(
+            fixture.parcel.uuid(), () -> firstRunning);
+        AtomicReference<CompletableFuture<Void>> secondReference = new AtomicReference<>();
+        CompletableFuture<Void> firstCallback =
+            first.whenComplete((ignored, throwable) -> secondReference.get().join());
+        CompletableFuture<Void> second = fixture.service.serializeParcelOperation(
+            fixture.parcel.uuid(), () -> CompletableFuture.completedFuture(null));
+        secondReference.set(second);
+        CompletableFuture<Void> secondCallback =
+            second.whenComplete((ignored, throwable) -> first.join());
+
+        Thread releaser = new Thread(() -> firstRunning.complete(null));
+        releaser.setDaemon(true);
+        releaser.start();
+        releaser.join(1_000);
+
+        assertFalse(releaser.isAlive(),
+            "gate completion must not inline a successor before the predecessor result completes");
+        CompletableFuture.allOf(first, second, firstCallback, secondCallback)
+            .get(2, TimeUnit.SECONDS);
+    }
+
+    @Test
+    void globalBarrierCallbacksCanJoinQueuedSuccessorWithoutDeadlock()
+        throws Exception {
+        OperationFixture fixture = new OperationFixture();
+        CompletableFuture<Void> firstRunning = new CompletableFuture<>();
+        CompletableFuture<Void> first = fixture.service.serializeParcelOperation(
+            fixture.parcel.uuid(), () -> firstRunning);
+
+        CompletableFuture<Void> bulk = serializeAllParcelOperations(
+            fixture.service, () -> CompletableFuture.completedFuture(null));
+        AtomicReference<CompletableFuture<Void>> successorReference =
+            new AtomicReference<>();
+        CompletableFuture<Void> bulkCallback =
+            bulk.whenComplete((ignored, throwable) -> successorReference.get().join());
+        CompletableFuture<Void> successor = fixture.service.serializeParcelOperation(
+            fixture.parcel.uuid(), () -> CompletableFuture.completedFuture(null));
+        successorReference.set(successor);
+        CompletableFuture<Void> successorCallback =
+            successor.whenComplete((ignored, throwable) -> bulk.join());
+
+        Thread releaser = new Thread(() -> firstRunning.complete(null));
+        releaser.setDaemon(true);
+        releaser.start();
+        releaser.join(1_000);
+
+        assertFalse(releaser.isAlive(),
+            "global barrier completion must not inline its queued successor");
+        CompletableFuture.allOf(
+            first, bulk, successor, bulkCallback, successorCallback)
+            .get(2, TimeUnit.SECONDS);
+    }
+
+    @Test
+    void longParcelOperationChainDrainsWithoutRecursiveCompletion()
+        throws Exception {
+        OperationFixture fixture = new OperationFixture();
+        CompletableFuture<Void> firstRunning = new CompletableFuture<>();
+        List<CompletableFuture<Void>> operations = new ArrayList<>();
+        operations.add(fixture.service.serializeParcelOperation(
+            fixture.parcel.uuid(), () -> firstRunning));
+        AtomicInteger started = new AtomicInteger();
+        int successors = 2_000;
+        for (int index = 0; index < successors; index++) {
+            operations.add(fixture.service.serializeParcelOperation(
+                fixture.parcel.uuid(), () -> {
+                    started.incrementAndGet();
+                    return CompletableFuture.completedFuture(null);
+                }));
+        }
+
+        Thread releaser = new Thread(() -> firstRunning.complete(null));
+        releaser.setDaemon(true);
+        releaser.start();
+        releaser.join(5_000);
+
+        assertFalse(releaser.isAlive(), "releasing a long queue must not recurse inline");
+        CompletableFuture.allOf(operations.toArray(CompletableFuture[]::new))
+            .get(5, TimeUnit.SECONDS);
+        assertEquals(successors, started.get());
     }
 
     @Test
@@ -137,7 +229,7 @@ class ParcelServiceImplTest {
         contentSaved.complete(null);
 
         assertTrue(send.join());
-        verify(fixture.parcelRepository).deleteAll();
+        verify(fixture.parcelRepository, timeout(1_000)).deleteAll();
         assertFalse(update.isDone());
     }
 
@@ -718,6 +810,17 @@ class ParcelServiceImplTest {
             IllegalStateException.class, operationException.getSuppressed()[0]);
         verify(parcelRepository).delete(parcel.uuid());
         verify(contentRepository).delete(parcel.uuid());
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> CompletableFuture<T> serializeAllParcelOperations(
+        ParcelServiceImpl service,
+        java.util.function.Supplier<CompletableFuture<T>> operation
+    ) throws ReflectiveOperationException {
+        Method method = ParcelServiceImpl.class.getDeclaredMethod(
+            "serializeAllParcelOperations", java.util.function.Supplier.class);
+        method.setAccessible(true);
+        return (CompletableFuture<T>) method.invoke(service, operation);
     }
 
     private static Parcel parcel() {

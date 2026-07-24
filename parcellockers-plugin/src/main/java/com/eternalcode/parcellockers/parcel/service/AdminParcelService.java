@@ -72,10 +72,19 @@ public class AdminParcelService {
         if (parcel.status() == ParcelStatus.COLLECTED) {
             return CompletableFuture.completedFuture(EditResult.of(EditResult.Status.PARCEL_COLLECTED));
         }
+        return this.parcelService.serializeParcelOperation(
+            parcel.uuid(), () -> this.changeStatusWithinParcelOperation(parcel, status));
+    }
+
+    private CompletableFuture<EditResult> changeStatusWithinParcelOperation(
+        Parcel parcel,
+        ParcelStatus status
+    ) {
         Parcel updated = withStatus(parcel, status);
         // Conditional on the snapshot's status: a concurrent collect between the GUI opening and
         // this edit landing must not resurrect a COLLECTED parcel back to SENT/DELIVERED.
-        return this.parcelService.updateIfStatus(updated, parcel.status()).thenCompose(applied -> {
+        return this.parcelService.updateIfStatusWithinParcelOperation(
+            updated, parcel.status()).thenCompose(applied -> {
             if (!Boolean.TRUE.equals(applied)) {
                 return CompletableFuture.completedFuture(EditResult.of(EditResult.Status.PARCEL_COLLECTED));
             }
@@ -148,8 +157,16 @@ public class AdminParcelService {
     }
 
     public CompletableFuture<EditResult> changePriority(Parcel parcel, boolean newPriority) {
+        return this.parcelService.serializeParcelOperation(
+            parcel.uuid(), () -> this.changePriorityWithinParcelOperation(parcel, newPriority));
+    }
+
+    private CompletableFuture<EditResult> changePriorityWithinParcelOperation(
+        Parcel parcel,
+        boolean newPriority
+    ) {
         Parcel updated = withPriority(parcel, newPriority);
-        return this.parcelService.update(updated).thenCompose(ignored -> {
+        return this.parcelService.updateWithinParcelOperation(updated).thenCompose(ignored -> {
             if (parcel.status() != ParcelStatus.SENT || newPriority == parcel.priority()) {
                 return CompletableFuture.completedFuture(EditResult.ok());
             }

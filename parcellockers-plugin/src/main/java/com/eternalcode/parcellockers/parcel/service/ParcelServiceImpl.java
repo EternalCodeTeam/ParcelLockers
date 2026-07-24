@@ -32,6 +32,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import net.milkbowl.vault.economy.Economy;
@@ -48,6 +49,17 @@ public class ParcelServiceImpl implements PluginParcelService {
 
     private static final long CACHE_EXPIRE_HOURS = 3;
     private static final long CACHE_MAX_SIZE = 10_000;
+    private static final Executor OPERATION_HANDOFF = command -> {
+        try {
+            Thread.ofVirtual()
+                .name("parcel-operation-handoff")
+                .start(command);
+        } catch (Throwable virtualThreadFailure) {
+            Thread fallback = new Thread(command, "parcel-operation-handoff-fallback");
+            fallback.setDaemon(true);
+            fallback.start();
+        }
+    };
 
     private final NoticeService noticeService;
     private final ParcelRepository parcelRepository;
@@ -374,10 +386,12 @@ public class ParcelServiceImpl implements PluginParcelService {
         Objects.requireNonNull(updated, "Updated parcel cannot be null");
         Objects.requireNonNull(expectedStatus, "Expected status cannot be null");
         return this.serializeParcelOperation(
-            updated.uuid(), () -> this.updateIfStatusWithinOperation(updated, expectedStatus));
+            updated.uuid(),
+            () -> this.updateIfStatusWithinParcelOperation(updated, expectedStatus));
     }
 
-    private CompletableFuture<Boolean> updateIfStatusWithinOperation(
+    @Override
+    public CompletableFuture<Boolean> updateIfStatusWithinParcelOperation(
         Parcel updated,
         ParcelStatus expectedStatus
     ) {
@@ -815,18 +829,11 @@ public class ParcelServiceImpl implements PluginParcelService {
                 running = Objects.requireNonNull(
                     operation.get(), "Parcel operation returned a null future");
             } catch (Throwable throwable) {
-                gate.complete(null);
-                result.completeExceptionally(throwable);
+                completeSerializedOperation(gate, result, null, throwable);
                 return;
             }
-            running.whenComplete((value, throwable) -> {
-                gate.complete(null);
-                if (throwable != null) {
-                    result.completeExceptionally(throwable);
-                } else {
-                    result.complete(value);
-                }
-            });
+            running.whenComplete((value, throwable) ->
+                completeSerializedOperation(gate, result, value, throwable));
         });
         gate.whenComplete((ignored, throwable) -> {
             synchronized (this.parcelOperationTails) {
@@ -853,6 +860,11 @@ public class ParcelServiceImpl implements PluginParcelService {
         }
     }
 
+    @Override
+    public boolean isParcelOperationCallbackActive() {
+        return this.parcelOperationCallback.get() != null;
+    }
+
     private <T> CompletableFuture<T> serializeAllParcelOperations(
         Supplier<CompletableFuture<T>> operation
     ) {
@@ -877,18 +889,11 @@ public class ParcelServiceImpl implements PluginParcelService {
                 running = Objects.requireNonNull(
                     operation.get(), "Global parcel operation returned a null future");
             } catch (Throwable throwable) {
-                gate.complete(null);
-                result.completeExceptionally(throwable);
+                completeSerializedOperation(gate, result, null, throwable);
                 return;
             }
-            running.whenComplete((value, throwable) -> {
-                gate.complete(null);
-                if (throwable != null) {
-                    result.completeExceptionally(throwable);
-                } else {
-                    result.complete(value);
-                }
-            });
+            running.whenComplete((value, throwable) ->
+                completeSerializedOperation(gate, result, value, throwable));
         });
         gate.whenComplete((ignored, throwable) -> {
             synchronized (this.parcelOperationTails) {
@@ -898,6 +903,20 @@ public class ParcelServiceImpl implements PluginParcelService {
             }
         });
         return result;
+    }
+
+    private static <T> void completeSerializedOperation(
+        CompletableFuture<Void> gate,
+        CompletableFuture<T> result,
+        T value,
+        Throwable throwable
+    ) {
+        OPERATION_HANDOFF.execute(() -> gate.complete(null));
+        if (throwable != null) {
+            result.completeExceptionally(throwable);
+        } else {
+            result.complete(value);
+        }
     }
 
     @Override

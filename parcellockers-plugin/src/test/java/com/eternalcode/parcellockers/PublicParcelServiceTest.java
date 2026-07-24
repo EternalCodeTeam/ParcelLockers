@@ -19,6 +19,7 @@ import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import com.eternalcode.parcellockers.parcel.service.ParcelDispatchService;
+import com.eternalcode.parcellockers.parcel.service.ParcelServiceImpl;
 import com.eternalcode.parcellockers.parcel.service.PluginParcelService;
 import com.eternalcode.parcellockers.shared.exception.ParcelOperationException;
 import com.eternalcode.parcellockers.shared.exception.ValidationException;
@@ -34,6 +35,41 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 class PublicParcelServiceTest {
+
+    @Test
+    void sendFromParcelEventCallbackFailsFastBeforeAsyncScheduling() {
+        Fixture fixture = new Fixture();
+
+        fixture.runInParcelCallback(() -> {
+            CompletableFuture<Boolean> result =
+                fixture.service.send(fixture.sender, fixture.parcel, fixture.items);
+
+            assertTrue(result.isCompletedExceptionally());
+            CompletionException exception =
+                assertThrows(CompletionException.class, result::join);
+            assertInstanceOf(IllegalStateException.class, exception.getCause());
+        });
+        verify(fixture.scheduler, never()).runAsync(any());
+        verify(fixture.dispatcher, never()).dispatch(any(), any(), any());
+    }
+
+    @Test
+    void collectFromParcelEventCallbackFailsFastBeforeAsyncScheduling() {
+        Fixture fixture = new Fixture();
+        Parcel delivered = withStatus(fixture.parcel, ParcelStatus.DELIVERED);
+
+        fixture.runInParcelCallback(() -> {
+            CompletableFuture<Void> result =
+                fixture.service.collect(fixture.receiver, delivered);
+
+            assertTrue(result.isCompletedExceptionally());
+            CompletionException exception =
+                assertThrows(CompletionException.class, result::join);
+            assertInstanceOf(IllegalStateException.class, exception.getCause());
+        });
+        verify(fixture.scheduler, never()).runAsync(any());
+        verify(fixture.delegate, never()).collect(any(), any());
+    }
 
     @Test
     void sendRejectsSenderMismatchBeforeSchedulingDispatch() {
@@ -204,7 +240,16 @@ class PublicParcelServiceTest {
 
     private static final class Fixture {
 
-        private final PluginParcelService delegate = mock(PluginParcelService.class);
+        private final ParcelServiceImpl callbackContext =
+            new ParcelServiceImpl(mock(), mock(), mock(), mock(), mock(), mock(), mock(), mock());
+        private final PluginParcelService delegate = mock(
+            PluginParcelService.class,
+            invocation -> {
+                if (invocation.getMethod().getName().equals("isParcelOperationCallbackActive")) {
+                    return this.callbackContext.isParcelOperationCallbackActive();
+                }
+                return org.mockito.Answers.RETURNS_DEFAULTS.answer(invocation);
+            });
         private final ParcelDispatchService dispatcher = mock(ParcelDispatchService.class);
         private final Scheduler scheduler = mock(Scheduler.class);
         private final PublicParcelService service =
@@ -229,6 +274,10 @@ class PublicParcelServiceTest {
             when(this.sender.getUniqueId()).thenReturn(this.parcel.sender());
             when(this.receiver.getUniqueId()).thenReturn(this.parcel.receiver());
             when(this.items.get(0).clone()).thenReturn(this.items.get(0));
+        }
+
+        private void runInParcelCallback(Runnable callback) {
+            this.callbackContext.runParcelOperationCallback(this.parcel.uuid(), callback);
         }
     }
 }

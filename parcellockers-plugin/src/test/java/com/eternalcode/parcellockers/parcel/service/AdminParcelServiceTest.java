@@ -1,13 +1,29 @@
 package com.eternalcode.parcellockers.parcel.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import com.eternalcode.commons.scheduler.Scheduler;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
+import com.eternalcode.parcellockers.delivery.Delivery;
+import com.eternalcode.parcellockers.delivery.DeliveryManager;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
 
 class AdminParcelServiceTest {
@@ -28,6 +44,80 @@ class AdminParcelServiceTest {
         EditResult result = service.changeStatus(collected, ParcelStatus.SENT).join();
 
         assertEquals(EditResult.Status.PARCEL_COLLECTED, result.status());
+    }
+
+    @Test
+    void changeStatusKeepsParcelGateUntilDeliveryIsArmed() {
+        Parcel delivered = parcel(ParcelStatus.DELIVERED, false);
+        AtomicBoolean gateHeld = new AtomicBoolean();
+        PluginParcelService parcelService = parcelServiceWithWithinStatusUpdate();
+        DeliveryManager deliveryManager = mock(DeliveryManager.class);
+        Scheduler scheduler = mock(Scheduler.class);
+        CompletableFuture<Delivery> deliveryUpdated = new CompletableFuture<>();
+
+        runSerializedOperationsImmediately(parcelService, delivered.uuid(), gateHeld);
+        when(deliveryManager.get(delivered.uuid())).thenAnswer(invocation -> {
+            assertTrue(gateHeld.get(), "delivery read must run while the parcel gate is held");
+            return CompletableFuture.completedFuture(Optional.empty());
+        });
+        when(deliveryManager.update(eq(delivered.uuid()), any())).thenAnswer(invocation -> {
+            assertTrue(gateHeld.get(), "delivery write must run while the parcel gate is held");
+            return deliveryUpdated;
+        });
+        AdminParcelService service = service(parcelService, deliveryManager, scheduler);
+
+        CompletableFuture<EditResult> result =
+            service.changeStatus(delivered, ParcelStatus.SENT);
+
+        assertFalse(result.isDone(), "the gate must cover the pending delivery write");
+        assertTrue(gateHeld.get());
+
+        deliveryUpdated.complete(new Delivery(delivered.uuid(), Instant.now()));
+
+        assertEquals(EditResult.Status.OK, result.join().status());
+        assertFalse(gateHeld.get());
+        verify(parcelService).serializeParcelOperation(eq(delivered.uuid()), any());
+        verify(parcelService, never()).updateIfStatus(any(), any());
+        verify(parcelService).updateIfStatusWithinParcelOperation(
+            any(), eq(ParcelStatus.DELIVERED));
+    }
+
+    @Test
+    void changePriorityKeepsParcelGateUntilDeliveryAndSchedulingComplete() {
+        Parcel sent = parcel(ParcelStatus.SENT, false);
+        AtomicBoolean gateHeld = new AtomicBoolean();
+        PluginParcelService parcelService = mock(PluginParcelService.class);
+        DeliveryManager deliveryManager = mock(DeliveryManager.class);
+        Scheduler scheduler = mock(Scheduler.class);
+        CompletableFuture<Delivery> deliveryUpdated = new CompletableFuture<>();
+        Delivery current = new Delivery(sent.uuid(), Instant.now().plus(Duration.ofMinutes(10)));
+
+        runSerializedOperationsImmediately(parcelService, sent.uuid(), gateHeld);
+        when(parcelService.updateWithinParcelOperation(any()))
+            .thenReturn(CompletableFuture.completedFuture(null));
+        when(deliveryManager.get(sent.uuid())).thenAnswer(invocation -> {
+            assertTrue(gateHeld.get(), "delivery read must run while the parcel gate is held");
+            return CompletableFuture.completedFuture(Optional.of(current));
+        });
+        when(deliveryManager.update(eq(sent.uuid()), any())).thenAnswer(invocation -> {
+            assertTrue(gateHeld.get(), "delivery write must run while the parcel gate is held");
+            return deliveryUpdated;
+        });
+        AdminParcelService service = service(parcelService, deliveryManager, scheduler);
+
+        CompletableFuture<EditResult> result = service.changePriority(sent, true);
+
+        assertFalse(result.isDone(), "the gate must cover the pending delivery write");
+        assertTrue(gateHeld.get());
+
+        deliveryUpdated.complete(new Delivery(sent.uuid(), Instant.now()));
+
+        assertEquals(EditResult.Status.OK, result.join().status());
+        assertFalse(gateHeld.get());
+        verify(scheduler).runLaterAsync(any(), any());
+        verify(parcelService).serializeParcelOperation(eq(sent.uuid()), any());
+        verify(parcelService, never()).update(any());
+        verify(parcelService).updateWithinParcelOperation(any());
     }
 
     @Test
@@ -86,5 +176,41 @@ class AdminParcelServiceTest {
         Instant shifted = AdminParcelService.shiftedDeliveryTimestamp(oldTs, true, true, normal, priority, now);
 
         assertEquals(oldTs, shifted);
+    }
+
+    private static PluginParcelService parcelServiceWithWithinStatusUpdate() {
+        PluginParcelService parcelService = mock(PluginParcelService.class);
+        when(parcelService.updateIfStatusWithinParcelOperation(any(), any()))
+            .thenReturn(CompletableFuture.completedFuture(true));
+        return parcelService;
+    }
+
+    private static void runSerializedOperationsImmediately(
+        PluginParcelService parcelService,
+        UUID parcelId,
+        AtomicBoolean gateHeld
+    ) {
+        when(parcelService.serializeParcelOperation(eq(parcelId), any()))
+            .thenAnswer(invocation -> {
+                gateHeld.set(true);
+                @SuppressWarnings("unchecked")
+                Supplier<CompletableFuture<EditResult>> operation = invocation.getArgument(1);
+                CompletableFuture<EditResult> result = operation.get();
+                return result.whenComplete((ignored, throwable) -> gateHeld.set(false));
+            });
+    }
+
+    private static AdminParcelService service(
+        PluginParcelService parcelService,
+        DeliveryManager deliveryManager,
+        Scheduler scheduler
+    ) {
+        return new AdminParcelService(
+            parcelService, null, deliveryManager, null, new PluginConfig(), scheduler);
+    }
+
+    private static Parcel parcel(ParcelStatus status, boolean priority) {
+        return new Parcel(UUID.randomUUID(), UUID.randomUUID(), "name", "description", priority,
+            UUID.randomUUID(), ParcelSize.SMALL, UUID.randomUUID(), UUID.randomUUID(), status);
     }
 }

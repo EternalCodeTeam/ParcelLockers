@@ -2,6 +2,7 @@ package com.eternalcode.parcellockers.parcel.service;
 
 import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.parcel.Parcel;
+import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -30,9 +31,16 @@ public interface PluginParcelService extends ParcelService {
 
     CompletableFuture<Void> updateWithinParcelOperation(Parcel parcel);
 
+    CompletableFuture<Boolean> updateIfStatusWithinParcelOperation(
+        Parcel parcel,
+        ParcelStatus expectedStatus
+    );
+
     CompletableFuture<Optional<Parcel>> getAuthoritativeWithinParcelOperation(UUID parcel);
 
     void runParcelOperationCallback(UUID parcel, Runnable callback);
+
+    boolean isParcelOperationCallbackActive();
 
     void invalidate(UUID uuid);
 

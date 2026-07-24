@@ -38,6 +38,9 @@ final class PublicParcelService implements ParcelService {
 
     @Override
     public CompletableFuture<Boolean> send(Player sender, Parcel parcel, List<ItemStack> items) {
+        if (this.delegate.isParcelOperationCallbackActive()) {
+            return callbackMutationFailure();
+        }
         try {
             validateSend(sender, parcel, items);
             List<ItemStack> snapshot = items.stream()
@@ -67,6 +70,9 @@ final class PublicParcelService implements ParcelService {
 
     @Override
     public CompletableFuture<Void> collect(Player player, Parcel parcel) {
+        if (this.delegate.isParcelOperationCallbackActive()) {
+            return callbackMutationFailure();
+        }
         try {
             validateCollect(player, parcel);
             return this.submitAsync(
@@ -210,6 +216,11 @@ final class PublicParcelService implements ParcelService {
             return operationException;
         }
         return new ParcelOperationException(message, cause);
+    }
+
+    private static <T> CompletableFuture<T> callbackMutationFailure() {
+        return CompletableFuture.failedFuture(new IllegalStateException(
+            "Parcel mutations cannot be started from a parcel event callback"));
     }
 
     private static Throwable unwrap(Throwable throwable) {
