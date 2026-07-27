@@ -1,4 +1,13 @@
 import net.minecrell.pluginyml.paper.PaperPluginDescription
+import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
+import org.gradle.process.CommandLineArgumentProvider
 import xyz.jpenilla.runtask.task.AbstractRun
 
 plugins {
@@ -161,16 +170,91 @@ modrinth {
     syncBodyFrom = rootProject.file("README.md").readText()
 }
 
+val runServerAotCache = layout.projectDirectory.file("run/cache/parcellockers-run-server.aot")
+val trainRunServerAot = providers.gradleProperty("trainAot")
+
+abstract class RunServerAotArgumentProvider : CommandLineArgumentProvider {
+
+    @get:Internal
+    abstract val cacheFile: RegularFileProperty
+
+    @get:Input
+    @get:Optional
+    abstract val trainAot: Property<String>
+
+    override fun asArguments(): Iterable<String> {
+        val cache = cacheFile.asFile.get()
+
+        return when {
+            trainAot.isPresent -> {
+                check(cache.parentFile.mkdirs() || cache.parentFile.isDirectory) {
+                    "Unable to create AOT cache directory: ${cache.parentFile}"
+                }
+                logger("Training AOT cache: $cache")
+                listOf("-XX:AOTCacheOutput=${cache.absolutePath}")
+            }
+
+            cache.isFile -> {
+                logger("Using AOT cache: $cache")
+                listOf("-XX:AOTCache=${cache.absolutePath}")
+            }
+
+            else -> {
+                logger("AOT cache is not available. Run './gradlew runServer -PtrainAot' to create it.")
+                emptyList()
+            }
+        }
+    }
+
+    private fun logger(message: String) {
+        Logging.getLogger(RunServerAotArgumentProvider::class.java).lifecycle(message)
+    }
+}
+
+abstract class RunServerPluginArgumentProvider : CommandLineArgumentProvider {
+
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.NONE)
+    abstract val pluginJar: RegularFileProperty
+
+    @get:Input
+    @get:Optional
+    abstract val trainAot: Property<String>
+
+    override fun asArguments(): Iterable<String> {
+        if (trainAot.isPresent) {
+            return emptyList()
+        }
+
+        return listOf("-add-plugin=${pluginJar.asFile.get().absolutePath}")
+    }
+}
+
+runPaper {
+    disablePluginJarDetection()
+}
+
 tasks {
     runServer {
         minecraftVersion("26.2")
         downloadPlugins {
-            modrinth("luckperms", "v5.5.17-bukkit")
-            modrinth("vaultunlocked", "2.17.0")
+            modrinth("luckperms", "v5.5.53-bukkit")
+            modrinth("vaultunlocked", "2.20.2")
             modrinth("essentialsx", "2.22.0")
 //            modrinth("discordsrv", "1.30.4") // uncomment to test with DiscordSRV integration
         }
-        jvmArgs("-Dcom.mojang.eula.agree=true")
+        jvmArgs(
+            "-Dcom.mojang.eula.agree=true",
+            "-Xlog:aot=info"
+        )
+        jvmArgumentProviders.add(objects.newInstance<RunServerAotArgumentProvider>().apply {
+            cacheFile.set(runServerAotCache)
+            trainAot.set(trainRunServerAot)
+        })
+        argumentProviders.add(objects.newInstance<RunServerPluginArgumentProvider>().apply {
+            pluginJar.set(shadowJar.flatMap { it.archiveFile })
+            trainAot.set(trainRunServerAot)
+        })
     }
 
     test {

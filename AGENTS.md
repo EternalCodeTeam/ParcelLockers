@@ -16,9 +16,12 @@ This file provides guidance to Codex (Codex.ai/code) when working with code in t
 
 # Start a local Paper server with the plugin loaded (downloads Paper + dependencies automatically)
 ./gradlew runServer
+
+# Train the Java 25 AOT cache (exercise representative plugin flows, then use `stop`)
+./gradlew runServer -PtrainAot
 ```
 
-Requires JDK 21+. The `runServer` task uses JetBrains JVM and auto-downloads LuckPerms, VaultUnlocked, and EssentialsX. Uncomment the DiscordSRV line in `build.gradle.kts` to test that integration locally.
+Requires JDK 21+. The `runServer` task uses an Adoptium Java 25 toolchain and auto-downloads LuckPerms, VaultUnlocked, and EssentialsX. A successful AOT training run writes `run/cache/parcellockers-run-server.aot` after the server is stopped cleanly. Training intentionally omits the local ParcelLockers JAR, so regular plugin code changes do not require retraining; retrain after changing Java, Paper, downloaded test plugins, or important JVM arguments. Uncomment the DiscordSRV line in `build.gradle.kts` to test that integration locally.
 
 ## Architecture Overview
 
