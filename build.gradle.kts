@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "com.eternalcode"
-version = "0.5.0-BETA"
+version = "0.5.1-BETA"
 
 repositories {
     maven("https://maven-central.storage-download.googleapis.com/maven2/") // maven central mirror
@@ -153,11 +153,11 @@ modrinth {
     projectId.set("parcellockers")
     versionNumber.set(project.version.toString())
     versionType.set(getVersionType(project.version.toString()))
-    changelog.set(providers.environmentVariable("MODRINTH_CHANGELOG"))
+//    changelog.set(providers.environmentVariable("MODRINTH_CHANGELOG"))
     debugMode.set(providers.environmentVariable("MODRINTH_DEBUG").map(String::toBoolean).orElse(false))
     uploadFile.set(tasks.shadowJar)
     gameVersions.addAll("1.21.11", "26.1", "26.1.1", "26.1.2", "26.2")
-    loaders.addAll("paper", "purpur")
+    loaders.addAll("bukkit", "paper", "purpur")
     syncBodyFrom = rootProject.file("README.md").readText()
 }
 
