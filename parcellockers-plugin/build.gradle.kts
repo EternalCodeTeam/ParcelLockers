@@ -119,7 +119,7 @@ paper {
 
 tasks.withType<AbstractRun> {
     javaLauncher = javaToolchains.launcherFor {
-        vendor = JvmVendorSpec.JETBRAINS
+        vendor = JvmVendorSpec.ADOPTIUM
         languageVersion = JavaLanguageVersion.of(25)
     }
 }
@@ -129,24 +129,29 @@ modrinth {
     projectId.set("parcellockers")
     versionNumber.set(project.version.toString())
     versionType.set(getVersionType(project.version.toString()))
-    changelog.set(providers.environmentVariable("MODRINTH_CHANGELOG"))
+//    changelog.set(providers.environmentVariable("MODRINTH_CHANGELOG"))
     debugMode.set(providers.environmentVariable("MODRINTH_DEBUG").map(String::toBoolean).orElse(false))
     uploadFile.set(tasks.shadowJar)
     gameVersions.addAll("1.21.11", "26.1", "26.1.1", "26.1.2", "26.2")
-    loaders.addAll("paper", "purpur")
+    loaders.addAll("bukkit", "paper", "purpur")
     syncBodyFrom = rootProject.file("README.md").readText()
 }
 
 tasks {
     runServer {
-        minecraftVersion("26.1.2")
+        minecraftVersion("26.2")
         downloadPlugins {
-            modrinth("luckperms", "v5.5.17-bukkit")
-            modrinth("vaultunlocked", "2.17.0")
+            modrinth("luckperms", "v5.5.53-bukkit")
+            modrinth("vaultunlocked", "2.20.2")
             modrinth("essentialsx", "2.22.0")
 //            modrinth("discordsrv", "1.30.4") // uncomment to test with DiscordSRV integration
         }
-        jvmArgs("-Dcom.mojang.eula.agree=true", "-XX:+AllowEnhancedClassRedefinition")
+        jvmArgs(
+            "-Dcom.mojang.eula.agree=true",
+            "-Xlog:aot=info"
+        )
+//        jvmArgs("-XX:AOTCacheOutput=server.aot")
+        jvmArgs("-XX:AOTCache=server.aot")
     }
 
     shadowJar {

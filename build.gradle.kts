@@ -1,13 +1,13 @@
 plugins {
     id("de.eldoria.plugin-yml.paper") version "0.9.0" apply false
     id("xyz.jpenilla.run-paper") version "3.0.2" apply false
-    id("com.gradleup.shadow") version "9.6.0" apply false
+    id("com.gradleup.shadow") version "9.6.1" apply false
     id("com.modrinth.minotaur") version "2.+" apply false
 }
 
 allprojects {
     group = "com.eternalcode"
-    version = "0.5.0-BETA"
+    version = "0.5.1-BETA"
 
     repositories {
         maven("https://maven-central.storage-download.googleapis.com/maven2/")

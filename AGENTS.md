@@ -18,7 +18,7 @@ This file provides guidance to Codex (Codex.ai/code) when working with code in t
 ./gradlew runServer
 ```
 
-Requires JDK 21+. The `runServer` task uses JetBrains JVM and auto-downloads LuckPerms, VaultUnlocked, and EssentialsX. Uncomment the DiscordSRV line in `build.gradle.kts` to test that integration locally.
+Requires JDK 21+. The `runServer` task uses an Adoptium Java 25 toolchain and auto-downloads LuckPerms, VaultUnlocked, and EssentialsX. To train its AOT cache, comment out `-XX:AOTCache=server.aot`, uncomment `-XX:AOTCacheOutput=server.aot`, run the server with a representative workload, and stop it cleanly. Restore the original comments for subsequent runs. The cache is stored as `run/server.aot` and includes all classes loaded during training, including ParcelLockers. Uncomment the DiscordSRV line in `build.gradle.kts` to test that integration locally.
 
 ## Architecture Overview
 
