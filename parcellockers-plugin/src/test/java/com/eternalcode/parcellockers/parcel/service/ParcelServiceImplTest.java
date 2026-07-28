@@ -45,6 +45,7 @@ import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -62,6 +63,22 @@ import org.mockito.InOrder;
 import org.mockito.MockedStatic;
 
 class ParcelServiceImplTest {
+
+    @Test
+    void rejectedOperationHandoffStillCompletesResultAndReleasesGate()
+        throws Exception {
+        Executor rejectingHandoff = command -> {
+            throw new IllegalStateException("handoff rejected");
+        };
+        OperationFixture fixture = new OperationFixture(rejectingHandoff);
+
+        CompletableFuture<Void> first = fixture.service.serializeParcelOperation(
+            fixture.parcel.uuid(), () -> CompletableFuture.completedFuture(null));
+        CompletableFuture<Void> second = fixture.service.serializeParcelOperation(
+            fixture.parcel.uuid(), () -> CompletableFuture.completedFuture(null));
+
+        CompletableFuture.allOf(first, second).get(2, TimeUnit.SECONDS);
+    }
 
     @Test
     void outwardCompletionCallbackCanQueueAndAwaitFollowingMutation() {
@@ -925,13 +942,22 @@ class ParcelServiceImplTest {
         private final ParcelServiceImpl service;
 
         private OperationFixture() {
+            this(null);
+        }
+
+        private OperationFixture(Executor operationHandoff) {
             when(this.server.getPluginManager()).thenReturn(this.pluginManager);
             when(this.sender.getUniqueId()).thenReturn(this.parcel.sender());
             when(this.sender.hasPermission("parcellockers.fee.bypass")).thenReturn(true);
             when(this.items.getFirst().clone()).thenReturn(this.items.getFirst());
-            this.service = new ParcelServiceImpl(
-                this.noticeService, this.parcelRepository, this.contentRepository,
-                this.collectedRepository, this.scheduler, this.config, this.economy, this.server);
+            this.service = operationHandoff == null
+                ? new ParcelServiceImpl(
+                    this.noticeService, this.parcelRepository, this.contentRepository,
+                    this.collectedRepository, this.scheduler, this.config, this.economy, this.server)
+                : new ParcelServiceImpl(
+                    this.noticeService, this.parcelRepository, this.contentRepository,
+                    this.collectedRepository, this.scheduler, this.config, this.economy, this.server,
+                    operationHandoff);
         }
     }
 }

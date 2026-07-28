@@ -49,7 +49,7 @@ public class ParcelServiceImpl implements PluginParcelService {
 
     private static final long CACHE_EXPIRE_HOURS = 3;
     private static final long CACHE_MAX_SIZE = 10_000;
-    private static final Executor OPERATION_HANDOFF = command -> {
+    private static final Executor DEFAULT_OPERATION_HANDOFF = command -> {
         try {
             Thread.ofVirtual()
                 .name("parcel-operation-handoff")
@@ -69,6 +69,7 @@ public class ParcelServiceImpl implements PluginParcelService {
     private final PluginConfig config;
     private final Economy economy;
     private final Server server;
+    private final Executor operationHandoff;
 
     private final Cache<UUID, Parcel> parcelsByUuid;
     private final Map<UUID, CompletableFuture<Void>> parcelOperationTails = new HashMap<>();
@@ -86,6 +87,23 @@ public class ParcelServiceImpl implements PluginParcelService {
         Economy economy,
         Server server
     ) {
+        this(
+            noticeService, parcelRepository, parcelContentRepository,
+            collectedParcelRepository, scheduler, config, economy, server,
+            DEFAULT_OPERATION_HANDOFF);
+    }
+
+    ParcelServiceImpl(
+        NoticeService noticeService,
+        ParcelRepository parcelRepository,
+        ParcelContentRepository parcelContentRepository,
+        CollectedParcelRepository collectedParcelRepository,
+        Scheduler scheduler,
+        PluginConfig config,
+        Economy economy,
+        Server server,
+        Executor operationHandoff
+    ) {
         this.noticeService = noticeService;
         this.parcelRepository = parcelRepository;
         this.parcelContentRepository = parcelContentRepository;
@@ -94,6 +112,8 @@ public class ParcelServiceImpl implements PluginParcelService {
         this.config = config;
         this.economy = economy;
         this.server = server;
+        this.operationHandoff = Objects.requireNonNull(
+            operationHandoff, "Operation handoff cannot be null");
 
         this.parcelsByUuid = Caffeine.newBuilder()
             .expireAfterAccess(CACHE_EXPIRE_HOURS, TimeUnit.HOURS)
@@ -905,13 +925,23 @@ public class ParcelServiceImpl implements PluginParcelService {
         return result;
     }
 
-    private static <T> void completeSerializedOperation(
+    private <T> void completeSerializedOperation(
         CompletableFuture<Void> gate,
         CompletableFuture<T> result,
         T value,
         Throwable throwable
     ) {
-        OPERATION_HANDOFF.execute(() -> gate.complete(null));
+        Runnable releaseGate = () -> gate.complete(null);
+        try {
+            this.operationHandoff.execute(releaseGate);
+        } catch (Throwable handoffFailure) {
+            try {
+                CompletableFuture.runAsync(releaseGate);
+            } catch (Throwable emergencyHandoffFailure) {
+                handoffFailure.addSuppressed(emergencyHandoffFailure);
+                releaseGate.run();
+            }
+        }
         if (throwable != null) {
             result.completeExceptionally(throwable);
         } else {
