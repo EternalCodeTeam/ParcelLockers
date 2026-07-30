@@ -64,7 +64,6 @@ public class ParcelServiceImpl implements PluginParcelService {
     private final NoticeService noticeService;
     private final ParcelRepository parcelRepository;
     private final ParcelContentRepository parcelContentRepository;
-    private final CollectedParcelRepository collectedParcelRepository;
     private final Scheduler scheduler;
     private final PluginConfig config;
     private final Economy economy;
@@ -107,7 +106,6 @@ public class ParcelServiceImpl implements PluginParcelService {
         this.noticeService = noticeService;
         this.parcelRepository = parcelRepository;
         this.parcelContentRepository = parcelContentRepository;
-        this.collectedParcelRepository = collectedParcelRepository;
         this.scheduler = scheduler;
         this.config = config;
         this.economy = economy;
@@ -316,7 +314,7 @@ public class ParcelServiceImpl implements PluginParcelService {
                 }
                 ParcelOperationException failure = new ParcelOperationException(
                     "Failed to completely roll back parcel " + parcel.uuid(),
-                    failures.get(0)
+                    failures.getFirst()
                 );
                 failures.stream().skip(1).forEach(failure::addSuppressed);
                 return CompletableFuture.failedFuture(failure);

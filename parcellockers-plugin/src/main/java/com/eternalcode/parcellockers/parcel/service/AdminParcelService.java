@@ -12,12 +12,12 @@ import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import com.eternalcode.parcellockers.parcel.task.ParcelSendTask;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
+import org.jspecify.annotations.Nullable;
 
 public class AdminParcelService {
 
@@ -91,19 +91,19 @@ public class AdminParcelService {
                 }
                 return this.deliveryManager.get(current.uuid())
                     .thenCompose(priorDelivery ->
-                        this.applyStatusChange(current, status, priorDelivery));
+                        this.applyStatusChange(current, status, priorDelivery.orElse(null)));
             });
     }
 
     private CompletableFuture<EditResult> applyStatusChange(
         Parcel current,
         ParcelStatus status,
-        Optional<Delivery> priorDelivery
+        @Nullable Delivery priorDelivery
     ) {
         Parcel updated = withStatus(current, status);
         return this.parcelService.updateIfStatusWithinParcelOperation(
             updated, current.status()).thenCompose(applied -> {
-            if (!Boolean.TRUE.equals(applied)) {
+            if (!applied) {
                 return parcelUnavailable();
             }
             CompletableFuture<EditResult> reconciliation = invoke(
@@ -122,13 +122,13 @@ public class AdminParcelService {
 
     private CompletableFuture<EditResult> armDelivery(
         Parcel parcel,
-        Optional<Delivery> priorDelivery
+        @Nullable Delivery priorDelivery
     ) {
-        if (priorDelivery.isPresent()) {
+        if (priorDelivery != null) {
             this.scheduleSend(
                 parcel,
                 Duration.between(
-                    Instant.now(), priorDelivery.get().deliveryTimestamp()));
+                    Instant.now(), priorDelivery.deliveryTimestamp()));
             return CompletableFuture.completedFuture(EditResult.ok());
         }
         Duration delay = this.deliveryDelay(parcel.priority());
@@ -141,9 +141,9 @@ public class AdminParcelService {
 
     private CompletableFuture<EditResult> disarmDelivery(
         Parcel parcel,
-        Optional<Delivery> priorDelivery
+        @Nullable Delivery priorDelivery
     ) {
-        if (priorDelivery.isEmpty()) {
+        if (priorDelivery == null) {
             return CompletableFuture.completedFuture(EditResult.ok());
         }
         return this.deliveryManager.delete(parcel.uuid())
@@ -177,7 +177,7 @@ public class AdminParcelService {
 
     public CompletableFuture<EditResult> changeDestination(Parcel parcel, UUID destinationLocker) {
         return this.lockerManager.isLockerFull(destinationLocker).thenCompose(full -> {
-            if (Boolean.TRUE.equals(full)) {
+            if (full) {
                 return CompletableFuture.completedFuture(EditResult.of(EditResult.Status.DESTINATION_FULL));
             }
             return this.editAuthoritative(
@@ -205,28 +205,28 @@ public class AdminParcelService {
                 }
                 return this.deliveryManager.get(current.uuid())
                     .thenCompose(priorDelivery ->
-                        this.applyPriorityChange(current, newPriority, priorDelivery));
+                        this.applyPriorityChange(current, newPriority, priorDelivery.orElse(null)));
             });
     }
 
     private CompletableFuture<EditResult> applyPriorityChange(
         Parcel current,
         boolean newPriority,
-        Optional<Delivery> priorDelivery
+        @Nullable Delivery priorDelivery
     ) {
         Parcel updated = withPriority(current, newPriority);
         return this.parcelService.updateIfStatusWithinParcelOperation(
             updated, current.status()).thenCompose(applied -> {
-            if (!Boolean.TRUE.equals(applied)) {
+            if (!applied) {
                 return parcelUnavailable();
             }
-            if (current.status() != ParcelStatus.SENT || priorDelivery.isEmpty()) {
+            if (current.status() != ParcelStatus.SENT || priorDelivery == null) {
                 return CompletableFuture.completedFuture(EditResult.ok());
             }
 
             Instant now = Instant.now();
             Instant shifted = shiftedDeliveryTimestamp(
-                priorDelivery.get().deliveryTimestamp(),
+                priorDelivery.deliveryTimestamp(),
                 current.priority(), newPriority,
                 this.config.settings.parcelSendDuration,
                 this.config.settings.priorityParcelSendDuration,
@@ -242,7 +242,7 @@ public class AdminParcelService {
                     return CompletableFuture.completedFuture(result);
                 }
                 return this.compensatePriorityAndFail(
-                    current, priorDelivery.get(), throwable);
+                    current, priorDelivery, throwable);
             }).thenCompose(future -> future);
         });
     }
@@ -262,7 +262,7 @@ public class AdminParcelService {
                     Parcel updated = edit.apply(current);
                     return this.parcelService.updateIfStatusWithinParcelOperation(
                         updated, current.status()).thenApply(applied ->
-                        Boolean.TRUE.equals(applied)
+                        applied
                             ? EditResult.ok()
                             : EditResult.of(EditResult.Status.PARCEL_COLLECTED));
                 }));
@@ -271,7 +271,7 @@ public class AdminParcelService {
     private CompletableFuture<EditResult> compensateAndFail(
         Parcel priorParcel,
         Parcel changedParcel,
-        Optional<Delivery> priorDelivery,
+        @Nullable Delivery priorDelivery,
         Throwable trigger
     ) {
         Throwable failure = unwrap(trigger);
@@ -306,19 +306,19 @@ public class AdminParcelService {
                 failure
             ))
             .thenCompose(ignored -> this.rearmPriorDelivery(
-                priorParcel, Optional.of(priorDelivery), failure))
+                priorParcel, priorDelivery, failure))
             .thenCompose(ignored -> CompletableFuture.failedFuture(failure));
     }
 
     private CompletableFuture<Void> restoreDelivery(
         UUID parcel,
-        Optional<Delivery> priorDelivery,
+        @Nullable Delivery priorDelivery,
         Throwable failure
     ) {
-        if (priorDelivery.isPresent()) {
+        if (priorDelivery != null) {
             return this.attemptCompensation(
                 () -> this.deliveryManager.update(
-                    parcel, priorDelivery.get().deliveryTimestamp()),
+                    parcel, priorDelivery.deliveryTimestamp()),
                 "Restore delivery " + parcel,
                 failure);
         }
@@ -330,17 +330,17 @@ public class AdminParcelService {
 
     private CompletableFuture<Void> rearmPriorDelivery(
         Parcel priorParcel,
-        Optional<Delivery> priorDelivery,
+        @Nullable Delivery priorDelivery,
         Throwable failure
     ) {
-        if (priorParcel.status() != ParcelStatus.SENT || priorDelivery.isEmpty()) {
+        if (priorParcel.status() != ParcelStatus.SENT || priorDelivery == null) {
             return CompletableFuture.completedFuture(null);
         }
         return this.attemptCompensation(() -> {
             this.scheduleSend(
                 priorParcel,
                 Duration.between(
-                    Instant.now(), priorDelivery.get().deliveryTimestamp()));
+                    Instant.now(), priorDelivery.deliveryTimestamp()));
             return CompletableFuture.completedFuture(null);
         }, "Re-arm delivery task " + priorParcel.uuid(), failure);
     }

@@ -5,8 +5,10 @@ import com.eternalcode.parcellockers.shared.event.CancellableEvent;
 import java.util.UUID;
 import org.bukkit.event.HandlerList;
 
-// Called when a locker is deleted. Fired synchronously on the main thread (see LockerManager#delete).
-// Warning: this event is not called when all lockers are deleted through "/parcel debug delete lockers" command
+/**
+ * Called when a locker is deleted. Fired synchronously on the main thread (see LockerManager#delete).
+ * Warning: this event is not called when all lockers are deleted through "/parcel debug delete lockers" command
+ */
 public class LockerDeleteEvent extends CancellableEvent {
 
     private static final HandlerList HANDLER_LIST = new HandlerList();

@@ -11,6 +11,7 @@ import com.eternalcode.parcellockers.shared.PageResult;
 import com.eternalcode.parcellockers.shared.exception.ParcelOperationException;
 import com.eternalcode.parcellockers.shared.exception.ValidationException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -172,7 +173,7 @@ final class PublicParcelService implements ParcelService {
         if (items == null || items.isEmpty()) {
             throw new ValidationException("Items cannot be null or empty");
         }
-        if (items.stream().anyMatch(item -> item == null)) {
+        if (items.stream().anyMatch(Objects::isNull)) {
             throw new ValidationException("Items cannot contain null elements");
         }
     }

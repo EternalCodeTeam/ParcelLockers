@@ -16,25 +16,15 @@ public interface PluginParcelService extends ParcelService {
 
     CompletableFuture<Void> rollbackSend(Player sender, Parcel parcel);
 
-    CompletableFuture<Boolean> sendWithinParcelOperation(
-        Player sender,
-        Parcel parcel,
-        List<ItemStack> items
-    );
+    CompletableFuture<Boolean> sendWithinParcelOperation(Player sender, Parcel parcel, List<ItemStack> items);
 
     CompletableFuture<Void> rollbackSendWithinParcelOperation(Player sender, Parcel parcel);
 
-    <T> CompletableFuture<T> serializeParcelOperation(
-        UUID parcel,
-        Supplier<CompletableFuture<T>> operation
-    );
+    <T> CompletableFuture<T> serializeParcelOperation(UUID parcel, Supplier<CompletableFuture<T>> operation);
 
     CompletableFuture<Void> updateWithinParcelOperation(Parcel parcel);
 
-    CompletableFuture<Boolean> updateIfStatusWithinParcelOperation(
-        Parcel parcel,
-        ParcelStatus expectedStatus
-    );
+    CompletableFuture<Boolean> updateIfStatusWithinParcelOperation(Parcel parcel, ParcelStatus expectedStatus);
 
     CompletableFuture<Optional<Parcel>> getAuthoritativeWithinParcelOperation(UUID parcel);
 

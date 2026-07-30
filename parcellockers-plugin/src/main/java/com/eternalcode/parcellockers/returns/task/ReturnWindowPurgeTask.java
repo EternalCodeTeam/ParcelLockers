@@ -59,7 +59,7 @@ public class ReturnWindowPurgeTask implements Runnable {
                     // Delete the parcel (and content) first; the row is only removed once that
                     // succeeded so a failed delete is retried on the next run.
                     return this.parcelService.delete(collected.parcel())
-                        .thenCompose(deleted -> Boolean.TRUE.equals(deleted)
+                        .thenCompose(deleted -> deleted
                             ? this.collectedParcelRepository.delete(collected.parcel())
                             : CompletableFuture.completedFuture(false))
                         .thenCompose(unused -> {

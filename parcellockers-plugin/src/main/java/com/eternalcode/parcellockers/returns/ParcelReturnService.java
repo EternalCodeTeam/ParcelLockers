@@ -139,7 +139,7 @@ public class ParcelReturnService {
                             return this.abort(player, deposited, messages -> messages.parcel.cannotReturn);
                         }
                         return this.lockerManager.isLockerFull(current.entryLocker()).thenCompose(isFull -> {
-                            if (Boolean.TRUE.equals(isFull)) {
+                            if (isFull) {
                                 return this.abort(player, deposited, messages -> messages.parcel.lockerFull);
                             }
                             return this.execute(player, current, deposited, feeBypassed);

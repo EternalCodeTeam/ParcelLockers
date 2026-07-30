@@ -7,7 +7,6 @@ import dev.rollczi.litecommands.annotations.execute.Execute;
 import dev.rollczi.litecommands.annotations.permission.Permission;
 import org.bukkit.entity.Player;
 
-@SuppressWarnings({"unused", "ClassCanBeRecord"})
 @Command(name = "parcel")
 @Permission("parcellockers.command.parcel")
 public class ParcelCommand {

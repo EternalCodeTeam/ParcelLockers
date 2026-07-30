@@ -1,5 +1,6 @@
 package com.eternalcode.parcellockers.user.repository;
 
+import com.eternalcode.commons.concurrent.FutureHandler;
 import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.database.DatabaseManager;
 import com.eternalcode.parcellockers.database.wrapper.AbstractRepositoryOrmLite;
@@ -37,7 +38,7 @@ public class UserRepositoryOrmLite extends AbstractRepositoryOrmLite implements 
     public CompletableFuture<Void> save(User user) {
         return this.upsert(UserTable.class, UserTable.from(user)).exceptionally(ex -> {
             System.err.println("Failed to save user: " + ex.getMessage());
-            ex.printStackTrace();
+            FutureHandler.handleException(ex);
             return null;
         }).thenApply(dao -> null);
     }

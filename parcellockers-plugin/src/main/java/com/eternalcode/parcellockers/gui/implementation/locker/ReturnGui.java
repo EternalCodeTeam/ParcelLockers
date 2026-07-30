@@ -151,7 +151,7 @@ public class ReturnGui implements GuiView {
                 .orElse(this.guiSettings.returnWindowExpiredLine));
 
         return CompletableFutures.combine(loreFuture, contentFuture, windowLineFuture, (processedLore, items, windowLine) -> {
-            Supplier<GuiItem> supplier = () -> {
+            return (Supplier<GuiItem>) () -> {
                 ConfigItem item = rowItem.clone();
                 item.name(item.name().replace("{NAME}", parcel.name()));
 
@@ -178,7 +178,6 @@ public class ReturnGui implements GuiView {
                     parcel
                 ).show(player));
             };
-            return supplier;
         }).toCompletableFuture();
     }
 }

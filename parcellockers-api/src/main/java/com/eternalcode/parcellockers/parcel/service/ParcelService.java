@@ -28,11 +28,7 @@ public interface ParcelService {
 
     CompletableFuture<PageResult<Parcel>> getByReceiver(UUID receiver, Page page);
 
-    CompletableFuture<PageResult<Parcel>> getCollectible(
-        UUID receiver,
-        @Nullable UUID destinationLocker,
-        Page page
-    );
+    CompletableFuture<PageResult<Parcel>> getCollectible(UUID receiver, @Nullable UUID destinationLocker, Page page);
 
     CompletableFuture<PageResult<Parcel>> getReturnable(UUID receiver, Page page);
 

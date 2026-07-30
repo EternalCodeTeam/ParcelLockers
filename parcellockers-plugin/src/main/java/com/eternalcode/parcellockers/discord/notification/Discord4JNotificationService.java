@@ -3,6 +3,8 @@ package com.eternalcode.parcellockers.discord.notification;
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import java.util.logging.Logger;
+
+import discord4j.core.object.entity.User;
 import reactor.core.scheduler.Schedulers;
 
 public class Discord4JNotificationService implements DiscordNotificationService {
@@ -18,7 +20,7 @@ public class Discord4JNotificationService implements DiscordNotificationService 
     @Override
     public void sendPrivateMessage(long discordId, String message) {
         this.client.getUserById(Snowflake.of(discordId))
-            .flatMap(user -> user.getPrivateChannel())
+            .flatMap(User::getPrivateChannel)
             .flatMap(channel -> channel.createMessage(message))
             .subscribeOn(Schedulers.boundedElastic())
             .doOnError(error -> this.logger.warning("Failed to send private message to Discord user " + discordId + ": " + error.getMessage()))

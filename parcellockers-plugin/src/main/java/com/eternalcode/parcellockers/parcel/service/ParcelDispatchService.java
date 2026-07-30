@@ -10,6 +10,9 @@ import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.task.ParcelSendTask;
 import com.eternalcode.parcellockers.shared.exception.ParcelOperationException;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -21,8 +24,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 
 public class ParcelDispatchService {
 
@@ -56,6 +57,13 @@ public class ParcelDispatchService {
         this.scheduler = scheduler;
         this.config = config;
         this.noticeService = noticeService;
+    }
+
+    private static Throwable unwrap(Throwable throwable) {
+        if (throwable instanceof CompletionException && throwable.getCause() != null) {
+            return throwable.getCause();
+        }
+        return throwable;
     }
 
     public CompletableFuture<Boolean> dispatch(Player sender, Parcel parcel, List<ItemStack> items) {
@@ -126,7 +134,7 @@ public class ParcelDispatchService {
 
                 return this.parcelService.sendWithinParcelOperation(sender, parcel, items)
                     .thenCompose(success -> {
-                        if (!Boolean.TRUE.equals(success)) {
+                        if (!success) {
                             this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.cannotSend);
                             return CompletableFuture.completedFuture(false);
                         }
@@ -135,18 +143,14 @@ public class ParcelDispatchService {
                             .handle((deleted, throwable) -> {
                                 if (throwable != null) {
                                     return this.compensate(
-                                        sender,
-                                        parcel,
                                         "Failed to delete sender storage for parcel "
                                             + parcel.uuid(),
                                         unwrap(throwable),
                                         List.of(this.rollbackStep(sender, parcel))
                                     );
                                 }
-                                if (!Boolean.TRUE.equals(deleted)) {
+                                if (!deleted) {
                                     return this.compensate(
-                                        sender,
-                                        parcel,
                                         "Sender storage was not deleted for parcel "
                                             + parcel.uuid(),
                                         new IllegalStateException(
@@ -197,8 +201,6 @@ public class ParcelDispatchService {
         return deliveryCreated.handle((delivery, throwable) -> {
             if (throwable != null) {
                 return this.compensate(
-                    sender,
-                    parcel,
                     "Failed to persist delivery for parcel " + parcel.uuid(),
                     unwrap(throwable),
                     List.of(
@@ -229,8 +231,6 @@ public class ParcelDispatchService {
             this.scheduler.runLaterAsync(task, delay);
         } catch (Throwable throwable) {
             return this.compensate(
-                sender,
-                parcel,
                 "Failed to schedule delivery for parcel " + parcel.uuid(),
                 throwable,
                 List.of(
@@ -251,8 +251,6 @@ public class ParcelDispatchService {
     }
 
     private CompletableFuture<Boolean> compensate(
-        Player sender,
-        Parcel parcel,
         String message,
         Throwable trigger,
         List<CleanupStep> steps
@@ -308,8 +306,8 @@ public class ParcelDispatchService {
                 Boolean.TRUE.equals(deleted)
                     ? CompletableFuture.completedFuture(null)
                     : CompletableFuture.failedFuture(new IllegalStateException(
-                        "Delivery " + parcel.uuid()
-                            + " was not deleted during dispatch compensation")))
+                    "Delivery " + parcel.uuid()
+                        + " was not deleted during dispatch compensation")))
         );
     }
 
@@ -337,13 +335,6 @@ public class ParcelDispatchService {
             LOGGER.warning("Failed to send dispatch failure notice to player "
                 + sender.getName() + ": " + throwable.getMessage());
         }
-    }
-
-    private static Throwable unwrap(Throwable throwable) {
-        if (throwable instanceof CompletionException && throwable.getCause() != null) {
-            return throwable.getCause();
-        }
-        return throwable;
     }
 
     private ParcelOperationException operationFailure(String message, Throwable throwable) {

@@ -15,7 +15,6 @@ import dev.triumphteam.gui.guis.GuiItem;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 
-@SuppressWarnings("UnstableApiUsage")
 public class AdminGui implements GuiView {
 
     private static final int PARCELS_SLOT = 20;

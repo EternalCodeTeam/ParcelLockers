@@ -12,6 +12,8 @@ import dev.rollczi.litecommands.annotations.context.Context;
 import dev.rollczi.litecommands.annotations.execute.Execute;
 import dev.rollczi.litecommands.annotations.permission.Permission;
 import discord4j.common.util.Snowflake;
+
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import org.bukkit.OfflinePlayer;
@@ -81,12 +83,11 @@ public class DiscordLinkCommand {
 
                 return this.discordLinkService.createLink(playerUuid, discordIdLong)
                     .thenAccept(createResult -> {
-                        switch (createResult) {
-                            case SUCCESS -> {
-                                this.noticeService.viewer(sender, messages -> messages.discord.adminLinkSuccess);
-                                this.noticeService.player(playerUuid, messages -> messages.discord.linkSuccess);
-                            }
-                            default -> this.noticeService.viewer(sender, messages -> messages.discord.linkFailed);
+                        if (createResult == LinkResult.SUCCESS) {
+                            this.noticeService.viewer(sender, messages -> messages.discord.adminLinkSuccess);
+                            this.noticeService.player(playerUuid, messages -> messages.discord.linkSuccess);
+                        } else {
+                            this.noticeService.viewer(sender, messages -> messages.discord.linkFailed);
                         }
                     });
             })

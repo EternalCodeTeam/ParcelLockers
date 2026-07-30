@@ -4,6 +4,7 @@ import com.eternalcode.commons.concurrent.FutureHandler;
 import com.eternalcode.commons.scheduler.Scheduler;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig.GuiSettings;
 import com.eternalcode.parcellockers.configuration.serializable.ConfigItem;
+import com.eternalcode.parcellockers.content.ParcelContent;
 import com.eternalcode.parcellockers.gui.GuiManager;
 import com.eternalcode.parcellockers.gui.GuiView;
 import com.eternalcode.parcellockers.gui.PaginatedGuiRefresher;
@@ -121,7 +122,7 @@ public class CollectionGui implements GuiView {
     ) {
         CompletableFuture<List<String>> loreFuture = PlaceholderUtil.replaceParcelPlaceholdersAsync(parcel, parcelItem.lore(), this.guiManager);
         CompletableFuture<List<ItemStack>> contentFuture = this.guiManager.getParcelContent(parcel.uuid())
-            .thenApply(optional -> optional.map(content -> content.items()).orElse(List.of()));
+            .thenApply(optional -> optional.map(ParcelContent::items).orElse(List.of()));
 
         return loreFuture.thenCombine(contentFuture, (processedLore, items) -> () -> {
             ConfigItem item = parcelItem.clone();

@@ -3,9 +3,12 @@ package com.eternalcode.parcellockers.discord.verification;
 import com.eternalcode.parcellockers.configuration.implementation.MessageConfig;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig.DiscordSettings;
 import com.eternalcode.parcellockers.discord.DiscordLinkService;
+import com.eternalcode.parcellockers.discord.LinkResult;
 import com.eternalcode.parcellockers.notification.NoticeService;
 import discord4j.core.object.entity.User;
 import io.papermc.paper.dialog.Dialog;
+
+import java.util.Objects;
 import java.util.UUID;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
@@ -111,9 +114,10 @@ public class DiscordVerificationService {
                 this.verificationCache.invalidate(playerUuid);
                 this.discordLinkService.createLink(playerUuid, verificationData.discordId())
                     .thenAccept(result -> {
-                        switch (result) {
-                            case SUCCESS -> this.noticeService.player(playerUuid, messages -> messages.discord.linkSuccess);
-                            default -> this.noticeService.player(playerUuid, messages -> messages.discord.linkFailed);
+                        if (result == LinkResult.SUCCESS) {
+                            this.noticeService.player(playerUuid, messages -> messages.discord.linkSuccess);
+                        } else {
+                            this.noticeService.player(playerUuid, messages -> messages.discord.linkFailed);
                         }
                     });
             },
