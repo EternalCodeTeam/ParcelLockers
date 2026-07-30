@@ -86,15 +86,16 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jspecify.annotations.Nullable;
 
 public final class ParcelLockers extends JavaPlugin implements ParcelLockersApi {
 
-    private LiteCommands<CommandSender> liteCommands;
-    private DatabaseManager databaseManager;
-    private Economy economy;
-    private DiscordClientManager discordClientManager;
-    private ParcelService parcelService;
-    private LockerService lockerService;
+    private @Nullable LiteCommands<CommandSender> liteCommands;
+    private @Nullable DatabaseManager databaseManager;
+    private @Nullable Economy economy;
+    private @Nullable DiscordClientManager discordClientManager;
+    private @Nullable ParcelService parcelService;
+    private @Nullable LockerService lockerService;
     private boolean apiInitialized;
 
     @Override
@@ -116,6 +117,7 @@ public final class ParcelLockers extends JavaPlugin implements ParcelLockersApi 
             server.getPluginManager().disablePlugin(this);
             return;
         }
+        Economy economy = Objects.requireNonNull(this.economy);
 
         DatabaseManager databaseManager = new DatabaseManager(config, this.getLogger(), this.getDataFolder());
         this.databaseManager = databaseManager;
@@ -147,7 +149,7 @@ public final class ParcelLockers extends JavaPlugin implements ParcelLockersApi 
             collectedParcelRepository,
             scheduler,
             config,
-            this.economy,
+            economy,
             server
         );
 
@@ -185,7 +187,7 @@ public final class ParcelLockers extends JavaPlugin implements ParcelLockersApi 
             scheduler,
             config,
             noticeService,
-            this.economy,
+            economy,
             server
         );
 
