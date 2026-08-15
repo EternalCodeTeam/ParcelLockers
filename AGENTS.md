@@ -53,7 +53,6 @@ Each domain (`locker`, `parcel`, `content`, `delivery`, `itemstorage`, `user`, `
 ### Optional Integrations
 
 - **DiscordSRV** — when present, account linking and DM notifications are delegated to it; otherwise, the plugin manages its own Discord bot via Discord4J
-- **Nexo** — when present, custom item blocks can be used as locker blocks (`NexoIntegration.placeBlock`); guarded by `isPluginEnabled("Nexo")` checks
 - **Vault** — required; used to charge players an economy fee when sending parcels
 
 ### Testing
