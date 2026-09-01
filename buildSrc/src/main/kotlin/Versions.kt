@@ -14,7 +14,7 @@ object Versions {
     const val H2 = "2.4.240"
     const val POSTGRESQL = "42.7.13"
 
-    const val LOMBOK = "1.18.46"
+    const val LOMBOK = "1.18.48"
     const val JETBRAINS_ANNOTATIONS = "26.1.0"
 
     const val JACKSON_BUKKIT = "2.0.0"
