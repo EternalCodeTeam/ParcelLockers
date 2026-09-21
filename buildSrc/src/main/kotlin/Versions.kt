@@ -23,7 +23,7 @@ object Versions {
     const val ETERNALCODE_COMMONS = "1.4.1"
     const val MULTIFICATION = "1.2.4"
 
-    const val CAFFEINE = "3.2.4"
+    const val CAFFEINE = "3.3.0"
     const val VAULT_API = "1.7.1"
 
     const val DISCORD4J = "3.3.3"
