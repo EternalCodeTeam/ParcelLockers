@@ -71,6 +71,7 @@ class ParcelServiceImplTest {
 
         when(this.server.getPluginManager()).thenReturn(mock(PluginManager.class));
         when(this.player.getUniqueId()).thenReturn(this.playerId);
+        when(this.economy.has(this.player, FEE)).thenReturn(true);
         doReturn(this.noticeBroadcast).when(this.noticeService).create();
         doAnswer(invocation -> {
             this.mainTasks.add(invocation.getArgument(0));
@@ -97,7 +98,19 @@ class ParcelServiceImplTest {
     }
 
     @Test
-    void insufficientFundsRemovesInsertedParcelWithoutSavingContent() {
+    void insufficientFundsRefusesBeforeAnythingIsPersisted() {
+        Parcel parcel = this.parcel(ParcelStatus.SENT);
+        when(this.economy.has(this.player, FEE)).thenReturn(false);
+
+        assertFalse(this.service.send(this.player, parcel, List.of(mock(ItemStack.class))).join());
+
+        verify(this.parcelRepository, never()).saveIfAbsent(any());
+        verify(this.economy, never()).withdrawPlayer(any(Player.class), anyDouble());
+        verify(this.contentRepository, never()).save(any());
+    }
+
+    @Test
+    void failedWithdrawalAfterInsertRemovesParcelWithoutSavingContent() {
         Parcel parcel = this.parcel(ParcelStatus.SENT);
         when(this.parcelRepository.saveIfAbsent(parcel)).thenReturn(CompletableFuture.completedFuture(true));
         when(this.economy.withdrawPlayer(this.player, FEE)).thenReturn(response(EconomyResponse.ResponseType.FAILURE));
@@ -107,6 +120,22 @@ class ParcelServiceImplTest {
 
         verify(this.parcelRepository).delete(parcel.uuid());
         verify(this.contentRepository, never()).save(any());
+    }
+
+    @Test
+    void failedCleanupAfterFailedWithdrawalCompletesExceptionally() {
+        Parcel parcel = this.parcel(ParcelStatus.SENT);
+        IllegalStateException deleteFailure = new IllegalStateException("delete failed");
+        when(this.parcelRepository.saveIfAbsent(parcel)).thenReturn(CompletableFuture.completedFuture(true));
+        when(this.economy.withdrawPlayer(this.player, FEE)).thenReturn(response(EconomyResponse.ResponseType.FAILURE));
+        when(this.parcelRepository.delete(parcel.uuid())).thenReturn(CompletableFuture.failedFuture(deleteFailure));
+
+        CompletionException exception = assertThrows(CompletionException.class,
+            () -> this.service.send(this.player, parcel, List.of(mock(ItemStack.class))).join());
+
+        ParcelOperationException operationException =
+            assertInstanceOf(ParcelOperationException.class, exception.getCause());
+        assertSame(deleteFailure, operationException.getCause());
     }
 
     @Test

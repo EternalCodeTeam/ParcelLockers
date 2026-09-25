@@ -8,7 +8,6 @@ import com.eternalcode.parcellockers.notification.NoticeService;
 import discord4j.core.object.entity.User;
 import io.papermc.paper.dialog.Dialog;
 
-import java.util.Objects;
 import java.util.UUID;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;

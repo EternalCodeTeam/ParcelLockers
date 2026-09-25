@@ -102,6 +102,10 @@ public class MessageConfig extends OkaeriConfig {
             .chat("&4✘ &cThe parcel destination locker is not set!")
             .sound(SoundEventKeys.ENTITY_ENDERMAN_AMBIENT)
             .build();
+        public Notice destinationNotFound = Notice.builder()
+            .chat("&4✘ &cThe destination locker no longer exists! Please select another locker.")
+            .sound(SoundEventKeys.ENTITY_VILLAGER_NO)
+            .build();
         public Notice lockerFull = Notice.builder()
             .chat("&4✘ &cThe destination locker is full! Please select another locker.")
             .sound(SoundEventKeys.ENTITY_VILLAGER_NO)

@@ -13,7 +13,6 @@ import dev.rollczi.litecommands.annotations.execute.Execute;
 import dev.rollczi.litecommands.annotations.permission.Permission;
 import discord4j.common.util.Snowflake;
 
-import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import org.bukkit.OfflinePlayer;

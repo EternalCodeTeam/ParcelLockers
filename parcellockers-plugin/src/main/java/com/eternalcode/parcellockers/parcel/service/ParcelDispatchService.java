@@ -60,8 +60,9 @@ public class ParcelDispatchService {
      * clears the sender's staged item storage and schedules the delivery.
      *
      * @return a future completed with {@code true} when the parcel was sent, {@code false} when it
-     *     was refused (full locker, cancelled event, insufficient funds), or exceptionally when a
-     *     persistence step failed; every failure after the parcel was saved is rolled back
+     *     was refused (missing or full locker, cancelled event, insufficient funds), or exceptionally
+     *     when a persistence step failed; a failure after the parcel was saved is rolled back, unless
+     *     the sender's items could not be restored, in which case the parcel is kept so they are not lost
      */
     public CompletableFuture<Boolean> dispatch(Player sender, Parcel parcel, List<ItemStack> items) {
         UUID lockerId = parcel.destinationLocker();
@@ -79,20 +80,14 @@ public class ParcelDispatchService {
     }
 
     private CompletableFuture<Boolean> dispatchInternal(Player sender, Parcel parcel, List<ItemStack> items) {
-        return this.lockerManager.isLockerFull(parcel.destinationLocker())
-            .thenCompose(isFull -> {
-                if (isFull) {
-                    this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.lockerFull);
+        return this.lockerManager.get(parcel.destinationLocker())
+            .thenCompose(destination -> {
+                // The locker may have been removed since it was picked, or never existed for API callers.
+                if (destination.isEmpty()) {
+                    this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.destinationNotFound);
                     return CompletableFuture.completedFuture(false);
                 }
-
-                return this.parcelService.send(sender, parcel, items).thenCompose(success -> {
-                    if (!success) {
-                        this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.cannotSend);
-                        return CompletableFuture.completedFuture(false);
-                    }
-                    return this.clearStorageAndScheduleDelivery(sender, parcel, items);
-                });
+                return this.sendIfLockerHasSpace(sender, parcel, items);
             })
             .whenComplete((result, throwable) -> {
                 if (throwable != null) {
@@ -101,6 +96,23 @@ public class ParcelDispatchService {
                     this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.cannotSend);
                 }
             });
+    }
+
+    private CompletableFuture<Boolean> sendIfLockerHasSpace(Player sender, Parcel parcel, List<ItemStack> items) {
+        return this.lockerManager.isLockerFull(parcel.destinationLocker()).thenCompose(isFull -> {
+            if (isFull) {
+                this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.lockerFull);
+                return CompletableFuture.completedFuture(false);
+            }
+
+            return this.parcelService.send(sender, parcel, items).thenCompose(success -> {
+                if (!success) {
+                    this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.cannotSend);
+                    return CompletableFuture.completedFuture(false);
+                }
+                return this.clearStorageAndScheduleDelivery(sender, parcel, items);
+            });
+        });
     }
 
     private CompletableFuture<Boolean> clearStorageAndScheduleDelivery(
@@ -133,10 +145,31 @@ public class ParcelDispatchService {
                         this.noticeService.player(senderId, messages -> messages.parcel.sent);
                         return true;
                     })
-                    .exceptionallyCompose(throwable -> this.itemStorageManager.create(senderId, items)
-                        .handle((restored, restoreError) -> null)
-                        .thenCompose(ignored -> this.rollback(sender, parcel,
-                            new ParcelOperationException("Failed to create delivery for " + parcel.uuid(), throwable))));
+                    .exceptionallyCompose(deliveryError -> this.restoreStorageThenRollback(sender, parcel, items, deliveryError));
+            });
+    }
+
+    private CompletableFuture<Boolean> restoreStorageThenRollback(
+        Player sender,
+        Parcel parcel,
+        List<ItemStack> items,
+        Throwable deliveryError
+    ) {
+        return this.itemStorageManager.create(sender.getUniqueId(), items)
+            .handle((restored, restoreError) -> restoreError)
+            .thenCompose(restoreError -> {
+                if (restoreError == null) {
+                    return this.rollback(sender, parcel,
+                        new ParcelOperationException("Failed to create delivery for " + parcel.uuid(), deliveryError));
+                }
+
+                // The staged items are gone, so the parcel content is now their only copy - keep the parcel
+                // instead of rolling it back, so an admin can still deliver or recover it.
+                ParcelOperationException cause = new ParcelOperationException("Failed to create delivery for "
+                    + parcel.uuid() + " and to restore the sender's items; the parcel and its content were kept"
+                    + " for manual recovery", deliveryError);
+                cause.addSuppressed(restoreError);
+                return CompletableFuture.failedFuture(cause);
             });
     }
 

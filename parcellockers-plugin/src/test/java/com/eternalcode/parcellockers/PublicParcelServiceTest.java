@@ -23,6 +23,7 @@ import com.eternalcode.parcellockers.parcel.service.PluginParcelService;
 import com.eternalcode.parcellockers.shared.exception.ValidationException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -77,6 +78,19 @@ class PublicParcelServiceTest {
             assertInstanceOf(ValidationException.class, exception.getCause());
         }
         verify(fixture.scheduler, never()).runAsync(any());
+    }
+
+    @Test
+    void sendRejectsMoreItemsThanParcelSizeCanHold() {
+        Fixture fixture = new Fixture();
+        List<ItemStack> tooMany = Collections.nCopies(fixture.parcel.size().capacity() + 1, mock(ItemStack.class));
+
+        CompletableFuture<Boolean> result = fixture.service.send(fixture.sender, fixture.parcel, tooMany);
+
+        CompletionException exception = assertThrows(CompletionException.class, result::join);
+        assertInstanceOf(ValidationException.class, exception.getCause());
+        verify(fixture.scheduler, never()).runAsync(any());
+        verify(fixture.dispatcher, never()).dispatch(any(), any(), any());
     }
 
     @Test

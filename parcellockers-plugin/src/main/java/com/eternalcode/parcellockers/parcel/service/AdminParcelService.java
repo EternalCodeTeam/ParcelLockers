@@ -33,14 +33,6 @@ public class AdminParcelService {
         this.scheduler = scheduler;
     }
 
-    public static int capacity(ParcelSize size) {
-        return switch (size) {
-            case SMALL -> 9;
-            case MEDIUM -> 18;
-            case LARGE -> 27;
-        };
-    }
-
     /** Pure delta-shift helper, clamped to never be before {@code now}. */
     public static Instant shiftedDeliveryTimestamp(Instant oldTimestamp, boolean oldPriority, boolean newPriority,
             Duration normalDuration, Duration priorityDuration, Instant now) {
@@ -137,7 +129,7 @@ public class AdminParcelService {
     public CompletableFuture<EditResult> changeSize(Parcel parcel, ParcelSize newSize) {
         return this.parcelContentManager.get(parcel.uuid()).thenCompose(optional -> {
             int itemCount = optional.map(content -> content.items().size()).orElse(0);
-            if (itemCount > capacity(newSize)) {
+            if (itemCount > newSize.capacity()) {
                 return CompletableFuture.completedFuture(EditResult.of(EditResult.Status.SIZE_TOO_SMALL));
             }
             return this.persist(parcel, withSize(parcel, newSize));

@@ -70,4 +70,4 @@ Each domain (`locker`, `parcel`, `content`, `delivery`, `itemstorage`, `user`, `
 
 ### Testing
 
-Tests live in `src/test/java/`. Integration tests (e.g. `LockerRepositoryIntegrationTest`) extend `IntegrationTestSpec` and use Testcontainers (MySQL) to test repository implementations against a real database. `ParcelPageTest` is a unit test with no container dependency.
+Tests live in `parcellockers-plugin/src/test/java/` and `parcellockers-api/src/test/java/`. Integration tests (e.g. `LockerRepositoryIntegrationTest`) extend `IntegrationTestSpec` and use Testcontainers (MySQL) to test repository implementations against a real database. `ParcelPageTest` is a unit test with no container dependency.

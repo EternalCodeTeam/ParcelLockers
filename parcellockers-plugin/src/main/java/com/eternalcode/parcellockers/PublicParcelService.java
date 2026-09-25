@@ -50,6 +50,10 @@ final class PublicParcelService implements ParcelService {
         if (items.isEmpty() || items.stream().anyMatch(Objects::isNull)) {
             return CompletableFuture.failedFuture(new ValidationException("Items cannot be empty or contain null"));
         }
+        if (items.size() > parcel.size().capacity()) {
+            return CompletableFuture.failedFuture(new ValidationException(
+                "A " + parcel.size() + " parcel can hold at most " + parcel.size().capacity() + " items"));
+        }
 
         // Snapshot the items now, so later changes by the caller do not leak into the parcel.
         List<ItemStack> snapshot = items.stream()

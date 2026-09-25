@@ -2,6 +2,7 @@ package com.eternalcode.parcellockers.parcel.service;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -18,6 +19,7 @@ import com.eternalcode.parcellockers.delivery.Delivery;
 import com.eternalcode.parcellockers.delivery.DeliveryManager;
 import com.eternalcode.parcellockers.itemstorage.ItemStorage;
 import com.eternalcode.parcellockers.itemstorage.ItemStorageManager;
+import com.eternalcode.parcellockers.locker.Locker;
 import com.eternalcode.parcellockers.locker.LockerManager;
 import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.parcel.Parcel;
@@ -27,6 +29,7 @@ import com.eternalcode.parcellockers.shared.exception.ParcelOperationException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -65,6 +68,8 @@ class ParcelDispatchServiceTest {
     void setUp() {
         this.config.settings.parcelSendDuration = Duration.ofMinutes(30);
         when(this.sender.getUniqueId()).thenReturn(this.parcel.sender());
+        when(this.lockerManager.get(this.parcel.destinationLocker()))
+            .thenReturn(CompletableFuture.completedFuture(Optional.of(mock(Locker.class))));
         when(this.lockerManager.isLockerFull(this.parcel.destinationLocker()))
             .thenReturn(CompletableFuture.completedFuture(false));
         when(this.parcelService.send(this.sender, this.parcel, this.items))
@@ -95,6 +100,16 @@ class ParcelDispatchServiceTest {
     void fullLockerCompletesFalseWithoutPersistingParcel() {
         when(this.lockerManager.isLockerFull(this.parcel.destinationLocker()))
             .thenReturn(CompletableFuture.completedFuture(true));
+
+        assertFalse(this.dispatcher.dispatch(this.sender, this.parcel, this.items).join());
+
+        verify(this.parcelService, never()).send(any(), any(), any());
+    }
+
+    @Test
+    void missingDestinationLockerCompletesFalseWithoutPersistingParcel() {
+        when(this.lockerManager.get(this.parcel.destinationLocker()))
+            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
         assertFalse(this.dispatcher.dispatch(this.sender, this.parcel, this.items).join());
 
@@ -139,5 +154,28 @@ class ParcelDispatchServiceTest {
         order.verify(this.itemStorageManager).create(this.parcel.sender(), this.items);
         order.verify(this.parcelService).rollbackSend(this.sender, this.parcel);
         verify(this.scheduler, never()).runLaterAsync(any(), any());
+    }
+
+    @Test
+    void failedStorageRestoreKeepsParcelInsteadOfRollingBack() {
+        IllegalStateException restoreFailure = new IllegalStateException("restore failed");
+        when(this.deliveryManager.create(eq(this.parcel.uuid()), any(Instant.class)))
+            .thenReturn(CompletableFuture.failedFuture(new IllegalStateException("delivery failed")));
+        when(this.itemStorageManager.create(this.parcel.sender(), this.items))
+            .thenReturn(CompletableFuture.failedFuture(restoreFailure));
+
+        CompletionException exception = assertThrows(CompletionException.class,
+            () -> this.dispatcher.dispatch(this.sender, this.parcel, this.items).join());
+
+        ParcelOperationException operationException =
+            assertInstanceOf(ParcelOperationException.class, exception.getCause());
+        assertSame(restoreFailure, unwrap(operationException.getSuppressed()[0]));
+        verify(this.parcelService, never()).rollbackSend(any(), any());
+    }
+
+    private static Throwable unwrap(Throwable throwable) {
+        return throwable instanceof CompletionException && throwable.getCause() != null
+            ? throwable.getCause()
+            : throwable;
     }
 }

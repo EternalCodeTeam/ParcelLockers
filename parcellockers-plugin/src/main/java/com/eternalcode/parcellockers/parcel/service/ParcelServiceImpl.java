@@ -88,6 +88,14 @@ public class ParcelServiceImpl implements PluginParcelService {
             return CompletableFuture.completedFuture(false);
         }
 
+        double fee = this.feeFor(sender, parcel.size());
+        // Check funds before anything is persisted, so the common "cannot afford" case never leaves
+        // a row behind that would need a compensating delete.
+        if (fee > 0 && !this.economy.has(sender, fee)) {
+            this.notifyInsufficientFunds(sender, fee);
+            return CompletableFuture.completedFuture(false);
+        }
+
         List<ItemStack> itemsCopy = items.stream()
             .map(ItemStack::clone)
             .toList();
@@ -99,38 +107,34 @@ public class ParcelServiceImpl implements PluginParcelService {
                 return CompletableFuture.failedFuture(
                     new ValidationException("Parcel " + parcel.uuid() + " already exists"));
             }
-            return this.chargeAndSaveContent(sender, parcel, itemsCopy);
+            return this.chargeAndSaveContent(sender, parcel, itemsCopy, fee);
         });
     }
 
-    private CompletableFuture<Boolean> chargeAndSaveContent(Player sender, Parcel parcel, List<ItemStack> items) {
-        double chargedFee = 0;
-        if (!sender.hasPermission(PARCEL_FEE_BYPASS_PERMISSION)) {
-            double fee = this.feeFor(parcel.size());
-
-            if (fee > 0) {
-                boolean success = this.economy.withdrawPlayer(sender, fee).transactionSuccess();
-                String formattedFee = String.format("%.2f", fee);
-
-                if (!success) {
-                    this.noticeService.create()
-                        .notice(messages -> messages.parcel.insufficientFunds)
-                        .player(sender.getUniqueId())
-                        .placeholder(PLACEHOLDER_AMOUNT, formattedFee)
-                        .send();
-                    return this.parcelRepository.delete(parcel.uuid()).thenApply(deleted -> false);
-                }
-
-                chargedFee = fee;
-                this.noticeService.create()
-                    .notice(messages -> messages.parcel.feeWithdrawn)
-                    .player(sender.getUniqueId())
-                    .placeholder(PLACEHOLDER_AMOUNT, formattedFee)
-                    .send();
+    private CompletableFuture<Boolean> chargeAndSaveContent(
+        Player sender,
+        Parcel parcel,
+        List<ItemStack> items,
+        double fee
+    ) {
+        if (fee > 0) {
+            // The balance was checked before the insert, but it may have changed since.
+            if (!this.economy.withdrawPlayer(sender, fee).transactionSuccess()) {
+                this.notifyInsufficientFunds(sender, fee);
+                return this.parcelRepository.delete(parcel.uuid())
+                    .exceptionallyCompose(throwable -> CompletableFuture.failedFuture(new ParcelOperationException(
+                        "Failed to remove parcel " + parcel.uuid() + " after its fee could not be charged",
+                        unwrap(throwable))))
+                    .thenApply(deleted -> false);
             }
+
+            this.noticeService.create()
+                .notice(messages -> messages.parcel.feeWithdrawn)
+                .player(sender.getUniqueId())
+                .placeholder(PLACEHOLDER_AMOUNT, formatFee(fee))
+                .send();
         }
 
-        double refundableFee = chargedFee;
         return this.parcelContentRepository.save(new ParcelContent(parcel.uuid(), items))
             .thenApply(contentSaved -> {
                 this.parcelsByUuid.put(parcel.uuid(), parcel);
@@ -142,7 +146,7 @@ public class ParcelServiceImpl implements PluginParcelService {
                 .handle((deleted, deleteError) -> {
                     // Persistence failed after the fee was withdrawn - refund it so the player is not
                     // charged for a parcel that was never created.
-                    this.refundFee(sender, refundableFee);
+                    this.refundFee(sender, fee);
                     this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.cannotSend);
                     throw new ParcelOperationException("Failed to save parcel content, rolled back parcel", unwrap(throwable));
                 }));
@@ -150,15 +154,19 @@ public class ParcelServiceImpl implements PluginParcelService {
 
     @Override
     public CompletableFuture<Void> rollbackSend(Player sender, Parcel parcel) {
-
-        if (!sender.hasPermission(PARCEL_FEE_BYPASS_PERMISSION)) {
-            this.refundFee(sender, this.feeFor(parcel.size()));
-        }
+        this.refundFee(sender, this.feeFor(sender, parcel.size()));
         this.parcelsByUuid.invalidate(parcel.uuid());
 
         return this.parcelRepository.delete(parcel.uuid())
             .thenCompose(deleted -> this.parcelContentRepository.delete(parcel.uuid()))
             .thenApply(contentDeleted -> null);
+    }
+
+    private double feeFor(Player sender, ParcelSize size) {
+        if (sender.hasPermission(PARCEL_FEE_BYPASS_PERMISSION)) {
+            return 0;
+        }
+        return this.feeFor(size);
     }
 
     private double feeFor(ParcelSize size) {
@@ -167,6 +175,18 @@ public class ParcelServiceImpl implements PluginParcelService {
             case MEDIUM -> this.config.settings.mediumParcelFee;
             case LARGE -> this.config.settings.largeParcelFee;
         };
+    }
+
+    private void notifyInsufficientFunds(Player sender, double fee) {
+        this.noticeService.create()
+            .notice(messages -> messages.parcel.insufficientFunds)
+            .player(sender.getUniqueId())
+            .placeholder(PLACEHOLDER_AMOUNT, formatFee(fee))
+            .send();
+    }
+
+    private static String formatFee(double fee) {
+        return String.format("%.2f", fee);
     }
 
     private void refundFee(Player sender, double fee) {

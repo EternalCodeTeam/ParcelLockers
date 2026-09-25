@@ -54,9 +54,9 @@ class AdminParcelServiceTest {
 
     @Test
     void capacityMatchesContentGuiUsableSlots() {
-        assertEquals(9, AdminParcelService.capacity(ParcelSize.SMALL));
-        assertEquals(18, AdminParcelService.capacity(ParcelSize.MEDIUM));
-        assertEquals(27, AdminParcelService.capacity(ParcelSize.LARGE));
+        assertEquals(9, ParcelSize.SMALL.capacity());
+        assertEquals(18, ParcelSize.MEDIUM.capacity());
+        assertEquals(27, ParcelSize.LARGE.capacity());
     }
 
     @Test
