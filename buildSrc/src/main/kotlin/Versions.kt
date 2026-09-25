@@ -16,6 +16,7 @@ object Versions {
 
     const val LOMBOK = "1.18.46"
     const val JETBRAINS_ANNOTATIONS = "26.1.0"
+    const val JSPECIFY = "1.0.0"
 
     const val JACKSON_BUKKIT = "2.0.0"
     const val COMPLETABLE_FUTURES = "0.3.6"

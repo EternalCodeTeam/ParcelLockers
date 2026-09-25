@@ -11,6 +11,7 @@ build/
 .codex/
 .gemini/
 graphify-out/
+.worktrees/
 
 .DS_Store
 [Dd]esktop.ini

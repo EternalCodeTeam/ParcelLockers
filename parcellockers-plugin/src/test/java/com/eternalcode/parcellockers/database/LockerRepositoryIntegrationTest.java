@@ -1,0 +1,71 @@
+package com.eternalcode.parcellockers.database;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import com.eternalcode.parcellockers.TestScheduler;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
+import com.eternalcode.parcellockers.database.DatabaseType;
+import com.eternalcode.parcellockers.locker.Locker;
+import com.eternalcode.parcellockers.locker.repository.LockerRepository;
+import com.eternalcode.parcellockers.locker.repository.LockerRepositoryOrmLite;
+import com.eternalcode.parcellockers.shared.Page;
+import com.eternalcode.parcellockers.shared.PageResult;
+import com.eternalcode.parcellockers.shared.Position;
+import java.nio.file.Path;
+import java.sql.SQLException;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.logging.Logger;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+class LockerRepositoryIntegrationTest extends MySqlIntegrationTestSpec {
+
+    @TempDir
+    private Path tempDir;
+
+    private DatabaseManager databaseManager;
+
+    @Test
+    void test() throws SQLException {
+        PluginConfig config = this.mysqlConfig();
+
+        DatabaseManager databaseManager = new DatabaseManager(config, Logger.getLogger("ParcelLockers"), this.tempDir.toFile());
+        databaseManager.connect();
+        this.databaseManager = databaseManager;
+
+        LockerRepository parcelLockerRepository = new LockerRepositoryOrmLite(databaseManager, new TestScheduler());
+
+        UUID uuid = UUID.randomUUID();
+        String description = "Parcel locker name.";
+        Position position = new Position(1, 2, 3, "world");
+
+
+        this.await(parcelLockerRepository.save(new Locker(uuid, description, position)));
+
+        Optional<Locker> parcelLocker = this.await(parcelLockerRepository.find(uuid));
+        assertTrue(parcelLocker.isPresent());
+        assertEquals(uuid, parcelLocker.get().uuid());
+
+        Optional<Locker> byPosition = this.await(parcelLockerRepository.find(position));
+        assertTrue(byPosition.isPresent());
+        assertEquals(uuid, byPosition.get().uuid());
+
+        PageResult<Locker> pageResult = this.await(parcelLockerRepository.findPage(new Page(0, 28)));
+        assertEquals(1, pageResult.items().size());
+        assertEquals(uuid, pageResult.items().getFirst().uuid());
+
+        this.await(parcelLockerRepository.delete(uuid));
+        Optional<Locker> removed = this.await(parcelLockerRepository.find(uuid));
+        assertTrue(removed.isEmpty());
+    }
+
+    @AfterEach
+    void tearDown() {
+        if (this.databaseManager != null) {
+            this.databaseManager.disconnect();
+        }
+    }
+}

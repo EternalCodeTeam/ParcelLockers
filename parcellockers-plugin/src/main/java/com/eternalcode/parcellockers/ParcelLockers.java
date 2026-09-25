@@ -1,0 +1,338 @@
+package com.eternalcode.parcellockers;
+
+import com.eternalcode.commons.adventure.AdventureLegacyColorPostProcessor;
+import com.eternalcode.commons.adventure.AdventureLegacyColorPreProcessor;
+import com.eternalcode.commons.bukkit.scheduler.BukkitSchedulerImpl;
+import com.eternalcode.commons.scheduler.Scheduler;
+import com.eternalcode.multification.notice.Notice;
+import com.eternalcode.parcellockers.command.debug.DebugCommand;
+import com.eternalcode.parcellockers.command.handler.InvalidUsageHandlerImpl;
+import com.eternalcode.parcellockers.command.handler.MissingPermissionsHandlerImpl;
+import com.eternalcode.parcellockers.command.handler.NoticeHandler;
+import com.eternalcode.parcellockers.configuration.ConfigService;
+import com.eternalcode.parcellockers.configuration.implementation.MessageConfig;
+import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
+import com.eternalcode.parcellockers.content.ParcelContentManager;
+import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
+import com.eternalcode.parcellockers.content.repository.ParcelContentRepositoryOrmLite;
+import com.eternalcode.parcellockers.database.DatabaseManager;
+import com.eternalcode.parcellockers.delivery.DeliveryManager;
+import com.eternalcode.parcellockers.delivery.repository.DeliveryRepositoryOrmLite;
+import com.eternalcode.parcellockers.discord.DiscordClientManager;
+import com.eternalcode.parcellockers.discord.DiscordProviderPicker;
+import com.eternalcode.parcellockers.discord.argument.SnowflakeArgument;
+import com.eternalcode.parcellockers.gui.GuiManager;
+import com.eternalcode.parcellockers.gui.implementation.admin.AdminGui;
+import com.eternalcode.parcellockers.gui.implementation.locker.LockerGui;
+import com.eternalcode.parcellockers.gui.implementation.remote.MainGui;
+import com.eternalcode.parcellockers.itemstorage.ItemStorageManager;
+import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepository;
+import com.eternalcode.parcellockers.itemstorage.repository.ItemStorageRepositoryOrmLite;
+import com.eternalcode.parcellockers.locker.LockerManager;
+import com.eternalcode.parcellockers.locker.LockerService;
+import com.eternalcode.parcellockers.locker.controller.LockerBreakController;
+import com.eternalcode.parcellockers.locker.controller.LockerInteractionController;
+import com.eternalcode.parcellockers.locker.controller.LockerPlaceController;
+import com.eternalcode.parcellockers.locker.repository.LockerRepositoryOrmLite;
+import com.eternalcode.parcellockers.locker.validation.LockerValidationService;
+import com.eternalcode.parcellockers.locker.validation.LockerValidator;
+import com.eternalcode.parcellockers.notification.NoticeService;
+import com.eternalcode.parcellockers.parcel.ParcelStatus;
+import com.eternalcode.parcellockers.parcel.command.ParcelCommand;
+import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryOrmLite;
+import com.eternalcode.parcellockers.parcel.service.AdminParcelService;
+import com.eternalcode.parcellockers.parcel.service.ParcelDispatchService;
+import com.eternalcode.parcellockers.parcel.service.ParcelService;
+import com.eternalcode.parcellockers.parcel.service.ParcelServiceImpl;
+import com.eternalcode.parcellockers.parcel.service.PluginParcelService;
+import com.eternalcode.parcellockers.parcel.task.ParcelSendTask;
+import com.eternalcode.parcellockers.returns.ParcelReturnService;
+import com.eternalcode.parcellockers.returns.ParcelReturnValidator;
+import com.eternalcode.parcellockers.returns.ReturnItemEquivalence;
+import com.eternalcode.parcellockers.returns.ReturnMismatchFormatter;
+import com.eternalcode.parcellockers.returns.repository.CollectedParcelRepositoryOrmLite;
+import com.eternalcode.parcellockers.returns.repository.ParcelReturnRepositoryOrmLite;
+import com.eternalcode.parcellockers.returns.task.ReturnWindowPurgeTask;
+import com.eternalcode.parcellockers.updater.UpdaterService;
+import com.eternalcode.parcellockers.user.UserManager;
+import com.eternalcode.parcellockers.user.UserManagerImpl;
+import com.eternalcode.parcellockers.user.controller.LoadUserController;
+import com.eternalcode.parcellockers.user.controller.PrepareUserController;
+import com.eternalcode.parcellockers.user.repository.UserRepository;
+import com.eternalcode.parcellockers.user.repository.UserRepositoryOrmLite;
+import com.eternalcode.parcellockers.user.validation.UserValidationService;
+import com.eternalcode.parcellockers.user.validation.UserValidator;
+import dev.rollczi.litecommands.LiteCommands;
+import dev.rollczi.litecommands.LiteCommandsBuilder;
+import dev.rollczi.litecommands.adventure.LiteAdventureExtension;
+import dev.rollczi.litecommands.annotations.LiteCommandsAnnotations;
+import dev.rollczi.litecommands.bukkit.LiteBukkitFactory;
+import dev.rollczi.litecommands.bukkit.LiteBukkitMessages;
+import dev.rollczi.litecommands.bukkit.LiteBukkitSettings;
+import dev.triumphteam.gui.TriumphGui;
+import discord4j.common.util.Snowflake;
+import java.io.File;
+import java.sql.SQLException;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Objects;
+import java.util.stream.Stream;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.milkbowl.vault.economy.Economy;
+import org.bstats.bukkit.Metrics;
+import org.bukkit.Server;
+import org.bukkit.command.CommandSender;
+import org.bukkit.event.HandlerList;
+import org.bukkit.plugin.RegisteredServiceProvider;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.jspecify.annotations.Nullable;
+
+public final class ParcelLockers extends JavaPlugin implements ParcelLockersApi {
+
+    private @Nullable LiteCommands<CommandSender> liteCommands;
+    private @Nullable DatabaseManager databaseManager;
+    private @Nullable Economy economy;
+    private @Nullable DiscordClientManager discordClientManager;
+    private @Nullable ParcelService parcelService;
+    private @Nullable LockerService lockerService;
+    private boolean apiInitialized;
+
+    @Override
+    public void onEnable() {
+        MiniMessage miniMessage = MiniMessage.builder()
+            .preProcessor(new AdventureLegacyColorPreProcessor())
+            .postProcessor(new AdventureLegacyColorPostProcessor())
+            .build();
+
+        ConfigService configService = new ConfigService();
+        PluginConfig config = configService.create(PluginConfig.class, new File(this.getDataFolder(), "config.yml"));
+        MessageConfig messageConfig = configService.create(MessageConfig.class, new File(this.getDataFolder(), "messages.yml"));
+        Server server = this.getServer();
+        NoticeService noticeService = new NoticeService(messageConfig, miniMessage);
+        Scheduler scheduler = new BukkitSchedulerImpl(this);
+
+        if (!this.setupEconomy()) {
+            this.getLogger().severe("No economy provider registered! Disabling...");
+            server.getPluginManager().disablePlugin(this);
+            return;
+        }
+        Economy economy = Objects.requireNonNull(this.economy);
+
+        DatabaseManager databaseManager = new DatabaseManager(config, this.getLogger(), this.getDataFolder());
+        this.databaseManager = databaseManager;
+
+        try {
+            databaseManager.connect();
+        } catch (SQLException exception) {
+            this.getLogger().severe("Could not connect to database! Disabling..." + exception.getMessage());
+            this.getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+
+        // database repositories
+        ParcelRepositoryOrmLite parcelRepository = new ParcelRepositoryOrmLite(databaseManager, scheduler);
+        LockerRepositoryOrmLite lockerRepository = new LockerRepositoryOrmLite(databaseManager, scheduler);
+        ParcelContentRepository parcelContentRepository = new ParcelContentRepositoryOrmLite(databaseManager, scheduler);
+        DeliveryRepositoryOrmLite deliveryRepository = new DeliveryRepositoryOrmLite(databaseManager, scheduler);
+        ItemStorageRepository itemStorageRepository = new ItemStorageRepositoryOrmLite(databaseManager, scheduler);
+        UserRepository userRepository = new UserRepositoryOrmLite(databaseManager, scheduler);
+        CollectedParcelRepositoryOrmLite collectedParcelRepository = new CollectedParcelRepositoryOrmLite(databaseManager, scheduler);
+        ParcelReturnRepositoryOrmLite parcelReturnRepository =
+            new ParcelReturnRepositoryOrmLite(databaseManager, scheduler);
+
+        // service and managers
+        PluginParcelService parcelService = new ParcelServiceImpl(
+            noticeService,
+            parcelRepository,
+            parcelContentRepository,
+            scheduler,
+            config,
+            economy,
+            server
+        );
+
+        UserValidationService userValidationService = new UserValidator();
+        UserManager userManager = new UserManagerImpl(userRepository, userValidationService, server);
+        LockerValidationService lockerValidationService = new LockerValidator();
+        LockerManager lockerManager = new LockerManager(config, lockerRepository, lockerValidationService, parcelRepository, server, scheduler);
+        this.lockerService = lockerManager;
+        ParcelContentManager parcelContentManager = new ParcelContentManager(parcelContentRepository);
+        ItemStorageManager itemStorageManager = new ItemStorageManager(itemStorageRepository, server);
+        DeliveryManager deliveryManager = new DeliveryManager(deliveryRepository);
+
+        ParcelDispatchService parcelDispatchService = new ParcelDispatchService(
+            lockerManager,
+            parcelService,
+            deliveryManager,
+            itemStorageManager,
+            scheduler,
+            config,
+            noticeService,
+            this.getLogger()
+        );
+        this.parcelService = new PublicParcelService(parcelService, parcelDispatchService, scheduler);
+
+        ParcelReturnValidator returnValidator = new ParcelReturnValidator(new ReturnItemEquivalence(config.settings.returnChecks));
+        ReturnMismatchFormatter returnMismatchFormatter = new ReturnMismatchFormatter(messageConfig.parcel);
+        ParcelReturnService parcelReturnService = new ParcelReturnService(
+            parcelService,
+            parcelContentManager,
+            collectedParcelRepository,
+            deliveryManager,
+            lockerManager,
+            returnValidator,
+            returnMismatchFormatter,
+            parcelReturnRepository,
+            scheduler,
+            config,
+            noticeService,
+            economy,
+            server
+        );
+
+        scheduler.timerAsync(
+            new ReturnWindowPurgeTask(parcelService, collectedParcelRepository, deliveryManager, config),
+            Duration.ofSeconds(30),
+            Duration.ofMinutes(30)
+        );
+
+        // guis
+        TriumphGui.init(this);
+        GuiManager guiManager = new GuiManager(
+            parcelService,
+            lockerManager,
+            userManager,
+            itemStorageManager,
+            parcelDispatchService,
+            parcelContentManager,
+            deliveryManager,
+            config.settings.allowCollectingFromAnyLocker,
+            parcelReturnService,
+            config.settings.parcelReturnWindow
+        );
+
+        MainGui mainGUI = new MainGui(
+            scheduler,
+            miniMessage,
+            config.guiSettings,
+            guiManager
+        );
+
+        LockerGui lockerGUI = new LockerGui(
+            miniMessage,
+            scheduler,
+            config.guiSettings,
+            guiManager,
+            noticeService
+        );
+
+        AdminParcelService adminParcelService = new AdminParcelService(
+            parcelService, parcelContentManager, deliveryManager, lockerManager, config, scheduler);
+
+        AdminGui adminGUI = new AdminGui(
+            scheduler, miniMessage, config.guiSettings, messageConfig,
+            noticeService, guiManager, adminParcelService);
+
+        LiteCommandsBuilder<CommandSender, LiteBukkitSettings, ?> liteCommandsBuilder = LiteBukkitFactory.builder(this.getName(), this)
+            .extension(new LiteAdventureExtension<>())
+            .argument(Snowflake.class, new SnowflakeArgument(messageConfig))
+            .message(LiteBukkitMessages.PLAYER_ONLY, messageConfig.playerOnlyCommand)
+            .message(LiteBukkitMessages.PLAYER_NOT_FOUND, messageConfig.playerNotFound)
+            .commands(LiteCommandsAnnotations.of(
+                new ParcelCommand(mainGUI),
+                new ParcelLockersCommand(configService, config, noticeService, adminGUI),
+                new DebugCommand(
+                    parcelService, lockerManager, itemStorageManager, parcelContentManager,
+                    noticeService, deliveryManager)
+            ))
+            .invalidUsage(new InvalidUsageHandlerImpl(noticeService))
+            .missingPermission(new MissingPermissionsHandlerImpl(noticeService))
+            .result(Notice.class, new NoticeHandler(noticeService));
+
+        DiscordProviderPicker discordProviderPicker = new DiscordProviderPicker(
+            config, messageConfig, server, noticeService, scheduler, databaseManager,
+            this.getLogger(), userManager, this, miniMessage
+        );
+
+        this.discordClientManager = discordProviderPicker.pick(liteCommandsBuilder);
+
+        this.liteCommands = liteCommandsBuilder.build();
+
+        Stream.of(
+            new LockerInteractionController(lockerManager, lockerGUI, scheduler),
+            new LockerPlaceController(config, messageConfig, miniMessage, lockerManager, noticeService, scheduler),
+            new LockerBreakController(lockerManager, noticeService, scheduler),
+            new PrepareUserController(userManager),
+            new LoadUserController(userManager, server)
+        ).forEach(controller -> server.getPluginManager().registerEvents(controller, this));
+
+        new Metrics(this, 17677);
+        new UpdaterService(this.getPluginMeta().getVersion());
+
+        parcelRepository.findAll().thenAccept(optionalParcels -> optionalParcels
+            .stream()
+            .filter(parcel -> parcel.status() != ParcelStatus.DELIVERED)
+            .forEach(parcel -> deliveryRepository.find(parcel.uuid()).thenAccept(optionalDelivery ->
+                optionalDelivery.ifPresent(delivery -> {
+                    long delay = Math.max(
+                        0,
+                        Duration.between(Instant.now(Clock.systemDefaultZone()), delivery.deliveryTimestamp()).toMillis()
+                    );
+                    scheduler.runLaterAsync(
+                        new ParcelSendTask(parcel, parcelService, deliveryManager, scheduler),
+                        Duration.ofMillis(delay));
+                })
+            )));
+
+        ParcelLockersProvider.initialize(this);
+        this.apiInitialized = true;
+    }
+
+    @Override
+    public void onDisable() {
+        if (this.apiInitialized) {
+            ParcelLockersProvider.deinitialize();
+            this.apiInitialized = false;
+        }
+
+        // Stop accepting new work before closing the datasource, so fewer in-flight async DB tasks
+        // run into an already-closed connection pool.
+        HandlerList.unregisterAll(this);
+        this.getServer().getScheduler().cancelTasks(this);
+
+        if (this.liteCommands != null) {
+            this.liteCommands.unregister();
+        }
+
+        if (this.discordClientManager != null) {
+            this.discordClientManager.shutdown();
+        }
+
+        if (this.databaseManager != null) {
+            this.databaseManager.disconnect();
+        }
+    }
+
+    @Override
+    public ParcelService getParcelService() {
+        return Objects.requireNonNull(this.parcelService, "ParcelService is not initialized");
+    }
+
+    @Override
+    public LockerService getLockerService() {
+        return Objects.requireNonNull(this.lockerService, "LockerService is not initialized");
+    }
+
+    private boolean setupEconomy() {
+        if (this.getServer().getPluginManager().getPlugin("Vault") == null) {
+            return false;
+        }
+        RegisteredServiceProvider<Economy> rsp = this.getServer().getServicesManager().getRegistration(Economy.class);
+        if (rsp == null) {
+            return false;
+        }
+        this.economy = rsp.getProvider();
+        return this.economy != null;
+    }
+}
