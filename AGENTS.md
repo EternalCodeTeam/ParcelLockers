@@ -36,17 +36,19 @@ ParcelLockers is a Paper plugin (Minecraft 1.21+) that lets players transfer ite
 
 ### Entry Point & Wiring
 
-The project consists of two Gradle modules: `parcellockers-api`, which contains the API the plugin depends on. Other plugins' developers can hook into this API and integrate with our plugin.
-API Implementation and the code of the plugin itself is in the `parcellockers-plugin` directory.
+The project consists of two Gradle modules:
 
-`ParcelLockers.java` (`onEnable`) is the manual DI root — all components are instantiated and wired there in order: config → database → repositories → managers/services → GUIs → commands → event controllers. There is no DI framework; dependencies are passed via constructors.
+- `parcellockers-api` — the public API other plugins' developers can hook into: `ParcelLockersApi` (obtained via `ParcelLockersProvider`), `LockerService`, `ParcelService`, the API models (`Locker`, `Parcel`, `Position`, `Page`/`PageResult`), cancellable events (`LockerCreateEvent`, `LockerDeleteEvent`, `ParcelSendEvent`, `ParcelDeliverEvent`, `ParcelCollectEvent`, `ParcelReturnEvent`) and exceptions (`ParcelLockersException`, `ValidationException`, `ParcelOperationException`).
+- `parcellockers-plugin` — the plugin itself and the API implementation (e.g. `PublicParcelService` implements `ParcelService`).
+
+`ParcelLockers.java` (`onEnable`) is the manual DI root — all components are instantiated and wired there in order: config → `NoticeService` → Vault economy lookup (the plugin disables itself if none is found) → database → repositories → managers/services → GUIs → commands → event controllers → `ParcelLockersProvider.initialize` (reverted in `onDisable`). There is no DI framework; dependencies are passed via constructors.
 
 ### Domain Layers
 
-Each domain (`locker`, `parcel`, `content`, `delivery`, `itemstorage`, `user`, `discord`) follows a consistent layered structure:
+Each domain (`locker`, `parcel`, `content`, `delivery`, `itemstorage`, `returns`, `user`, `discord`) follows a consistent layered structure:
 
 - **Model** — plain record/class (e.g. `Locker`, `Parcel`, `User`)
-- **Repository** — interface + `*OrmLite` implementation backed by H2/PostgreSQL via ORMLite
+- **Repository** — interface + `*OrmLite` implementation backed by ORMLite (any supported SQL database)
 - **Manager/Service** — business logic, coordinates repository calls; repositories return `CompletableFuture<T>` for all async DB operations
 - **Controller** — Bukkit `Listener` handling in-game events (block place/break/interact, player join/quit)
 
@@ -54,13 +56,14 @@ Each domain (`locker`, `parcel`, `content`, `delivery`, `itemstorage`, `user`, `
 
 | Component | Purpose |
 |---|---|
-| `DatabaseManager` | Manages HikariCP connection pool; supports H2 (default, embedded) and PostgreSQL |
+| `DatabaseManager` | Manages HikariCP connection pool; supports SQLite (default), H2, MySQL, MariaDB and PostgreSQL (`DatabaseType`) |
 | `ConfigService` + okaeri-configs | Loads `config.yml` and `messages.yml` via YAML; `PluginConfig` and `MessageConfig` are the config POJOs |
 | `NoticeService` + multification | Sends MiniMessage-formatted notices to players; all user-facing text goes through `MessageConfig` |
 | `ParcelDispatchService` | Orchestrates sending a parcel: validates, charges economy (Vault), schedules `ParcelSendTask` |
 | `ParcelSendTask` | Runs async after a configurable delay; marks parcel DELIVERED and fires the deliver notification event |
 | `GuiManager` + triumph-gui | Factory for all inventory GUIs; `LockerGui` and `MainGui` are the two root GUI entry points |
 | `DiscordProviderPicker` | Selects between Discord4J (standalone bot) and DiscordSRV (delegation) at startup based on detected plugins |
+| `ParcelReturnService` | Handles returning collected parcels within a configurable window; `ParcelReturnValidator` checks the returned items, `ReturnWindowPurgeTask` purges expired entries |
 | `LockerPlaceController` | Uses Paper's Dialog API (unstable) to prompt for a locker description when a player places the locker item |
 
 ### Optional Integrations
@@ -70,4 +73,4 @@ Each domain (`locker`, `parcel`, `content`, `delivery`, `itemstorage`, `user`, `
 
 ### Testing
 
-Tests live in `parcellockers-plugin/src/test/java/` and `parcellockers-api/src/test/java/`. Integration tests (e.g. `LockerRepositoryIntegrationTest`) extend `IntegrationTestSpec` and use Testcontainers (MySQL) to test repository implementations against a real database. `ParcelPageTest` is a unit test with no container dependency.
+Tests live in `parcellockers-plugin/src/test/java/` and `parcellockers-api/src/test/java/`. Repository integration tests (e.g. `LockerRepositoryIntegrationTest`) extend `MySqlIntegrationTestSpec`, which shares a single Testcontainers MySQL container across test classes and resets the schema before each test; `IntegrationTestSpec` only provides the `await()` helper for `CompletableFuture`s. `ParcelPageTest` is a unit test with no container dependency.
