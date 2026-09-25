@@ -61,29 +61,9 @@ public interface ParcelRepository {
     CompletableFuture<PageResult<Parcel>> findCollectible(UUID receiver, UUID destinationLocker, Page page);
 
     /**
-     * Atomically flips a DELIVERED parcel to COLLECTED. Returns false when the parcel is missing
-     * or not DELIVERED — the caller must treat that as "someone else already collected it".
-     */
-    CompletableFuture<Boolean> markCollected(UUID uuid);
-
-    /**
-     * Atomically flips a receiver's DELIVERED parcel to COLLECTED.
-     */
-    CompletableFuture<Boolean> markCollected(UUID uuid, UUID receiver);
-
-    /**
      * Atomically claims a delivered parcel and records the start of its return window.
      */
     CompletableFuture<Boolean> commitCollection(UUID uuid, UUID receiver, Instant collectedAt);
-
-    /**
-     * Restores a claimed collection after main-thread item delivery failed.
-     */
-    CompletableFuture<Boolean> rollbackCollection(
-        UUID uuid,
-        UUID receiver,
-        Instant collectedAt
-    );
 
     /** Returns the COLLECTED parcels of the given receiver (candidates for a return). */
     CompletableFuture<PageResult<Parcel>> findReturnable(UUID receiver, Page page);

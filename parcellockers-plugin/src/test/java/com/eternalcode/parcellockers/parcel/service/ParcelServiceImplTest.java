@@ -1,8 +1,6 @@
 package com.eternalcode.parcellockers.parcel.service;
 
 import static com.eternalcode.parcellockers.util.InventoryUtil.canHold;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -11,14 +9,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockingDetails;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -31,933 +26,179 @@ import com.eternalcode.parcellockers.notification.NoticeService;
 import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.ParcelStatus;
-import com.eternalcode.parcellockers.parcel.event.ParcelCollectEvent;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
-import com.eternalcode.parcellockers.returns.repository.CollectedParcelRepository;
 import com.eternalcode.parcellockers.shared.exception.ParcelOperationException;
 import com.eternalcode.parcellockers.shared.exception.ValidationException;
-import java.lang.reflect.Method;
+import com.eternalcode.parcellockers.util.InventoryUtil;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.PluginManager;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InOrder;
 import org.mockito.MockedStatic;
 
 class ParcelServiceImplTest {
 
-    @Test
-    void rejectedOperationHandoffStillCompletesResultAndReleasesGate()
-        throws Exception {
-        Executor rejectingHandoff = command -> {
-            throw new IllegalStateException("handoff rejected");
-        };
-        OperationFixture fixture = new OperationFixture(rejectingHandoff);
+    private static final double FEE = 10.0;
 
-        CompletableFuture<Void> first = fixture.service.serializeParcelOperation(
-            fixture.parcel.uuid(), () -> CompletableFuture.completedFuture(null));
-        CompletableFuture<Void> second = fixture.service.serializeParcelOperation(
-            fixture.parcel.uuid(), () -> CompletableFuture.completedFuture(null));
+    private final NoticeService noticeService = mock(NoticeService.class, RETURNS_DEEP_STUBS);
+    private final ParcelRepository parcelRepository = mock(ParcelRepository.class);
+    private final ParcelContentRepository contentRepository = mock(ParcelContentRepository.class);
+    private final Scheduler scheduler = mock(Scheduler.class);
+    private final Economy economy = mock(Economy.class);
+    private final Server server = mock(Server.class);
+    private final Player player = mock(Player.class);
+    private final UUID playerId = UUID.randomUUID();
+    private final Queue<Runnable> mainTasks = new ArrayDeque<>();
+    private final ParcelServiceImpl service;
 
-        CompletableFuture.allOf(first, second).get(2, TimeUnit.SECONDS);
-    }
+    ParcelServiceImplTest() {
+        PluginConfig config = new PluginConfig();
+        config.settings.smallParcelFee = FEE;
 
-    @Test
-    void outwardCompletionCallbackCanQueueAndAwaitFollowingMutation() {
-        OperationFixture fixture = new OperationFixture();
-        CompletableFuture<Void> contentSaved = new CompletableFuture<>();
-        when(fixture.parcelRepository.saveIfAbsent(fixture.parcel))
-            .thenReturn(CompletableFuture.completedFuture(true));
-        when(fixture.contentRepository.save(any())).thenReturn(contentSaved);
-        when(fixture.parcelRepository.delete(fixture.parcel.uuid()))
-            .thenReturn(CompletableFuture.completedFuture(true));
-        when(fixture.contentRepository.delete(fixture.parcel.uuid()))
-            .thenReturn(CompletableFuture.completedFuture(true));
-        AtomicReference<CompletableFuture<Boolean>> callbackDelete = new AtomicReference<>();
+        when(this.server.getPluginManager()).thenReturn(mock(PluginManager.class));
+        when(this.player.getUniqueId()).thenReturn(this.playerId);
+        doAnswer(invocation -> this.mainTasks.add(invocation.getArgument(0)))
+            .when(this.scheduler).run(any(Runnable.class));
 
-        CompletableFuture<Boolean> send =
-            fixture.service.send(fixture.sender, fixture.parcel, fixture.items);
-        send.whenComplete((ignored, throwable) ->
-            callbackDelete.set(fixture.service.delete(fixture.parcel.uuid())));
-
-        contentSaved.complete(null);
-
-        assertTrue(send.join());
-        assertTrue(callbackDelete.get().join());
-    }
-
-    @Test
-    void queuedParcelCallbacksCanJoinPredecessorAndSuccessorWithoutDeadlock()
-        throws Exception {
-        OperationFixture fixture = new OperationFixture();
-        CompletableFuture<Void> firstRunning = new CompletableFuture<>();
-        CompletableFuture<Void> first = fixture.service.serializeParcelOperation(
-            fixture.parcel.uuid(), () -> firstRunning);
-        AtomicReference<CompletableFuture<Void>> secondReference = new AtomicReference<>();
-        CompletableFuture<Void> firstCallback =
-            first.whenComplete((ignored, throwable) -> secondReference.get().join());
-        CompletableFuture<Void> second = fixture.service.serializeParcelOperation(
-            fixture.parcel.uuid(), () -> CompletableFuture.completedFuture(null));
-        secondReference.set(second);
-        CompletableFuture<Void> secondCallback =
-            second.whenComplete((ignored, throwable) -> first.join());
-
-        Thread releaser = new Thread(() -> firstRunning.complete(null));
-        releaser.setDaemon(true);
-        releaser.start();
-        releaser.join(1_000);
-
-        assertFalse(releaser.isAlive(),
-            "gate completion must not inline a successor before the predecessor result completes");
-        CompletableFuture.allOf(first, second, firstCallback, secondCallback)
-            .get(2, TimeUnit.SECONDS);
-    }
-
-    @Test
-    void globalBarrierCallbacksCanJoinQueuedSuccessorWithoutDeadlock()
-        throws Exception {
-        OperationFixture fixture = new OperationFixture();
-        CompletableFuture<Void> firstRunning = new CompletableFuture<>();
-        CompletableFuture<Void> first = fixture.service.serializeParcelOperation(
-            fixture.parcel.uuid(), () -> firstRunning);
-
-        CompletableFuture<Void> bulk = serializeAllParcelOperations(
-            fixture.service, () -> CompletableFuture.completedFuture(null));
-        AtomicReference<CompletableFuture<Void>> successorReference =
-            new AtomicReference<>();
-        CompletableFuture<Void> bulkCallback =
-            bulk.whenComplete((ignored, throwable) -> successorReference.get().join());
-        CompletableFuture<Void> successor = fixture.service.serializeParcelOperation(
-            fixture.parcel.uuid(), () -> CompletableFuture.completedFuture(null));
-        successorReference.set(successor);
-        CompletableFuture<Void> successorCallback =
-            successor.whenComplete((ignored, throwable) -> bulk.join());
-
-        Thread releaser = new Thread(() -> firstRunning.complete(null));
-        releaser.setDaemon(true);
-        releaser.start();
-        releaser.join(1_000);
-
-        assertFalse(releaser.isAlive(),
-            "global barrier completion must not inline its queued successor");
-        CompletableFuture.allOf(
-            first, bulk, successor, bulkCallback, successorCallback)
-            .get(2, TimeUnit.SECONDS);
-    }
-
-    @Test
-    void longParcelOperationChainDrainsWithoutRecursiveCompletion()
-        throws Exception {
-        OperationFixture fixture = new OperationFixture();
-        CompletableFuture<Void> firstRunning = new CompletableFuture<>();
-        List<CompletableFuture<Void>> operations = new ArrayList<>();
-        operations.add(fixture.service.serializeParcelOperation(
-            fixture.parcel.uuid(), () -> firstRunning));
-        AtomicInteger started = new AtomicInteger();
-        int successors = 2_000;
-        for (int index = 0; index < successors; index++) {
-            operations.add(fixture.service.serializeParcelOperation(
-                fixture.parcel.uuid(), () -> {
-                    started.incrementAndGet();
-                    return CompletableFuture.completedFuture(null);
-                }));
-        }
-
-        Thread releaser = new Thread(() -> firstRunning.complete(null));
-        releaser.setDaemon(true);
-        releaser.start();
-        releaser.join(5_000);
-
-        assertFalse(releaser.isAlive(), "releasing a long queue must not recurse inline");
-        CompletableFuture.allOf(operations.toArray(CompletableFuture[]::new))
-            .get(5, TimeUnit.SECONDS);
-        assertEquals(successors, started.get());
-    }
-
-    @Test
-    void sameParcelMutationFromSendEventFailsFastInsteadOfQueuingBehindItself() {
-        OperationFixture fixture = new OperationFixture();
-        when(fixture.parcelRepository.saveIfAbsent(fixture.parcel))
-            .thenReturn(CompletableFuture.completedFuture(true));
-        when(fixture.contentRepository.save(any()))
-            .thenReturn(CompletableFuture.completedFuture(null));
-        AtomicReference<CompletableFuture<Boolean>> reentrant = new AtomicReference<>();
-        AtomicReference<CompletableFuture<Void>> reentrantBulk = new AtomicReference<>();
-        doAnswer(invocation -> {
-            reentrant.set(fixture.service.delete(fixture.parcel.uuid()));
-            reentrantBulk.set(
-                fixture.service.deleteAll(fixture.sender, fixture.noticeService));
-            return null;
-        }).when(fixture.pluginManager).callEvent(any());
-
-        assertTrue(fixture.service.send(
-            fixture.sender, fixture.parcel, fixture.items).join());
-
-        assertTrue(reentrant.get().isCompletedExceptionally());
-        assertInstanceOf(IllegalStateException.class,
-            assertThrows(CompletionException.class, () -> reentrant.get().join()).getCause());
-        assertTrue(reentrantBulk.get().isCompletedExceptionally());
-        assertInstanceOf(IllegalStateException.class,
-            assertThrows(
-                CompletionException.class, () -> reentrantBulk.get().join()).getCause());
-        verify(fixture.parcelRepository, never()).delete(fixture.parcel.uuid());
-        verify(fixture.parcelRepository, never()).deleteAll();
-    }
-
-    @Test
-    void deleteAllWaitsForInFlightParcelOperationsAndBlocksNewOnes() {
-        OperationFixture fixture = new OperationFixture();
-        CompletableFuture<Void> contentSaved = new CompletableFuture<>();
-        CompletableFuture<Integer> bulkDeleted = new CompletableFuture<>();
-        when(fixture.parcelRepository.saveIfAbsent(fixture.parcel))
-            .thenReturn(CompletableFuture.completedFuture(true));
-        when(fixture.contentRepository.save(any())).thenReturn(contentSaved);
-        when(fixture.parcelRepository.deleteAll()).thenReturn(bulkDeleted);
-
-        CompletableFuture<Boolean> send =
-            fixture.service.send(fixture.sender, fixture.parcel, fixture.items);
-        CompletableFuture<Void> deleteAll =
-            fixture.service.deleteAll(fixture.sender, fixture.noticeService);
-        CompletableFuture<Void> update = fixture.service.update(fixture.parcel);
-
-        assertFalse(deleteAll.isDone());
-        assertFalse(update.isDone());
-        verify(fixture.parcelRepository, never()).deleteAll();
-        verify(fixture.parcelRepository, never()).update(fixture.parcel);
-
-        contentSaved.complete(null);
-
-        assertTrue(send.join());
-        verify(fixture.parcelRepository, timeout(1_000)).deleteAll();
-        assertFalse(update.isDone());
-    }
-
-    @Test
-    void deleteAndUpdateWaitForInFlightSendOfSameParcel() {
-        OperationFixture fixture = new OperationFixture();
-        CompletableFuture<Void> contentSaved = new CompletableFuture<>();
-        when(fixture.parcelRepository.saveIfAbsent(fixture.parcel))
-            .thenReturn(CompletableFuture.completedFuture(true));
-        when(fixture.contentRepository.save(any())).thenReturn(contentSaved);
-        when(fixture.parcelRepository.delete(fixture.parcel.uuid()))
-            .thenReturn(CompletableFuture.completedFuture(true));
-        when(fixture.contentRepository.delete(fixture.parcel.uuid()))
-            .thenReturn(CompletableFuture.completedFuture(true));
-        when(fixture.parcelRepository.update(fixture.parcel))
-            .thenReturn(CompletableFuture.completedFuture(null));
-
-        CompletableFuture<Boolean> send =
-            fixture.service.send(fixture.sender, fixture.parcel, fixture.items);
-        CompletableFuture<Boolean> delete = fixture.service.delete(fixture.parcel.uuid());
-        CompletableFuture<Void> update = fixture.service.update(fixture.parcel);
-
-        assertFalse(delete.isDone());
-        assertFalse(update.isDone());
-        verify(fixture.parcelRepository, never()).delete(fixture.parcel.uuid());
-        verify(fixture.parcelRepository, never()).update(fixture.parcel);
-
-        contentSaved.complete(null);
-
-        assertTrue(send.join());
-        assertTrue(delete.join());
-        update.join();
-        InOrder order = org.mockito.Mockito.inOrder(
-            fixture.contentRepository, fixture.parcelRepository);
-        order.verify(fixture.contentRepository).save(any());
-        order.verify(fixture.parcelRepository).delete(fixture.parcel.uuid());
-        order.verify(fixture.contentRepository).delete(fixture.parcel.uuid());
-        order.verify(fixture.parcelRepository).update(fixture.parcel);
-    }
-
-    @Test
-    void staleSendCompensationFinishesBeforeDeleteAndReplacementInsert() {
-        OperationFixture fixture = new OperationFixture();
-        CompletableFuture<Boolean> compensationDelete = new CompletableFuture<>();
-        when(fixture.parcelRepository.saveIfAbsent(fixture.parcel))
-            .thenReturn(
-                CompletableFuture.completedFuture(true),
-                CompletableFuture.completedFuture(true));
-        when(fixture.contentRepository.save(any()))
-            .thenReturn(
-                CompletableFuture.failedFuture(new IllegalStateException("first save failed")),
-                CompletableFuture.completedFuture(null));
-        when(fixture.parcelRepository.delete(fixture.parcel.uuid()))
-            .thenReturn(compensationDelete, CompletableFuture.completedFuture(true));
-        when(fixture.contentRepository.delete(fixture.parcel.uuid()))
-            .thenReturn(CompletableFuture.completedFuture(true));
-
-        CompletableFuture<Boolean> first =
-            fixture.service.send(fixture.sender, fixture.parcel, fixture.items);
-        CompletableFuture<Boolean> delete = fixture.service.delete(fixture.parcel.uuid());
-        CompletableFuture<Boolean> replacement =
-            fixture.service.send(fixture.sender, fixture.parcel, fixture.items);
-
-        verify(fixture.parcelRepository, times(1)).saveIfAbsent(fixture.parcel);
-        assertFalse(delete.isDone());
-        assertFalse(replacement.isDone());
-
-        compensationDelete.complete(true);
-
-        assertThrows(CompletionException.class, first::join);
-        assertTrue(delete.join());
-        assertTrue(replacement.join());
-        assertEquals(
-            List.of("saveIfAbsent", "delete", "delete", "saveIfAbsent"),
-            mockingDetails(fixture.parcelRepository).getInvocations().stream()
-                .map(invocation -> invocation.getMethod().getName())
-                .filter(name -> name.equals("saveIfAbsent") || name.equals("delete"))
-                .toList()
-        );
-    }
-
-    @Test
-    void collectRejectsForgedReceiverFromAuthoritativeRecordWithoutSideEffects() {
-        CollectFixture fixture = new CollectFixture();
-        Parcel forged = withReceiver(fixture.authoritative, fixture.playerId);
-        when(fixture.parcelRepository.findById(forged.uuid()))
-            .thenReturn(CompletableFuture.completedFuture(Optional.of(fixture.authoritative)));
-
-        CompletionException exception = assertThrows(
-            CompletionException.class, () -> fixture.service.collect(fixture.player, forged).join());
-
-        assertInstanceOf(ValidationException.class, exception.getCause());
-        verify(fixture.pluginManager, never()).callEvent(any());
-        verify(fixture.contentRepository, never()).find(any());
-        verify(fixture.parcelRepository, never()).markCollected(any());
-    }
-
-    @Test
-    void collectRejectsStaleDeliveredDtoWhenAuthoritativeRecordIsNotDelivered() {
-        CollectFixture fixture = new CollectFixture();
-        Parcel caller = withReceiver(fixture.authoritative, fixture.playerId);
-        Parcel collected = withStatus(caller, ParcelStatus.COLLECTED);
-        when(fixture.parcelRepository.findById(caller.uuid()))
-            .thenReturn(CompletableFuture.completedFuture(Optional.of(collected)));
-
-        CompletionException exception = assertThrows(
-            CompletionException.class, () -> fixture.service.collect(fixture.player, caller).join());
-
-        assertInstanceOf(ValidationException.class, exception.getCause());
-        verify(fixture.pluginManager, never()).callEvent(any());
-        verify(fixture.contentRepository, never()).find(any());
-        verify(fixture.parcelRepository, never()).markCollected(any());
-    }
-
-    @Test
-    void collectPersistenceFailureCompletesExceptionallyEvenWhenFailureNoticeThrows() {
-        CollectFixture fixture = new CollectFixture();
-        Parcel parcel = withReceiver(fixture.authoritative, fixture.playerId);
-        IllegalStateException databaseFailure = new IllegalStateException("database failed");
-        fixture.stubCollect(parcel);
-        when(fixture.parcelRepository.commitCollection(
-            eq(parcel.uuid()), eq(fixture.playerId), any()))
-            .thenReturn(CompletableFuture.failedFuture(databaseFailure));
-        doThrow(new IllegalStateException("notice failed"))
-            .when(fixture.noticeService).player(eq(fixture.playerId), any());
-
-        try (MockedStatic<com.eternalcode.parcellockers.util.InventoryUtil> inventory =
-                 mockStatic(com.eternalcode.parcellockers.util.InventoryUtil.class)) {
-            inventory.when(() -> canHold(fixture.player, List.of())).thenReturn(true);
-            CompletableFuture<Void> result = fixture.service.collect(fixture.player, parcel);
-            fixture.runNextMainTask();
-
-            CompletionException exception = assertThrows(CompletionException.class, result::join);
-            ParcelOperationException operationException =
-                assertInstanceOf(ParcelOperationException.class, exception.getCause());
-            assertSame(databaseFailure, operationException.getCause());
-        }
-    }
-
-    @Test
-    void collectFutureCompletesOnlyAfterMainThreadItemsAndNotice() {
-        CollectFixture fixture = new CollectFixture();
-        Parcel parcel = withReceiver(fixture.authoritative, fixture.playerId);
-        ItemStack item = mock(ItemStack.class);
-        fixture.stubCollect(parcel, item);
-        when(fixture.parcelRepository.commitCollection(
-            eq(parcel.uuid()), eq(fixture.playerId), any()))
-            .thenReturn(CompletableFuture.completedFuture(true));
-
-        try (MockedStatic<com.eternalcode.parcellockers.util.InventoryUtil> inventory =
-                 mockStatic(com.eternalcode.parcellockers.util.InventoryUtil.class);
-             MockedStatic<ItemUtil> itemUtil = mockStatic(ItemUtil.class)) {
-            inventory.when(() -> canHold(fixture.player, List.of(item))).thenReturn(true);
-
-            CompletableFuture<Void> result = fixture.service.collect(fixture.player, parcel);
-
-            assertFalse(result.isDone());
-            fixture.runNextMainTask();
-            assertFalse(result.isDone());
-            fixture.runNextMainTask();
-            itemUtil.verify(() -> ItemUtil.giveItem(fixture.player, item));
-            verify(fixture.noticeService).player(
-                eq(fixture.playerId), any());
-            verify(fixture.collectedRepository, never()).save(any());
-            assertTrue(result.isDone());
-            result.join();
-        }
-    }
-
-    @Test
-    void collectSchedulerFailureRollsBackCommittedCollection() {
-        CollectFixture fixture = new CollectFixture();
-        Parcel parcel = withReceiver(fixture.authoritative, fixture.playerId);
-        fixture.stubCollect(parcel);
-        when(fixture.parcelRepository.commitCollection(
-            eq(parcel.uuid()), eq(fixture.playerId), any()))
-            .thenReturn(CompletableFuture.completedFuture(true));
-        when(fixture.parcelRepository.rollbackCollection(
-            eq(parcel.uuid()), eq(fixture.playerId), any()))
-            .thenReturn(CompletableFuture.completedFuture(true));
-        AtomicInteger scheduled = new AtomicInteger();
-        doAnswer(invocation -> {
-            if (scheduled.getAndIncrement() == 0) {
-                fixture.mainTasks.add(invocation.getArgument(0));
-                return null;
-            }
-            throw new IllegalStateException("scheduler rejected delivery");
-        }).when(fixture.scheduler).run(any(Runnable.class));
-
-        try (MockedStatic<com.eternalcode.parcellockers.util.InventoryUtil> inventory =
-                 mockStatic(com.eternalcode.parcellockers.util.InventoryUtil.class)) {
-            inventory.when(() -> canHold(fixture.player, List.of())).thenReturn(true);
-            CompletableFuture<Void> result = fixture.service.collect(fixture.player, parcel);
-            fixture.runNextMainTask();
-
-            assertThrows(CompletionException.class, result::join);
-            verify(fixture.parcelRepository)
-                .rollbackCollection(eq(parcel.uuid()), eq(fixture.playerId), any());
-        }
-    }
-
-    @Test
-    void collectGiveFailureRestoresInventoryAndRollsBackCollection() {
-        CollectFixture fixture = new CollectFixture();
-        Parcel parcel = withReceiver(fixture.authoritative, fixture.playerId);
-        ItemStack item = mock(ItemStack.class);
-        ItemStack existing = mock(ItemStack.class);
-        ItemStack existingSnapshot = mock(ItemStack.class);
-        PlayerInventory playerInventory = mock(PlayerInventory.class);
-        ItemStack[] snapshot = {existing};
-        fixture.stubCollect(parcel, item);
-        when(fixture.player.getInventory()).thenReturn(playerInventory);
-        when(playerInventory.getContents()).thenReturn(snapshot);
-        when(existing.clone()).thenReturn(existingSnapshot);
-        when(fixture.parcelRepository.commitCollection(
-            eq(parcel.uuid()), eq(fixture.playerId), any()))
-            .thenReturn(CompletableFuture.completedFuture(true));
-        when(fixture.parcelRepository.rollbackCollection(
-            eq(parcel.uuid()), eq(fixture.playerId), any()))
-            .thenReturn(CompletableFuture.completedFuture(true));
-
-        try (MockedStatic<com.eternalcode.parcellockers.util.InventoryUtil> inventory =
-                 mockStatic(com.eternalcode.parcellockers.util.InventoryUtil.class);
-             MockedStatic<ItemUtil> itemUtil = mockStatic(ItemUtil.class)) {
-            inventory.when(() -> canHold(fixture.player, List.of(item))).thenReturn(true);
-            itemUtil.when(() -> ItemUtil.giveItem(fixture.player, item))
-                .thenThrow(new IllegalStateException("give failed"));
-            CompletableFuture<Void> result = fixture.service.collect(fixture.player, parcel);
-            fixture.runNextMainTask();
-            fixture.runNextMainTask();
-
-            assertThrows(CompletionException.class, result::join);
-            ArgumentCaptor<ItemStack[]> restored =
-                ArgumentCaptor.forClass(ItemStack[].class);
-            verify(playerInventory).setContents(restored.capture());
-            assertSame(existingSnapshot, restored.getValue()[0]);
-            verify(fixture.parcelRepository)
-                .rollbackCollection(eq(parcel.uuid()), eq(fixture.playerId), any());
-        }
-    }
-
-    @Test
-    void collectDoesNotReopenParcelWhenInventoryRestoreFails() {
-        CollectFixture fixture = new CollectFixture();
-        Parcel parcel = withReceiver(fixture.authoritative, fixture.playerId);
-        ItemStack item = mock(ItemStack.class);
-        ItemStack existing = mock(ItemStack.class);
-        PlayerInventory playerInventory = mock(PlayerInventory.class);
-        fixture.stubCollect(parcel, item);
-        when(fixture.player.getInventory()).thenReturn(playerInventory);
-        when(playerInventory.getContents()).thenReturn(new ItemStack[]{existing});
-        when(existing.clone()).thenReturn(mock(ItemStack.class));
-        when(fixture.parcelRepository.commitCollection(
-            eq(parcel.uuid()), eq(fixture.playerId), any()))
-            .thenReturn(CompletableFuture.completedFuture(true));
-        doThrow(new IllegalStateException("restore failed"))
-            .when(playerInventory).setContents(any(ItemStack[].class));
-
-        try (MockedStatic<com.eternalcode.parcellockers.util.InventoryUtil> inventory =
-                 mockStatic(com.eternalcode.parcellockers.util.InventoryUtil.class);
-             MockedStatic<ItemUtil> itemUtil = mockStatic(ItemUtil.class)) {
-            inventory.when(() -> canHold(fixture.player, List.of(item))).thenReturn(true);
-            itemUtil.when(() -> ItemUtil.giveItem(fixture.player, item))
-                .thenThrow(new IllegalStateException("give failed"));
-            CompletableFuture<Void> result = fixture.service.collect(fixture.player, parcel);
-            fixture.runNextMainTask();
-            fixture.runNextMainTask();
-
-            assertThrows(CompletionException.class, result::join);
-            verify(fixture.parcelRepository, never())
-                .rollbackCollection(any(), any(), any());
-        }
+        this.service = new ParcelServiceImpl(
+            this.noticeService, this.parcelRepository, this.contentRepository,
+            this.scheduler, config, this.economy, this.server);
     }
 
     @Test
     void duplicateParcelUuidFailsBeforeChargeAndDoesNotDeleteExistingParcel() {
-        NoticeService noticeService = mock(NoticeService.class);
-        ParcelRepository parcelRepository = mock(ParcelRepository.class);
-        ParcelContentRepository contentRepository = mock(ParcelContentRepository.class);
-        CollectedParcelRepository collectedRepository = mock(CollectedParcelRepository.class);
-        Scheduler scheduler = mock(Scheduler.class);
-        PluginConfig config = new PluginConfig();
-        config.settings.smallParcelFee = 10.0;
-        Economy economy = mock(Economy.class);
-        Server server = mock(Server.class);
-        PluginManager pluginManager = mock(PluginManager.class);
-        Player sender = mock(Player.class);
-        Parcel parcel = parcel();
-        when(server.getPluginManager()).thenReturn(pluginManager);
-        when(sender.hasPermission("parcellockers.fee.bypass")).thenReturn(false);
-        when(parcelRepository.saveIfAbsent(parcel))
-            .thenReturn(CompletableFuture.completedFuture(false));
-        ParcelServiceImpl service = new ParcelServiceImpl(
-            noticeService, parcelRepository, contentRepository, collectedRepository,
-            scheduler, config, economy, server);
+        Parcel parcel = this.parcel(ParcelStatus.SENT);
+        when(this.parcelRepository.saveIfAbsent(parcel)).thenReturn(CompletableFuture.completedFuture(false));
 
         CompletionException exception = assertThrows(CompletionException.class,
-            () -> service.send(sender, parcel, List.of(mock(ItemStack.class))).join());
+            () -> this.service.send(this.player, parcel, List.of(mock(ItemStack.class))).join());
 
         assertInstanceOf(ValidationException.class, exception.getCause());
-        verify(economy, never()).withdrawPlayer(any(Player.class), anyDouble());
-        verify(contentRepository, never()).save(any());
-        verify(parcelRepository, never()).delete(parcel.uuid());
-        verify(contentRepository, never()).delete(parcel.uuid());
+        verify(this.economy, never()).withdrawPlayer(any(Player.class), anyDouble());
+        verify(this.contentRepository, never()).save(any());
+        verify(this.parcelRepository, never()).delete(parcel.uuid());
     }
 
     @Test
-    void feeNoticeFailureAfterWithdrawalRefundsAndCleansReservedParcel() {
-        NoticeService noticeService = mock(NoticeService.class);
-        ParcelRepository parcelRepository = mock(ParcelRepository.class);
-        ParcelContentRepository contentRepository = mock(ParcelContentRepository.class);
-        CollectedParcelRepository collectedRepository = mock(CollectedParcelRepository.class);
-        Scheduler scheduler = mock(Scheduler.class);
-        PluginConfig config = new PluginConfig();
-        config.settings.smallParcelFee = 10.0;
-        Economy economy = mock(Economy.class);
-        Server server = mock(Server.class);
-        PluginManager pluginManager = mock(PluginManager.class);
-        Player sender = mock(Player.class);
-        Parcel parcel = parcel();
-        when(server.getPluginManager()).thenReturn(pluginManager);
-        when(sender.hasPermission("parcellockers.fee.bypass")).thenReturn(false);
-        when(parcelRepository.saveIfAbsent(parcel))
-            .thenReturn(CompletableFuture.completedFuture(true));
-        when(economy.withdrawPlayer(sender, 10.0))
-            .thenReturn(successfulEconomyResponse(10.0));
-        when(economy.depositPlayer(sender, 10.0))
-            .thenReturn(successfulEconomyResponse(10.0));
-        when(noticeService.create()).thenThrow(new IllegalStateException("notice failed"));
-        when(parcelRepository.delete(parcel.uuid()))
-            .thenReturn(CompletableFuture.completedFuture(true));
-        when(contentRepository.delete(parcel.uuid()))
-            .thenReturn(CompletableFuture.completedFuture(true));
-        ParcelServiceImpl service = new ParcelServiceImpl(
-            noticeService, parcelRepository, contentRepository, collectedRepository,
-            scheduler, config, economy, server);
+    void insufficientFundsRemovesInsertedParcelWithoutSavingContent() {
+        Parcel parcel = this.parcel(ParcelStatus.SENT);
+        when(this.parcelRepository.saveIfAbsent(parcel)).thenReturn(CompletableFuture.completedFuture(true));
+        when(this.economy.withdrawPlayer(this.player, FEE)).thenReturn(response(EconomyResponse.ResponseType.FAILURE));
+        when(this.parcelRepository.delete(parcel.uuid())).thenReturn(CompletableFuture.completedFuture(true));
+
+        assertFalse(this.service.send(this.player, parcel, List.of(mock(ItemStack.class))).join());
+
+        verify(this.parcelRepository).delete(parcel.uuid());
+        verify(this.contentRepository, never()).save(any());
+    }
+
+    @Test
+    void contentPersistenceFailureDeletesParcelAndRefundsFee() {
+        Parcel parcel = this.parcel(ParcelStatus.SENT);
+        IllegalStateException contentSaveFailure = new IllegalStateException("content save failed");
+        when(this.parcelRepository.saveIfAbsent(parcel)).thenReturn(CompletableFuture.completedFuture(true));
+        when(this.economy.withdrawPlayer(this.player, FEE)).thenReturn(response(EconomyResponse.ResponseType.SUCCESS));
+        when(this.contentRepository.save(any())).thenReturn(CompletableFuture.failedFuture(contentSaveFailure));
+        when(this.parcelRepository.delete(parcel.uuid())).thenReturn(CompletableFuture.completedFuture(true));
 
         CompletionException exception = assertThrows(CompletionException.class,
-            () -> service.send(sender, parcel, List.of(mock(ItemStack.class))).join());
-
-        assertInstanceOf(ParcelOperationException.class, exception.getCause());
-        verify(economy).depositPlayer(sender, 10.0);
-        verify(parcelRepository).delete(parcel.uuid());
-        verify(contentRepository).delete(parcel.uuid());
-    }
-
-    @Test
-    void rollbackPermissionFailureDoesNotSkipParcelAndContentCleanup() {
-        NoticeService noticeService = mock(NoticeService.class);
-        ParcelRepository parcelRepository = mock(ParcelRepository.class);
-        ParcelContentRepository contentRepository = mock(ParcelContentRepository.class);
-        CollectedParcelRepository collectedRepository = mock(CollectedParcelRepository.class);
-        Scheduler scheduler = mock(Scheduler.class);
-        PluginConfig config = new PluginConfig();
-        Economy economy = mock(Economy.class);
-        Server server = mock(Server.class);
-        Player sender = mock(Player.class);
-        Parcel parcel = parcel();
-        IllegalStateException permissionFailure = new IllegalStateException("permission failed");
-        when(sender.hasPermission("parcellockers.fee.bypass")).thenThrow(permissionFailure);
-        when(parcelRepository.delete(parcel.uuid()))
-            .thenReturn(CompletableFuture.completedFuture(true));
-        when(contentRepository.delete(parcel.uuid()))
-            .thenReturn(CompletableFuture.completedFuture(true));
-        ParcelServiceImpl service = new ParcelServiceImpl(
-            noticeService, parcelRepository, contentRepository, collectedRepository,
-            scheduler, config, economy, server);
-
-        CompletableFuture<Void> result =
-            assertDoesNotThrow(() -> service.rollbackSend(sender, parcel));
-        CompletionException exception = assertThrows(CompletionException.class, result::join);
-
-        ParcelOperationException operationException =
-            assertInstanceOf(ParcelOperationException.class, exception.getCause());
-        assertSame(permissionFailure, operationException.getCause());
-        verify(parcelRepository).delete(parcel.uuid());
-        verify(contentRepository).delete(parcel.uuid());
-    }
-
-    @Test
-    void collectDefersSynchronousEventToMainSchedulerWhenCalledAsync() {
-        NoticeService noticeService = mock(NoticeService.class);
-        ParcelRepository parcelRepository = mock(ParcelRepository.class);
-        ParcelContentRepository contentRepository = mock(ParcelContentRepository.class);
-        CollectedParcelRepository collectedRepository =
-            mock(CollectedParcelRepository.class);
-        Scheduler scheduler = mock(Scheduler.class);
-        PluginConfig config = new PluginConfig();
-        Economy economy = mock(Economy.class);
-        Server server = mock(Server.class);
-        PluginManager pluginManager = mock(PluginManager.class);
-        Player player = mock(Player.class);
-        Parcel parcel = new Parcel(
-            UUID.randomUUID(),
-            UUID.randomUUID(),
-            "name",
-            null,
-            false,
-            UUID.randomUUID(),
-            ParcelSize.SMALL,
-            UUID.randomUUID(),
-            UUID.randomUUID(),
-            ParcelStatus.DELIVERED
-        );
-        when(server.isPrimaryThread()).thenReturn(false);
-        when(server.getPluginManager()).thenReturn(pluginManager);
-        when(player.getUniqueId()).thenReturn(parcel.receiver());
-        when(parcelRepository.findById(parcel.uuid()))
-            .thenReturn(CompletableFuture.completedFuture(Optional.of(parcel)));
-        when(contentRepository.find(parcel.uuid()))
-            .thenReturn(CompletableFuture.completedFuture(java.util.Optional.empty()));
-        ParcelServiceImpl service = new ParcelServiceImpl(
-            noticeService,
-            parcelRepository,
-            contentRepository,
-            collectedRepository,
-            scheduler,
-            config,
-            economy,
-            server
-        );
-
-        CompletableFuture<Void> result = service.collect(player, parcel);
-
-        verify(pluginManager, never()).callEvent(any(ParcelCollectEvent.class));
-        ArgumentCaptor<Runnable> eventTask = ArgumentCaptor.forClass(Runnable.class);
-        verify(scheduler).run(eventTask.capture());
-        eventTask.getValue().run();
-        verify(pluginManager).callEvent(any(ParcelCollectEvent.class));
-        result.join();
-    }
-
-    @Test
-    void contentPersistenceFailureAttemptsParcelAndContentCleanupAndPreservesTrigger() {
-        NoticeService noticeService = mock(NoticeService.class);
-        ParcelRepository parcelRepository = mock(ParcelRepository.class);
-        ParcelContentRepository contentRepository = mock(ParcelContentRepository.class);
-        CollectedParcelRepository collectedRepository =
-            mock(CollectedParcelRepository.class);
-        Scheduler scheduler = mock(Scheduler.class);
-        PluginConfig config = new PluginConfig();
-        Economy economy = mock(Economy.class);
-        Server server = mock(Server.class);
-        PluginManager pluginManager = mock(PluginManager.class);
-        Player sender = mock(Player.class);
-        Parcel parcel = parcel();
-        IllegalStateException contentSaveFailure =
-            new IllegalStateException("content save failed");
-        IllegalStateException parcelDeleteFailure =
-            new IllegalStateException("parcel delete failed");
-        IllegalStateException contentDeleteFailure =
-            new IllegalStateException("content delete failed");
-        when(sender.hasPermission("parcellockers.fee.bypass")).thenReturn(true);
-        when(server.getPluginManager()).thenReturn(pluginManager);
-        when(parcelRepository.saveIfAbsent(parcel)).thenReturn(CompletableFuture.completedFuture(true));
-        when(contentRepository.save(any()))
-            .thenReturn(CompletableFuture.failedFuture(contentSaveFailure));
-        when(parcelRepository.delete(parcel.uuid()))
-            .thenReturn(CompletableFuture.failedFuture(parcelDeleteFailure));
-        when(contentRepository.delete(parcel.uuid()))
-            .thenReturn(CompletableFuture.failedFuture(contentDeleteFailure));
-        ParcelServiceImpl service = new ParcelServiceImpl(
-            noticeService,
-            parcelRepository,
-            contentRepository,
-            collectedRepository,
-            scheduler,
-            config,
-            economy,
-            server
-        );
-
-        CompletionException exception = assertThrows(CompletionException.class,
-            () -> service.send(sender, parcel, List.of(mock(org.bukkit.inventory.ItemStack.class)))
-                .join());
+            () -> this.service.send(this.player, parcel, List.of(mock(ItemStack.class))).join());
 
         ParcelOperationException operationException =
             assertInstanceOf(ParcelOperationException.class, exception.getCause());
         assertSame(contentSaveFailure, operationException.getCause());
-        assertEquals(
-            List.of(parcelDeleteFailure, contentDeleteFailure),
-            List.of(operationException.getSuppressed())
-        );
-        verify(parcelRepository).delete(parcel.uuid());
-        verify(contentRepository).delete(parcel.uuid());
+        verify(this.parcelRepository).delete(parcel.uuid());
+        verify(this.economy).depositPlayer(this.player, FEE);
     }
 
     @Test
-    void rollbackSendAttemptsFeeParcelAndContentCleanupAndAggregatesFailures() {
-        NoticeService noticeService = mock(NoticeService.class);
-        ParcelRepository parcelRepository = mock(ParcelRepository.class);
-        ParcelContentRepository contentRepository = mock(ParcelContentRepository.class);
-        CollectedParcelRepository collectedRepository =
-            mock(CollectedParcelRepository.class);
-        Scheduler scheduler = mock(Scheduler.class);
-        PluginConfig config = new PluginConfig();
-        config.settings.smallParcelFee = 10.0;
-        Economy economy = mock(Economy.class);
-        Server server = mock(Server.class);
-        Player sender = mock(Player.class);
-        Parcel parcel = parcel();
-        IllegalStateException refundFailure = new IllegalStateException("refund failed");
-        IllegalStateException parcelDeleteFailure =
-            new IllegalStateException("parcel delete failed");
-        IllegalStateException contentDeleteFailure =
-            new IllegalStateException("content delete failed");
-        when(sender.hasPermission("parcellockers.fee.bypass")).thenReturn(false);
-        doThrow(refundFailure).when(economy).depositPlayer(sender, 10.0);
-        when(parcelRepository.delete(parcel.uuid()))
-            .thenReturn(CompletableFuture.failedFuture(parcelDeleteFailure));
-        when(contentRepository.delete(parcel.uuid()))
-            .thenReturn(CompletableFuture.failedFuture(contentDeleteFailure));
-        ParcelServiceImpl service = new ParcelServiceImpl(
-            noticeService,
-            parcelRepository,
-            contentRepository,
-            collectedRepository,
-            scheduler,
-            config,
-            economy,
-            server
-        );
+    void collectCompletesOnlyAfterItemsWereGivenOnMainThread() {
+        Parcel parcel = this.parcel(ParcelStatus.DELIVERED);
+        ItemStack item = mock(ItemStack.class);
+        this.stubContent(parcel, item);
+        when(this.parcelRepository.commitCollection(eq(parcel.uuid()), eq(this.playerId), any()))
+            .thenReturn(CompletableFuture.completedFuture(true));
 
-        CompletableFuture<Void> result =
-            assertDoesNotThrow(() -> service.rollbackSend(sender, parcel));
-        CompletionException exception =
-            assertThrows(CompletionException.class, result::join);
+        try (MockedStatic<InventoryUtil> inventory = mockStatic(InventoryUtil.class);
+             MockedStatic<ItemUtil> itemUtil = mockStatic(ItemUtil.class)) {
+            inventory.when(() -> canHold(this.player, List.of(item))).thenReturn(true);
 
-        ParcelOperationException operationException =
-            assertInstanceOf(ParcelOperationException.class, exception.getCause());
-        assertSame(refundFailure, operationException.getCause());
-        assertEquals(
-            List.of(parcelDeleteFailure, contentDeleteFailure),
-            List.of(operationException.getSuppressed())
-        );
-        verify(economy).depositPlayer(sender, 10.0);
-        verify(parcelRepository).delete(parcel.uuid());
-        verify(contentRepository).delete(parcel.uuid());
+            CompletableFuture<Void> result = this.service.collect(this.player, parcel);
+
+            this.runNextMainTask();
+            assertFalse(result.isDone());
+            this.runNextMainTask();
+            itemUtil.verify(() -> ItemUtil.giveItem(this.player, item));
+            assertTrue(result.isDone());
+        }
     }
 
     @Test
-    void rollbackSendTreatsFalseDeleteResultsAsCleanupFailures() {
-        NoticeService noticeService = mock(NoticeService.class);
-        ParcelRepository parcelRepository = mock(ParcelRepository.class);
-        ParcelContentRepository contentRepository = mock(ParcelContentRepository.class);
-        CollectedParcelRepository collectedRepository =
-            mock(CollectedParcelRepository.class);
-        Scheduler scheduler = mock(Scheduler.class);
-        PluginConfig config = new PluginConfig();
-        Economy economy = mock(Economy.class);
-        Server server = mock(Server.class);
-        Player sender = mock(Player.class);
-        Parcel parcel = parcel();
-        when(sender.hasPermission("parcellockers.fee.bypass")).thenReturn(true);
-        when(parcelRepository.delete(parcel.uuid()))
+    void collectDoesNotGiveItemsWhenCollectionWasNotCommitted() {
+        Parcel parcel = this.parcel(ParcelStatus.DELIVERED);
+        ItemStack item = mock(ItemStack.class);
+        this.stubContent(parcel, item);
+        when(this.parcelRepository.commitCollection(eq(parcel.uuid()), eq(this.playerId), any()))
             .thenReturn(CompletableFuture.completedFuture(false));
-        when(contentRepository.delete(parcel.uuid()))
-            .thenReturn(CompletableFuture.completedFuture(false));
-        ParcelServiceImpl service = new ParcelServiceImpl(
-            noticeService,
-            parcelRepository,
-            contentRepository,
-            collectedRepository,
-            scheduler,
-            config,
-            economy,
-            server
-        );
 
-        CompletionException exception = assertThrows(CompletionException.class,
-            () -> service.rollbackSend(sender, parcel).join());
+        try (MockedStatic<InventoryUtil> inventory = mockStatic(InventoryUtil.class);
+             MockedStatic<ItemUtil> itemUtil = mockStatic(ItemUtil.class)) {
+            inventory.when(() -> canHold(this.player, List.of(item))).thenReturn(true);
 
-        ParcelOperationException operationException =
+            CompletableFuture<Void> result = this.service.collect(this.player, parcel);
+            this.runNextMainTask();
+
+            assertTrue(result.isDone());
+            assertTrue(this.mainTasks.isEmpty());
+            itemUtil.verifyNoInteractions();
+        }
+    }
+
+    @Test
+    void collectPersistenceFailureCompletesExceptionally() {
+        Parcel parcel = this.parcel(ParcelStatus.DELIVERED);
+        IllegalStateException databaseFailure = new IllegalStateException("database failed");
+        this.stubContent(parcel);
+        when(this.parcelRepository.commitCollection(eq(parcel.uuid()), eq(this.playerId), any()))
+            .thenReturn(CompletableFuture.failedFuture(databaseFailure));
+
+        try (MockedStatic<InventoryUtil> inventory = mockStatic(InventoryUtil.class)) {
+            inventory.when(() -> canHold(this.player, List.of())).thenReturn(true);
+
+            CompletableFuture<Void> result = this.service.collect(this.player, parcel);
+            this.runNextMainTask();
+
+            CompletionException exception = assertThrows(CompletionException.class, result::join);
             assertInstanceOf(ParcelOperationException.class, exception.getCause());
-        assertInstanceOf(IllegalStateException.class, operationException.getCause());
-        assertEquals(1, operationException.getSuppressed().length);
-        assertInstanceOf(
-            IllegalStateException.class, operationException.getSuppressed()[0]);
-        verify(parcelRepository).delete(parcel.uuid());
-        verify(contentRepository).delete(parcel.uuid());
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <T> CompletableFuture<T> serializeAllParcelOperations(
-        ParcelServiceImpl service,
-        java.util.function.Supplier<CompletableFuture<T>> operation
-    ) throws ReflectiveOperationException {
-        Method method = ParcelServiceImpl.class.getDeclaredMethod(
-            "serializeAllParcelOperations", java.util.function.Supplier.class);
-        method.setAccessible(true);
-        return (CompletableFuture<T>) method.invoke(service, operation);
-    }
-
-    private static Parcel parcel() {
-        return new Parcel(
-            UUID.randomUUID(),
-            UUID.randomUUID(),
-            "name",
-            null,
-            false,
-            UUID.randomUUID(),
-            ParcelSize.SMALL,
-            UUID.randomUUID(),
-            UUID.randomUUID(),
-            ParcelStatus.SENT
-        );
-    }
-
-    private static Parcel withReceiver(Parcel parcel, UUID receiver) {
-        return new Parcel(parcel.uuid(), parcel.sender(), parcel.name(), parcel.description(),
-            parcel.priority(), receiver, parcel.size(), parcel.entryLocker(),
-            parcel.destinationLocker(), ParcelStatus.DELIVERED);
-    }
-
-    private static Parcel withStatus(Parcel parcel, ParcelStatus status) {
-        return new Parcel(parcel.uuid(), parcel.sender(), parcel.name(), parcel.description(),
-            parcel.priority(), parcel.receiver(), parcel.size(), parcel.entryLocker(),
-            parcel.destinationLocker(), status);
-    }
-
-    private static EconomyResponse successfulEconomyResponse(double amount) {
-        return new EconomyResponse(
-            amount, 100.0, EconomyResponse.ResponseType.SUCCESS, null);
-    }
-
-    private static final class CollectFixture {
-
-        private final NoticeService noticeService = mock(NoticeService.class);
-        private final ParcelRepository parcelRepository = mock(ParcelRepository.class);
-        private final ParcelContentRepository contentRepository =
-            mock(ParcelContentRepository.class);
-        private final CollectedParcelRepository collectedRepository =
-            mock(CollectedParcelRepository.class);
-        private final Scheduler scheduler = mock(Scheduler.class);
-        private final PluginConfig config = new PluginConfig();
-        private final Economy economy = mock(Economy.class);
-        private final Server server = mock(Server.class);
-        private final PluginManager pluginManager = mock(PluginManager.class);
-        private final Player player = mock(Player.class);
-        private final PlayerInventory playerInventory = mock(PlayerInventory.class);
-        private final UUID playerId = UUID.randomUUID();
-        private final Queue<Runnable> mainTasks = new ArrayDeque<>();
-        private final Parcel authoritative = new Parcel(
-            UUID.randomUUID(), UUID.randomUUID(), "name", null, false, UUID.randomUUID(),
-            ParcelSize.SMALL, UUID.randomUUID(), UUID.randomUUID(), ParcelStatus.DELIVERED);
-        private final ParcelServiceImpl service;
-
-        private CollectFixture() {
-            when(this.player.getUniqueId()).thenReturn(this.playerId);
-            when(this.player.getInventory()).thenReturn(this.playerInventory);
-            when(this.playerInventory.getContents()).thenReturn(new ItemStack[0]);
-            when(this.server.isPrimaryThread()).thenReturn(true);
-            when(this.server.getPluginManager()).thenReturn(this.pluginManager);
-            doAnswer(invocation -> {
-                this.mainTasks.add(invocation.getArgument(0));
-                return null;
-            }).when(this.scheduler).run(any(Runnable.class));
-            this.service = new ParcelServiceImpl(
-                this.noticeService, this.parcelRepository, this.contentRepository,
-                this.collectedRepository, this.scheduler, this.config, this.economy, this.server);
-        }
-
-        private void stubCollect(Parcel parcel, ItemStack... items) {
-            when(this.parcelRepository.findById(parcel.uuid()))
-                .thenReturn(CompletableFuture.completedFuture(Optional.of(parcel)));
-            ParcelContent content = new ParcelContent(parcel.uuid(), List.of(items));
-            when(this.contentRepository.find(parcel.uuid()))
-                .thenReturn(CompletableFuture.completedFuture(Optional.of(content)));
-        }
-
-        private void runNextMainTask() {
-            Runnable task = this.mainTasks.remove();
-            task.run();
         }
     }
 
-    private static final class OperationFixture {
+    private void stubContent(Parcel parcel, ItemStack... items) {
+        ParcelContent content = new ParcelContent(parcel.uuid(), List.of(items));
+        when(this.contentRepository.find(parcel.uuid()))
+            .thenReturn(CompletableFuture.completedFuture(Optional.of(content)));
+    }
 
-        private final NoticeService noticeService = mock(NoticeService.class);
-        private final ParcelRepository parcelRepository = mock(ParcelRepository.class);
-        private final ParcelContentRepository contentRepository =
-            mock(ParcelContentRepository.class);
-        private final CollectedParcelRepository collectedRepository =
-            mock(CollectedParcelRepository.class);
-        private final Scheduler scheduler = mock(Scheduler.class);
-        private final PluginConfig config = new PluginConfig();
-        private final Economy economy = mock(Economy.class);
-        private final Server server = mock(Server.class);
-        private final PluginManager pluginManager = mock(PluginManager.class);
-        private final Player sender = mock(Player.class);
-        private final Parcel parcel = parcel();
-        private final List<ItemStack> items = List.of(mock(ItemStack.class));
-        private final ParcelServiceImpl service;
+    private void runNextMainTask() {
+        this.mainTasks.remove().run();
+    }
 
-        private OperationFixture() {
-            this(null);
-        }
+    private Parcel parcel(ParcelStatus status) {
+        return new Parcel(UUID.randomUUID(), this.playerId, "name", null, false, this.playerId,
+            ParcelSize.SMALL, UUID.randomUUID(), UUID.randomUUID(), status);
+    }
 
-        private OperationFixture(Executor operationHandoff) {
-            when(this.server.getPluginManager()).thenReturn(this.pluginManager);
-            when(this.sender.getUniqueId()).thenReturn(this.parcel.sender());
-            when(this.sender.hasPermission("parcellockers.fee.bypass")).thenReturn(true);
-            when(this.items.getFirst().clone()).thenReturn(this.items.getFirst());
-            this.service = operationHandoff == null
-                ? new ParcelServiceImpl(
-                    this.noticeService, this.parcelRepository, this.contentRepository,
-                    this.collectedRepository, this.scheduler, this.config, this.economy, this.server)
-                : new ParcelServiceImpl(
-                    this.noticeService, this.parcelRepository, this.contentRepository,
-                    this.collectedRepository, this.scheduler, this.config, this.economy, this.server,
-                    operationHandoff);
-        }
+    private static EconomyResponse response(EconomyResponse.ResponseType type) {
+        return new EconomyResponse(FEE, 100.0, type, null);
     }
 }

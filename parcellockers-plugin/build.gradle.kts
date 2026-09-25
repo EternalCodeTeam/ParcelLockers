@@ -2,6 +2,7 @@ import net.minecrell.pluginyml.paper.PaperPluginDescription
 import xyz.jpenilla.runtask.task.AbstractRun
 
 plugins {
+    id("parcellockers-java")
     id("de.eldoria.plugin-yml.paper")
     id("xyz.jpenilla.run-paper")
     id("com.gradleup.shadow")
@@ -146,12 +147,7 @@ tasks {
             modrinth("essentialsx", "2.22.0")
 //            modrinth("discordsrv", "1.30.4") // uncomment to test with DiscordSRV integration
         }
-        jvmArgs(
-            "-Dcom.mojang.eula.agree=true",
-            "-Xlog:aot=info"
-        )
-//        jvmArgs("-XX:AOTCacheOutput=server.aot")
-        jvmArgs("-XX:AOTCache=server.aot")
+        jvmArgs("-Dcom.mojang.eula.agree=true")
     }
 
     shadowJar {

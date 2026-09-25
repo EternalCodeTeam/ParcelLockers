@@ -146,7 +146,6 @@ public final class ParcelLockers extends JavaPlugin implements ParcelLockersApi 
             noticeService,
             parcelRepository,
             parcelContentRepository,
-            collectedParcelRepository,
             scheduler,
             config,
             economy,
@@ -169,7 +168,8 @@ public final class ParcelLockers extends JavaPlugin implements ParcelLockersApi 
             itemStorageManager,
             scheduler,
             config,
-            noticeService
+            noticeService,
+            this.getLogger()
         );
         this.parcelService = new PublicParcelService(parcelService, parcelDispatchService, scheduler);
 

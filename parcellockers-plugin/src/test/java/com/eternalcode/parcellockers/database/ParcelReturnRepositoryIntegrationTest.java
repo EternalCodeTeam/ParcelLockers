@@ -11,25 +11,19 @@ import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepository;
 import com.eternalcode.parcellockers.parcel.repository.ParcelRepositoryOrmLite;
+import com.eternalcode.parcellockers.returns.repository.CollectedParcelRepositoryOrmLite;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.PageResult;
 import java.nio.file.Path;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.UUID;
 import java.util.logging.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
 
-@Testcontainers(disabledWithoutDocker = true)
-class ParcelReturnRepositoryIntegrationTest extends IntegrationTestSpec {
-
-    @Container
-    private static final MySQLContainer<?> mySQLContainer = new MySQLContainer<>(DockerImageName.parse("mysql:latest"));
+class ParcelReturnRepositoryIntegrationTest extends MySqlIntegrationTestSpec {
 
     @TempDir
     private Path tempDir;
@@ -37,13 +31,7 @@ class ParcelReturnRepositoryIntegrationTest extends IntegrationTestSpec {
     private DatabaseManager databaseManager;
 
     private ParcelRepository repository() throws SQLException {
-        PluginConfig config = new PluginConfig();
-        config.settings.databaseType = DatabaseType.MYSQL;
-        config.settings.host = mySQLContainer.getHost();
-        config.settings.port = String.valueOf(mySQLContainer.getFirstMappedPort());
-        config.settings.databaseName = mySQLContainer.getDatabaseName();
-        config.settings.user = mySQLContainer.getUsername();
-        config.settings.password = mySQLContainer.getPassword();
+        PluginConfig config = this.mysqlConfig();
 
         DatabaseManager databaseManager = new DatabaseManager(config, Logger.getLogger("ParcelLockers"), this.tempDir.toFile());
         databaseManager.connect();
@@ -58,20 +46,25 @@ class ParcelReturnRepositoryIntegrationTest extends IntegrationTestSpec {
     }
 
     @Test
-    void markCollectedFlipsOnlyDeliveredParcels() throws SQLException {
+    void commitCollectionFlipsOnlyDeliveredParcelsOfReceiver() throws SQLException {
         ParcelRepository repository = this.repository();
-        Parcel delivered = parcel(UUID.randomUUID(), UUID.randomUUID(), ParcelStatus.DELIVERED);
+        new CollectedParcelRepositoryOrmLite(this.databaseManager, new TestScheduler());
+        UUID receiver = UUID.randomUUID();
+        Parcel delivered = parcel(receiver, UUID.randomUUID(), ParcelStatus.DELIVERED);
         this.await(repository.save(delivered));
 
-        assertTrue(this.await(repository.markCollected(delivered.uuid())));
+        // A player who is not the receiver cannot collect the parcel.
+        assertFalse(this.await(repository.commitCollection(delivered.uuid(), UUID.randomUUID(), Instant.now())));
+
+        assertTrue(this.await(repository.commitCollection(delivered.uuid(), receiver, Instant.now())));
         assertEquals(ParcelStatus.COLLECTED, this.await(repository.findById(delivered.uuid())).orElseThrow().status());
 
         // Second collect attempt must not report success — this is the double-collect guard.
-        assertFalse(this.await(repository.markCollected(delivered.uuid())));
+        assertFalse(this.await(repository.commitCollection(delivered.uuid(), receiver, Instant.now())));
 
-        Parcel sent = parcel(UUID.randomUUID(), UUID.randomUUID(), ParcelStatus.SENT);
+        Parcel sent = parcel(receiver, UUID.randomUUID(), ParcelStatus.SENT);
         this.await(repository.save(sent));
-        assertFalse(this.await(repository.markCollected(sent.uuid())));
+        assertFalse(this.await(repository.commitCollection(sent.uuid(), receiver, Instant.now())));
     }
 
     @Test

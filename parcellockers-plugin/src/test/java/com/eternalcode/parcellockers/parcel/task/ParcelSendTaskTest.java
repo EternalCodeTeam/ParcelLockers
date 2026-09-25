@@ -16,13 +16,12 @@ import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import com.eternalcode.parcellockers.parcel.task.ParcelSendTask.Decision;
-import com.eternalcode.parcellockers.parcel.service.PluginParcelService;
+import com.eternalcode.parcellockers.parcel.service.ParcelService;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.junit.jupiter.api.Test;
@@ -31,42 +30,33 @@ import org.mockito.MockedStatic;
 class ParcelSendTaskTest {
 
     @Test
-    void serializesReadDecisionAndDeliveryCommitUnderParcelUuid() {
+    void deliversOnlyIfParcelIsStillSent() {
         Parcel sent = parcel(ParcelStatus.SENT);
         Delivery due = new Delivery(sent.uuid(), Instant.now().minusSeconds(1));
-        PluginParcelService parcelService = mock(PluginParcelService.class);
+        ParcelService parcelService = mock(ParcelService.class);
         DeliveryManager deliveryManager = mock(DeliveryManager.class);
-        Scheduler scheduler = mock(Scheduler.class);
-        PluginManager pluginManager = mock(PluginManager.class);
-        when(parcelService.serializeParcelOperation(eq(sent.uuid()), any()))
-            .thenAnswer(invocation -> {
-                @SuppressWarnings("unchecked")
-                Supplier<CompletableFuture<Void>> operation = invocation.getArgument(1);
-                return operation.get();
-            });
-        when(parcelService.getAuthoritativeWithinParcelOperation(sent.uuid()))
+        when(parcelService.get(sent.uuid()))
             .thenReturn(CompletableFuture.completedFuture(Optional.of(sent)));
         when(deliveryManager.get(sent.uuid()))
             .thenReturn(CompletableFuture.completedFuture(Optional.of(due)));
-        when(parcelService.updateWithinParcelOperation(any()))
-            .thenReturn(CompletableFuture.completedFuture(null));
+        when(parcelService.updateIfStatus(any(), eq(ParcelStatus.SENT)))
+            .thenReturn(CompletableFuture.completedFuture(true));
         when(deliveryManager.delete(sent.uuid()))
             .thenReturn(CompletableFuture.completedFuture(true));
 
         try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
-            bukkit.when(Bukkit::getPluginManager).thenReturn(pluginManager);
+            bukkit.when(Bukkit::getPluginManager).thenReturn(mock(PluginManager.class));
 
-            new ParcelSendTask(sent, parcelService, deliveryManager, scheduler).run();
+            new ParcelSendTask(sent, parcelService, deliveryManager, mock(Scheduler.class)).run();
         }
 
-        verify(parcelService).serializeParcelOperation(eq(sent.uuid()), any());
-        verify(parcelService).getAuthoritativeWithinParcelOperation(sent.uuid());
-        verify(parcelService, never()).get(sent.uuid());
-        verify(parcelService).updateWithinParcelOperation(
+        verify(parcelService).updateIfStatus(
             new Parcel(sent.uuid(), sent.sender(), sent.name(), sent.description(),
                 sent.priority(), sent.receiver(), sent.size(), sent.entryLocker(),
-                sent.destinationLocker(), ParcelStatus.DELIVERED));
+                sent.destinationLocker(), ParcelStatus.DELIVERED),
+            ParcelStatus.SENT);
         verify(parcelService, never()).update(any());
+        verify(deliveryManager).delete(sent.uuid());
     }
 
     private static Parcel parcel(ParcelStatus status) {

@@ -19,9 +19,7 @@ import com.eternalcode.parcellockers.parcel.Parcel;
 import com.eternalcode.parcellockers.parcel.ParcelSize;
 import com.eternalcode.parcellockers.parcel.ParcelStatus;
 import com.eternalcode.parcellockers.parcel.service.ParcelDispatchService;
-import com.eternalcode.parcellockers.parcel.service.ParcelServiceImpl;
 import com.eternalcode.parcellockers.parcel.service.PluginParcelService;
-import com.eternalcode.parcellockers.shared.exception.ParcelOperationException;
 import com.eternalcode.parcellockers.shared.exception.ValidationException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,41 +33,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 class PublicParcelServiceTest {
-
-    @Test
-    void sendFromParcelEventCallbackFailsFastBeforeAsyncScheduling() {
-        Fixture fixture = new Fixture();
-
-        fixture.runInParcelCallback(() -> {
-            CompletableFuture<Boolean> result =
-                fixture.service.send(fixture.sender, fixture.parcel, fixture.items);
-
-            assertTrue(result.isCompletedExceptionally());
-            CompletionException exception =
-                assertThrows(CompletionException.class, result::join);
-            assertInstanceOf(IllegalStateException.class, exception.getCause());
-        });
-        verify(fixture.scheduler, never()).runAsync(any());
-        verify(fixture.dispatcher, never()).dispatch(any(), any(), any());
-    }
-
-    @Test
-    void collectFromParcelEventCallbackFailsFastBeforeAsyncScheduling() {
-        Fixture fixture = new Fixture();
-        Parcel delivered = withStatus(fixture.parcel, ParcelStatus.DELIVERED);
-
-        fixture.runInParcelCallback(() -> {
-            CompletableFuture<Void> result =
-                fixture.service.collect(fixture.receiver, delivered);
-
-            assertTrue(result.isCompletedExceptionally());
-            CompletionException exception =
-                assertThrows(CompletionException.class, result::join);
-            assertInstanceOf(IllegalStateException.class, exception.getCause());
-        });
-        verify(fixture.scheduler, never()).runAsync(any());
-        verify(fixture.delegate, never()).collect(any(), any());
-    }
 
     @Test
     void sendRejectsSenderMismatchBeforeSchedulingDispatch() {
@@ -102,7 +65,7 @@ class PublicParcelServiceTest {
     }
 
     @Test
-    void sendRejectsNullEmptyAndNullElementItemsThroughFailedFuture() {
+    void sendRejectsEmptyAndNullElementItemsThroughFailedFuture() {
         Fixture fixture = new Fixture();
 
         for (List<ItemStack> invalid : List.of(
@@ -113,11 +76,6 @@ class PublicParcelServiceTest {
             CompletionException exception = assertThrows(CompletionException.class, result::join);
             assertInstanceOf(ValidationException.class, exception.getCause());
         }
-        CompletableFuture<Boolean> nullResult = assertDoesNotThrow(
-            () -> fixture.service.send(fixture.sender, fixture.parcel, null));
-        assertTrue(nullResult.isCompletedExceptionally());
-        assertInstanceOf(ValidationException.class,
-            assertThrows(CompletionException.class, nullResult::join).getCause());
         verify(fixture.scheduler, never()).runAsync(any());
     }
 
@@ -168,12 +126,12 @@ class PublicParcelServiceTest {
         CompletionException status =
             assertThrows(CompletionException.class, statusResult::join);
         assertInstanceOf(ValidationException.class, status.getCause());
-        verify(fixture.scheduler, never()).runAsync(any());
+        verify(fixture.scheduler, never()).run(any());
         verify(fixture.delegate, never()).collect(any(), any());
     }
 
     @Test
-    void collectDefersDelegateWorkOffCallingThread() {
+    void collectStartsDelegateOnMainThread() {
         Fixture fixture = new Fixture();
         Parcel delivered = withStatus(fixture.parcel, ParcelStatus.DELIVERED);
         CompletableFuture<Void> collected = new CompletableFuture<>();
@@ -185,7 +143,7 @@ class PublicParcelServiceTest {
         assertFalse(result.isDone());
         verify(fixture.delegate, never()).collect(any(), any());
         ArgumentCaptor<Runnable> task = ArgumentCaptor.forClass(Runnable.class);
-        verify(fixture.scheduler).runAsync(task.capture());
+        verify(fixture.scheduler).run(task.capture());
         task.getValue().run();
         verify(fixture.delegate).collect(fixture.receiver, delivered);
         collected.complete(null);
@@ -216,22 +174,6 @@ class PublicParcelServiceTest {
         verify(fixture.delegate, never()).send(any(), any(), any());
     }
 
-    @Test
-    void schedulerSubmissionFailureCompletesFutureExceptionallyWithoutSynchronousThrow() {
-        Fixture fixture = new Fixture();
-        when(fixture.scheduler.runAsync(any()))
-            .thenThrow(new IllegalStateException("submission failed"));
-
-        CompletableFuture<Boolean> result = assertDoesNotThrow(
-            () -> fixture.service.send(fixture.sender, fixture.parcel, fixture.items));
-
-        CompletionException exception =
-            assertThrows(CompletionException.class, result::join);
-        assertInstanceOf(ParcelOperationException.class, exception.getCause());
-        assertInstanceOf(IllegalStateException.class, exception.getCause().getCause());
-        verify(fixture.dispatcher, never()).dispatch(any(), any(), any());
-    }
-
     private static Parcel withStatus(Parcel parcel, ParcelStatus status) {
         return new Parcel(parcel.uuid(), parcel.sender(), parcel.name(), parcel.description(),
             parcel.priority(), parcel.receiver(), parcel.size(), parcel.entryLocker(),
@@ -240,16 +182,7 @@ class PublicParcelServiceTest {
 
     private static final class Fixture {
 
-        private final ParcelServiceImpl callbackContext =
-            new ParcelServiceImpl(mock(), mock(), mock(), mock(), mock(), mock(), mock(), mock());
-        private final PluginParcelService delegate = mock(
-            PluginParcelService.class,
-            invocation -> {
-                if (invocation.getMethod().getName().equals("isParcelOperationCallbackActive")) {
-                    return this.callbackContext.isParcelOperationCallbackActive();
-                }
-                return org.mockito.Answers.RETURNS_DEFAULTS.answer(invocation);
-            });
+        private final PluginParcelService delegate = mock(PluginParcelService.class);
         private final ParcelDispatchService dispatcher = mock(ParcelDispatchService.class);
         private final Scheduler scheduler = mock(Scheduler.class);
         private final PublicParcelService service =
@@ -274,10 +207,6 @@ class PublicParcelServiceTest {
             when(this.sender.getUniqueId()).thenReturn(this.parcel.sender());
             when(this.receiver.getUniqueId()).thenReturn(this.parcel.receiver());
             when(this.items.get(0).clone()).thenReturn(this.items.get(0));
-        }
-
-        private void runInParcelCallback(Runnable callback) {
-            this.callbackContext.runParcelOperationCallback(this.parcel.uuid(), callback);
         }
     }
 }

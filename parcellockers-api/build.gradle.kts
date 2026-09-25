@@ -1,4 +1,5 @@
 plugins {
+    id("parcellockers-java")
     `java-library`
     `maven-publish`
 }
@@ -29,8 +30,9 @@ publishing {
     repositories {
         mavenLocal()
         maven {
-            name = "eternalcodeReleases"
-            url = uri("https://repo.eternalcode.pl/releases")
+            val snapshot = version.toString().endsWith("-SNAPSHOT")
+            name = if (snapshot) "eternalcodeSnapshots" else "eternalcodeReleases"
+            url = uri(if (snapshot) "https://repo.eternalcode.pl/snapshots" else "https://repo.eternalcode.pl/releases")
             credentials {
                 username = System.getenv("ETERNAL_CODE_MAVEN_USERNAME")
                 password = System.getenv("ETERNAL_CODE_MAVEN_PASSWORD")

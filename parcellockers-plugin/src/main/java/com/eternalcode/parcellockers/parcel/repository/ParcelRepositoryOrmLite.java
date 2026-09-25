@@ -10,11 +10,10 @@ import com.eternalcode.parcellockers.returns.repository.CollectedParcelTable;
 import com.eternalcode.parcellockers.shared.Page;
 import com.eternalcode.parcellockers.shared.PageResult;
 import com.j256.ormlite.misc.TransactionManager;
-import com.j256.ormlite.stmt.DeleteBuilder;
 import com.j256.ormlite.stmt.UpdateBuilder;
+import com.j256.ormlite.stmt.Where;
 import java.time.Instant;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -39,13 +38,11 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     @Override
     public CompletableFuture<Void> save(Parcel parcel) {
-        Objects.requireNonNull(parcel, "Parcel cannot be null");
         return this.insertIfAbsent(ParcelTable.class, ParcelTable.from(parcel)).thenApply(dao -> null);
     }
 
     @Override
     public CompletableFuture<Boolean> saveIfAbsent(Parcel parcel) {
-        Objects.requireNonNull(parcel, "Parcel cannot be null");
         ParcelTable inserted = ParcelTable.from(parcel);
         return this.insertIfAbsent(ParcelTable.class, inserted)
             .thenApply(result -> result == inserted);
@@ -53,14 +50,11 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     @Override
     public CompletableFuture<Void> update(Parcel parcel) {
-        Objects.requireNonNull(parcel, "Parcel cannot be null");
         return this.upsert(ParcelTable.class, ParcelTable.from(parcel)).thenApply(dao -> null);
     }
 
     @Override
     public CompletableFuture<Boolean> updateIfStatus(Parcel updated, ParcelStatus expectedStatus) {
-        Objects.requireNonNull(updated, "Parcel cannot be null");
-        Objects.requireNonNull(expectedStatus, "Expected status cannot be null");
         return this.action(ParcelTable.class, dao -> {
             UpdateBuilder<ParcelTable, Object> builder = dao.updateBuilder();
             builder.updateColumnValue(SENDER_COLUMN, updated.sender());
@@ -82,14 +76,12 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     @Override
     public CompletableFuture<Optional<Parcel>> findById(UUID uuid) {
-        Objects.requireNonNull(uuid, "UUID cannot be null");
         return this.selectSafe(ParcelTable.class, uuid)
             .thenApply(optional -> optional.map(ParcelTable::toParcel));
     }
 
     @Override
     public CompletableFuture<List<Parcel>> findBySender(UUID sender) {
-        Objects.requireNonNull(sender, "Sender UUID cannot be null");
         return this.action(
             ParcelTable.class,
             dao -> dao.queryForEq(SENDER_COLUMN, sender).stream()
@@ -100,14 +92,11 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     @Override
     public CompletableFuture<PageResult<Parcel>> findBySender(UUID sender, Page page) {
-        Objects.requireNonNull(sender, "Sender UUID cannot be null");
-        Objects.requireNonNull(page, "Page cannot be null");
         return this.findByPaged(sender, page, SENDER_COLUMN);
     }
 
     @Override
     public CompletableFuture<List<Parcel>> findByReceiver(UUID receiver) {
-        Objects.requireNonNull(receiver, "Receiver UUID cannot be null");
         return this.action(
             ParcelTable.class,
             dao -> dao.queryForEq(RECEIVER_COLUMN, receiver).stream()
@@ -118,17 +107,13 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     @Override
     public CompletableFuture<PageResult<Parcel>> findByReceiver(UUID receiver, Page page) {
-        Objects.requireNonNull(receiver, "Receiver UUID cannot be null");
-        Objects.requireNonNull(page, "Page cannot be null");
         return this.findByPaged(receiver, page, RECEIVER_COLUMN);
     }
 
     @Override
     public CompletableFuture<PageResult<Parcel>> findCollectible(UUID receiver, UUID destinationLocker, Page page) {
-        Objects.requireNonNull(receiver, "Receiver UUID cannot be null");
-        Objects.requireNonNull(page, "Page cannot be null");
         return this.queryPage(ParcelTable.class, page, builder -> {
-            var where = builder.where()
+            Where<ParcelTable, Object> where = builder.where()
                 .eq(RECEIVER_COLUMN, receiver)
                 .and()
                 .eq(STATUS_COLUMN, ParcelStatus.DELIVERED);
@@ -140,36 +125,11 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     }
 
     @Override
-    public CompletableFuture<Boolean> markCollected(UUID uuid) {
-        return this.markCollected(uuid, null);
-    }
-
-    @Override
-    public CompletableFuture<Boolean> markCollected(UUID uuid, UUID receiver) {
-        Objects.requireNonNull(uuid, "UUID cannot be null");
-        return this.action(ParcelTable.class, dao -> {
-            UpdateBuilder<ParcelTable, Object> builder = dao.updateBuilder();
-            builder.updateColumnValue(STATUS_COLUMN, ParcelStatus.COLLECTED);
-            var where = builder.where()
-                .eq(UUID_COLUMN, uuid)
-                .and()
-                .eq(STATUS_COLUMN, ParcelStatus.DELIVERED);
-            if (receiver != null) {
-                where.and().eq(RECEIVER_COLUMN, receiver);
-            }
-            return builder.update() > 0;
-        });
-    }
-
-    @Override
     public CompletableFuture<Boolean> commitCollection(
         UUID uuid,
         UUID receiver,
         Instant collectedAt
     ) {
-        Objects.requireNonNull(uuid, "UUID cannot be null");
-        Objects.requireNonNull(receiver, "Receiver UUID cannot be null");
-        Objects.requireNonNull(collectedAt, "Collected timestamp cannot be null");
         return this.action(ParcelTable.class, parcelDao ->
             TransactionManager.callInTransaction(this.databaseManager.connectionSource(), () -> {
                 UpdateBuilder<ParcelTable, Object> update = parcelDao.updateBuilder();
@@ -190,47 +150,7 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
     }
 
     @Override
-    public CompletableFuture<Boolean> rollbackCollection(
-        UUID uuid,
-        UUID receiver,
-        Instant collectedAt
-    ) {
-        Objects.requireNonNull(uuid, "UUID cannot be null");
-        Objects.requireNonNull(receiver, "Receiver UUID cannot be null");
-        Objects.requireNonNull(collectedAt, "Collected timestamp cannot be null");
-        return this.action(ParcelTable.class, parcelDao ->
-            TransactionManager.callInTransaction(this.databaseManager.connectionSource(), () -> {
-                UpdateBuilder<ParcelTable, Object> update = parcelDao.updateBuilder();
-                update.updateColumnValue(STATUS_COLUMN, ParcelStatus.DELIVERED);
-                update.where()
-                    .eq(UUID_COLUMN, uuid)
-                    .and()
-                    .eq(RECEIVER_COLUMN, receiver)
-                    .and()
-                    .eq(STATUS_COLUMN, ParcelStatus.COLLECTED);
-                if (update.update() == 0) {
-                    return false;
-                }
-
-                var collectedDao = this.databaseManager.getDao(CollectedParcelTable.class);
-                DeleteBuilder<CollectedParcelTable, Object> delete =
-                    collectedDao.deleteBuilder();
-                delete.where()
-                    .eq("parcel", uuid)
-                    .and()
-                    .eq(CollectedParcelTable.COLLECTED_AT_COLUMN, collectedAt);
-                if (delete.delete() != 1) {
-                    throw new IllegalStateException(
-                        "Collection token changed while rolling back parcel " + uuid);
-                }
-                return true;
-            }));
-    }
-
-    @Override
     public CompletableFuture<PageResult<Parcel>> findReturnable(UUID receiver, Page page) {
-        Objects.requireNonNull(receiver, "Receiver UUID cannot be null");
-        Objects.requireNonNull(page, "Page cannot be null");
         return this.queryPage(ParcelTable.class, page, builder -> {
             builder.where()
                 .eq(RECEIVER_COLUMN, receiver)
@@ -242,7 +162,6 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     @Override
     public CompletableFuture<Integer> countParcelsByDestinationLocker(UUID destinationLocker) {
-        Objects.requireNonNull(destinationLocker, "Destination locker UUID cannot be null");
         return this.action(ParcelTable.class, dao -> {
             long count = dao.queryBuilder()
                 .where()
@@ -263,13 +182,11 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     @Override
     public CompletableFuture<Boolean> delete(Parcel parcel) {
-        Objects.requireNonNull(parcel, "Parcel cannot be null");
         return this.delete(parcel.uuid());
     }
 
     @Override
     public CompletableFuture<Boolean> delete(UUID uuid) {
-        Objects.requireNonNull(uuid, "UUID cannot be null");
         return this.deleteById(ParcelTable.class, uuid).thenApply(rows -> rows > 0);
     }
 
@@ -283,7 +200,6 @@ public class ParcelRepositoryOrmLite extends AbstractRepositoryOrmLite implement
 
     @Override
     public CompletableFuture<PageResult<Parcel>> findPage(Page page) {
-        Objects.requireNonNull(page, "Page cannot be null");
         return this.queryPage(ParcelTable.class, page, builder -> builder, ParcelTable::toParcel);
     }
 
