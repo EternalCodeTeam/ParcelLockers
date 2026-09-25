@@ -11,12 +11,20 @@ public class PositionPersister extends BaseDataType {
 
     private static final PositionPersister INSTANCE = new PositionPersister();
 
+    // VARCHAR instead of TEXT: MySQL cannot put the UNIQUE index on a TEXT column without a key length.
+    private static final int COLUMN_WIDTH = 255;
+
     private PositionPersister() {
-        super(SqlType.LONG_STRING, new Class<?>[] { Position.class });
+        super(SqlType.STRING, new Class<?>[] { Position.class });
     }
 
     public static PositionPersister getSingleton() {
         return INSTANCE;
+    }
+
+    @Override
+    public int getDefaultWidth() {
+        return COLUMN_WIDTH;
     }
 
     @Override
