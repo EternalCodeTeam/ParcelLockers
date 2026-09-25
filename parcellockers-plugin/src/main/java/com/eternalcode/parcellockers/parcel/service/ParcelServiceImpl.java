@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.TimeUnit;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Server;
@@ -143,7 +144,7 @@ public class ParcelServiceImpl implements PluginParcelService {
                     // charged for a parcel that was never created.
                     this.refundFee(sender, refundableFee);
                     this.noticeService.player(sender.getUniqueId(), messages -> messages.parcel.cannotSend);
-                    throw new ParcelOperationException("Failed to save parcel content, rolled back parcel", throwable);
+                    throw new ParcelOperationException("Failed to save parcel content, rolled back parcel", unwrap(throwable));
                 }));
     }
 
@@ -269,6 +270,14 @@ public class ParcelServiceImpl implements PluginParcelService {
 
             return result;
         });
+    }
+
+    // Stages downstream of a failed future see the failure wrapped in a CompletionException.
+    private static Throwable unwrap(Throwable throwable) {
+        if (throwable instanceof CompletionException && throwable.getCause() != null) {
+            return throwable.getCause();
+        }
+        return throwable;
     }
 
     private static Parcel withStatus(Parcel parcel, ParcelStatus status) {

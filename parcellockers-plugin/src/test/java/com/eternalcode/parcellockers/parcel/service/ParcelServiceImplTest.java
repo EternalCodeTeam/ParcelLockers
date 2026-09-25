@@ -9,8 +9,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.RETURNS_SELF;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
@@ -19,6 +20,7 @@ import static org.mockito.Mockito.when;
 
 import com.eternalcode.commons.bukkit.ItemUtil;
 import com.eternalcode.commons.scheduler.Scheduler;
+import com.eternalcode.multification.notice.NoticeBroadcast;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
 import com.eternalcode.parcellockers.content.ParcelContent;
 import com.eternalcode.parcellockers.content.repository.ParcelContentRepository;
@@ -50,7 +52,9 @@ class ParcelServiceImplTest {
 
     private static final double FEE = 10.0;
 
-    private final NoticeService noticeService = mock(NoticeService.class, RETURNS_DEEP_STUBS);
+    private final NoticeService noticeService = mock(NoticeService.class);
+    // Deep stubs cannot follow the self-typed fluent builder, so the broadcast returns itself explicitly.
+    private final NoticeBroadcast<?, ?, ?> noticeBroadcast = mock(NoticeBroadcast.class, RETURNS_SELF);
     private final ParcelRepository parcelRepository = mock(ParcelRepository.class);
     private final ParcelContentRepository contentRepository = mock(ParcelContentRepository.class);
     private final Scheduler scheduler = mock(Scheduler.class);
@@ -67,8 +71,11 @@ class ParcelServiceImplTest {
 
         when(this.server.getPluginManager()).thenReturn(mock(PluginManager.class));
         when(this.player.getUniqueId()).thenReturn(this.playerId);
-        doAnswer(invocation -> this.mainTasks.add(invocation.getArgument(0)))
-            .when(this.scheduler).run(any(Runnable.class));
+        doReturn(this.noticeBroadcast).when(this.noticeService).create();
+        doAnswer(invocation -> {
+            this.mainTasks.add(invocation.getArgument(0));
+            return null; // Scheduler#run returns a Task, which the service never uses
+        }).when(this.scheduler).run(any(Runnable.class));
 
         this.service = new ParcelServiceImpl(
             this.noticeService, this.parcelRepository, this.contentRepository,
