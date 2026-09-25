@@ -5,9 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static com.eternalcode.parcellockers.TestItemStacks.installDeserializer;
+import static com.eternalcode.parcellockers.TestItemStacks.stack;
 
 import com.eternalcode.parcellockers.TestScheduler;
 import com.eternalcode.parcellockers.configuration.implementation.PluginConfig;
@@ -28,7 +27,6 @@ import com.eternalcode.parcellockers.returns.repository.CollectedParcelRepositor
 import com.eternalcode.parcellockers.returns.repository.ParcelReturnRepository;
 import com.eternalcode.parcellockers.returns.repository.ParcelReturnRepositoryOrmLite;
 import java.io.File;
-import java.lang.reflect.Field;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
@@ -36,9 +34,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
-import org.bukkit.Bukkit;
-import org.bukkit.Server;
-import org.bukkit.UnsafeValues;
 import org.bukkit.inventory.ItemStack;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -154,27 +149,6 @@ class ParcelReturnCommitRepositoryIntegrationTest extends IntegrationTestSpec {
 
     private static ParcelContent content(UUID parcel, ItemStack item) {
         return new ParcelContent(parcel, List.of(item));
-    }
-
-    private static ItemStack stack(byte marker) {
-        ItemStack item = mock(ItemStack.class);
-        when(item.isEmpty()).thenReturn(false);
-        when(item.serializeAsBytes()).thenReturn(new byte[] { marker });
-        return item;
-    }
-
-    private static void installDeserializer(Map<Byte, ItemStack> items)
-        throws ReflectiveOperationException {
-        UnsafeValues unsafe = mock(UnsafeValues.class);
-        when(unsafe.deserializeItem(any(byte[].class))).thenAnswer(invocation -> {
-                byte[] serialized = invocation.getArgument(0);
-                return items.get(serialized[0]);
-            });
-        Server server = mock(Server.class);
-        when(server.getUnsafe()).thenReturn(unsafe);
-        Field serverField = Bukkit.class.getDeclaredField("server");
-        serverField.setAccessible(true);
-        serverField.set(null, server);
     }
 
     @AfterEach

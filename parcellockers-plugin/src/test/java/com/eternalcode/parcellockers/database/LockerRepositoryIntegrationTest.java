@@ -43,7 +43,7 @@ class LockerRepositoryIntegrationTest extends MySqlIntegrationTestSpec {
         Position position = new Position(1, 2, 3, "world");
 
 
-        parcelLockerRepository.save(new Locker(uuid, description, position));
+        this.await(parcelLockerRepository.save(new Locker(uuid, description, position)));
 
         Optional<Locker> parcelLocker = this.await(parcelLockerRepository.find(uuid));
         assertTrue(parcelLocker.isPresent());

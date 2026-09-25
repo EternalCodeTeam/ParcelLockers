@@ -44,8 +44,8 @@ class ParcelRepositoryIntegrationTest extends MySqlIntegrationTestSpec {
         UUID entryLocker = UUID.randomUUID();
         UUID destinationLocker = UUID.randomUUID();
 
-        parcelRepository.save(new Parcel(uuid, sender, "name", "description", true, receiver,
-            ParcelSize.SMALL, entryLocker, destinationLocker, ParcelStatus.SENT));
+        this.await(parcelRepository.save(new Parcel(uuid, sender, "name", "description", true, receiver,
+            ParcelSize.SMALL, entryLocker, destinationLocker, ParcelStatus.SENT)));
 
         Optional<Parcel> parcel = this.await(parcelRepository.findById(uuid));
         assertTrue(parcel.isPresent());
