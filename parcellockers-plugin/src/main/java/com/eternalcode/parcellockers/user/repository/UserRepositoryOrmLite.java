@@ -1,0 +1,61 @@
+package com.eternalcode.parcellockers.user.repository;
+
+import com.eternalcode.commons.concurrent.FutureHandler;
+import com.eternalcode.commons.scheduler.Scheduler;
+import com.eternalcode.parcellockers.database.DatabaseManager;
+import com.eternalcode.parcellockers.database.wrapper.AbstractRepositoryOrmLite;
+import com.eternalcode.parcellockers.shared.Page;
+import com.eternalcode.parcellockers.shared.PageResult;
+import com.eternalcode.parcellockers.user.User;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+
+public class UserRepositoryOrmLite extends AbstractRepositoryOrmLite implements UserRepository {
+
+    public UserRepositoryOrmLite(DatabaseManager databaseManager, Scheduler scheduler) {
+        super(databaseManager, scheduler);
+        this.createTable(UserTable.class);
+    }
+
+    @Override
+    public CompletableFuture<Optional<User>> fetch(UUID uuid) {
+        return this.selectSafe(UserTable.class, uuid).thenApply(optional -> optional
+            .map(UserTable::toUser)
+        );
+    }
+
+    @Override
+    public CompletableFuture<Optional<User>> fetch(String name) {
+        return this.action(
+            UserTable.class, dao -> {
+            UserTable userTable = dao.queryForEq("username", name).stream().findFirst().orElse(null);
+            return Optional.ofNullable(userTable).map(UserTable::toUser);
+        });
+    }
+
+    @Override
+    public CompletableFuture<Void> save(User user) {
+        return this.upsert(UserTable.class, UserTable.from(user)).exceptionally(ex -> {
+            System.err.println("Failed to save user: " + ex.getMessage());
+            FutureHandler.handleException(ex);
+            return null;
+        }).thenApply(dao -> null);
+    }
+
+    @Override
+    public CompletableFuture<Void> changeName(UUID uuid, String newName) {
+        return this.action(
+            UserTable.class, dao -> {
+            UserTable userTable = dao.queryForId(uuid);
+            userTable.setUsername(newName);
+            dao.update(userTable);
+            return null;
+        });
+    }
+
+    @Override
+    public CompletableFuture<PageResult<User>> fetchPage(Page page) {
+        return this.queryPage(UserTable.class, page, builder -> builder, UserTable::toUser);
+    }
+}
