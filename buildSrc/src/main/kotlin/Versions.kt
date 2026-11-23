@@ -26,7 +26,7 @@ object Versions {
     const val CAFFEINE = "3.3.1"
     const val VAULT_API = "1.7.1"
 
-    const val DISCORD4J = "3.3.3"
+    const val DISCORD4J = "3.3.4"
     const val DISCORDSRV = "1.30.5"
 
     const val JUNIT = "6.1.3"
